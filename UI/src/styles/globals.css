@@ -1,0 +1,10 @@
+/* styles/globals.css */
+body {
+  font-family: 'Courgette', cursive;
+  margin: 0px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
