@@ -1,4 +1,4 @@
-name: Deploy AgroNexis
+name: Deploy to Hostinger VPS
 
 on:
   push:
@@ -10,29 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          node-version: "18"
-
-      - name: Install dependencies and build/export
-        run: |
-          cd UI
-          npm install
-          npm run build
-
-      - name: Upload /UI/out folder to Hostinger via FTP
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          sudo apt-get update && sudo apt-get install lftp -y
-          lftp -c "
-            set ssl:verify-certificate no;
-            open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST;
-            mirror -R ./UI/out/ domains/agronexis.com/public_html/ --parallel=10 --delete --verbose
-          "
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd /var/www/agronexis || git clone https://github.com/shubhamGrey/DesiKing.git /var/www/agronexis
+            cd /var/www/agronexis
+            git pull origin main
+            cd UI
+            npm install
+            npm run build
+            pm2 restart agronexis || pm2 start npm --name agronexis -- start
+            pm2 save
