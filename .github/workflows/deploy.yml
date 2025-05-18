@@ -20,12 +20,12 @@ jobs:
 
       - name: Install dependencies and build/export
         run: |
-          cd ui
+          cd UI
           npm install
           npm run build
           npm run export
 
-      - name: Upload /ui/out folder to Hostinger via FTP
+      - name: Upload /UI/out folder to Hostinger via FTP
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
@@ -34,5 +34,5 @@ jobs:
           sudo apt-get update && sudo apt-get install lftp -y
           lftp -c "
             open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST;
-            mirror -R ./ui/out/ public_html/ --parallel=10 --delete --verbose
+            mirror -R ./UI/out/ public_html/ --parallel=10 --delete --verbose
           "
