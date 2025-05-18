@@ -23,7 +23,6 @@ jobs:
           cd UI
           npm install
           npm run build
-          npm run export
 
       - name: Upload /UI/out folder to Hostinger via FTP
         env:
