@@ -7,10 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "homepage": "https://shubhamGrey.github.io/DesiKing",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "lint:fix": "next lint --fix"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
