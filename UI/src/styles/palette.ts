@@ -49,54 +49,54 @@ const lightPalette: PaletteOptions = {
     },
 };
 
-const darkPalette: PaletteOptions = {
-    mode: 'dark',
-    primary: {
-        main: '#bd833c',
-        light: '#e3f2fd',
-        dark: '#42a5f5',
-        contrastText: '#ffffff',
-    },
-    secondary: {
-        main: '#ce93d8',
-        light: '#f3e5f5',
-        dark: '#ab47bc',
-        contrastText: '#000',
-    },
-    error: {
-        main: '#ef9a9a',
-        light: '#ffcdd2',
-        dark: '#c62828',
-        contrastText: '#000',
-    },
-    warning: {
-        main: '#ffb74d',
-        light: '#ffe0b2',
-        dark: '#f57c00',
-        contrastText: '#000',
-    },
-    info: {
-        main: '#81d4fa',
-        light: '#b3e5fc',
-        dark: '#0288d1',
-        contrastText: '#000',
-    },
-    success: {
-        main: '#a5d6a7',
-        light: '#c8e6c9',
-        dark: '#388e3c',
-        contrastText: '#000',
-    },
-    background: {
-        default: '#121212',
-        paper: '#1e1e1e',
-    },
-    text: {
-        primary: '#fff',
-        secondary: '#bdbdbd',
-        disabled: '#757575',
-    },
-};
+// const darkPalette: PaletteOptions = {
+//     mode: 'dark',
+//     primary: {
+//         main: '#bd833c',
+//         light: '#e3f2fd',
+//         dark: '#42a5f5',
+//         contrastText: '#ffffff',
+//     },
+//     secondary: {
+//         main: '#ce93d8',
+//         light: '#f3e5f5',
+//         dark: '#ab47bc',
+//         contrastText: '#000',
+//     },
+//     error: {
+//         main: '#ef9a9a',
+//         light: '#ffcdd2',
+//         dark: '#c62828',
+//         contrastText: '#000',
+//     },
+//     warning: {
+//         main: '#ffb74d',
+//         light: '#ffe0b2',
+//         dark: '#f57c00',
+//         contrastText: '#000',
+//     },
+//     info: {
+//         main: '#81d4fa',
+//         light: '#b3e5fc',
+//         dark: '#0288d1',
+//         contrastText: '#000',
+//     },
+//     success: {
+//         main: '#a5d6a7',
+//         light: '#c8e6c9',
+//         dark: '#388e3c',
+//         contrastText: '#000',
+//     },
+//     background: {
+//         default: '#121212',
+//         paper: '#1e1e1e',
+//     },
+//     text: {
+//         primary: '#fff',
+//         secondary: '#bdbdbd',
+//         disabled: '#757575',
+//     },
+// };
 
 // Export both palettes, or choose one to export as default
 const palette = lightPalette;

@@ -11,7 +11,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Icon,
   IconButton,
 } from "@mui/material";
 import GrassIcon from "@mui/icons-material/Grass";
@@ -21,28 +20,28 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import EmojiPeopleRoundedIcon from "@mui/icons-material/EmojiPeopleRounded";
 import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
 import LinkedIn from "@mui/icons-material/LinkedIn";
-import palatte from "@/theme/palatte";
 import Spices from "@/public/images/Spices.png";
 import Founder from "@/public/images/Founder.PNG";
 import CoFounder from "@/public/images/Co Founder.PNG";
 import Director from "@/public/images/Director.PNG";
 import Image from "next/image";
+import theme from "@/styles/theme";
 
 const highlights = [
   {
-    icon: <GrassIcon sx={{ color: palatte.primary.main }} />,
+    icon: <GrassIcon sx={{ color: theme.palette.primary.main }} />,
     text: "100% Natural Ingredients",
   },
   {
-    icon: <LocalDiningIcon sx={{ color: palatte.primary.main }} />,
+    icon: <LocalDiningIcon sx={{ color: theme.palette.primary.main }} />,
     text: "Farm-to-Packet Freshness",
   },
   {
-    icon: <ScienceIcon sx={{ color: palatte.primary.main }} />,
+    icon: <ScienceIcon sx={{ color: theme.palette.primary.main }} />,
     text: "Lab-Tested for Quality",
   },
   {
-    icon: <LocationOnIcon sx={{ color: palatte.primary.main }} />,
+    icon: <LocationOnIcon sx={{ color: theme.palette.primary.main }} />,
     text: "Sourced from Heart of India",
   },
 ];
@@ -62,7 +61,7 @@ export default function AboutLight() {
           <Grid size={6}>
             <Typography
               variant="h2"
-              sx={{ mb: 3, color: palatte.primary.main }}
+              sx={{ mb: 3, color: theme.palette.primary.main }}
               fontFamily={"Playfair Display, serif"}
               fontStyle={"italic"}
               fontWeight={600}
@@ -76,14 +75,18 @@ export default function AboutLight() {
               sx={{ mb: 2 }}
             >
               <EmojiPeopleRoundedIcon
-                sx={{ height: 48, width: 48, color: palatte.primary.main }}
+                sx={{
+                  height: 48,
+                  width: 48,
+                  color: theme.palette.primary.main,
+                }}
               />
               <Typography
                 variant="h4"
                 sx={{
                   mb: 2,
                   ml: 1,
-                  color: palatte.primary.main,
+                  color: theme.palette.primary.main,
                 }}
                 fontFamily={"Playfair Display, serif"}
                 fontWeight={600}
@@ -94,7 +97,7 @@ export default function AboutLight() {
             <Typography
               variant="body1"
               sx={{ mb: 1, justifyContent: "center" }}
-              color={palatte.text.primary}
+              color={theme.palette.text.primary}
             >
               At AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED, we believe that
               great food starts with great ingredients. Founded with a mission
@@ -129,7 +132,7 @@ export default function AboutLight() {
               elevation={0}
               sx={{
                 p: 3,
-                border: `1px solid ${palatte.primary.main}`,
+                border: `1px solid ${theme.palette.primary.main}`,
                 backgroundColor: "inherit",
                 height: "88%",
                 display: "flex",
@@ -146,13 +149,13 @@ export default function AboutLight() {
               >
                 <SpaRoundedIcon
                   fontSize="large"
-                  sx={{ color: palatte.primary.main }}
+                  sx={{ color: theme.palette.primary.main }}
                 />
                 <Typography
                   variant="h4"
                   sx={{
                     mb: 3,
-                    color: palatte.primary.main,
+                    color: theme.palette.primary.main,
                   }}
                   fontFamily={"Playfair Display, serif"}
                   fontStyle={"italic"}
@@ -164,7 +167,7 @@ export default function AboutLight() {
               <Typography
                 variant="body1"
                 sx={{ py: 0.5, px: 2, justifyContent: "center" }}
-                color={palatte.text.primary}
+                color={theme.palette.text.primary}
               >
                 What sets us apart is our unwavering commitment to quality and
                 customer satisfaction. There will be more efforts to bring
@@ -181,7 +184,7 @@ export default function AboutLight() {
               elevation={0}
               sx={{
                 p: 3,
-                border: `1px solid ${palatte.primary.main}`,
+                border: `1px solid ${theme.palette.primary.main}`,
                 backgroundColor: "inherit",
                 height: "88%",
                 display: "flex",
@@ -198,13 +201,13 @@ export default function AboutLight() {
               >
                 <SpaRoundedIcon
                   fontSize="large"
-                  sx={{ color: palatte.primary.main }}
+                  sx={{ color: theme.palette.primary.main }}
                 />
                 <Typography
                   variant="h4"
                   sx={{
                     mb: 3,
-                    color: palatte.primary.main,
+                    color: theme.palette.primary.main,
                   }}
                   fontFamily={"Playfair Display, serif"}
                   fontStyle={"italic"}
@@ -216,12 +219,12 @@ export default function AboutLight() {
               <List dense={true}>
                 {coreValues.map((item) => {
                   return (
-                    <ListItem>
+                    <ListItem key={item}>
                       <ListItemText>
                         <Typography
                           variant="body1"
                           sx={{ mb: 1, justifyContent: "center" }}
-                          color={palatte.text.primary}
+                          color={theme.palette.text.primary}
                         >
                           {item}
                         </Typography>
@@ -237,7 +240,7 @@ export default function AboutLight() {
               elevation={0}
               sx={{
                 p: 3,
-                border: `1px solid ${palatte.primary.main}`,
+                border: `1px solid ${theme.palette.primary.main}`,
                 backgroundColor: "inherit",
                 height: "88%",
                 display: "flex",
@@ -254,13 +257,13 @@ export default function AboutLight() {
               >
                 <SpaRoundedIcon
                   fontSize="large"
-                  sx={{ color: palatte.primary.main }}
+                  sx={{ color: theme.palette.primary.main }}
                 />
                 <Typography
                   variant="h4"
                   sx={{
                     mb: 3,
-                    color: palatte.primary.main,
+                    color: theme.palette.primary.main,
                   }}
                   fontFamily={"Playfair Display, serif"}
                   fontStyle={"italic"}
@@ -272,7 +275,7 @@ export default function AboutLight() {
               <Typography
                 variant="body1"
                 sx={{ py: 0.5, px: 2, justifyContent: "center" }}
-                color={palatte.text.primary}
+                color={theme.palette.text.primary}
               >
                 Our mission is simple to source the finest quality spices,
                 process and blend them with unmatched precision, and make them
@@ -287,7 +290,7 @@ export default function AboutLight() {
 
         <Typography
           variant="h2"
-          sx={{ mb: 6, mt: 15, color: palatte.primary.main }}
+          sx={{ mb: 6, mt: 15, color: theme.palette.primary.main }}
           fontFamily={"Playfair Display, serif"}
           fontStyle={"italic"}
           fontWeight={600}
@@ -302,7 +305,7 @@ export default function AboutLight() {
                 <Avatar
                   sx={{
                     bgcolor: "#fff3e0",
-                    color: palatte.primary.main,
+                    color: theme.palette.primary.main,
                     mx: "auto",
                     mb: 1,
                   }}
@@ -312,7 +315,7 @@ export default function AboutLight() {
                 <Typography
                   variant="body1"
                   sx={{ py: 0.5, px: 2, justifyContent: "center" }}
-                  color={palatte.text.primary}
+                  color={theme.palette.text.primary}
                 >
                   {item.text}
                 </Typography>
@@ -334,7 +337,7 @@ export default function AboutLight() {
                 variant="h2"
                 sx={{
                   mb: 6,
-                  color: palatte.primary.main,
+                  color: theme.palette.primary.main,
                 }}
                 fontFamily={"Playfair Display, serif"}
                 fontStyle={"italic"}
@@ -357,19 +360,19 @@ export default function AboutLight() {
                 for his foresight, words and wisdom. He successfully managed to
                 balance his life between family and humanitarian duties.
                 <br />
-                <br /> "Agro Nexis India Overseas Private Limited is a start-up
-                business with a strong determination to be global one day with
-                India and International presence. Incepted in the year 2025 by
-                Shri Vijay Sharma, youngest son of Late Shri Ram Prasad Sharma,
-                it is an inspiring and successful business inception that will
-                blends a remarkable history and legacy with visionary growth and
-                innovation in near future. ANIOPL incepted with a pure heart to
-                be always remained committed to create premium quality products
-                and continues to build successful brands across many other
-                processed food categories. A strong believes that the product
-                range from the ANIOPL will be evolved magnificently over the
-                years and its undeterred pursuit of ‘Quality & Innovation’ which
-                will lead consumer to the loyalty and satisfaction.
+                <br /> &quot;Agro Nexis India Overseas Private Limited&quot; is
+                a start-up business with a strong determination to be global one
+                day with India and International presence. Incepted in the year
+                2025 by Shri Vijay Sharma, youngest son of Late Shri Ram Prasad
+                Sharma, it is an inspiring and successful business inception
+                that will blends a remarkable history and legacy with visionary
+                growth and innovation in near future. ANIOPL incepted with a
+                pure heart to be always remained committed to create premium
+                quality products and continues to build successful brands across
+                many other processed food categories. A strong believes that the
+                product range from the ANIOPL will be evolved magnificently over
+                the years and its undeterred pursuit of ‘Quality & Innovation’
+                which will lead consumer to the loyalty and satisfaction.
               </Typography>
             </Stack>
           </Grid>
@@ -381,7 +384,7 @@ export default function AboutLight() {
               variant="h2"
               sx={{
                 mb: 6,
-                color: palatte.primary.main,
+                color: theme.palette.primary.main,
               }}
               fontFamily={"Playfair Display, serif"}
               fontStyle={"italic"}
@@ -403,7 +406,7 @@ export default function AboutLight() {
               </Typography>
               <IconButton
                 sx={{
-                  color: palatte.primary.main,
+                  color: theme.palette.primary.main,
                   "&:hover": { backgroundColor: "inherit" },
                 }}
                 disableRipple
@@ -420,7 +423,7 @@ export default function AboutLight() {
               </Typography>
               <IconButton
                 sx={{
-                  color: palatte.primary.main,
+                  color: theme.palette.primary.main,
                   "&:hover": { backgroundColor: "inherit" },
                 }}
                 disableRipple

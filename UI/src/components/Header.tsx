@@ -22,12 +22,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandLogo from "@/public/images/AgroNexisGreen.png";
-import palatte from "@/theme/palatte";
+import theme from "@/styles/theme";
 import DesiKing from "@/public/images/DesiKing.png";
 
 export default function Header() {
   const pathname = usePathname();
-  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -38,7 +37,7 @@ export default function Header() {
     { label: "Contact Us", href: "/contact" },
   ];
 
-  const toggleDrawer = (open) => () => {
+  const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
   };
 
@@ -49,8 +48,8 @@ export default function Header() {
           sx={{
             justifyContent: "start",
             height: 64,
-            backgroundColor: palatte.primary?.main,
-            color: palatte.primary?.contrastText,
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             borderBottom: "0.5px solid #b36a26",
           }}
         >
@@ -91,7 +90,7 @@ export default function Header() {
                     href={href}
                     underline="none"
                     sx={{
-                      color: palatte.primary.contrastText,
+                      color: theme.palette.primary.contrastText,
                       fontWeight: isActive ? "bold" : "normal",
                     }}
                   >
@@ -104,7 +103,7 @@ export default function Header() {
             <IconButton
               edge="end"
               onClick={toggleDrawer(true)}
-              sx={{ color: palatte.primary.contrastText }}
+              sx={{ color: theme.palette.primary.contrastText }}
             >
               <MenuIcon />
             </IconButton>
