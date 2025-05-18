@@ -30,7 +30,7 @@ jobs:
           npm run export
 
       - name: FTP Deploy to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+        uses: sebastianpopp/ftp-action@v1.2.0
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
