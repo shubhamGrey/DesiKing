@@ -1,4 +1,4 @@
-name: Deploy AgroNexis
+name: Deploy to Hostinger VPS
 
 on:
   push:
@@ -10,32 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup SSH agent and unlock private key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
-        run: |
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
-
-          # Start SSH agent
-          eval "$(ssh-agent -s)"
-
-          # Create a temporary SSH_ASKPASS script to pass the passphrase
-          echo '#!/bin/sh' > $SSH_ASKPASS
-          echo "echo \"$SSH_PASSPHRASE\"" >> $SSH_ASKPASS
-          chmod +x $SSH_ASKPASS
-
-          # Add key using the askpass
-          DISPLAY=none SSH_ASKPASS=$PWD/askpass.sh setsid ssh-add private_key.pem < /dev/null
-
-      - name: Deploy to VPS via SSH
-        run: |
-          ssh -tt StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
-            echo "🔗 Connected to VPS"
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
             cd /var/www/agronexis || git clone https://shubhamGrey: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@github.com/shubhamGrey/DesiKing.git /var/www/agronexis
             cd /var/www/agronexis
             git pull origin main
@@ -44,4 +28,3 @@ jobs:
             npm run build
             pm2 restart agronexis || pm2 start npm --name agronexis -- start
             pm2 save
-          ENDSSH
