@@ -34,5 +34,5 @@ jobs:
           lftp -c "
             set ssl:verify-certificate no;
             open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST;
-            mirror -R ./UI/out/ public_html/ --parallel=10 --delete --verbose
+            mirror -R ./UI/out/ domains/agronexis.com/public_html/ --parallel=10 --delete --verbose
           "
