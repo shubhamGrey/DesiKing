@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "homepage": "https://shubhamGrey.github.io/DesiKing"
+    "homepage": "https://shubhamGrey.github.io/DesiKing",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -16,6 +18,7 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@types/js-cookie": "^3.0.6",
+    "gh-pages": "^6.3.0",
     "js-cookie": "^3.0.5",
     "next": "^15.3.2",
     "react": "^19.1.0",
