@@ -123,8 +123,10 @@ export default function Footer() {
               }}
               key={item.label}
               onClick={() => {
-                router.push(item.href);
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                if (item.href) {
+                  router.push(item.href);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
               }}
             >
               {item.icon}
@@ -160,8 +162,10 @@ export default function Footer() {
               }}
               key={item.label}
               onClick={() => {
-                router.push(item.href);
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                if (item.href) {
+                  router.push(item.href);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
               }}
             >
               {item.icon}

@@ -10,7 +10,9 @@ const poppins = Poppins({
   weight: ["400", "700"], // adjust weights as needed
 });
 
-export default function RootLayout({ children }) {
+import { ReactNode } from "react";
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 

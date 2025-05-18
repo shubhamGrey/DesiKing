@@ -13,8 +13,8 @@ import {
   List,
   ListItem,
   ListItemText,
-  useTheme,
   useMediaQuery,
+  ListItemButton,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -155,14 +155,14 @@ export default function Header() {
           </Box>
           <List>
             {navLinks.map(({ label, href }) => (
-              <ListItem
-                button
-                key={label}
-                component={Link}
-                href={href}
-                selected={pathname === href}
-              >
-                <ListItemText primary={label} />
+              <ListItem key={label} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href={href}
+                  selected={pathname === href}
+                >
+                  <ListItemText primary={label} />
+                </ListItemButton>
               </ListItem>
             ))}
           </List>
