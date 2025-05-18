@@ -20,6 +20,7 @@ jobs:
 
       - name: Install dependencies and build/export
         run: |
+          cd ui
           npm install
           npm run build
           npm run export
