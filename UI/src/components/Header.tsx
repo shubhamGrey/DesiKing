@@ -21,7 +21,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import BrandLogo from "@/public/images/Footer Logo.png";
+import BrandLogo from "@/public/images/AgroNexisGreen.png";
+import palatte from "@/theme/palatte";
+import DesiKing from "@/public/images/DesiKing.png";
 
 export default function Header() {
   const pathname = usePathname();
@@ -30,10 +32,10 @@ export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "/home" },
-    { label: "About Us", href: "/about-us" },
+    { label: "Home", href: "/" },
+    { label: "About Us", href: "/about" },
     { label: "Brands", href: "/brands" },
-    { label: "Contact Us", href: "/contact-us" },
+    { label: "Contact Us", href: "/contact" },
   ];
 
   const toggleDrawer = (open) => () => {
@@ -42,21 +44,23 @@ export default function Header() {
 
   return (
     <>
-      <AppBar position="sticky" color="inherit" elevation={1}>
+      <AppBar position="sticky" color="inherit" elevation={0}>
         <Toolbar
           sx={{
             justifyContent: "start",
             height: 64,
-            backgroundColor: "#000000",
-            color: "#fff",
+            backgroundColor: palatte.primary?.main,
+            color: palatte.primary?.contrastText,
+            borderBottom: "0.5px solid #b36a26",
           }}
         >
           <Box
             sx={{
               backgroundColor: "#fff",
-              borderRadius: "20px",
-              boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
-              padding: "8px 12px",
+              borderRadius: 5,
+              boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
+              p: 1.5,
+              pt: 8,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -70,8 +74,6 @@ export default function Header() {
                 src={BrandLogo}
                 alt="AGRO NEXIS Logo"
                 layout="intrinsic"
-                width={60}
-                height={70}
                 priority
               />
             </Link>
@@ -89,10 +91,8 @@ export default function Header() {
                     href={href}
                     underline="none"
                     sx={{
-                      fontWeight: 700,
-                      pb: 0.5,
-                      backgroundColor: isActive ? "#e67e22" : "#000000",
-                      color: isActive ? "#ffffff" : "#e67e22",
+                      color: palatte.primary.contrastText,
+                      fontWeight: isActive ? "bold" : "normal",
                     }}
                   >
                     {label.toUpperCase()}
@@ -101,12 +101,38 @@ export default function Header() {
               })}
             </Stack>
           ) : (
-            <IconButton edge="end" onClick={toggleDrawer(true)}>
+            <IconButton
+              edge="end"
+              onClick={toggleDrawer(true)}
+              sx={{ color: palatte.primary.contrastText }}
+            >
               <MenuIcon />
             </IconButton>
           )}
         </Toolbar>
       </AppBar>
+      <Box
+        sx={{
+          backgroundImage: 'url("/LoginBackground.png")',
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          px: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Image
+          src={DesiKing}
+          alt="Desi King"
+          style={{ width: "30%", height: "30%", marginTop: 32 }}
+        />
+        <Typography variant="body1" sx={{ mb: 4, mt: 2 }}>
+          A legacy of authenticity in every pinch.
+        </Typography>
+      </Box>
 
       {/* Drawer for Mobile */}
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>

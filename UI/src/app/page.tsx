@@ -1,38 +1,16 @@
-"use client";
+import React from "react";
+import { Typography, Container } from "@mui/material";
 
-import { Box, Button, TextField, Typography, Link, Stack } from "@mui/material";
-import Image from "next/image";
-import BrandLogo from "@/public/images/Brand Logo (1).png";
-
-import LoginForm from "@/views/login_form";
-
-export default function LoginPage() {
+const Home: React.FC = () => {
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        backgroundImage: 'url("/Login Background.jpg")',
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        px: 2,
-      }}
-    >
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-evenly"
-        height="100vh"
-        spacing={2}
-      >
-        <LoginForm />
-        <Image
-          src={BrandLogo}
-          alt="Brand Logo"
-          width={250}
-          style={{ marginBottom: "60px" }}
-        />
-      </Stack>
-    </Box>
+    <div>
+      <Container component="main" sx={{ py: 4, minHeight: "60vh" }}>
+        <Typography variant="body1" align="center">
+          This is the content section. Add your content here.
+        </Typography>
+      </Container>
+    </div>
   );
-}
+};
+
+export default Home;

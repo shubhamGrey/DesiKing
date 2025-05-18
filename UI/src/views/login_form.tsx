@@ -1,8 +1,14 @@
 import React from "react";
 import { Box, Button, TextField, Typography, Link } from "@mui/material";
 import { useRouter } from "next/navigation";
+import palette from "@/theme/palatte";
+import Cookies from "js-cookie";
 
-const LoginForm = () => {
+interface LoginFormProps {
+  handleLogin: () => void;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
   const router = useRouter();
 
   return (
@@ -20,9 +26,9 @@ const LoginForm = () => {
       <Typography
         variant="h4"
         fontWeight="bold"
-        color="white"
         fontFamily="Rockwell"
         fontSize={40}
+        sx={{ color: palette.primary.dark }}
         gutterBottom
       >
         Login
@@ -37,7 +43,6 @@ const LoginForm = () => {
           style: {
             backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: 30,
-            border: "1px solid #000000",
           },
         }}
       />
@@ -51,7 +56,6 @@ const LoginForm = () => {
           style: {
             backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: 30,
-            border: "1px solid #000000",
           },
         }}
       />
@@ -60,41 +64,42 @@ const LoginForm = () => {
         fullWidth
         variant="contained"
         sx={{
-          backgroundColor: "#e67e22", // orange color
+          backgroundColor: palette.primary.main, // orange color
           color: "#ffffff",
-          border: "2px solid #e67e22",
-          fontWeight: "bold",
+          border: `2px solid ${palette.primary.main}`,
           py: 1.2,
           borderRadius: 8,
           mt: 2,
         }}
-        onClick={() => {
-          // Handle login logic here
-          router.push("/home");
-        }}
+        onClick={handleLogin}
       >
-        Log in
+        <Typography
+          variant="body1"
+          fontWeight="bold"
+          sx={{ color: palette.primary.contrastText }}
+        >
+          Log in
+        </Typography>
       </Button>
 
       <Box sx={{ textAlign: "center", mt: 2 }}>
         <Link
           href="#"
           variant="body2"
-          color="#e67e22"
           fontWeight="600"
-          sx={{ textDecoration: "none" }}
+          sx={{ textDecoration: "none", color: palette.primary.main }}
         >
           Forgot password?
         </Link>
       </Box>
 
-      <Typography variant="body2" color="#ffffff" sx={{ mt: 3 }}>
+      <Typography variant="body2" sx={{ mt: 3, color: palette.primary.dark }}>
         Don&apos;t have an account?{" "}
         <Link
           href="#"
           fontWeight="600"
           color="#e67e22"
-          sx={{ textDecoration: "none" }}
+          sx={{ textDecoration: "none", color: palette.primary.main }}
         >
           Create account
         </Link>
