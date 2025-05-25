@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd /var/www/agronexis || git clone https://shubhamGrey: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@github.com/shubhamGrey/DesiKing.git /var/www/agronexis
+            cd /var/www/agronexis || git clone https://shubhamGrey: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@github.com/shubhamGrey/DesiKing.git /var/www/agronexis
             cd /var/www/agronexis
             git pull origin main
             cd UI
