@@ -52,3 +52,4 @@ jobs:
             # dotnet YourBackendProject.dll database update
             # Restart the backend service (systemd example)
             sudo systemctl restart my-backend.service
+
