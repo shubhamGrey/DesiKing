@@ -36,7 +36,7 @@ jobs:
         env:
           ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
         run: |
-          dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj
+          dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
   
       - name: Test
         env:
