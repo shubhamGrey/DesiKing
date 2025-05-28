@@ -27,13 +27,6 @@ const Carousal = ({ items }: CarousalProps) => {
     );
   };
 
-  const handlePrevPage = () => {
-    setSlideDirection("right");
-    setCurrentPage((prevPage) =>
-      prevPage === 0 ? Math.ceil(items.length / cardsPerPage) - 1 : prevPage - 1
-    );
-  };
-
   const handleDotClick = (pageIndex: number) => {
     setSlideDirection(pageIndex > currentPage ? "left" : "right");
     setCurrentPage(pageIndex);

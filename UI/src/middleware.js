@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
-  const isLoggedIn = request.cookies.get("auth");
+  // const isLoggedIn = request.cookies.get("auth");
 
   // Allow access to login page and public assets
   if (pathname.startsWith("/login") || pathname.startsWith("/_next")) {
