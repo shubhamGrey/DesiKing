@@ -20,20 +20,13 @@ jobs:
           dotnet-version: '8.0'  # Change to your .NET version
 
       - name: Restore dependencies
-        working-directory: ./Backend  # Change to your backend project directory
-        run: dotnet restore ./Agronexis.Api/Agronexis.Api.csproj  # Update path if needed
+        run: dotnet restore ./Backend/Agronexis.Api/Agronexis.Api.csproj  # Update path if needed
 
       - name: Build
-        working-directory: ./Backend  # Change to your backend project directory
-        run: dotnet build ./Agronexis.Api/Agronexis.Api.csproj --configuration Release --no-restore
+        run: dotnet build ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --no-restore
 
       - name: Publish
-        working-directory: ./Backend  # Change to your backend project directory
-        run: dotnet publish ./Agronexis.Api/Agronexis.Api.csproj --configuration Release --output ./publish
-
-      - name: List published files
-        working-directory: ./Backend
-        run: ls -l ./publish
+        run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output ./publish
 
       - name: Copy published files to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -41,7 +34,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "Backend/publish/"
+          source: "publish/"
           target: "/var/www/agronexis/Backend"  # Change to your VPS app path
 
       - name: Run database migrations and restart backend
