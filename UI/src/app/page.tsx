@@ -1,14 +1,30 @@
 import React from "react";
-import { Typography, Container } from "@mui/material";
+import { Container } from "@mui/material";
+import Carousal from "@/components/Carousal";
+import Purity from "@/public/images/Purity.png";
+import Quality from "@/public/images/Quality.png";
+import Taste from "@/public/images/Taste.png";
+import Globe from "@/public/images/Globe.png";
+
+const carousalImages = [
+  { image: Purity },
+  { image: Quality },
+  { image: Taste },
+  { image: Globe },
+];
 
 const Home: React.FC = () => {
   return (
     <div>
-      <Container component="main" sx={{ py: 4, minHeight: "60vh" }}>
-        <Typography variant="body1" align="center">
-          This is the content section. Add your content here. Start adding
-          content
-        </Typography>
+      <Container
+        component="main"
+        sx={{
+          px: "0px !important",
+          minHeight: "60vh",
+          maxWidth: "100% !important",
+        }}
+      >
+        <Carousal items={carousalImages} />
       </Container>
     </div>
   );
