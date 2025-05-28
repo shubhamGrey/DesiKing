@@ -36,12 +36,12 @@ jobs:
         env:
           ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
         run: |
-          dotnet ef database update --project ./Backend/Agronexis.DataAccess/Agronexis.DataAccess.csproj
+          dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
   
       - name: Test
         env:
           ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
-        run: dotnet test ./Backend/Agronexis.DataAccess/Agronexis.DataAccess.csproj --no-build --verbosity normal
+        run: dotnet test ./Backend/Agronexis.Api/Agronexis.Api.csproj --no-build --verbosity normal
 
       - name: Publish
         run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output publish
