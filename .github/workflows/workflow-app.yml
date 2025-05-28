@@ -46,6 +46,6 @@ jobs:
           script: |
             cd /var/www/agronexis/Backend
             # Optional: Run EF Core migrations if you use them
-            # dotnet YourBackendProject.dll database update
+            dotnet Agronexis.Api.dll database update
             # Restart the backend service (systemd example)
             sudo systemctl restart agronexis.service
