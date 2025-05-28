@@ -38,11 +38,10 @@ jobs:
       - name: Copy published files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          working-directory: ./Backend
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "publish/"
+          source: "Backend/publish/"
           target: "/var/www/agronexis/Backend"  # Change to your VPS app path
 
       - name: Run database migrations and restart backend
