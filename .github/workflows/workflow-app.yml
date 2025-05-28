@@ -18,8 +18,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'  # Change to your .NET version
-          dotnet-sdk-version: '8.0'  # Ensure this matches your project SDK version
-          dotnet-ef-version: '8.0'  # Optional: If you use EF Core migrations
+      
+      - name: Install dotnet-ef tool
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Add dotnet tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH      
+        
 
       - name: Restore dependencies
         run: dotnet restore ./Backend/Agronexis.Api/Agronexis.Api.csproj  # Update path if needed
