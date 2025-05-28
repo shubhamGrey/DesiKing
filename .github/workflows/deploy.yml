@@ -20,9 +20,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            if [ ! -d /var/www/agronexis ]; then
-              git clone git@github.com:shubhamGrey/DesiKing.git /var/www/agronexis
-            fi
+            cd /var/www/agronexis || git clone git@github.com:shubhamGrey/DesiKing.git /var/www/agronexis
             cd /var/www/agronexis
             git pull origin main
             cd UI
