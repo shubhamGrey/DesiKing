@@ -17,7 +17,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0'  # Change to your .NET version
+          dotnet-version: '8.0.16'  # Change to your .NET version
 
       - name: Restore dependencies
         run: dotnet restore ./Backend/Agronexis.Api/Agronexis.Api.csproj  # Update path if needed
