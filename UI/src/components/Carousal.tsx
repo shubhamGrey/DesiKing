@@ -1,13 +1,13 @@
 "use client";
 import { Box, IconButton, Slide, Stack } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import React, { useEffect } from "react";
-import palette from "@/styles/palette";
+import theme from "@/styles/theme";
 
 interface CarousalProps {
   items: {
-    image: string;
+    image: StaticImageData;
   }[];
 }
 
@@ -126,8 +126,8 @@ const Carousal = ({ items }: CarousalProps) => {
                 sx={{
                   color:
                     index === currentPage
-                      ? palette.primary.contrastText
-                      : palette.primary.main,
+                      ? theme.palette.primary.contrastText
+                      : theme.palette.primary.main,
                   transform: "rotate(90deg)",
                 }}
               />
