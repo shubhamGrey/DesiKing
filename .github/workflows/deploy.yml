@@ -20,10 +20,12 @@ jobs:
           node-version: '18'  # Match your Next.js version
 
       - name: Install dependencies
-        run: cd UI && npm install
+        working-directory: ./UI
+        run: npm install
 
       - name: Build Next.js app
-        run: cd UI && npm run build
+        working-directory: ./UI
+        run: npm run build
 
       - name: Copy files to VPS via SSH
         uses: appleboy/scp-action@v0.1.7
@@ -31,7 +33,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: ".next,public,package.json,package-lock.json,ecosystem.config.js" # Add files as needed
+          source: "UI/.next,UI/public,UI/package.json,UI/package-lock.json,UI/ecosystem.config.js" # Adjust as needed
           target: "/var/www/agronexis"  # Change to your VPS app path
 
       - name: Install dependencies on VPS and restart app
