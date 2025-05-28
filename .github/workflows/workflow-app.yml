@@ -31,6 +31,9 @@ jobs:
         working-directory: ./Backend  # Change to your backend project directory
         run: dotnet publish ./Agronexis.Api/Agronexis.Api.csproj --configuration Release --output ./publish --no-build
 
+      - name: List published files
+        run: ls -l ./publish
+
       - name: Copy published files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -51,5 +54,4 @@ jobs:
             # Optional: Run EF Core migrations if you use them
             # dotnet YourBackendProject.dll database update
             # Restart the backend service (systemd example)
-            sudo systemctl restart my-backend.service
-
+            sudo systemctl restart agronexis.service
