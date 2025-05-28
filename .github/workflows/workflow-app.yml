@@ -18,12 +18,25 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'  # Change to your .NET version
+          dotnet-sdk-version: '8.0'  # Ensure this matches your project SDK version
+          dotnet-ef-version: '8.0'  # Optional: If you use EF Core migrations
 
       - name: Restore dependencies
         run: dotnet restore ./Backend/Agronexis.Api/Agronexis.Api.csproj  # Update path if needed
 
       - name: Build
         run: dotnet build ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --no-restore
+
+      - name: Run EF Core migrations
+        env:
+          ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
+        run: |
+          dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj
+  
+      - name: Test
+        env:
+          ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
+        run: dotnet test --no-build --verbosity normal
 
       - name: Publish
         run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output ./publish
@@ -46,6 +59,6 @@ jobs:
           script: |
             cd /var/www/agronexis/Backend
             # Optional: Run EF Core migrations if you use them
-            dotnet ef database update --project ./Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
+            # dotnet ef database update --project ./Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
             # Restart the backend service (systemd example)
             sudo systemctl restart agronexis.service
