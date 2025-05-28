@@ -25,6 +25,9 @@ jobs:
       - name: Build
         run: dotnet build ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --no-restore
 
+      - name: Run migrations
+        run: dotnet ef migrations script --project ./Backend/Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.Migrations.AppDbContext --output ./migrations.sql
+
       - name: Publish
         run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output ./publish
 
@@ -46,6 +49,6 @@ jobs:
           script: |
             cd /var/www/agronexis/Backend
             # Optional: Run EF Core migrations if you use them
-            dotnet ef database update --project ./publish/Agronexis.Api/Agronexis.Api.csproj --context ./publish/Agronexis.DataAccess.Migrations.AppDbContextModelSnapshot
+            # dotnet ef database update --project ./Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.Migrations.AppDbContext
             # Restart the backend service (systemd example)
             sudo systemctl restart agronexis.service
