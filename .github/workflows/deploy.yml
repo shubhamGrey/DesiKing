@@ -20,10 +20,10 @@ jobs:
           node-version: '18'  # Match your Next.js version
 
       - name: Install dependencies
-        run: npm install
+        run: cd UI && npm install
 
       - name: Build Next.js app
-        run: npm run build
+        run: cd UI && npm run build
 
       - name: Copy files to VPS via SSH
         uses: appleboy/scp-action@v0.1.7
