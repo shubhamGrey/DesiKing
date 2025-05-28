@@ -33,7 +33,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "UI/.next,UI/public,UI/package.json,UI/package-lock.json,UI/ecosystem.config.js" # Adjust as needed
+          source: "UI/.next,UI/public,UI/package.json,UI/package-lock.json" # Adjust as needed
           target: "/var/www/agronexis"  # Change to your VPS app path
 
       - name: Install dependencies on VPS and restart app
@@ -45,4 +45,4 @@ jobs:
           script: |
             cd /var/www/agronexis
             npm install --production
-            pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
+            pm2 restart agronexis || pm2 start npm --start agronexis -- start
