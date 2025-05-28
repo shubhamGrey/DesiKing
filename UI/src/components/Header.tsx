@@ -31,7 +31,6 @@ export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "/" },
     { label: "About Us", href: "/about" },
     { label: "Brands", href: "/brands" },
     { label: "Contact Us", href: "/contact" },
@@ -53,85 +52,114 @@ export default function Header() {
             borderBottom: "0.5px solid #b36a26",
           }}
         >
-          <Box
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 5,
-              boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
-              p: 1.5,
-              pt: 8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: 90,
-              width: 90,
-              cursor: "pointer",
-            }}
-          >
-            <Link href="/" passHref>
-              <Image
-                src={BrandLogo}
-                alt="AGRO NEXIS Logo"
-                layout="intrinsic"
-                priority
-              />
-            </Link>
-          </Box>
-
           {/* Desktop Nav */}
           {!isMobile ? (
-            <Stack direction="row" spacing={4} sx={{ ml: 2.5 }}>
-              {navLinks.map(({ label, href }) => {
-                const isActive = pathname === href;
-                return (
-                  <MuiLink
-                    component={Link}
-                    key={label}
-                    href={href}
-                    underline="none"
-                    sx={{
-                      color: theme.palette.primary.contrastText,
-                      fontWeight: isActive ? "bold" : "normal",
-                    }}
-                  >
-                    {label.toUpperCase()}
-                  </MuiLink>
-                );
-              })}
-            </Stack>
+            <>
+              <Box
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 5,
+                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                  p: 1.5,
+                  pt: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: 90,
+                  width: 90,
+                  cursor: "pointer",
+                }}
+              >
+                <Link href="/" passHref>
+                  <Image
+                    src={BrandLogo}
+                    alt="AGRO NEXIS Logo"
+                    layout="intrinsic"
+                    priority
+                  />
+                </Link>
+              </Box>
+              <Stack direction="row" spacing={4} sx={{ ml: 2.5 }}>
+                {navLinks.map(({ label, href }) => {
+                  const isActive = pathname === href;
+                  return (
+                    <MuiLink
+                      component={Link}
+                      key={label}
+                      href={href}
+                      underline="none"
+                      sx={{
+                        color: theme.palette.primary.contrastText,
+                        fontWeight: isActive ? "bold" : "normal",
+                      }}
+                    >
+                      {label.toUpperCase()}
+                    </MuiLink>
+                  );
+                })}
+              </Stack>
+            </>
           ) : (
-            <IconButton
-              edge="end"
-              onClick={toggleDrawer(true)}
-              sx={{ color: theme.palette.primary.contrastText }}
-            >
-              <MenuIcon />
-            </IconButton>
+            <>
+              <IconButton
+                edge="end"
+                onClick={toggleDrawer(true)}
+                sx={{ color: theme.palette.primary.contrastText, mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Box
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 5,
+                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                  p: 1.5,
+                  pt: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: 90,
+                  width: 90,
+                  cursor: "pointer",
+                }}
+              >
+                <Link href="/" passHref>
+                  <Image
+                    src={BrandLogo}
+                    alt="AGRO NEXIS Logo"
+                    layout="intrinsic"
+                    priority
+                  />
+                </Link>
+              </Box>
+            </>
           )}
         </Toolbar>
       </AppBar>
-      <Box
-        sx={{
-          backgroundImage: 'url("/LoginBackground.png")',
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-          px: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Image
-          src={DesiKing}
-          alt="Desi King"
-          style={{ width: "30%", height: "30%", marginTop: 32 }}
-        />
-        <Typography variant="body1" sx={{ mb: 4, mt: 2 }}>
-          A legacy of authenticity in every pinch.
-        </Typography>
-      </Box>
+      {pathname !== "/" && (
+        <Box
+          sx={{
+            backgroundImage: 'url("/LoginBackground.png")',
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            px: 2,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Image
+            src={DesiKing}
+            alt="Desi King"
+            style={{ width: "30%", height: "30%", marginTop: 32 }}
+          />
+          <Typography variant="body1" sx={{ mb: 4, mt: 2 }}>
+            A legacy of authenticity in every pinch.
+          </Typography>
+        </Box>
+      )}
 
       {/* Drawer for Mobile */}
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
