@@ -21,15 +21,15 @@ jobs:
 
       - name: Restore dependencies
         working-directory: ./Backend  # Change to your backend project directory
-        run: dotnet restore ./Agronexis.Api.csproj  # Update path if needed
+        run: dotnet restore ./Agronexis.Api/Agronexis.Api.csproj  # Update path if needed
 
       - name: Build
         working-directory: ./Backend  # Change to your backend project directory
-        run: dotnet build ./Agronexis.Api.csproj --configuration Release --no-restore
+        run: dotnet build ./Agronexis.Api/Agronexis.Api.csproj --configuration Release --no-restore
 
       - name: Publish
         working-directory: ./Backend  # Change to your backend project directory
-        run: dotnet publish ./Agronexis.Api.csproj --configuration Release --output ./publish --no-build
+        run: dotnet publish ./Agronexis.Api/Agronexis.Api.csproj --configuration Release --output ./publish --no-build
 
       - name: Copy published files to VPS
         uses: appleboy/scp-action@v0.1.7
