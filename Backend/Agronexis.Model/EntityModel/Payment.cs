@@ -15,12 +15,12 @@ namespace Agronexis.Model.EntityModel
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
-        public string TransactionId { get; set; } = "";
-        public string Paymentmethod { get; set; } = "";
-        public string PaymentStatus { get; set; } = "";
-        public int BrandId { get; set; }
-        public DateTime PaymentDate { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
+        public string? TransactionId { get; set; } = "";
+        public string? Paymentmethod { get; set; } = "";
+        public string? PaymentStatus { get; set; } = "";
+        public Guid BrandId { get; set; }
+        public DateTime? PaymentDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 }

@@ -17,9 +17,9 @@ namespace Agronexis.Model.EntityModel
         public Guid UserId { get; set; }
         public Guid ProductId { get; set; }
         public int Rating { get; set; }
-        public int BrandId { get; set; }
-        public string Comment { get; set; } = "";
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
+        public Guid BrandId { get; set; }
+        public string? Comment { get; set; } = "";
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 }
