@@ -15,8 +15,14 @@ import {
   ListItemText,
   useMediaQuery,
   ListItemButton,
+  Grid,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import {
+  SearchOutlined,
+  PermIdentityOutlined,
+  ShoppingCartOutlined,
+} from "@mui/icons-material";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -41,10 +47,17 @@ export default function Header() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const navLinks = [
+  const leftNavLinks = [
+    { label: "Home", href: "/" },
     { label: "About Us", href: "/about" },
-    { label: "Brands", href: "/brands" },
-    { label: "Contact Us", href: "/contact" },
+    { label: "Products", href: "/products" },
+    { label: "Contact", href: "/contact" },
+  ];
+
+  const rightNavLinks = [
+    { icon: <SearchOutlined /> },
+    { icon: <PermIdentityOutlined /> },
+    { icon: <ShoppingCartOutlined /> },
   ];
 
   const toggleDrawer = (open: boolean) => () => {
@@ -90,25 +103,57 @@ export default function Header() {
                   />
                 </Link>
               </Box>
-              <Stack direction="row" spacing={4} sx={{ ml: 2.5 }}>
-                {navLinks.map(({ label, href }) => {
-                  const isActive = pathname === href;
-                  return (
-                    <MuiLink
-                      component={Link}
-                      key={label}
-                      href={href}
-                      underline="none"
-                      sx={{
-                        color: theme.palette.primary.contrastText,
-                        fontWeight: isActive ? "bold" : "normal",
-                      }}
-                    >
-                      {label.toUpperCase()}
-                    </MuiLink>
-                  );
-                })}
-              </Stack>
+              <Grid container sx={{ flexGrow: 1, ml: 2.5 }}>
+                <Grid
+                  size={{ xs: 12, md: 6 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "left",
+                  }}
+                >
+                  <Stack direction="row" spacing={4}>
+                    {leftNavLinks.map(({ label, href }) => {
+                      const isActive = pathname === href;
+                      return (
+                        <MuiLink
+                          component={Link}
+                          key={label}
+                          href={href}
+                          underline="none"
+                          sx={{
+                            color: theme.palette.primary.contrastText,
+                            fontWeight: isActive ? "bold" : "normal",
+                          }}
+                        >
+                          {label.toUpperCase()}
+                        </MuiLink>
+                      );
+                    })}
+                  </Stack>
+                </Grid>
+                <Grid
+                  size={{ xs: 12, md: 6 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "right",
+                  }}
+                >
+                  <Stack direction="row" spacing={1}>
+                    {rightNavLinks.map(({ icon }, index) => (
+                      <IconButton
+                        key={index}
+                        sx={{
+                          color: theme.palette.primary.contrastText,
+                        }}
+                      >
+                        {icon}
+                      </IconButton>
+                    ))}
+                  </Stack>
+                </Grid>
+              </Grid>
             </>
           ) : (
             <Box
@@ -141,13 +186,27 @@ export default function Header() {
                   />
                 </Link>
               </Box>
-              <IconButton
-                edge="end"
-                onClick={toggleDrawer(true)}
-                sx={{ color: theme.palette.primary.contrastText }}
-              >
-                <MenuIcon />
-              </IconButton>
+              <Box>
+                {rightNavLinks.map(({ icon }, index) => (
+                  <IconButton
+                    key={index}
+                    edge="end"
+                    sx={{
+                      color: theme.palette.primary.contrastText,
+                      mr: 1,
+                    }}
+                  >
+                    {icon}
+                  </IconButton>
+                ))}
+                <IconButton
+                  edge="end"
+                  onClick={toggleDrawer(true)}
+                  sx={{ color: theme.palette.primary.contrastText }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              </Box>
             </Box>
           )}
         </Toolbar>
@@ -192,7 +251,7 @@ export default function Header() {
           onKeyDown={toggleDrawer(false)}
         >
           <List>
-            {navLinks.map(({ label, href }) => (
+            {leftNavLinks.map(({ label, href }) => (
               <ListItem key={label} disablePadding>
                 <ListItemButton
                   component={Link}

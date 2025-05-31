@@ -26,11 +26,11 @@ import CoFounder from "../../../public/Co Founder.PNG";
 import Director from "../../../public/Director.PNG";
 import Image from "next/image";
 import theme from "@/styles/theme";
-import { Gluten } from "next/font/google";
+import { Michroma } from "next/font/google";
 
-const gluten = Gluten({
+const michroma = Michroma({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -66,9 +66,9 @@ export default function AboutLight() {
       <Grid container spacing={8} alignItems="center">
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography
-            variant="h2"
+            variant="h3"
             sx={{ mb: 3, color: theme.palette.primary.main }}
-            fontFamily={gluten.style.fontFamily}
+            fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}
           >
@@ -94,7 +94,7 @@ export default function AboutLight() {
                 ml: 1,
                 color: theme.palette.primary.main,
               }}
-              fontFamily={gluten.style.fontFamily}
+              fontFamily={michroma.style.fontFamily}
               fontWeight={600}
             >
               Our Roots
@@ -158,12 +158,12 @@ export default function AboutLight() {
                 sx={{ color: theme.palette.primary.main }}
               />
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                   mb: 3,
                   color: theme.palette.primary.main,
                 }}
-                fontFamily={gluten.style.fontFamily}
+                fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
                 fontWeight={600}
               >
@@ -215,12 +215,12 @@ export default function AboutLight() {
                 sx={{ color: theme.palette.primary.main }}
               />
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                   mb: 3,
                   color: theme.palette.primary.main,
                 }}
-                fontFamily={gluten.style.fontFamily}
+                fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
                 fontWeight={600}
               >
@@ -275,12 +275,12 @@ export default function AboutLight() {
                 sx={{ color: theme.palette.primary.main }}
               />
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                   mb: 3,
                   color: theme.palette.primary.main,
                 }}
-                fontFamily={gluten.style.fontFamily}
+                fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
                 fontWeight={600}
               >
@@ -309,9 +309,9 @@ export default function AboutLight() {
       </Grid>
 
       <Typography
-        variant="h2"
+        variant="h3"
         sx={{ mb: 6, mt: 15, color: theme.palette.primary.main }}
-        fontFamily={gluten.style.fontFamily}
+        fontFamily={michroma.style.fontFamily}
         fontStyle={"italic"}
         fontWeight={600}
         textAlign={"center"}
@@ -354,12 +354,12 @@ export default function AboutLight() {
         <Grid size={{ xs: 12, md: 9 }}>
           <Stack>
             <Typography
-              variant="h2"
+              variant="h3"
               sx={{
                 mb: 6,
                 color: theme.palette.primary.main,
               }}
-              fontFamily={gluten.style.fontFamily}
+              fontFamily={michroma.style.fontFamily}
               fontStyle={"italic"}
               fontWeight={600}
               textAlign={"center"}
@@ -410,12 +410,12 @@ export default function AboutLight() {
       <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
         <Grid size={12} sx={{ display: "flex", justifyContent: "center" }}>
           <Typography
-            variant="h2"
+            variant="h3"
             sx={{
               mb: 6,
               color: theme.palette.primary.main,
             }}
-            fontFamily={gluten.style.fontFamily}
+            fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}
           >

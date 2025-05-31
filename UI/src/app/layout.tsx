@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Poppins, Pacifico, Gluten } from "next/font/google";
+import { Poppins, Pacifico, Michroma } from "next/font/google";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material";
 import theme from "@/styles/theme";
@@ -20,9 +20,9 @@ export const pacifico = Pacifico({
   display: "swap",
 });
 
-export const gluten = Gluten({
+export const michroma = Michroma({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400"],
   display: "swap",
 });
 

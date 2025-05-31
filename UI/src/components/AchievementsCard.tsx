@@ -1,4 +1,4 @@
-import { gluten } from "@/app/layout";
+import { michroma, pacifico } from "@/app/layout";
 import theme from "@/styles/theme";
 import { Box, Stack, Typography } from "@mui/material";
 import React from "react";
@@ -30,14 +30,15 @@ const AchievementsCard = ({
       <Stack
         direction={"row"}
         alignItems="center"
-        justifyContent="center"
+        justifyContent="start"
         color={theme.palette.primary.main}
+        width={"100%"}
       >
         {icon}
-        <Stack direction={"column"} alignItems="center" sx={{ ml: 2 }}>
+        <Stack direction={"column"} alignItems="center" sx={{ ml: 4 }}>
           <Typography
-            variant="h3"
-            fontFamily={gluten.style.fontFamily}
+            variant="h2"
+            fontFamily={pacifico.style.fontFamily}
             fontWeight={600}
             textAlign={"center"}
           >
@@ -45,8 +46,8 @@ const AchievementsCard = ({
           </Typography>
 
           <Typography
-            variant="h5"
-            fontFamily={gluten.style.fontFamily}
+            variant="h6"
+            fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}
             textAlign={"center"}
@@ -57,10 +58,10 @@ const AchievementsCard = ({
       </Stack>
 
       <Typography
-        variant="body2"
+        variant="body1"
         color={theme.palette.text.primary}
         textAlign={"justify"}
-        sx={{ mt: 1 }}
+        sx={{ mt: 2 }}
       >
         {description}
       </Typography>

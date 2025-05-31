@@ -37,7 +37,11 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
             {name}
           </Typography>
 
-          <Typography variant="body1" color={theme.palette.text.primary}>
+          <Typography
+            variant="body1"
+            color={theme.palette.text.primary}
+            textAlign={"justify"}
+          >
             {description}
           </Typography>
         </Stack>

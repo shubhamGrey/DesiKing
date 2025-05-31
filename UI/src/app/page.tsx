@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Container, Grid, Stack, Typography } from "@mui/material";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import theme from "@/styles/theme";
@@ -14,7 +14,11 @@ import {
   SoupKitchenOutlined,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
-import { gluten } from "./layout";
+import { michroma } from "./layout";
+import Testimonials from "@/components/Testimonials";
+import Chef from "../../public/Chef.jpg";
+import Cook from "../../public/Home Cook.jpg";
+import Blogger from "../../public/Food Blogger.jpg";
 
 const achievements = [
   {
@@ -37,6 +41,30 @@ const achievements = [
     icon: <WorkspacePremium sx={{ height: "2.5em", width: "2.5em" }} />,
     description:
       "From farm to fork - thousands of kilos of flavourful spices delivered with care and quality.",
+  },
+];
+
+const testimonialData = [
+  {
+    image: Cook,
+    name: "Anjali Sharma",
+    review:
+      "The spices from this company are simply amazing! The quality is top-notch and the flavors are authentic. I love using them in my cooking.",
+    occupation: "Home Cook",
+  },
+  {
+    image: Chef,
+    name: "Raj Patel",
+    review:
+      "I have been using their spices for years and they never disappoint. The freshness and aroma are unbeatable. Highly recommend!",
+    occupation: "Professional Chef",
+  },
+  {
+    image: Blogger,
+    name: "Priya Mehta",
+    review:
+      "These spices have transformed my dishes! They add a depth of flavor that I haven't found anywhere else. Will definitely be a repeat customer.",
+    occupation: "Food Blogger",
   },
 ];
 
@@ -68,6 +96,42 @@ const chooseUs = [
 ];
 
 const Home: React.FC = () => {
+  const visibleSectionsRef = useRef<Set<string>>(new Set());
+  const [renderTrigger, setRenderTrigger] = useState(0); // Trigger re-render when sections become visible
+  const sectionRefs = {
+    featuredProducts: useRef<HTMLDivElement>(null),
+    achievements: useRef<HTMLDivElement>(null),
+    chooseUs: useRef<HTMLDivElement>(null),
+    testimonials: useRef<HTMLDivElement>(null),
+  };
+
+  const handleScroll = () => {
+    let updated = false;
+    Object.entries(sectionRefs).forEach(([key, ref]) => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+        if (isVisible && !visibleSectionsRef.current.has(key)) {
+          visibleSectionsRef.current.add(key);
+          updated = true;
+        } else if (!isVisible && visibleSectionsRef.current.has(key)) {
+          visibleSectionsRef.current.delete(key);
+          updated = true;
+        }
+      }
+    });
+    if (updated) {
+      setRenderTrigger((prev) => prev + 1); // Trigger re-render
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div>
       <Container
@@ -79,11 +143,15 @@ const Home: React.FC = () => {
           maxWidth: "1500px !important",
         }}
       >
-        <Box sx={{ mt: 15 }}>
+        <Box
+          sx={{
+            mt: 15,
+          }}
+        >
           <Typography
-            variant="h2"
+            variant="h3"
             sx={{ mb: 3, color: theme.palette.primary.main }}
-            fontFamily={gluten.style.fontFamily}
+            fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}
             textAlign={"center"}
@@ -94,7 +162,11 @@ const Home: React.FC = () => {
             <FeaturedProducts />
           </Box>
         </Box>
-        <Box sx={{ mt: 15 }}>
+        <Box
+          sx={{
+            mt: 15,
+          }}
+        >
           <Box
             style={{
               display: "flex",
@@ -108,14 +180,24 @@ const Home: React.FC = () => {
                   direction={"column"}
                   alignItems="center"
                   spacing={15}
-                  sx={{ mt: 4 }}
+                  sx={{
+                    mt: 4,
+                    transform: visibleSectionsRef.current.has("achievements")
+                      ? "translateX(0)"
+                      : "translateX(-100%)",
+                    opacity: visibleSectionsRef.current.has("achievements")
+                      ? 1
+                      : 0,
+                    transition: "transform 0.8s ease, opacity 0.8s ease",
+                  }}
+                  ref={sectionRefs.achievements}
                 >
                   <Typography
-                    variant="h2"
+                    variant="h3"
                     sx={{
                       color: theme.palette.primary.main,
                     }}
-                    fontFamily={gluten.style.fontFamily}
+                    fontFamily={michroma.style.fontFamily}
                     fontStyle={"italic"}
                     fontWeight={600}
                     textAlign={"center"}
@@ -160,7 +242,17 @@ const Home: React.FC = () => {
             </Grid>
           </Box>
         </Box>
-        <Box sx={{ mt: 15 }}>
+        <Box
+          ref={sectionRefs.chooseUs}
+          sx={{
+            mt: 15,
+            transform: visibleSectionsRef.current.has("chooseUs")
+              ? "translateX(0)"
+              : "translateX(-100%)",
+            opacity: visibleSectionsRef.current.has("chooseUs") ? 1 : 0,
+            transition: "transform 0.8s ease, opacity 0.8s ease",
+          }}
+        >
           <Grid container spacing={8}>
             <Grid
               size={{ xs: 12, md: 6 }}
@@ -183,9 +275,9 @@ const Home: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
-                variant="h2"
+                variant="h3"
                 sx={{ mb: 10, mt: 4, color: theme.palette.primary.main }}
-                fontFamily={gluten.style.fontFamily}
+                fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
                 fontWeight={600}
               >
@@ -201,6 +293,29 @@ const Home: React.FC = () => {
               ))}
             </Grid>
           </Grid>
+        </Box>
+        <Box
+          ref={sectionRefs.testimonials}
+          sx={{
+            mt: 15,
+            transform: visibleSectionsRef.current.has("testimonials")
+              ? "translateX(0)"
+              : "translateX(-100%)",
+            opacity: visibleSectionsRef.current.has("testimonials") ? 1 : 0,
+            transition: "transform 0.8s ease, opacity 0.8s ease",
+          }}
+        >
+          <Typography
+            variant="h3"
+            sx={{ mb: 10, mt: 4, color: theme.palette.primary.main }}
+            fontFamily={michroma.style.fontFamily}
+            fontStyle={"italic"}
+            fontWeight={600}
+            textAlign={"center"}
+          >
+            Our Testimonials
+          </Typography>
+          <Testimonials items={testimonialData} />
         </Box>
       </Container>
     </div>
