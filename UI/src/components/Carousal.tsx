@@ -20,12 +20,12 @@ const Carousal = ({ items }: CarousalProps) => {
   const cardsPerPage = 1;
   const autoSlideInterval = 5000; // 5 seconds
 
-  const handleNextPage = () => {
+  const handleNextPage = React.useCallback(() => {
     setSlideDirection("left");
     setCurrentPage((prevPage) =>
       prevPage >= Math.ceil(items.length / cardsPerPage) - 1 ? 0 : prevPage + 1
     );
-  };
+  }, [items.length, cardsPerPage]);
 
   const handleDotClick = (pageIndex: number) => {
     setSlideDirection(pageIndex > currentPage ? "left" : "right");
@@ -38,7 +38,7 @@ const Carousal = ({ items }: CarousalProps) => {
     }, autoSlideInterval);
 
     return () => clearInterval(timer); // Cleanup on unmount
-  }, [currentPage, items.length]);
+  }, [currentPage, items.length, handleNextPage]);
 
   return (
     <Box
