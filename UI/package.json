@@ -14,12 +14,15 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
+    "@types/d3": "^7.4.3",
     "@types/js-cookie": "^3.0.6",
+    "d3": "^7.9.0",
     "gh-pages": "^6.3.0",
     "js-cookie": "^3.0.5",
     "next": "^15.3.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-spring": "^10.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
