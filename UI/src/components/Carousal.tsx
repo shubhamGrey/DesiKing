@@ -126,8 +126,8 @@ const Carousal = ({ items }: CarousalProps) => {
                 sx={{
                   color:
                     index === currentPage
-                      ? theme.palette.primary.contrastText
-                      : theme.palette.primary.main,
+                      ? "primary.contrastText"
+                      : "primary.main",
                   transform: "rotate(90deg)",
                 }}
               />

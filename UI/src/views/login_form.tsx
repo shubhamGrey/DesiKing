@@ -24,7 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         fontWeight="bold"
         fontFamily="Rockwell"
         fontSize={40}
-        sx={{ color: theme.palette.primary.dark }}
+        sx={{ color: "primary.dark" }}
         gutterBottom
       >
         Login
@@ -60,9 +60,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         fullWidth
         variant="contained"
         sx={{
-          backgroundColor: theme.palette.primary.main, // orange color
+          backgroundColor: "primary.main", // orange color
           color: "#ffffff",
-          border: `2px solid ${theme.palette.primary.main}`,
+          border: "2px solid",
+          borderColor: "primary.main",
           py: 1.2,
           borderRadius: 8,
           mt: 2,
@@ -72,7 +73,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         <Typography
           variant="body1"
           fontWeight="bold"
-          sx={{ color: theme.palette.primary.contrastText }}
+          sx={{ color: "primary.contrastText" }}
         >
           Log in
         </Typography>
@@ -83,22 +84,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
           href="#"
           variant="body2"
           fontWeight="600"
-          sx={{ textDecoration: "none", color: theme.palette.primary.main }}
+          sx={{ textDecoration: "none", color: "primary.main" }}
         >
           Forgot password?
         </Link>
       </Box>
 
-      <Typography
-        variant="body2"
-        sx={{ mt: 3, color: theme.palette.primary.dark }}
-      >
+      <Typography variant="body2" sx={{ mt: 3, color: "primary.dark" }}>
         Don&apos;t have an account?{" "}
         <Link
           href="#"
           fontWeight="600"
           color="#e67e22"
-          sx={{ textDecoration: "none", color: theme.palette.primary.main }}
+          sx={{ textDecoration: "none", color: "primary.main" }}
         >
           Create account
         </Link>

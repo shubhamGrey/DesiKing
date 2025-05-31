@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { Box, Container, Grid, Stack, Typography } from "@mui/material";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import theme from "@/styles/theme";
@@ -96,42 +96,6 @@ const chooseUs = [
 ];
 
 const Home: React.FC = () => {
-  const visibleSectionsRef = useRef<Set<string>>(new Set());
-  const [, setRenderTrigger] = useState(0); // Trigger re-render when sections become visible
-  const sectionRefs = {
-    featuredProducts: useRef<HTMLDivElement>(null),
-    achievements: useRef<HTMLDivElement>(null),
-    chooseUs: useRef<HTMLDivElement>(null),
-    testimonials: useRef<HTMLDivElement>(null),
-  };
-
-  const handleScroll = () => {
-    let updated = false;
-    Object.entries(sectionRefs).forEach(([key, ref]) => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-
-        if (isVisible && !visibleSectionsRef.current.has(key)) {
-          visibleSectionsRef.current.add(key);
-          updated = true;
-        } else if (!isVisible && visibleSectionsRef.current.has(key)) {
-          visibleSectionsRef.current.delete(key);
-          updated = true;
-        }
-      }
-    });
-    if (updated) {
-      setRenderTrigger((prev) => prev + 1); // Trigger re-render
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Initial check
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div>
       <Container
@@ -150,7 +114,7 @@ const Home: React.FC = () => {
         >
           <Typography
             variant="h3"
-            sx={{ mb: 3, color: theme.palette.primary.main }}
+            sx={{ mb: 3, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}
@@ -182,20 +146,12 @@ const Home: React.FC = () => {
                   spacing={15}
                   sx={{
                     mt: 4,
-                    transform: visibleSectionsRef.current.has("achievements")
-                      ? "translateX(0)"
-                      : "translateX(-100%)",
-                    opacity: visibleSectionsRef.current.has("achievements")
-                      ? 1
-                      : 0,
-                    transition: "transform 0.8s ease, opacity 0.8s ease",
                   }}
-                  ref={sectionRefs.achievements}
                 >
                   <Typography
                     variant="h3"
                     sx={{
-                      color: theme.palette.primary.main,
+                      color: "primary.main",
                     }}
                     fontFamily={michroma.style.fontFamily}
                     fontStyle={"italic"}
@@ -204,7 +160,7 @@ const Home: React.FC = () => {
                   >
                     From India to The World
                   </Typography>
-                  <Grid container spacing={10}>
+                  <Grid container spacing={10} style={{ marginTop: "80px" }}>
                     {achievements.map((achievement, index) => (
                       <Grid
                         size={12}
@@ -243,14 +199,8 @@ const Home: React.FC = () => {
           </Box>
         </Box>
         <Box
-          ref={sectionRefs.chooseUs}
           sx={{
             mt: 15,
-            transform: visibleSectionsRef.current.has("chooseUs")
-              ? "translateX(0)"
-              : "translateX(-100%)",
-            opacity: visibleSectionsRef.current.has("chooseUs") ? 1 : 0,
-            transition: "transform 0.8s ease, opacity 0.8s ease",
           }}
         >
           <Grid container spacing={8}>
@@ -276,7 +226,7 @@ const Home: React.FC = () => {
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 variant="h3"
-                sx={{ mb: 10, mt: 4, color: theme.palette.primary.main }}
+                sx={{ mb: 10, mt: 4, color: "primary.main" }}
                 fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
                 fontWeight={600}
@@ -295,19 +245,13 @@ const Home: React.FC = () => {
           </Grid>
         </Box>
         <Box
-          ref={sectionRefs.testimonials}
           sx={{
             mt: 15,
-            transform: visibleSectionsRef.current.has("testimonials")
-              ? "translateX(0)"
-              : "translateX(-100%)",
-            opacity: visibleSectionsRef.current.has("testimonials") ? 1 : 0,
-            transition: "transform 0.8s ease, opacity 0.8s ease",
           }}
         >
           <Typography
             variant="h3"
-            sx={{ mb: 10, mt: 4, color: theme.palette.primary.main }}
+            sx={{ mb: 10, mt: 4, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}

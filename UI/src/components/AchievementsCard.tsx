@@ -1,7 +1,7 @@
 import { michroma, pacifico } from "@/app/layout";
 import theme from "@/styles/theme";
 import { Box, Stack, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface AchievementsCardProps {
   value: string;
@@ -16,6 +16,42 @@ const AchievementsCard = ({
   icon,
   description,
 }: AchievementsCardProps) => {
+  const visibleSectionsRef = useRef<Set<string>>(new Set());
+  const [, setRenderTrigger] = useState(0); // Trigger re-render when sections become visible
+  const sectionRefs = {
+    featuredProducts: useRef<HTMLDivElement>(null),
+    achievements: useRef<HTMLDivElement>(null),
+    chooseUs: useRef<HTMLDivElement>(null),
+    testimonials: useRef<HTMLDivElement>(null),
+  };
+
+  const handleScroll = () => {
+    let updated = false;
+    Object.entries(sectionRefs).forEach(([key, ref]) => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+        if (isVisible && !visibleSectionsRef.current.has(key)) {
+          visibleSectionsRef.current.add(key);
+          updated = true;
+        } else if (!isVisible && visibleSectionsRef.current.has(key)) {
+          visibleSectionsRef.current.delete(key);
+          updated = true;
+        }
+      }
+    });
+    if (updated) {
+      setRenderTrigger((prev) => prev + 1); // Trigger re-render
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <Box
       style={{
@@ -26,12 +62,20 @@ const AchievementsCard = ({
         width: "70%",
         height: "100%",
       }}
+      sx={{
+        transform: visibleSectionsRef.current.has("achievements")
+          ? "translateX(0)"
+          : "translateX(-100%)",
+        opacity: visibleSectionsRef.current.has("achievements") ? 1 : 0,
+        transition: "transform 0.8s ease, opacity 0.8s ease",
+      }}
+      ref={sectionRefs.achievements}
     >
       <Stack
         direction={"row"}
         alignItems="center"
         justifyContent="start"
-        color={theme.palette.primary.main}
+        color={"primary.main"}
         width={"100%"}
       >
         {icon}
@@ -59,7 +103,7 @@ const AchievementsCard = ({
 
       <Typography
         variant="body1"
-        color={theme.palette.text.primary}
+        color={"text.primary"}
         textAlign={"justify"}
         sx={{ mt: 2 }}
       >

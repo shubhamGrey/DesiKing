@@ -18,7 +18,6 @@ import {
 } from "@mui/icons-material";
 import BrandLogo from "../../public/AgroNexisWhite.png";
 import Image from "next/image";
-import theme from "@/styles/theme";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -28,18 +27,18 @@ export default function Footer() {
   const [quickLinks] = useState([
     { label: "Home", href: "/", icon: <HomeRounded fontSize="small" /> },
     {
-      label: "About Us",
-      href: "/about-us",
+      label: "About",
+      href: "/about",
       icon: <InfoRounded fontSize="small" />,
     },
     {
-      label: "Brands",
-      href: "/brands",
+      label: "Products",
+      href: "/products",
       icon: <InventoryRounded fontSize="small" />,
     },
     {
-      label: "Contact Us",
-      href: "/contact-us",
+      label: "Contact",
+      href: "/contact",
       icon: <ContactPageRounded fontSize="small" />,
     },
     {
@@ -74,8 +73,8 @@ export default function Footer() {
   return (
     <Box
       sx={{
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.primary.contrastText,
+        backgroundColor: "primary.main",
+        color: "primary.contrastText",
         px: { xs: 3, md: 8 },
         pt: 6,
         pb: 2,
@@ -93,10 +92,7 @@ export default function Footer() {
           />
           <Box>
             {[Instagram, YouTube, Facebook, LinkedIn].map((Icon, i) => (
-              <IconButton
-                key={i}
-                sx={{ color: theme.palette.primary.contrastText }}
-              >
+              <IconButton key={i} sx={{ color: "primary.contrastText" }}>
                 <Icon fontSize="medium" />
               </IconButton>
             ))}
@@ -108,14 +104,14 @@ export default function Footer() {
           <Typography
             variant="h6"
             gutterBottom
-            sx={{ mb: 3, color: theme.palette.primary.contrastText }}
+            sx={{ mb: 3, color: "primary.contrastText" }}
           >
             Quick Links
           </Typography>
           {quickLinks.map((item) => (
             <Box
               sx={{
-                color: theme.palette.primary.contrastText,
+                color: "primary.contrastText",
                 display: "flex",
                 alignItems: "center",
                 mb: 1.5,
@@ -133,7 +129,7 @@ export default function Footer() {
               <Typography
                 key={item.label}
                 variant="body1"
-                sx={{ ml: 1.5, color: theme.palette.primary.contrastText }}
+                sx={{ ml: 1.5, color: "primary.contrastText" }}
               >
                 {item.label}
               </Typography>
@@ -146,7 +142,7 @@ export default function Footer() {
           <Typography
             variant="h6"
             gutterBottom
-            sx={{ mb: 3, color: theme.palette.primary.contrastText }}
+            sx={{ mb: 3, color: "primary.contrastText" }}
           >
             Stay Connected
           </Typography>
@@ -154,7 +150,7 @@ export default function Footer() {
           {contactDetails.map((item) => (
             <Box
               sx={{
-                color: theme.palette.primary.contrastText,
+                color: "primary.contrastText",
                 display: "flex",
                 alignItems: "center",
                 mb: 1.5,
@@ -172,7 +168,7 @@ export default function Footer() {
               <Typography
                 key={item.label}
                 variant="body1"
-                sx={{ ml: 1.5, color: theme.palette.primary.contrastText }}
+                sx={{ ml: 1.5, color: "primary.contrastText" }}
               >
                 {item.label}
               </Typography>
@@ -193,10 +189,7 @@ export default function Footer() {
 
       {/* Copyright */}
       <Box textAlign="center" borderTop="1px solid #333" mt={6} pt={2}>
-        <Typography
-          variant="body2"
-          sx={{ color: theme.palette.primary.contrastText }}
-        >
+        <Typography variant="body2" sx={{ color: "primary.contrastText" }}>
           Copyright © 2025 AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED. All rights
           reserved.
         </Typography>
