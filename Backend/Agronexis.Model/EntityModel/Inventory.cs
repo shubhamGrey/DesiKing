@@ -21,10 +21,10 @@ namespace Agronexis.Model.EntityModel
         public Guid CategoryId { get; set; }
         public int LifeCycle { get; set; }
         public int BackOrder { get; set; }
-        public int BrandId { get; set; }
-        public DateTime ManufacturingDate { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
+        public Guid BrandId { get; set; }
+        public DateTime? ManufacturingDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
         public Product Product { get; set; }
     }
 }

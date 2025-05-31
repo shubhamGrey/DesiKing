@@ -14,14 +14,14 @@ namespace Agronexis.Model.EntityModel
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-        public string FirstName { get; set; } = "";
-        public string LastName { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string PasswordHash { get; set; } = "";
+        public string? FirstName { get; set; } = "";
+        public string? LastName { get; set; } = "";
+        public string? Email { get; set; } = "";
+        public string? PasswordHash { get; set; } = "";
         public int Role { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
-        public bool IsActive { get; set; }
-        public int BrandId { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public bool? IsActive { get; set; }
+        public Guid BrandId { get; set; }
     }
 }
