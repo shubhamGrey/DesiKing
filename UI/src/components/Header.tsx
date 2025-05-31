@@ -23,6 +23,18 @@ import { usePathname } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
 import DesiKing from "../../public/DesiKing.png";
+import Carousal from "@/components/Carousal";
+import Purity from "../../public/Purity.png";
+import Quality from "../../public/Quality.png";
+import Taste from "../../public/Taste.png";
+import Globe from "../../public/Globe.png";
+
+const carousalImages = [
+  { image: Purity },
+  { image: Quality },
+  { image: Taste },
+  { image: Globe },
+];
 
 export default function Header() {
   const pathname = usePathname();
@@ -140,10 +152,10 @@ export default function Header() {
           )}
         </Toolbar>
       </AppBar>
-      {pathname !== "/" && (
+      {pathname !== "/" ? (
         <Box
           sx={{
-            backgroundImage: 'url("/LoginBackground.png")',
+            backgroundImage: 'url("/Header Image.png")',
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
@@ -163,6 +175,8 @@ export default function Header() {
             A legacy of authenticity in every pinch.
           </Typography>
         </Box>
+      ) : (
+        <Carousal items={carousalImages} />
       )}
 
       {/* Drawer for Mobile */}

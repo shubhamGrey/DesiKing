@@ -1,3 +1,4 @@
+import { gluten } from "@/app/layout";
 import theme from "@/styles/theme";
 import { Box, Stack, Typography } from "@mui/material";
 import React from "react";
@@ -16,57 +17,54 @@ const AchievementsCard = ({
   description,
 }: AchievementsCardProps) => {
   return (
-    <>
-      <Box
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "70%",
-          height: "100%",
-        }}
+    <Box
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "70%",
+        height: "100%",
+      }}
+    >
+      <Stack
+        direction={"row"}
+        alignItems="center"
+        justifyContent="center"
+        color={theme.palette.primary.main}
       >
-        <Stack
-          direction={"row"}
-          alignItems="center"
-          justifyContent="center"
-          color={theme.palette.primary.contrastText}
-        >
-          {icon}
-          <Stack direction={"column"} alignItems="center" sx={{ ml: 2 }}>
-            <Typography
-              variant="h3"
-              color={theme.palette.primary.contrastText}
-              fontWeight={600}
-              textAlign={"center"}
-            >
-              {value}
-            </Typography>
+        {icon}
+        <Stack direction={"column"} alignItems="center" sx={{ ml: 2 }}>
+          <Typography
+            variant="h3"
+            fontFamily={gluten.style.fontFamily}
+            fontWeight={600}
+            textAlign={"center"}
+          >
+            {value}
+          </Typography>
 
-            <Typography
-              variant="h5"
-              color={theme.palette.primary.contrastText}
-              fontFamily={"Playfair Display, serif"}
-              fontStyle={"italic"}
-              fontWeight={600}
-              textAlign={"center"}
-            >
-              {name}
-            </Typography>
-          </Stack>
+          <Typography
+            variant="h5"
+            fontFamily={gluten.style.fontFamily}
+            fontStyle={"italic"}
+            fontWeight={600}
+            textAlign={"center"}
+          >
+            {name}
+          </Typography>
         </Stack>
+      </Stack>
 
-        <Typography
-          variant="body2"
-          color={theme.palette.primary.contrastText}
-          textAlign={"justify"}
-          sx={{ mt: 1 }}
-        >
-          {description}
-        </Typography>
-      </Box>
-    </>
+      <Typography
+        variant="body2"
+        color={theme.palette.text.primary}
+        textAlign={"justify"}
+        sx={{ mt: 1 }}
+      >
+        {description}
+      </Typography>
+    </Box>
   );
 };
 
