@@ -26,26 +26,84 @@ const products = [
   {
     id: 1,
     name: "Turmeric Powder",
-    description: "High-quality turmeric powder for culinary and medicinal use.",
+    description:
+      "AGRO NEXIS Turmeric Powder is made from the finest turmeric roots, known for its vibrant color and health benefits. \
+      Ground to perfection to preserve its natural aroma and flavor, this turmeric powder is ideal for cooking, baking, and health supplements. \
+      It adds a warm, earthy flavor to dishes and is rich in curcumin, a powerful antioxidant.",
     image: "/Turmeric.png",
+    key_features: [
+      "100% Pure and Natural",
+      "Rich in Curcumin",
+      "No Artificial Additives",
+      "Packed in a Hygienic Environment",
+      "Sourced from Trusted Farmers",
+    ],
+    uses: [
+      "Turmeric powder is versatile and can be used in various dishes such as curries, soups, stews, and even smoothies.",
+      "It is commonly used in Indian cuisine for its flavor and color.",
+      "In addition to culinary uses, turmeric powder is often added to health drinks and supplements for its potential health benefits.",
+    ],
   },
   {
     id: 2,
     name: "Cumin Powder",
-    description: "Pure cumin powder, perfect for enhancing flavors in dishes.",
+    description:
+      "AGRO NEXIS Cumin Powder is made from handpicked cumin seeds, expertly ground to preserve their distinctive warm, earthy aroma and slightly bitter taste. \
+      This versatile spice enhances the flavor profile of countless dishes and is valued for its digestive benefits.",
     image: "/Cumin.png",
+    key_features: [
+      "100% Pure and Natural",
+      "Rich, Earthy Flavor",
+      "No Artificial Additives",
+      "Sourced from Trusted Farmers",
+      "Packed in a Hygienic Environment",
+    ],
+    uses: [
+      "Cumin powder is essential in curries, stews, soups, and spice blends.",
+      "It is commonly used in Indian, Middle Eastern, and Mexican cuisines.",
+      "Also used as a seasoning for roasted vegetables, meats, and snacks.",
+    ],
   },
   {
     id: 3,
-    name: "Chili Powder",
-    description: "Spicy chili powder to add heat to your recipes.",
+    name: "Red Chili Powder",
+    description:
+      "AGRO NEXIS Red Chili Powder is crafted from premium quality dried red chilies, delivering a vibrant color and fiery heat to your dishes. \
+      Finely ground to retain its natural pungency and aroma, this chili powder is perfect for adding spice and depth to a variety of cuisines. \
+      It is a staple ingredient for those who love bold and spicy flavors.",
     image: "/Chili.png",
+    key_features: [
+      "100% Pure and Natural",
+      "Vibrant Color and Spicy Flavor",
+      "No Artificial Colors or Preservatives",
+      "Carefully Selected Chilies",
+      "Packed in a Hygienic Environment",
+    ],
+    uses: [
+      "Red chili powder is widely used in curries, marinades, sauces, and spice blends.",
+      "It adds heat and color to both vegetarian and non-vegetarian dishes.",
+      "Ideal for Indian, Mexican, Thai, and other global cuisines that require a spicy kick.",
+    ],
   },
   {
     id: 4,
     name: "Coriander Powder",
-    description: "Ground coriander seeds for a citrusy flavor in dishes.",
+    description:
+      "AGRO NEXIS Coriander Powder is produced from select coriander seeds, ground to a fine powder to capture their fresh, citrusy aroma and mild flavor. \
+      This spice is a must-have for adding a subtle, sweet undertone to your recipes and is known for its digestive properties.",
     image: "/Coriander.png",
+    key_features: [
+      "100% Pure and Natural",
+      "Fresh, Citrusy Aroma",
+      "No Artificial Additives",
+      "Sourced from Trusted Farmers",
+      "Packed in a Hygienic Environment",
+    ],
+    uses: [
+      "Coriander powder is widely used in curries, gravies, and spice blends.",
+      "It enhances the flavor of soups, salads, and marinades.",
+      "Common in Indian, Middle Eastern, and Mediterranean cuisines.",
+    ],
   },
 ];
 
@@ -56,6 +114,8 @@ const Products = () => {
     name: string;
     description: string;
     image: string;
+    key_features?: string[];
+    uses?: string[];
   }>(null);
 
   return (
@@ -120,9 +180,6 @@ const Products = () => {
                   <Typography variant="h5" fontWeight={600} gutterBottom>
                     {product.name}
                   </Typography>
-                  {/* <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    {product.description}
-                  </Typography> */}
                 </CardContent>
               </CardActionArea>
             </Card>
@@ -153,9 +210,61 @@ const Products = () => {
               >
                 {selectedProduct.name}
               </Typography>
-              <Typography variant="body1" sx={{ color: "text.primary" }}>
+              <Typography
+                variant="body1"
+                sx={{ color: "text.primary", mb: 2 }}
+                textAlign={"justify"}
+              >
                 {selectedProduct.description}
               </Typography>
+              {selectedProduct.key_features && (
+                <>
+                  <Typography
+                    variant="h5"
+                    sx={{ color: "primary.main" }}
+                    textAlign={"left"}
+                  >
+                    Key Features:
+                  </Typography>
+
+                  <ul>
+                    {selectedProduct.key_features.map((feature, index) => (
+                      <li key={index}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {feature}
+                        </Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {selectedProduct.uses && (
+                <>
+                  <Typography
+                    variant="h5"
+                    sx={{ color: "primary.main" }}
+                    textAlign={"left"}
+                  >
+                    Uses:
+                  </Typography>
+
+                  <ul>
+                    {selectedProduct.uses?.map((use, index) => (
+                      <li key={index}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {use}
+                        </Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </Grid>
             <Grid
               size={{ xs: 1, md: 1 }}

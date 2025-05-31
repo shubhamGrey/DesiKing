@@ -70,6 +70,25 @@ export default function Footer() {
     },
   ];
 
+  const socialMedia = [
+    {
+      icon: <Instagram fontSize="medium" />,
+      href: "https://www.instagram.com/agronexis/?__pwa=1",
+    },
+    {
+      icon: <YouTube fontSize="medium" />,
+      href: "https://www.youtube.com/@AgroNexisIndiaOverseasPrivateL",
+    },
+    {
+      icon: <Facebook fontSize="medium" />,
+      href: "https://www.facebook.com/profile.php?id=61575821300609",
+    },
+    {
+      icon: <LinkedIn fontSize="medium" />,
+      href: "https://www.linkedin.com/in/aniopl",
+    },
+  ];
+
   return (
     <Box
       sx={{
@@ -91,9 +110,16 @@ export default function Footer() {
             style={{ marginBottom: 12 }}
           />
           <Box>
-            {[Instagram, YouTube, Facebook, LinkedIn].map((Icon, i) => (
+            {socialMedia.map((media, i) => (
               <IconButton key={i} sx={{ color: "primary.contrastText" }}>
-                <Icon fontSize="medium" />
+                <a
+                  href={media.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "inherit" }}
+                >
+                  {media.icon}
+                </a>
               </IconButton>
             ))}
           </Box>
