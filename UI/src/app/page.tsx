@@ -3,7 +3,6 @@
 import React from "react";
 import { Box, Container, Grid, Stack, Typography } from "@mui/material";
 import FeaturedProducts from "@/components/FeaturedProducts";
-import theme from "@/styles/theme";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
   Diversity1,

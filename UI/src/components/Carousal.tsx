@@ -3,7 +3,6 @@ import { Box, IconButton, Slide, Stack } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Image, { StaticImageData } from "next/image";
 import React, { useEffect } from "react";
-import theme from "@/styles/theme";
 
 interface CarousalProps {
   items: {

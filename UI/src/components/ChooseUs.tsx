@@ -1,5 +1,4 @@
 import { pacifico } from "@/app/layout";
-import theme from "@/styles/theme";
 import { Box, Stack, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 

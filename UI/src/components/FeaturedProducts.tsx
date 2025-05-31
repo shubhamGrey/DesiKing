@@ -9,7 +9,6 @@ import turmeric from "../../public/Chili.png";
 import redChilli from "../../public/Turmeric.png";
 import DesiKing from "../../public/DesiKing.png";
 import Image from "next/image";
-import theme from "@/styles/theme";
 
 export default function BrandHover() {
   return (
