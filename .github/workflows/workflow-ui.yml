@@ -35,7 +35,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "UI" # Adjust as needed
+          source: "UI/.next,UI/public,UI/package.json,UI/package-lock.json" # Adjust as needed
           target: "/var/www/agronexis/UI"  # Change to your VPS app path
 
       - name: Install dependencies on VPS and restart app
