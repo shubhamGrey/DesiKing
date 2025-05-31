@@ -24,6 +24,8 @@ namespace Agronexis.Model.EntityModel
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
+        public bool? IsActive { get; set; }
+        public bool? IsDeleted { get; set; }
         public Category Category { get; set; }
         public ICollection<Inventory> Inventories { get; set; }
     }
