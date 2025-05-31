@@ -12,6 +12,7 @@ import {
   ListItem,
   ListItemText,
   IconButton,
+  ListItemIcon,
 } from "@mui/material";
 import GrassIcon from "@mui/icons-material/Grass";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
@@ -25,8 +26,8 @@ import Founder from "../../../public/Founder.PNG";
 import CoFounder from "../../../public/Co Founder.PNG";
 import Director from "../../../public/Director.PNG";
 import Image from "next/image";
-import theme from "@/styles/theme";
 import { Michroma } from "next/font/google";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 const michroma = Michroma({
   subsets: ["latin"],
@@ -36,29 +37,29 @@ const michroma = Michroma({
 
 const highlights = [
   {
-    icon: <GrassIcon sx={{ color: theme.palette.primary.main }} />,
+    icon: <GrassIcon sx={{ color: "primary.main" }} />,
     text: "100% Natural Ingredients",
   },
   {
-    icon: <LocalDiningIcon sx={{ color: theme.palette.primary.main }} />,
+    icon: <LocalDiningIcon sx={{ color: "primary.main" }} />,
     text: "Farm-to-Packet Freshness",
   },
   {
-    icon: <ScienceIcon sx={{ color: theme.palette.primary.main }} />,
+    icon: <ScienceIcon sx={{ color: "primary.main" }} />,
     text: "Lab-Tested for Quality",
   },
   {
-    icon: <LocationOnIcon sx={{ color: theme.palette.primary.main }} />,
+    icon: <LocationOnIcon sx={{ color: "primary.main" }} />,
     text: "Sourced from Heart of India",
   },
 ];
 
 export default function AboutLight() {
   const coreValues = [
-    "Purity & Hygiene",
-    "Sustainable Farming",
-    "Flavor-First Philosophy",
-    "Fair Trade & Farmer Empowerment",
+    "Quality & Purity",
+    "Building Brand & Trust",
+    "Innovation & Product Development",
+    "Special focus to specific needs",
   ];
 
   return (
@@ -67,7 +68,7 @@ export default function AboutLight() {
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography
             variant="h3"
-            sx={{ mb: 3, color: theme.palette.primary.main }}
+            sx={{ mb: 3, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
             fontWeight={600}
@@ -84,7 +85,7 @@ export default function AboutLight() {
               sx={{
                 height: 48,
                 width: 48,
-                color: theme.palette.primary.main,
+                color: "primary.main",
               }}
             />
             <Typography
@@ -92,7 +93,7 @@ export default function AboutLight() {
               sx={{
                 mb: 2,
                 ml: 1,
-                color: theme.palette.primary.main,
+                color: "primary.main",
               }}
               fontFamily={michroma.style.fontFamily}
               fontWeight={600}
@@ -103,7 +104,7 @@ export default function AboutLight() {
           <Typography
             variant="body1"
             sx={{ mb: 1, justifyContent: "center", textAlign: "justify" }}
-            color={theme.palette.text.primary}
+            color={"text.primary"}
           >
             At AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED, we believe that great
             food starts with great ingredients. Founded with a mission to bring
@@ -138,7 +139,8 @@ export default function AboutLight() {
             elevation={0}
             sx={{
               p: 3,
-              border: `1px solid ${theme.palette.primary.main}`,
+              border: "1px solid",
+              borderColor: "primary.main",
               backgroundColor: "inherit",
               height: "88%",
               display: "flex",
@@ -153,15 +155,12 @@ export default function AboutLight() {
               justifyContent={"center"}
               padding={2}
             >
-              <SpaRoundedIcon
-                fontSize="large"
-                sx={{ color: theme.palette.primary.main }}
-              />
+              <SpaRoundedIcon fontSize="large" sx={{ color: "primary.main" }} />
               <Typography
                 variant="h5"
                 sx={{
                   mb: 3,
-                  color: theme.palette.primary.main,
+                  color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
@@ -178,7 +177,7 @@ export default function AboutLight() {
                 justifyContent: "center",
                 textAlign: "justify",
               }}
-              color={theme.palette.text.primary}
+              color={"text.primary"}
             >
               What sets us apart is our unwavering commitment to quality and
               customer satisfaction. There will be more efforts to bring Organic
@@ -195,7 +194,8 @@ export default function AboutLight() {
             elevation={0}
             sx={{
               p: 3,
-              border: `1px solid ${theme.palette.primary.main}`,
+              border: "1px solid",
+              borderColor: "primary.main",
               backgroundColor: "inherit",
               height: "88%",
               display: "flex",
@@ -210,15 +210,12 @@ export default function AboutLight() {
               justifyContent={"center"}
               padding={2}
             >
-              <SpaRoundedIcon
-                fontSize="large"
-                sx={{ color: theme.palette.primary.main }}
-              />
+              <SpaRoundedIcon fontSize="large" sx={{ color: "primary.main" }} />
               <Typography
                 variant="h5"
                 sx={{
                   mb: 3,
-                  color: theme.palette.primary.main,
+                  color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
@@ -227,19 +224,22 @@ export default function AboutLight() {
                 Core Values
               </Typography>
             </Stack>
-            <List dense={true}>
+            <List dense={true} sx={{ mt: 3 }}>
               {coreValues.map((item) => {
                 return (
                   <ListItem key={item}>
+                    <ListItemIcon>
+                      <FiberManualRecordIcon sx={{ color: "primary.main" }} />
+                    </ListItemIcon>
                     <ListItemText>
                       <Typography
                         variant="body1"
                         sx={{
                           mb: 1,
                           justifyContent: "center",
-                          textAlign: "justify",
+                          textAlign: "left",
                         }}
-                        color={theme.palette.text.primary}
+                        color={"text.primary"}
                       >
                         {item}
                       </Typography>
@@ -255,7 +255,8 @@ export default function AboutLight() {
             elevation={0}
             sx={{
               p: 3,
-              border: `1px solid ${theme.palette.primary.main}`,
+              border: "1px solid",
+              borderColor: "primary.main",
               backgroundColor: "inherit",
               height: "88%",
               display: "flex",
@@ -270,15 +271,12 @@ export default function AboutLight() {
               justifyContent={"center"}
               padding={2}
             >
-              <SpaRoundedIcon
-                fontSize="large"
-                sx={{ color: theme.palette.primary.main }}
-              />
+              <SpaRoundedIcon fontSize="large" sx={{ color: "primary.main" }} />
               <Typography
                 variant="h5"
                 sx={{
                   mb: 3,
-                  color: theme.palette.primary.main,
+                  color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
                 fontStyle={"italic"}
@@ -295,7 +293,7 @@ export default function AboutLight() {
                 justifyContent: "center",
                 textAlign: "justify",
               }}
-              color={theme.palette.text.primary}
+              color={"text.primary"}
             >
               Our mission is simple to source the finest quality spices, process
               and blend them with unmatched precision, and make them available
@@ -310,7 +308,7 @@ export default function AboutLight() {
 
       <Typography
         variant="h3"
-        sx={{ mb: 6, mt: 15, color: theme.palette.primary.main }}
+        sx={{ mb: 6, mt: 15, color: "primary.main" }}
         fontFamily={michroma.style.fontFamily}
         fontStyle={"italic"}
         fontWeight={600}
@@ -325,7 +323,7 @@ export default function AboutLight() {
               <Avatar
                 sx={{
                   bgcolor: "#fff3e0",
-                  color: theme.palette.primary.main,
+                  color: "primary.main",
                   mx: "auto",
                   mb: 1,
                 }}
@@ -335,7 +333,7 @@ export default function AboutLight() {
               <Typography
                 variant="body1"
                 sx={{ py: 0.5, px: 2, justifyContent: "center" }}
-                color={theme.palette.text.primary}
+                color={"text.primary"}
               >
                 {item.text}
               </Typography>
@@ -357,7 +355,7 @@ export default function AboutLight() {
               variant="h3"
               sx={{
                 mb: 6,
-                color: theme.palette.primary.main,
+                color: "primary.main",
               }}
               fontFamily={michroma.style.fontFamily}
               fontStyle={"italic"}
@@ -374,7 +372,7 @@ export default function AboutLight() {
                 justifyContent: "center",
                 textAlign: "justify",
               }}
-              color={theme.palette.text.primary}
+              color={"text.primary"}
             >
               <b>Late. Shri Ram Prasad Sharma (Founder)</b> was passionate about
               exploring the best spices without compromising the quality and
@@ -413,7 +411,7 @@ export default function AboutLight() {
             variant="h3"
             sx={{
               mb: 6,
-              color: theme.palette.primary.main,
+              color: "primary.main",
             }}
             fontFamily={michroma.style.fontFamily}
             fontStyle={"italic"}
@@ -428,12 +426,20 @@ export default function AboutLight() {
         >
           <Stack>
             <Image src={CoFounder} alt="Co Founder" width={200} height={280} />
-            <Typography sx={{ mt: 1, textAlign: "center" }}>
-              Vijay Sharma (Director)
+            <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
+              Vijay Sharma
+            </Typography>
+            <Typography
+              variant="h6"
+              textAlign="center"
+              fontWeight={600}
+              sx={{ mt: 1 }}
+            >
+              Director
             </Typography>
             <IconButton
               sx={{
-                color: theme.palette.primary.main,
+                color: "primary.main",
                 "&:hover": { backgroundColor: "inherit" },
               }}
               disableRipple
@@ -448,12 +454,20 @@ export default function AboutLight() {
         >
           <Stack>
             <Image src={Director} alt="Director" width={200} height={280} />
-            <Typography sx={{ mt: 1, textAlign: "center" }}>
-              Purnima Sharma (Director)
+            <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
+              Purnima Sharma
+            </Typography>
+            <Typography
+              variant="h6"
+              textAlign="center"
+              fontWeight={600}
+              sx={{ mt: 1 }}
+            >
+              Director
             </Typography>
             <IconButton
               sx={{
-                color: theme.palette.primary.main,
+                color: "primary.main",
                 "&:hover": { backgroundColor: "inherit" },
               }}
               disableRipple

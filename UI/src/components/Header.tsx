@@ -49,7 +49,7 @@ export default function Header() {
 
   const leftNavLinks = [
     { label: "Home", href: "/" },
-    { label: "About Us", href: "/about" },
+    { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
   ];
@@ -71,8 +71,8 @@ export default function Header() {
           sx={{
             justifyContent: "start",
             height: 64,
-            backgroundColor: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
+            backgroundColor: "primary.main",
+            color: "primary.contrastText",
             borderBottom: "0.5px solid #b36a26",
           }}
         >
@@ -122,7 +122,7 @@ export default function Header() {
                           href={href}
                           underline="none"
                           sx={{
-                            color: theme.palette.primary.contrastText,
+                            color: "primary.contrastText",
                             fontWeight: isActive ? "bold" : "normal",
                           }}
                         >
@@ -145,7 +145,7 @@ export default function Header() {
                       <IconButton
                         key={index}
                         sx={{
-                          color: theme.palette.primary.contrastText,
+                          color: "primary.contrastText",
                         }}
                       >
                         {icon}
@@ -192,7 +192,7 @@ export default function Header() {
                     key={index}
                     edge="end"
                     sx={{
-                      color: theme.palette.primary.contrastText,
+                      color: "primary.contrastText",
                       mr: 1,
                     }}
                   >
@@ -202,7 +202,7 @@ export default function Header() {
                 <IconButton
                   edge="end"
                   onClick={toggleDrawer(true)}
-                  sx={{ color: theme.palette.primary.contrastText }}
+                  sx={{ color: "primary.contrastText" }}
                 >
                   <MenuIcon />
                 </IconButton>
@@ -230,7 +230,12 @@ export default function Header() {
             alt="Desi King"
             style={{ width: "30%", height: "30%", marginTop: 32 }}
           />
-          <Typography variant="body1" sx={{ mb: 4, mt: 2 }}>
+          <Typography
+            variant="body1"
+            sx={{ mb: 4, mt: 2 }}
+            color="#000000"
+            fontSize={isMobile ? "0.2rem" : "1rem"}
+          >
             A legacy of authenticity in every pinch.
           </Typography>
         </Box>
@@ -243,8 +248,8 @@ export default function Header() {
         <Box
           sx={{
             width: "100%",
-            backgroundColor: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
+            backgroundColor: "primary.main",
+            color: "primary.contrastText",
           }}
           role="presentation"
           onClick={toggleDrawer(false)}
