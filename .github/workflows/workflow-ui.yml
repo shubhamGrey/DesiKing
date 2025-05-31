@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "UI/.next,UI/public,UI/package.json,UI/package-lock.json" # Adjust as needed
-          target: "/var/www/agronexis/UI"  # Change to your VPS app path
+          target: "/var/www/agronexis"  # Change to your VPS app path
 
       - name: Install dependencies on VPS and restart app
         uses: appleboy/ssh-action@v1.0.3
