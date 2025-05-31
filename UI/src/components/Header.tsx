@@ -21,9 +21,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import BrandLogo from "@/public/images/AgroNexisGreen.png";
+import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
-import DesiKing from "@/public/images/DesiKing.png";
+import DesiKing from "../../public/DesiKing.png";
 
 export default function Header() {
   const pathname = usePathname();
@@ -100,14 +100,12 @@ export default function Header() {
               </Stack>
             </>
           ) : (
-            <>
-              <IconButton
-                edge="end"
-                onClick={toggleDrawer(true)}
-                sx={{ color: theme.palette.primary.contrastText, mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
+            <Box
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+              sx={{ width: "100%" }}
+            >
               <Box
                 sx={{
                   backgroundColor: "#fff",
@@ -132,7 +130,14 @@ export default function Header() {
                   />
                 </Link>
               </Box>
-            </>
+              <IconButton
+                edge="end"
+                onClick={toggleDrawer(true)}
+                sx={{ color: theme.palette.primary.contrastText }}
+              >
+                <MenuIcon />
+              </IconButton>
+            </Box>
           )}
         </Toolbar>
       </AppBar>
@@ -162,25 +167,17 @@ export default function Header() {
       )}
 
       {/* Drawer for Mobile */}
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
+      <Drawer anchor="bottom" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box
-          sx={{ width: 250 }}
+          sx={{
+            width: "100%",
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
+          }}
           role="presentation"
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            px={2}
-            py={1}
-          >
-            <Typography variant="h6">Menu</Typography>
-            <IconButton onClick={toggleDrawer(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
           <List>
             {navLinks.map(({ label, href }) => (
               <ListItem key={label} disablePadding>

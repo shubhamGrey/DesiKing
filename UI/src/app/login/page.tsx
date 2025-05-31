@@ -2,8 +2,8 @@
 
 import { Box, Grid } from "@mui/material";
 import Image from "next/image";
-import BrandLogo from "@/public/images/AgroNexisGreen.png";
-import LoginImg from "@/public/images/Login.png";
+import BrandLogo from "../../public/AgroNexisGreen.png";
+import LoginImg from "../../public/Login.png";
 
 import LoginForm from "@/views/login_form";
 import { useRouter } from "next/navigation";

@@ -16,7 +16,7 @@ import {
   ArticleRounded,
   PrivacyTipRounded,
 } from "@mui/icons-material";
-import BrandLogo from "@/public/images/AgroNexisWhite.png";
+import BrandLogo from "../../public/AgroNexisWhite.png";
 import Image from "next/image";
 import theme from "@/styles/theme";
 import { useState } from "react";
@@ -84,7 +84,7 @@ export default function Footer() {
     >
       <Grid container spacing={4}>
         {/* Brand Info */}
-        <Grid size={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Image
             src={BrandLogo}
             alt="Brand Logo"
@@ -104,7 +104,7 @@ export default function Footer() {
         </Grid>
 
         {/* Links */}
-        <Grid size={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -142,7 +142,7 @@ export default function Footer() {
         </Grid>
 
         {/* Contact */}
-        <Grid size={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Typography
             variant="h6"
             gutterBottom

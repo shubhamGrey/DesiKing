@@ -20,10 +20,10 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import EmojiPeopleRoundedIcon from "@mui/icons-material/EmojiPeopleRounded";
 import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
 import LinkedIn from "@mui/icons-material/LinkedIn";
-import Spices from "@/public/images/Spices.png";
-import Founder from "@/public/images/Founder.PNG";
-import CoFounder from "@/public/images/Co Founder.PNG";
-import Director from "@/public/images/Director.PNG";
+import Spices from "../../../public/Spices.png";
+import Founder from "../../../public/Founder.PNG";
+import CoFounder from "../../../public/Co Founder.PNG";
+import Director from "../../../public/Director.PNG";
 import Image from "next/image";
 import theme from "@/styles/theme";
 
@@ -58,7 +58,7 @@ export default function AboutLight() {
     <Box sx={{ bgcolor: "#fffaf0", color: "#333", pb: 6 }}>
       <Container sx={{ mt: 3, mx: 6, justifySelf: "center" }}>
         <Grid container spacing={8} alignItems="center">
-          <Grid size={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography
               variant="h2"
               sx={{ mb: 3, color: theme.palette.primary.main }}
@@ -96,7 +96,7 @@ export default function AboutLight() {
             </Stack>
             <Typography
               variant="body1"
-              sx={{ mb: 1, justifyContent: "center" }}
+              sx={{ mb: 1, justifyContent: "center", textAlign: "justify" }}
               color={theme.palette.text.primary}
             >
               At AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED, we believe that
@@ -117,7 +117,7 @@ export default function AboutLight() {
               flavor, heritage, and health in every pinch.
             </Typography>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Image
               src={Spices}
               alt="Spices"
@@ -127,7 +127,7 @@ export default function AboutLight() {
         </Grid>
 
         <Grid container spacing={4} sx={{ mt: 15, alignItems: "stretch" }}>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper
               elevation={0}
               sx={{
@@ -166,7 +166,12 @@ export default function AboutLight() {
               </Stack>
               <Typography
                 variant="body1"
-                sx={{ py: 0.5, px: 2, justifyContent: "center" }}
+                sx={{
+                  py: 0.5,
+                  px: 2,
+                  justifyContent: "center",
+                  textAlign: "justify",
+                }}
                 color={theme.palette.text.primary}
               >
                 What sets us apart is our unwavering commitment to quality and
@@ -179,7 +184,7 @@ export default function AboutLight() {
               </Typography>
             </Paper>
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper
               elevation={0}
               sx={{
@@ -223,7 +228,11 @@ export default function AboutLight() {
                       <ListItemText>
                         <Typography
                           variant="body1"
-                          sx={{ mb: 1, justifyContent: "center" }}
+                          sx={{
+                            mb: 1,
+                            justifyContent: "center",
+                            textAlign: "justify",
+                          }}
                           color={theme.palette.text.primary}
                         >
                           {item}
@@ -235,7 +244,7 @@ export default function AboutLight() {
               </List>
             </Paper>
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper
               elevation={0}
               sx={{
@@ -274,7 +283,12 @@ export default function AboutLight() {
               </Stack>
               <Typography
                 variant="body1"
-                sx={{ py: 0.5, px: 2, justifyContent: "center" }}
+                sx={{
+                  py: 0.5,
+                  px: 2,
+                  justifyContent: "center",
+                  textAlign: "justify",
+                }}
                 color={theme.palette.text.primary}
               >
                 Our mission is simple to source the finest quality spices,
@@ -300,7 +314,7 @@ export default function AboutLight() {
         </Typography>
         <Grid container spacing={3}>
           {highlights.map((item, index) => (
-            <Grid size={3} key={index}>
+            <Grid size={{ xs: 12, md: 3 }} key={index}>
               <Box textAlign="center">
                 <Avatar
                   sx={{
@@ -325,13 +339,13 @@ export default function AboutLight() {
         </Grid>
 
         <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
-          <Grid size={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Stack direction={"column"} spacing={2} justifyContent={"center"}>
               <Image src={Founder} alt="Founder" />
               <Image src={CoFounder} alt="Co Founder" />
             </Stack>
           </Grid>
-          <Grid size={9}>
+          <Grid size={{ xs: 12, md: 9 }}>
             <Stack>
               <Typography
                 variant="h2"
@@ -346,7 +360,16 @@ export default function AboutLight() {
               >
                 Behind the Brand
               </Typography>
-              <Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  py: 0.5,
+                  px: 2,
+                  justifyContent: "center",
+                  textAlign: "justify",
+                }}
+                color={theme.palette.text.primary}
+              >
                 <b>Late. Shri Ram Prasad Sharma (Founder)</b> was passionate
                 about exploring the best spices without compromising the quality
                 and made them available for global households. He firmly
@@ -393,7 +416,10 @@ export default function AboutLight() {
               Our Team (The best team)
             </Typography>
           </Grid>
-          <Grid size={6} sx={{ display: "flex", justifyContent: "center" }}>
+          <Grid
+            size={{ xs: 12, md: 6 }}
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
             <Stack>
               <Image
                 src={CoFounder}
@@ -415,7 +441,10 @@ export default function AboutLight() {
               </IconButton>
             </Stack>
           </Grid>
-          <Grid size={6} sx={{ display: "flex", justifyContent: "center" }}>
+          <Grid
+            size={{ xs: 12, md: 6 }}
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
             <Stack>
               <Image src={Director} alt="Director" width={200} height={280} />
               <Typography sx={{ mt: 1, textAlign: "center" }}>
