@@ -97,7 +97,7 @@ const chooseUs = [
 
 const Home: React.FC = () => {
   const visibleSectionsRef = useRef<Set<string>>(new Set());
-  const [renderTrigger, setRenderTrigger] = useState(0); // Trigger re-render when sections become visible
+  const [, setRenderTrigger] = useState(0); // Trigger re-render when sections become visible
   const sectionRefs = {
     featuredProducts: useRef<HTMLDivElement>(null),
     achievements: useRef<HTMLDivElement>(null),
