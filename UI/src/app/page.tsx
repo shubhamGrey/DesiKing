@@ -113,7 +113,7 @@ const product_categories = [
   },
   {
     title: "CEREALS & GRAINS",
-    image: "/Cereals & Grains.JPG",
+    image: "/Cereals Grains.JPG",
     coming_soon: true,
   },
   {
@@ -123,12 +123,12 @@ const product_categories = [
   },
   {
     title: "FATS & OILS",
-    image: "/Fats & oil.jpeg",
+    image: "/Fats oil.jpeg",
     coming_soon: true,
   },
   {
     title: "FRUITS & NUTS",
-    image: "/Fruits & Nuts.jpeg",
+    image: "/Fruits Nuts.jpeg",
     coming_soon: true,
   },
   {
