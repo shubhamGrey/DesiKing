@@ -21,7 +21,7 @@ interface Category {
 
 interface AllProductsProps {
   items: Category[];
-  route: string;
+  route?: string;
 }
 
 export default function AllProducts({ items }: AllProductsProps) {
