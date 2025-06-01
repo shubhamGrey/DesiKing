@@ -1,4 +1,4 @@
-import { michroma, pacifico } from "@/app/layout";
+import { michroma } from "@/app/layout";
 import { Box, Stack, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 
