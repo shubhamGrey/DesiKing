@@ -3,6 +3,7 @@
 import React from "react";
 import {
   Box,
+  Button,
   Container,
   Grid,
   Stack,
@@ -26,6 +27,7 @@ import Cook from "../../public/Home Cook.jpg";
 import Blogger from "../../public/Food Blogger.jpg";
 import theme from "@/styles/theme";
 import AllProducts from "@/components/AllProducts";
+import { useRouter } from "next/navigation";
 
 const achievements = [
   {
@@ -192,7 +194,7 @@ const brands = [
 
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
+  const router = useRouter();
   return (
     <div>
       <Container
@@ -252,11 +254,35 @@ const Home: React.FC = () => {
                       transition: "transform 0.3s ease-in-out",
                       cursor: "pointer",
                       borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "end",
+                      justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
                       },
                     }}
-                  />
+                  >
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        color: "primary.contrastText",
+                        border: "1px solid",
+                        borderColor: "primary.contrastText",
+                        mb: 3,
+                        "&:hover": {
+                          color: "primary.main",
+                          border: "1px solid",
+                          borderColor: "primary.contrastText",
+                          backgroundColor: "primary.contrastText",
+                        },
+                      }}
+                      onClick={() => {
+                        router.push("/products");
+                      }}
+                    >
+                      Order Now
+                    </Button>
+                  </Box>
                 </Box>
                 <Box
                   sx={{
@@ -277,11 +303,35 @@ const Home: React.FC = () => {
                       transition: "transform 0.3s ease-in-out",
                       cursor: "pointer",
                       borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "end",
+                      justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
                       },
                     }}
-                  />
+                  >
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        color: "primary.contrastText",
+                        border: "1px solid",
+                        borderColor: "primary.contrastText",
+                        mb: 3,
+                        "&:hover": {
+                          color: "primary.main",
+                          border: "1px solid",
+                          borderColor: "primary.contrastText",
+                          backgroundColor: "primary.contrastText",
+                        },
+                      }}
+                      onClick={() => {
+                        router.push("/products");
+                      }}
+                    >
+                      Order Now
+                    </Button>
+                  </Box>
                 </Box>
               </Stack>
             </Grid>
@@ -305,18 +355,42 @@ const Home: React.FC = () => {
                   sx={{
                     height: "100%",
                     width: "100%",
-                    backgroundImage: 'url("/Turmeric.png")',
+                    backgroundImage: 'url("/Raw Turmeric.jpg")',
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
                     transition: "transform 0.3s ease-in-out",
                     cursor: "pointer",
                     borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     "&:hover": {
                       transform: "scale(1.05)",
                     },
                   }}
-                />
+                >
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      color: "primary.contrastText",
+                      border: "1px solid",
+                      borderColor: "primary.contrastText",
+                      mb: 3,
+                      "&:hover": {
+                        color: "primary.main",
+                        border: "1px solid",
+                        borderColor: "primary.contrastText",
+                        backgroundColor: "primary.contrastText",
+                      },
+                    }}
+                    onClick={() => {
+                      router.push("/products");
+                    }}
+                  >
+                    Order Now
+                  </Button>
+                </Box>
               </Box>
             </Grid>
             <Grid
@@ -352,11 +426,35 @@ const Home: React.FC = () => {
                       transition: "transform 0.3s ease-in-out",
                       cursor: "pointer",
                       borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "end",
+                      justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
                       },
                     }}
-                  />
+                  >
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        color: "primary.contrastText",
+                        border: "1px solid",
+                        borderColor: "primary.contrastText",
+                        mb: 3,
+                        "&:hover": {
+                          color: "primary.main",
+                          border: "1px solid",
+                          borderColor: "primary.contrastText",
+                          backgroundColor: "primary.contrastText",
+                        },
+                      }}
+                      onClick={() => {
+                        router.push("/products");
+                      }}
+                    >
+                      Order Now
+                    </Button>
+                  </Box>
                 </Box>
                 <Box
                   sx={{
@@ -377,11 +475,35 @@ const Home: React.FC = () => {
                       transition: "transform 0.3s ease-in-out",
                       cursor: "pointer",
                       borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "end",
+                      justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
                       },
                     }}
-                  />
+                  >
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        color: "primary.contrastText",
+                        border: "1px solid",
+                        borderColor: "primary.contrastText",
+                        mb: 3,
+                        "&:hover": {
+                          color: "primary.main",
+                          border: "1px solid",
+                          borderColor: "primary.contrastText",
+                          backgroundColor: "primary.contrastText",
+                        },
+                      }}
+                      onClick={() => {
+                        router.push("/products");
+                      }}
+                    >
+                      Order Now
+                    </Button>
+                  </Box>
                 </Box>
               </Stack>
             </Grid>
@@ -401,7 +523,7 @@ const Home: React.FC = () => {
           >
             Products Categories
           </Typography>
-          <AllProducts items={product_categories} />
+          <AllProducts items={product_categories} route="products" />
         </Box>
         <Box
           sx={{
@@ -548,7 +670,7 @@ const Home: React.FC = () => {
         >
           <Typography
             variant="h4"
-            sx={{ mb: 10, mt: 4, color: "primary.main" }}
+            sx={{ mb: 8, mt: 4, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontWeight={600}
             textAlign={"center"}

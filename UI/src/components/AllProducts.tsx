@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { michroma } from "@/app/layout";
+import { useRouter } from "next/navigation";
 
 interface Category {
   title: string;
@@ -20,11 +21,13 @@ interface Category {
 
 interface AllProductsProps {
   items: Category[];
+  route: string;
 }
 
 export default function AllProducts({ items }: AllProductsProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(4);
+  const router = useRouter();
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -114,6 +117,11 @@ export default function AllProducts({ items }: AllProductsProps) {
               pointerEvents: category.coming_soon ? "none" : "auto",
               boxShadow: "none",
               cursor: "pointer",
+            }}
+            onClick={() => {
+              if (!category.coming_soon) {
+                router.push("/products");
+              }
             }}
           >
             <CardMedia
