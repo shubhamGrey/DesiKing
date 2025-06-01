@@ -34,6 +34,7 @@ import Purity from "../../public/Purity.png";
 import Quality from "../../public/Quality.png";
 import Taste from "../../public/Taste.png";
 import Globe from "../../public/Globe.png";
+import { michroma } from "@/app/layout";
 
 const carousalImages = [
   { image: Purity },
@@ -122,8 +123,11 @@ export default function Header() {
                           href={href}
                           underline="none"
                           sx={{
-                            color: "primary.contrastText",
-                            fontWeight: isActive ? "bold" : "normal",
+                            color: isActive
+                              ? "secondary.main"
+                              : "primary.contrastText",
+                            fontWeight: 700,
+                            fontFamily: michroma.style.fontFamily,
                           }}
                         >
                           {label.toUpperCase()}

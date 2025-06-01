@@ -67,10 +67,9 @@ export default function AboutLight() {
       <Grid container spacing={8} alignItems="center">
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{ mb: 3, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
             fontWeight={600}
           >
             Who we are
@@ -89,7 +88,7 @@ export default function AboutLight() {
               }}
             />
             <Typography
-              variant="h4"
+              variant="h5"
               sx={{
                 mb: 2,
                 ml: 1,
@@ -163,7 +162,6 @@ export default function AboutLight() {
                   color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Our Vision
@@ -218,7 +216,6 @@ export default function AboutLight() {
                   color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Core Values
@@ -279,7 +276,6 @@ export default function AboutLight() {
                   color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Our Mission
@@ -307,10 +303,9 @@ export default function AboutLight() {
       </Grid>
 
       <Typography
-        variant="h3"
+        variant="h4"
         sx={{ mb: 6, mt: 15, color: "primary.main" }}
         fontFamily={michroma.style.fontFamily}
-        fontStyle={"italic"}
         fontWeight={600}
         textAlign={"center"}
       >
@@ -352,13 +347,12 @@ export default function AboutLight() {
         <Grid size={{ xs: 12, md: 9 }}>
           <Stack>
             <Typography
-              variant="h3"
+              variant="h4"
               sx={{
                 mb: 6,
                 color: "primary.main",
               }}
               fontFamily={michroma.style.fontFamily}
-              fontStyle={"italic"}
               fontWeight={600}
               textAlign={"center"}
             >
@@ -408,13 +402,12 @@ export default function AboutLight() {
       <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
         <Grid size={12} sx={{ display: "flex", justifyContent: "center" }}>
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{
               mb: 6,
               color: "primary.main",
             }}
             fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
             fontWeight={600}
           >
             Our Team (The best team)

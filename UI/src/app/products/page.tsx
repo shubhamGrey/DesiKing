@@ -122,7 +122,7 @@ const Products = () => {
     <Box sx={{ mx: 3, my: 10 }}>
       <Box
         sx={{
-          backgroundImage: 'url("/Product Brand.jpg")',
+          backgroundImage: 'url("/Powdered Spices.jpg")',
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
@@ -157,6 +157,11 @@ const Products = () => {
                 maxWidth: 345,
                 backgroundColor: "transparent",
                 borderRadius: 2,
+                cursor: "pointer",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  transition: "transform 0.3s ease-in-out",
+                },
               }}
               elevation={0}
             >
@@ -169,15 +174,22 @@ const Products = () => {
                   height="100%"
                   image={product.image}
                   alt={product.name}
-                  sx={{
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      transition: "transform 0.3s ease-in-out",
-                    },
-                  }}
                 />
-                <CardContent>
-                  <Typography variant="h5" fontWeight={600} gutterBottom>
+                <CardContent
+                  sx={{
+                    backgroundColor: "#f8f3ea",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    fontWeight={600}
+                    gutterBottom
+                    fontFamily={michroma.style.fontFamily}
+                  >
                     {product.name}
                   </Typography>
                 </CardContent>
@@ -188,28 +200,47 @@ const Products = () => {
       </Box>
 
       {selectedProduct && (
-        <Box sx={{ m: 10 }}>
+        <Box sx={{ m: isMobile ? 0 : 10 }}>
           <Grid container spacing={10}>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{ position: "relative", height: isMobile ? "400px" : "auto" }}
+            >
               <Image
                 src={selectedProduct.image}
                 alt={selectedProduct?.name}
-                layout="responsive"
-                width={500}
-                height={500}
+                fill={true}
                 style={{ borderRadius: 8 }}
               />
             </Grid>
-            <Grid size={{ xs: 11, md: 5 }}>
-              <Typography
-                variant="h4"
-                fontWeight={600}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                justifyContent={"space-between"}
                 sx={{ mb: 2 }}
-                fontFamily={michroma.style.fontFamily}
-                color="primary.main"
               >
-                {selectedProduct.name}
-              </Typography>
+                <Typography
+                  variant="h4"
+                  fontWeight={600}
+                  sx={{ mb: 2 }}
+                  fontFamily={michroma.style.fontFamily}
+                  color="primary.main"
+                >
+                  {selectedProduct.name}
+                </Typography>
+                <Close
+                  fontSize="medium"
+                  sx={{
+                    color: "primary.main",
+                    cursor: "pointer",
+                    position: "absolute",
+                    right: 24,
+                  }}
+                  onClick={() => setSelectedProduct(null)}
+                />
+              </Stack>
               <Typography
                 variant="body1"
                 sx={{ color: "text.primary", mb: 2 }}
@@ -265,17 +296,6 @@ const Products = () => {
                   </ul>
                 </>
               )}
-            </Grid>
-            <Grid
-              size={{ xs: 1, md: 1 }}
-              display={"flex"}
-              justifyContent={"right"}
-            >
-              <Close
-                fontSize="medium"
-                sx={{ color: "primary.main", cursor: "pointer" }}
-                onClick={() => setSelectedProduct(null)}
-              />
             </Grid>
           </Grid>
         </Box>

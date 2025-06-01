@@ -1,8 +1,9 @@
 "use client";
-import { Box, IconButton, Slide, Stack } from "@mui/material";
+import { Box, IconButton, Slide, Stack, useMediaQuery } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Image, { StaticImageData } from "next/image";
 import React, { useEffect } from "react";
+import theme from "@/styles/theme";
 
 interface CarousalProps {
   items: {
@@ -11,6 +12,8 @@ interface CarousalProps {
 }
 
 const Carousal = ({ items }: CarousalProps) => {
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [currentPage, setCurrentPage] = React.useState(0);
   const [slideDirection, setSlideDirection] = React.useState<
     "left" | "right" | undefined
@@ -33,7 +36,7 @@ const Carousal = ({ items }: CarousalProps) => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      handleNextPage();
+      // handleNextPage();
     }, autoSlideInterval);
 
     return () => clearInterval(timer); // Cleanup on unmount
@@ -46,7 +49,7 @@ const Carousal = ({ items }: CarousalProps) => {
         flexDirection: "row",
         alignItems: "center",
         alignContent: "center",
-        height: "450px",
+        height: isMobile ? "200px" : "450px",
         justifyContent: "center",
         position: "relative",
       }}
@@ -57,7 +60,7 @@ const Carousal = ({ items }: CarousalProps) => {
           flexDirection: "row",
           alignItems: "center",
           width: "100%",
-          height: "450px",
+          height: "100%",
           justifyContent: "center",
         }}
       >
@@ -90,8 +93,9 @@ const Carousal = ({ items }: CarousalProps) => {
                 <Image
                   src={item.image}
                   alt={`Carousal Image ${index + 1}`}
+                  fill
                   style={{
-                    objectFit: "cover",
+                    // objectFit: "cover",
                     width: "100%",
                     height: "100%",
                   }}

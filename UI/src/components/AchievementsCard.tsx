@@ -78,22 +78,23 @@ const AchievementsCard = ({
         width={"100%"}
       >
         {icon}
-        <Stack direction={"column"} alignItems="center" sx={{ ml: 4 }}>
+        <Stack direction={"row"} alignItems="center" sx={{ ml: 4 }}>
           <Typography
-            variant="h2"
+            variant="h3"
             fontFamily={pacifico.style.fontFamily}
             fontWeight={600}
             textAlign={"center"}
+            sx={{ mb: 1 }}
           >
             {value}
           </Typography>
 
           <Typography
-            variant="h6"
-            fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
+            variant="h5"
+            fontFamily={pacifico.style.fontFamily}
             fontWeight={600}
             textAlign={"center"}
+            sx={{ ml: 3 }}
           >
             {name}
           </Typography>
@@ -101,7 +102,7 @@ const AchievementsCard = ({
       </Stack>
 
       <Typography
-        variant="body1"
+        variant="body2"
         color={"text.primary"}
         textAlign={"justify"}
         sx={{ mt: 2 }}

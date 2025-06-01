@@ -1,8 +1,14 @@
 "use client";
 
 import React from "react";
-import { Box, Container, Grid, Stack, Typography } from "@mui/material";
-import FeaturedProducts from "@/components/FeaturedProducts";
+import {
+  Box,
+  Container,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
   Diversity1,
@@ -18,26 +24,28 @@ import Testimonials from "@/components/Testimonials";
 import Chef from "../../public/Chef.jpg";
 import Cook from "../../public/Home Cook.jpg";
 import Blogger from "../../public/Food Blogger.jpg";
+import theme from "@/styles/theme";
+import AllProducts from "@/components/AllProducts";
 
 const achievements = [
   {
     value: "500+",
     name: "Happy Customers",
-    icon: <Diversity1 sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <Diversity1 fontSize="large" />,
     description:
       "Serving smiles across homes and kitchens with every pack of spice we deliver.",
   },
   {
     value: "4+",
     name: "Countries served",
-    icon: <Public sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <Public fontSize="large" />,
     description:
       "Taking the taste of India to plates across the globe with trusted international patnerships.",
   },
   {
     value: "3+",
     name: "Years of excellence",
-    icon: <WorkspacePremium sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <WorkspacePremium fontSize="large" />,
     description:
       "From farm to fork - thousands of kilos of flavourful spices delivered with care and quality.",
   },
@@ -70,31 +78,121 @@ const testimonialData = [
 const chooseUs = [
   {
     name: "Uncompromised Purity",
-    icon: <HandshakeOutlined sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <HandshakeOutlined fontSize="large" />,
     description:
       "We source only the finest raw spices, ensuring that every product is free from additives, fillers and artificial colors.",
   },
   {
     name: "Hygenic Processing",
-    icon: <HealthAndSafetyOutlined sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <HealthAndSafetyOutlined fontSize="large" />,
     description:
       "Our state-of-the-art processing facilities adhere to the highest hygiene standards and safety protocols, ensuring that every spice is safe and healthy.",
   },
   {
     name: "Bold, Authentic Flavors",
-    icon: <SoupKitchenOutlined sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <SoupKitchenOutlined fontSize="large" />,
     description:
       "Each spice is carefully selected and processed to retain its natural oils and flavors, delivering an authentic taste experience that transports you to the heart of Indian cuisine.",
   },
   {
     name: "Global Reach, Local Trust",
-    icon: <Public sx={{ height: "2.5em", width: "2.5em" }} />,
+    icon: <Public fontSize="large" />,
     description:
       "We serve both domestic and international markets, offering world-class products rooted in Indian tradition.",
   },
 ];
 
+const product_categories = [
+  {
+    title: "POWDERED SPICES",
+    image: "/Powdered Spices.jpg",
+  },
+  {
+    title: "WHOLE SPICES",
+    image: "/Whole spices.jpg",
+  },
+  {
+    title: "CEREALS & GRAINS",
+    image: "/Cereals & Grains.JPG",
+    coming_soon: true,
+  },
+  {
+    title: "FLOURS",
+    image: "/Flour.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "FATS & OILS",
+    image: "/Fats & oil.jpeg",
+    coming_soon: true,
+  },
+  {
+    title: "FRUITS & NUTS",
+    image: "/Fruits & Nuts.jpeg",
+    coming_soon: true,
+  },
+  {
+    title: "BAKERY PRODUCTS",
+    image: "Bakery Products.jpeg",
+    coming_soon: true,
+  },
+  {
+    title: "REFINED & RAW SUGARS",
+    image: "/Sugar.jpeg",
+    coming_soon: true,
+  },
+  {
+    title: "SALTS",
+    image: "/Salt.jpg",
+    coming_soon: true,
+  },
+];
+
+const brands = [
+  {
+    title: "DESI KING",
+    image: "/Brand Desi King.jpg",
+  },
+  {
+    title: "GOLDEN GRAINS",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "DOUGH DELIGHTS",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "GOLDEN DROPS",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "BOOM NUTS",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "WAKE N BAKE",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "SWEET SYMPHONY",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+  {
+    title: "ANI SALTS",
+    image: "/placeholder.jpg",
+    coming_soon: true,
+  },
+];
+
 const Home: React.FC = () => {
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   return (
     <div>
       <Container
@@ -112,18 +210,214 @@ const Home: React.FC = () => {
           }}
         >
           <Typography
-            variant="h3"
-            sx={{ mb: 3, color: "primary.main" }}
+            variant="h4"
+            sx={{ mb: 8, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
             fontWeight={600}
             textAlign={"center"}
           >
             Featured Products
           </Typography>
-          <Box sx={{ p: 2 }}>
-            <FeaturedProducts />
-          </Box>
+          <Grid container spacing={1} height={600}>
+            <Grid
+              size={{ xs: 12, md: 4 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Stack
+                direction={"column"}
+                spacing={1}
+                height="100%"
+                width="100%"
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    overflow: "hidden",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: "100%",
+                      width: "100%",
+                      backgroundImage: 'url("/Chili.png")',
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
+                    }}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    overflow: "hidden",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: "100%",
+                      width: "100%",
+                      backgroundImage: 'url("/Cumin.png")',
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
+                    }}
+                  />
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid
+              size={{ xs: 12, md: 4 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  height: "100%",
+                  width: "100%",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    backgroundImage: 'url("/Turmeric.png")',
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    transition: "transform 0.3s ease-in-out",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                    },
+                  }}
+                />
+              </Box>
+            </Grid>
+            <Grid
+              size={{ xs: 12, md: 4 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Stack
+                direction={"column"}
+                spacing={1}
+                height="100%"
+                width="100%"
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    overflow: "hidden",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: "100%",
+                      width: "100%",
+                      backgroundImage: 'url("/Turmeric.png")',
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
+                    }}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    overflow: "hidden",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: "100%",
+                      width: "100%",
+                      backgroundImage: 'url("/Coriander.png")',
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      transition: "transform 0.3s ease-in-out",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
+                    }}
+                  />
+                </Box>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Box>
+        <Box
+          sx={{
+            mt: 15,
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{ mb: 8, color: "primary.main" }}
+            fontFamily={michroma.style.fontFamily}
+            fontWeight={600}
+            textAlign={"center"}
+          >
+            Products Categories
+          </Typography>
+          <AllProducts items={product_categories} />
+        </Box>
+        <Box
+          sx={{
+            mt: 15,
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{ mb: 8, color: "primary.main" }}
+            fontFamily={michroma.style.fontFamily}
+            fontWeight={600}
+            textAlign={"center"}
+          >
+            Brands
+          </Typography>
+          <AllProducts items={brands} />
         </Box>
         <Box
           sx={{
@@ -139,27 +433,19 @@ const Home: React.FC = () => {
           >
             <Grid container spacing={8}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Stack
-                  direction={"column"}
-                  alignItems="center"
-                  spacing={15}
-                  sx={{
-                    mt: 4,
-                  }}
-                >
+                <Stack direction={"column"} alignItems="center" spacing={15}>
                   <Typography
-                    variant="h3"
+                    variant="h4"
                     sx={{
                       color: "primary.main",
                     }}
                     fontFamily={michroma.style.fontFamily}
-                    fontStyle={"italic"}
                     fontWeight={600}
                     textAlign={"center"}
                   >
                     From India to The World
                   </Typography>
-                  <Grid container spacing={10} style={{ marginTop: "80px" }}>
+                  <Grid container spacing={8} sx={{ mt: "64px !important" }}>
                     {achievements.map((achievement, index) => (
                       <Grid
                         size={12}
@@ -185,12 +471,13 @@ const Home: React.FC = () => {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box
                   sx={{
-                    height: "100%",
+                    height: isMobile ? "380px" : "100%",
                     width: "100%",
                     backgroundImage: 'url("/Achievement.jpg")',
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
+                    borderRadius: "50%",
                   }}
                 />
               </Grid>
@@ -213,7 +500,7 @@ const Home: React.FC = () => {
             >
               <Box
                 sx={{
-                  height: "100%",
+                  height: isMobile ? "400px" : "100%",
                   width: "100%",
                   backgroundImage: 'url("/Chooseus.jpg")',
                   backgroundSize: "cover",
@@ -224,22 +511,33 @@ const Home: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
-                variant="h3"
-                sx={{ mb: 10, mt: 4, color: "primary.main" }}
+                variant="h4"
+                sx={{ color: "primary.main" }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Why Choose Us
               </Typography>
-              {chooseUs.map((item, index) => (
-                <ChooseUs
-                  key={index}
-                  name={item.name}
-                  icon={item.icon}
-                  description={item.description}
-                />
-              ))}
+              <Grid container spacing={8} sx={{ mt: "64px !important" }}>
+                {chooseUs.map((item, index) => (
+                  <Grid
+                    size={12}
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ChooseUs
+                      key={index}
+                      name={item.name}
+                      icon={item.icon}
+                      description={item.description}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
             </Grid>
           </Grid>
         </Box>
@@ -249,10 +547,9 @@ const Home: React.FC = () => {
           }}
         >
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{ mb: 10, mt: 4, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
             fontWeight={600}
             textAlign={"center"}
           >
