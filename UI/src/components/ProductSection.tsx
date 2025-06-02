@@ -69,21 +69,18 @@ const ProductSection = ({ item }: ProductDetails) => {
     <Box sx={{ mx: 3, my: 10 }}>
       <Box
         sx={{
-          backgroundImage: `url('${item.category_image}')`,
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
           p: 4,
           borderRadius: 4,
-          height: "200px",
+          height: "100px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: "white",
         }}
       >
         <Typography
           variant="h3"
-          sx={{ color: "primary.contrastText" }}
+          sx={{ color: "primary.main" }}
           fontWeight={600}
           textAlign={"center"}
           fontFamily={michroma.style.fontFamily}
@@ -94,205 +91,60 @@ const ProductSection = ({ item }: ProductDetails) => {
       <Box
         sx={{
           mt: 8,
-          position: "relative",
           display: "flex",
           alignItems: "center",
-          overflow: "hidden",
-          height: 360,
         }}
       >
-        {!isMobile && (
-          <Box
-            sx={{
-              height: "100%",
-              backgroundColor: "#fffaf0",
-              display: "flex",
-              alignItems: "center",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            <IconButton
-              onClick={prevSlide}
-              aria-label="Previous category"
-              disabled={currentSlide === 0}
-              sx={{
-                bgcolor: "transparent",
-                color: "primary.main",
-                border: "1px solid",
-                borderColor: "primary.main",
-                "&:hover": {
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                },
-                "&:focus": {
-                  outline: "none",
-                },
-                "&:disabled": {
-                  bgcolor: "#E0E0E0",
-                  border: "none",
-                },
-                mr: 2,
-              }}
-            >
-              <ArrowBack />
-            </IconButton>
-          </Box>
-        )}
-        {isMobile ? (
-          <Grid container spacing={4}>
-            {item.products.map((product) => (
-              <Grid size={{ xs: 6 }} key={product.id}>
-                <Card
-                  sx={{
-                    backgroundColor: "transparent",
-                    borderRadius: 2,
-                    cursor: "pointer",
-                    minHeight: "200px",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      transition: "transform 0.3s ease-in-out",
-                    },
-                  }}
-                  elevation={0}
-                >
-                  <CardActionArea
-                    disableRipple
-                    onClick={() => setSelectedProduct(product)}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="100%"
-                      image={product.image}
-                      alt={product.name}
-                    />
-                    <CardContent
-                      sx={{
-                        backgroundColor: "#f8f3ea",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Typography
-                        variant="body1"
-                        fontWeight={600}
-                        gutterBottom
-                        sx={{ mb: 0 }}
-                      >
-                        {product.name}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box
-            sx={{
-              display: "flex",
-              transition: "transform 0.5s ease-in-out", // Add sliding effect
-              transform: `translateX(-${(currentSlide / cardsPerView) * 100}%)`, // Slide based on currentSlide
-              width: "100%", // Adjust width to fit all cards
-              gap: 2, // Add space between cards
-              pb: 1, // Add padding at the bottom
-            }}
-          >
-            {item.products.map((product) => (
-              <Box
-                key={product.id}
+        <Grid container spacing={4}>
+          {item.products.map((product) => (
+            <Grid size={{ xs: 6, md: 3 }} key={product.id}>
+              <Card
                 sx={{
-                  flex: "0 0 auto", // Ensure cards don't shrink or grow
-                  width: `${100 / cardsPerView - (1 / cardsPerView) * 4}%`, // Adjust width based on cardsPerView
+                  backgroundColor: "transparent",
+                  borderRadius: 2,
+                  cursor: "pointer",
+                  minHeight: "200px",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                  "&:hover": {
+                    transform: "scale(1.05)",
+                    transition: "transform 0.3s ease-in-out",
+                  },
                 }}
+                elevation={0}
               >
-                <Card
-                  sx={{
-                    backgroundColor: "transparent",
-                    borderRadius: 2,
-                    cursor: "pointer",
-                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      transition: "transform 0.3s ease-in-out",
-                    },
-                  }}
-                  elevation={0}
+                <CardActionArea
+                  disableRipple
+                  onClick={() => setSelectedProduct(product)}
                 >
-                  <CardActionArea
-                    disableRipple
-                    onClick={() => setSelectedProduct(product)}
+                  <CardMedia
+                    component="img"
+                    height="100%"
+                    image={product.image}
+                    alt={product.name}
+                  />
+                  <CardContent
+                    sx={{
+                      backgroundColor: "#f8f3ea",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    <CardMedia
-                      component="img"
-                      height="100%"
-                      image={product.image}
-                      alt={product.name}
-                    />
-                    <CardContent
-                      sx={{
-                        backgroundColor: "#f8f3ea",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                    <Typography
+                      variant="body1"
+                      fontWeight={600}
+                      gutterBottom
+                      sx={{ mb: 0 }}
                     >
-                      <Typography
-                        variant="h5"
-                        fontWeight={600}
-                        gutterBottom
-                        sx={{ mb: 0 }}
-                      >
-                        {product.name}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Box>
-            ))}
-          </Box>
-        )}
-        {!isMobile && (
-          <Box
-            sx={{
-              height: "100%",
-              backgroundColor: "#fffaf0",
-              display: "flex",
-              alignItems: "center",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            <IconButton
-              onClick={nextSlide}
-              aria-label="Next category"
-              disabled={currentSlide + cardsPerView >= item.products.length}
-              sx={{
-                bgcolor: "transparent",
-                color: "primary.main",
-                border: "1px solid",
-                borderColor: "primary.main",
-                "&:hover": {
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                },
-                "&:focus": {
-                  outline: "none",
-                },
-                "&:disabled": {
-                  bgcolor: "#E0E0E0",
-                  border: "none",
-                },
-                ml: 2,
-              }}
-            >
-              <ArrowForward />
-            </IconButton>
-          </Box>
-        )}
+                      {product.name}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Box>
 
       {selectedProduct && (
