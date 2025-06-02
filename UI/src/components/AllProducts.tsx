@@ -10,7 +10,6 @@ import {
   useTheme,
 } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import { michroma } from "@/app/layout";
 import { useRouter } from "next/navigation";
 
 interface Category {

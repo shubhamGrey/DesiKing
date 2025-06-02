@@ -49,7 +49,7 @@ const AchievementsCard = ({
     window.addEventListener("scroll", handleScroll);
     handleScroll(); // Initial check
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  });
 
   return (
     <Box

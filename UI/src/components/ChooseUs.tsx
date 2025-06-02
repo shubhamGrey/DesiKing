@@ -43,7 +43,7 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
     window.addEventListener("scroll", handleScroll);
     handleScroll(); // Initial check
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  });
 
   return (
     <Box
