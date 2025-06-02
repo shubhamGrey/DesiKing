@@ -97,36 +97,47 @@ const ProductSection = ({ item }: ProductDetails) => {
           position: "relative",
           display: "flex",
           alignItems: "center",
+          overflow: "hidden",
+          height: 360,
         }}
       >
         {!isMobile && (
-          <IconButton
-            onClick={prevSlide}
-            aria-label="Previous category"
-            disabled={currentSlide === 0}
+          <Box
             sx={{
+              height: "100%",
+              backgroundColor: "#fffaf0",
+              display: "flex",
+              alignItems: "center",
               position: "relative",
               zIndex: 1,
-              bgcolor: "transparent",
-              color: "primary.main",
-              border: "1px solid",
-              borderColor: "primary.main",
-              "&:hover": {
-                bgcolor: "primary.main",
-                color: "primary.contrastText",
-              },
-              "&:focus": {
-                outline: "none",
-              },
-              "&:disabled": {
-                bgcolor: "#E0E0E0",
-                border: "none",
-              },
-              mr: 2,
             }}
           >
-            <ArrowBack />
-          </IconButton>
+            <IconButton
+              onClick={prevSlide}
+              aria-label="Previous category"
+              disabled={currentSlide === 0}
+              sx={{
+                bgcolor: "transparent",
+                color: "primary.main",
+                border: "1px solid",
+                borderColor: "primary.main",
+                "&:hover": {
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                },
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:disabled": {
+                  bgcolor: "#E0E0E0",
+                  border: "none",
+                },
+                mr: 2,
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
+          </Box>
         )}
         {isMobile ? (
           <Grid container spacing={4}>
@@ -168,7 +179,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                         variant="body1"
                         fontWeight={600}
                         gutterBottom
-                        fontFamily={michroma.style.fontFamily}
+                        sx={{ mb: 0 }}
                       >
                         {product.name}
                       </Typography>
@@ -179,25 +190,30 @@ const ProductSection = ({ item }: ProductDetails) => {
             ))}
           </Grid>
         ) : (
-          <Stack
-            direction="row"
-            spacing={4}
-            justifyContent="center"
+          <Box
             sx={{
-              flexGrow: 1,
-              flexWrap: "nowrap",
+              display: "flex",
+              transition: "transform 0.5s ease-in-out", // Add sliding effect
+              transform: `translateX(-${(currentSlide / cardsPerView) * 100}%)`, // Slide based on currentSlide
+              width: "100%", // Adjust width to fit all cards
+              gap: 2, // Add space between cards
+              pb: 1, // Add padding at the bottom
             }}
           >
-            {item.products
-              .slice(currentSlide, currentSlide + cardsPerView)
-              .map((product) => (
+            {item.products.map((product) => (
+              <Box
+                key={product.id}
+                sx={{
+                  flex: "0 0 auto", // Ensure cards don't shrink or grow
+                  width: `${100 / cardsPerView - (1 / cardsPerView) * 4}%`, // Adjust width based on cardsPerView
+                }}
+              >
                 <Card
-                  key={product.id}
                   sx={{
-                    width: 350, // Fixed width for each card
                     backgroundColor: "transparent",
                     borderRadius: 2,
                     cursor: "pointer",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                     "&:hover": {
                       transform: "scale(1.05)",
                       transition: "transform 0.3s ease-in-out",
@@ -228,44 +244,54 @@ const ProductSection = ({ item }: ProductDetails) => {
                         variant="h5"
                         fontWeight={600}
                         gutterBottom
-                        fontFamily={michroma.style.fontFamily}
+                        sx={{ mb: 0 }}
                       >
                         {product.name}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
                 </Card>
-              ))}
-          </Stack>
+              </Box>
+            ))}
+          </Box>
         )}
         {!isMobile && (
-          <IconButton
-            onClick={nextSlide}
-            aria-label="Next category"
-            disabled={currentSlide + cardsPerView >= item.products.length}
+          <Box
             sx={{
+              height: "100%",
+              backgroundColor: "#fffaf0",
+              display: "flex",
+              alignItems: "center",
               position: "relative",
               zIndex: 1,
-              bgcolor: "transparent",
-              color: "primary.main",
-              border: "1px solid",
-              borderColor: "primary.main",
-              "&:hover": {
-                bgcolor: "primary.main",
-                color: "primary.contrastText",
-              },
-              "&:focus": {
-                outline: "none",
-              },
-              "&:disabled": {
-                bgcolor: "#E0E0E0",
-                border: "none",
-              },
-              ml: 2,
             }}
           >
-            <ArrowForward />
-          </IconButton>
+            <IconButton
+              onClick={nextSlide}
+              aria-label="Next category"
+              disabled={currentSlide + cardsPerView >= item.products.length}
+              sx={{
+                bgcolor: "transparent",
+                color: "primary.main",
+                border: "1px solid",
+                borderColor: "primary.main",
+                "&:hover": {
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                },
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:disabled": {
+                  bgcolor: "#E0E0E0",
+                  border: "none",
+                },
+                ml: 2,
+              }}
+            >
+              <ArrowForward />
+            </IconButton>
+          </Box>
         )}
       </Box>
 
