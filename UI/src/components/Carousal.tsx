@@ -36,7 +36,7 @@ const Carousal = ({ items }: CarousalProps) => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      // handleNextPage();
+      handleNextPage();
     }, autoSlideInterval);
 
     return () => clearInterval(timer); // Cleanup on unmount

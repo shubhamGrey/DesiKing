@@ -93,6 +93,7 @@ export default function Header() {
                   height: 90,
                   width: 90,
                   cursor: "pointer",
+                  ml: 1,
                 }}
               >
                 <Link href="/" passHref>
@@ -126,8 +127,8 @@ export default function Header() {
                             color: isActive
                               ? "secondary.main"
                               : "primary.contrastText",
-                            fontWeight: 700,
                             fontFamily: michroma.style.fontFamily,
+                            fontSize: "14px",
                           }}
                         >
                           {label.toUpperCase()}
@@ -179,6 +180,7 @@ export default function Header() {
                   height: 90,
                   width: 90,
                   cursor: "pointer",
+                  ml: 1,
                 }}
               >
                 <Link href="/" passHref>

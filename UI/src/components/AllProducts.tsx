@@ -43,15 +43,21 @@ export default function AllProducts({ items }: AllProductsProps) {
     }
   }, [isSmallScreen, isMediumScreen]);
 
-  const nextSlide = () => {
+  const nextSlide = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (currentSlide + cardsPerView < items.length) {
-      setCurrentSlide(currentSlide + 1);
+      setCurrentSlide(
+        Math.min(currentSlide + cardsPerView, items.length - cardsPerView)
+      );
     }
   };
 
-  const prevSlide = () => {
+  const prevSlide = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (currentSlide > 0) {
-      setCurrentSlide(currentSlide - 1);
+      setCurrentSlide(Math.max(currentSlide - cardsPerView, 0));
     }
   };
 
@@ -99,7 +105,8 @@ export default function AllProducts({ items }: AllProductsProps) {
           transform: `translateX(-${currentSlide * (100 / cardsPerView)}%)`,
           transition: "transform 0.3s ease-in-out",
           width: "100%",
-          gap: "8px",
+          gap: 2,
+          pb: 1,
         }}
       >
         {items.map((category, index) => (
@@ -108,15 +115,15 @@ export default function AllProducts({ items }: AllProductsProps) {
             role="group"
             aria-label={`${category.title} category`}
             sx={{
-              minWidth: `${100 / cardsPerView - (1 / cardsPerView) * 2}%`,
+              minWidth: `${100 / cardsPerView - (1 / cardsPerView) * 4}%`,
               flexShrink: 0,
               borderRadius: "8px",
               overflow: "hidden",
               position: "relative",
               opacity: category.coming_soon ? 0.5 : 1,
               pointerEvents: category.coming_soon ? "none" : "auto",
-              boxShadow: "none",
               cursor: "pointer",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
             }}
             onClick={() => {
               if (!category.coming_soon) {
@@ -151,9 +158,8 @@ export default function AllProducts({ items }: AllProductsProps) {
               <Typography
                 variant="body1"
                 gutterBottom
-                fontFamily={michroma.style.fontFamily}
                 sx={{ mb: 0 }}
-                color="primary.main"
+                color="text.primary"
               >
                 {category.title}
               </Typography>
@@ -166,7 +172,7 @@ export default function AllProducts({ items }: AllProductsProps) {
                   left: 0,
                   width: "100%",
                   height: "100%",
-                  bgcolor: "rgba(0, 0, 0, 0.5)",
+                  bgcolor: "rgba(0, 0, 0, 0.8)",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",

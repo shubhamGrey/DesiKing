@@ -137,7 +137,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                     backgroundColor: "transparent",
                     borderRadius: 2,
                     cursor: "pointer",
-                    minHeight: "196px",
+                    minHeight: "200px",
                     "&:hover": {
                       transform: "scale(1.05)",
                       transition: "transform 0.3s ease-in-out",
