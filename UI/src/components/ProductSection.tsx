@@ -11,12 +11,10 @@ import {
   Stack,
   Typography,
   useMediaQuery,
-  IconButton,
 } from "@mui/material";
 import { Michroma } from "next/font/google";
 import Image from "next/image";
 import React from "react";
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
 
 const michroma = Michroma({
   subsets: ["latin"],
