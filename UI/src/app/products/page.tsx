@@ -1,5 +1,9 @@
 "use client";
 import ProductSection from "@/components/ProductSection";
+import { Box, Typography, useMediaQuery } from "@mui/material";
+import Image from "next/image";
+import DesiKing from "../../../public/DesiKing.png";
+import theme from "@/styles/theme";
 
 const productsList = [
   {
@@ -88,6 +92,27 @@ const productsList = [
           "Common in Indian, Middle Eastern, and Mediterranean cuisines.",
         ],
       },
+      {
+        id: 5,
+        name: "Garam Masala",
+        description:
+          "AGRO NEXIS Garam Masala is a signature blend of premium, hand-selected spices, expertly ground to deliver a rich, aromatic flavor profile. \
+          This traditional Indian spice mix enhances the taste and aroma of a wide variety of dishes, making it an essential addition to any kitchen. \
+          Perfect for curries, gravies, and marinades, our Garam Masala is crafted to preserve the freshness and natural oils of each spice.",
+        image: "/GaramMasala.png",
+        key_features: [
+          "Authentic Blend of Premium Spices",
+          "Warm and Aromatic Flavor",
+          "No Artificial Additives or Preservatives",
+          "Freshly Ground for Maximum Potency",
+          "Packed in a Hygienic Environment",
+        ],
+        uses: [
+          "Garam Masala is ideal for seasoning curries, lentil dishes, and vegetable preparations.",
+          "Sprinkle over finished dishes for an extra burst of flavor and aroma.",
+          "Use in marinades for meats, poultry, and paneer to enhance taste.",
+        ],
+      },
     ],
   },
   {
@@ -101,7 +126,7 @@ const productsList = [
           "AGRO NEXIS Turmeric consists of carefully selected turmeric roots, sun-dried to preserve their natural color and essential oils. \
           These whole roots are perfect for grinding fresh powder or infusing into teas and broths. Known for their earthy aroma and potent curcumin content, \
           they are a staple in traditional cooking and wellness remedies.",
-        image: "/Raw Turmeric.jpg",
+        image: "/RawTurmeric.jpg",
         key_features: [
           "Premium Quality Roots",
           "High Curcumin Content",
@@ -161,7 +186,7 @@ const productsList = [
         description:
           "AGRO NEXIS Dry Red Chillies are carefully selected and sun-dried to preserve their vibrant color and fiery heat. \
           These chillies add a bold kick to dishes and are essential in many traditional spice blends.",
-        image: "/Dry red chillies.jpg",
+        image: "/DryRedChili.JPG",
         key_features: [
           "Sun-Dried for Maximum Flavor",
           "Vibrant Color and Heat",
@@ -260,8 +285,37 @@ const productsList = [
 ];
 
 const Products = () => {
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   return (
     <>
+      <Box
+        sx={{
+          backgroundImage: 'url("/Header Image.png")',
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          px: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Image
+          src={DesiKing}
+          alt="Desi King"
+          style={{ width: "30%", height: "30%", marginTop: 32 }}
+        />
+        <Typography
+          variant="body1"
+          sx={{ mb: 4, mt: 2 }}
+          color="#000000"
+          fontSize={isMobile ? "0.2rem" : "1rem"}
+        >
+          A legacy of authenticity in every pinch.
+        </Typography>
+      </Box>
       {productsList.map((category, index) => (
         <ProductSection key={index} item={category} />
       ))}

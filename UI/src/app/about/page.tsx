@@ -23,8 +23,8 @@ import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
 import LinkedIn from "@mui/icons-material/LinkedIn";
 import Spices from "../../../public/Spices.png";
 import Founder from "../../../public/Founder.PNG";
-import CoFounder from "../../../public/Co Founder.PNG";
-import Director from "../../../public/Director.PNG";
+import CoFounder from "../../../public/Co Founder.jpg";
+import Director from "../../../public/Director.jpg";
 import Image from "next/image";
 import { Michroma } from "next/font/google";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -64,6 +64,29 @@ export default function AboutLight() {
 
   return (
     <Container sx={{ mt: 3, mx: 6, mb: 6, justifySelf: "center" }}>
+      <Box
+        style={{
+          position: "relative",
+          paddingBottom: "56.25%",
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
+        <iframe
+          src="https://www.youtube.com/embed/tYRz6M819nE"
+          title="Agro Nexis - Our Story"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        ></iframe>
+      </Box>
+
       <Grid container spacing={8} alignItems="center">
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography
@@ -311,6 +334,7 @@ export default function AboutLight() {
       >
         What Makes Us Special
       </Typography>
+
       <Grid container spacing={3}>
         {highlights.map((item, index) => (
           <Grid size={{ xs: 12, md: 3 }} key={index}>
@@ -340,8 +364,8 @@ export default function AboutLight() {
       <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
         <Grid size={{ xs: 12, md: 3 }}>
           <Stack direction={"column"} spacing={2} justifyContent={"center"}>
-            <Image src={Founder} alt="Founder" />
-            <Image src={CoFounder} alt="Co Founder" />
+            <Image src={Founder} alt="Founder" height={276} width={200} />
+            <Image src={CoFounder} alt="Co Founder" height={276} width={200} />
           </Stack>
         </Grid>
         <Grid size={{ xs: 12, md: 9 }}>
@@ -418,7 +442,7 @@ export default function AboutLight() {
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
-            <Image src={CoFounder} alt="Co Founder" width={200} height={280} />
+            <Image src={CoFounder} alt="Co Founder" width={200} height={276} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Vijay Sharma
             </Typography>
@@ -446,7 +470,7 @@ export default function AboutLight() {
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
-            <Image src={Director} alt="Director" width={200} height={280} />
+            <Image src={Director} alt="Director" width={200} height={276} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Purnima Sharma
             </Typography>

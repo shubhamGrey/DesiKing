@@ -86,7 +86,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                   backgroundColor: "transparent",
                   borderRadius: 2,
                   cursor: "pointer",
-                  minHeight: "200px",
+                  minHeight: "190px",
                   boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
                   "&:hover": {
                     transform: "scale(1.05)",

@@ -119,7 +119,7 @@ export default function AllProducts({ items }: AllProductsProps) {
               borderRadius: "8px",
               overflow: "hidden",
               position: "relative",
-              opacity: category.coming_soon ? 0.5 : 1,
+              opacity: category.coming_soon ? 0.6 : 1,
               pointerEvents: category.coming_soon ? "none" : "auto",
               cursor: "pointer",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
@@ -171,7 +171,6 @@ export default function AllProducts({ items }: AllProductsProps) {
                   left: 0,
                   width: "100%",
                   height: "100%",
-                  bgcolor: "rgba(0, 0, 0, 0.8)",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
@@ -179,9 +178,7 @@ export default function AllProducts({ items }: AllProductsProps) {
                   fontSize: "1.2rem",
                   fontWeight: "bold",
                 }}
-              >
-                Coming soon
-              </Box>
+              />
             )}
           </Card>
         ))}

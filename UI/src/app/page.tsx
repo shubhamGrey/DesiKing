@@ -4,6 +4,9 @@ import React from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
   Container,
   Grid,
   Stack,
@@ -28,6 +31,7 @@ import Blogger from "../../public/Food Blogger.jpg";
 import theme from "@/styles/theme";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
+import HomeGrid from "@/components/HomeGrid";
 
 const achievements = [
   {
@@ -113,6 +117,9 @@ const product_categories = [
     title: "WHOLE SPICES",
     image: "/Whole spices.jpg",
   },
+];
+
+const upcoming_product_categories = [
   {
     title: "CEREALS & GRAINS",
     image: "/Cereals Grains.JPG",
@@ -150,53 +157,12 @@ const product_categories = [
   },
 ];
 
-const brands = [
-  {
-    title: "DESI KING",
-    image: "/Brand Desi King.jpg",
-  },
-  {
-    title: "GOLDEN GRAINS",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "DOUGH DELIGHTS",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "GOLDEN DROPS",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "BOOM NUTS",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "WAKE N BAKE",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "SWEET SYMPHONY",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "ANI SALTS",
-    image: "/placeholder.jpg",
-    coming_soon: true,
-  },
-];
-
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   return (
-    <div>
+    <>
+      <HomeGrid />
       <Container
         sx={{
           mt: 3,
@@ -255,7 +221,7 @@ const Home: React.FC = () => {
                       cursor: "pointer",
                       borderRadius: "8px",
                       display: "flex",
-                      alignItems: "end",
+                      alignItems: "center",
                       justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
@@ -268,7 +234,6 @@ const Home: React.FC = () => {
                         color: "primary.contrastText",
                         border: "1px solid",
                         borderColor: "primary.contrastText",
-                        mb: 3,
                         "&:hover": {
                           color: "primary.main",
                           border: "1px solid",
@@ -304,7 +269,7 @@ const Home: React.FC = () => {
                       cursor: "pointer",
                       borderRadius: "8px",
                       display: "flex",
-                      alignItems: "end",
+                      alignItems: "center",
                       justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
@@ -317,7 +282,6 @@ const Home: React.FC = () => {
                         color: "primary.contrastText",
                         border: "1px solid",
                         borderColor: "primary.contrastText",
-                        mb: 3,
                         "&:hover": {
                           color: "primary.main",
                           border: "1px solid",
@@ -355,7 +319,7 @@ const Home: React.FC = () => {
                   sx={{
                     height: "100%",
                     width: "100%",
-                    backgroundImage: 'url("/Raw Turmeric.jpg")',
+                    backgroundImage: 'url("/GaramMasala.png")',
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
@@ -376,7 +340,6 @@ const Home: React.FC = () => {
                       color: "primary.contrastText",
                       border: "1px solid",
                       borderColor: "primary.contrastText",
-                      mb: 3,
                       "&:hover": {
                         color: "primary.main",
                         border: "1px solid",
@@ -427,7 +390,7 @@ const Home: React.FC = () => {
                       cursor: "pointer",
                       borderRadius: "8px",
                       display: "flex",
-                      alignItems: "end",
+                      alignItems: "center",
                       justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
@@ -440,7 +403,6 @@ const Home: React.FC = () => {
                         color: "primary.contrastText",
                         border: "1px solid",
                         borderColor: "primary.contrastText",
-                        mb: 3,
                         "&:hover": {
                           color: "primary.main",
                           border: "1px solid",
@@ -476,7 +438,7 @@ const Home: React.FC = () => {
                       cursor: "pointer",
                       borderRadius: "8px",
                       display: "flex",
-                      alignItems: "end",
+                      alignItems: "center",
                       justifyContent: "center",
                       "&:hover": {
                         transform: "scale(1.05)",
@@ -489,7 +451,6 @@ const Home: React.FC = () => {
                         color: "primary.contrastText",
                         border: "1px solid",
                         borderColor: "primary.contrastText",
-                        mb: 3,
                         "&:hover": {
                           color: "primary.main",
                           border: "1px solid",
@@ -521,9 +482,65 @@ const Home: React.FC = () => {
             fontWeight={600}
             textAlign={"center"}
           >
-            Products Categories
+            Product Categories
           </Typography>
-          <AllProducts items={product_categories} route="products" />
+          <Box
+            sx={{
+              display: "flex",
+              width: "100%",
+              pb: 1,
+            }}
+          >
+            {product_categories.map((category, index) => (
+              <Card
+                key={index}
+                role="group"
+                aria-label={`${category.title} category`}
+                sx={{
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                  width: "100%",
+                  mr: index === product_categories.length - 1 ? 0 : 2,
+                }}
+                onClick={() => {
+                  router.push("/products");
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={category.image}
+                  alt={category.title}
+                  sx={{
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                      transition: "transform 0.3s ease-in-out",
+                    },
+                  }}
+                />
+                <CardContent
+                  sx={{
+                    backgroundColor: "#f8f3ea",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    pb: "16px !important", // Ensure padding is consistent
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    sx={{ mb: 0 }}
+                    color="text.primary"
+                  >
+                    {category.title}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
         </Box>
         <Box
           sx={{
@@ -537,9 +554,9 @@ const Home: React.FC = () => {
             fontWeight={600}
             textAlign={"center"}
           >
-            Brands
+            Upcoming Categories
           </Typography>
-          <AllProducts items={brands} />
+          <AllProducts items={upcoming_product_categories} />
         </Box>
         <Box
           sx={{
@@ -604,6 +621,61 @@ const Home: React.FC = () => {
                 />
               </Grid>
             </Grid>
+          </Box>
+        </Box>
+        <Box
+          style={{
+            position: "relative",
+            paddingBottom: "56.25%",
+            height: 0,
+            overflow: "hidden",
+            marginTop: "120px",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            window.open(
+              "https://www.youtube.com/watch?v=tYRz6M819nE",
+              "_blank"
+            );
+          }}
+        >
+          <iframe
+            src="https://www.youtube.com/embed/tYRz6M819nE"
+            title="Agro Nexis - Our Story"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          ></iframe>
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              bgcolor: "rgba(0, 0, 0, 0.8)",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#FFF",
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{ color: "primary.contrastText" }}
+              fontFamily={michroma.style.fontFamily}
+              fontWeight={600}
+            >
+              Our Story
+            </Typography>
           </Box>
         </Box>
         <Box
@@ -680,7 +752,7 @@ const Home: React.FC = () => {
           <Testimonials items={testimonialData} />
         </Box>
       </Container>
-    </div>
+    </>
   );
 };
 

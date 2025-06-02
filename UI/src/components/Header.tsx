@@ -5,7 +5,6 @@ import {
   AppBar,
   Box,
   Toolbar,
-  Typography,
   Link as MuiLink,
   Stack,
   IconButton,
@@ -28,20 +27,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
-import DesiKing from "../../public/DesiKing.png";
-import Carousal from "@/components/Carousal";
-import Purity from "../../public/Purity.png";
-import Quality from "../../public/Quality.png";
-import Taste from "../../public/Taste.png";
-import Globe from "../../public/Globe.png";
+// import Purity from "../../public/Purity.png";
+// import Quality from "../../public/Quality.png";
+// import Taste from "../../public/Taste.png";
+// import Globe from "../../public/Globe.png";
 import { michroma } from "@/app/layout";
 
-const carousalImages = [
-  { image: Purity },
-  { image: Quality },
-  { image: Taste },
-  { image: Globe },
-];
+// const carousalImages = [
+//   { image: Purity },
+//   { image: Quality },
+//   { image: Taste },
+//   { image: Globe },
+// ];
 
 export default function Header() {
   const pathname = usePathname();
@@ -217,37 +214,6 @@ export default function Header() {
           )}
         </Toolbar>
       </AppBar>
-      {pathname !== "/" ? (
-        <Box
-          sx={{
-            backgroundImage: 'url("/Header Image.png")',
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            px: 2,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Image
-            src={DesiKing}
-            alt="Desi King"
-            style={{ width: "30%", height: "30%", marginTop: 32 }}
-          />
-          <Typography
-            variant="body1"
-            sx={{ mb: 4, mt: 2 }}
-            color="#000000"
-            fontSize={isMobile ? "0.2rem" : "1rem"}
-          >
-            A legacy of authenticity in every pinch.
-          </Typography>
-        </Box>
-      ) : (
-        <Carousal items={carousalImages} />
-      )}
 
       {/* Drawer for Mobile */}
       <Drawer anchor="bottom" open={drawerOpen} onClose={toggleDrawer(false)}>

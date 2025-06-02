@@ -43,12 +43,12 @@ export default function Footer() {
     },
     {
       label: "Terms Condition",
-      href: "/terms-condition",
+      href: "/terms",
       icon: <ArticleRounded fontSize="small" />,
     },
     {
       label: "Privacy Policy",
-      href: "/privacy-policy",
+      href: "/policy",
       icon: <PrivacyTipRounded fontSize="small" />,
     },
   ]);
