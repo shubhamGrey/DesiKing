@@ -48,21 +48,6 @@ const ProductSection = ({ item }: ProductDetails) => {
     uses?: string[];
   }>(null);
 
-  const [currentSlide, setCurrentSlide] = React.useState(0);
-  const cardsPerView = 4;
-
-  const nextSlide = () => {
-    if (currentSlide + cardsPerView < item.products.length) {
-      setCurrentSlide(currentSlide + cardsPerView);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide(currentSlide - cardsPerView);
-    }
-  };
-
   return (
     <Box sx={{ mx: 3, my: 10 }}>
       <Box
