@@ -9,7 +9,7 @@ services:
     container_name: nextjs
     restart: always
     env_file:
-      - .env
+      - UI/.env
     ports:
       - "3000:3000"
     networks:
