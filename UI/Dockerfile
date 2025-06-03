@@ -4,7 +4,6 @@ FROM node:21-alpine AS builder
 WORKDIR /app
 
 COPY UI/package.json UI/package-lock.json ./UI/
-COPY packages/ ./packages/
 COPY UI/ ./UI/
 
 WORKDIR /app/UI
