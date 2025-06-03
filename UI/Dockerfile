@@ -3,8 +3,7 @@ FROM node:21-alpine AS builder
 
 WORKDIR /app
 
-COPY UI/package.json UI/package-lock.json ./UI/
-COPY UI/ ./UI/
+COPY . ./UI/
 
 WORKDIR /app/UI
 RUN npm ci
