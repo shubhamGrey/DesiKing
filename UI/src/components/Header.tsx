@@ -27,18 +27,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
-// import Purity from "../../public/Purity.png";
-// import Quality from "../../public/Quality.png";
-// import Taste from "../../public/Taste.png";
-// import Globe from "../../public/Globe.png";
 import { michroma } from "@/app/layout";
-
-// const carousalImages = [
-//   { image: Purity },
-//   { image: Quality },
-//   { image: Taste },
-//   { image: Globe },
-// ];
 
 export default function Header() {
   const pathname = usePathname();
@@ -69,8 +58,10 @@ export default function Header() {
           sx={{
             justifyContent: "start",
             height: 64,
-            backgroundColor: "primary.main",
-            color: "primary.contrastText",
+            backgroundColor:
+              pathname === "/contact" ? "primary.contrastText" : "primary.main",
+            color:
+              pathname === "/contact" ? "primary.main" : "primary.contrastText",
             borderBottom: "0.5px solid #b36a26",
           }}
         >
@@ -123,6 +114,8 @@ export default function Header() {
                           sx={{
                             color: isActive
                               ? "secondary.main"
+                              : pathname === "/contact"
+                              ? "primary.main"
                               : "primary.contrastText",
                             fontFamily: michroma.style.fontFamily,
                             fontSize: "14px",
@@ -147,7 +140,10 @@ export default function Header() {
                       <IconButton
                         key={index}
                         sx={{
-                          color: "primary.contrastText",
+                          color:
+                            pathname === "/contact"
+                              ? "primary.main"
+                              : "primary.contrastText",
                         }}
                       >
                         {icon}

@@ -98,6 +98,7 @@ export default function Footer() {
         pt: 6,
         pb: 2,
         position: "relative",
+        borderTop: "0.5px solid #b36a26",
       }}
     >
       <Grid container spacing={4}>

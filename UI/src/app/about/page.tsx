@@ -54,7 +54,7 @@ const highlights = [
   },
 ];
 
-export default function AboutLight() {
+export default function About() {
   const coreValues = [
     "Quality & Purity",
     "Building Brand & Trust",
@@ -87,7 +87,7 @@ export default function AboutLight() {
         ></iframe>
       </Box>
 
-      <Grid container spacing={8} alignItems="center">
+      <Grid container spacing={8} sx={{ mt: 15 }} alignItems="center">
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography
             variant="h4"

@@ -70,73 +70,67 @@ const HomeGrid = () => {
       {!isMobile ? (
         <Grid container spacing={1} height={800}>
           <Grid
-            size={{ xs: 12, md: 4 }}
+            size={{ xs: 12, md: 6 }}
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Box
-              sx={{
-                height: "100%",
-                width: "100%",
-                overflow: "hidden",
-                position: "relative",
-              }}
-            >
-              <Box
-                component="div"
-                className="image-slider"
-                sx={{
-                  height: "100%",
-                  width: "100%",
-                  backgroundImage: `url(${images.box1[currentIndex]})`,
-                  backgroundSize: "100% 100%",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center",
-                  display: "flex",
-                  alignItems: "end",
-                  justifyContent: "center",
-                  transition: "background-image 1s ease-in-out",
-                }}
-              />
-            </Box>
-          </Grid>
-          <Grid
-            size={{ xs: 12, md: 4 }}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Box
-              sx={{
-                height: "100%",
-                width: "100%",
-                overflow: "hidden",
-                position: "relative",
-              }}
-            >
+            <Stack direction={"column"} spacing={1} height="100%" width="100%">
               <Box
                 sx={{
                   height: "100%",
                   width: "100%",
-                  backgroundImage: `url(${images.box2[currentIndex]})`,
-                  backgroundSize: "100% 100%",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "background-image 1s ease-in-out",
+                  overflow: "hidden",
+                  position: "relative",
                 }}
-              />
-            </Box>
+              >
+                <Box
+                  component="div"
+                  className="image-slider"
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    backgroundImage: `url(${images.box1[currentIndex]})`,
+                    backgroundSize: "100% 100%",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    display: "flex",
+                    alignItems: "end",
+                    justifyContent: "center",
+                    transition: "background-image 1s ease-in-out",
+                  }}
+                />
+              </Box>
+              <Box
+                sx={{
+                  height: "100%",
+                  width: "100%",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    backgroundImage: `url(${images.box2[currentIndex]})`,
+                    backgroundSize: "100% 100%",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background-image 1s ease-in-out",
+                  }}
+                />
+              </Box>
+            </Stack>
           </Grid>
+
           <Grid
-            size={{ xs: 12, md: 4 }}
+            size={{ xs: 12, md: 6 }}
             sx={{
               display: "flex",
               alignItems: "center",
