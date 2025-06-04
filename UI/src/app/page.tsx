@@ -157,6 +157,44 @@ const upcoming_product_categories = [
   },
 ];
 
+const featuredProducts = [
+  {
+    id: 1,
+    title: "Red Chili Powder",
+    image: "/Chili.png",
+    description: "Spicy and flavorful red chili powder.",
+    link: "/products/red-chili",
+  },
+  {
+    id: 2,
+    title: "Turmeric Powder",
+    image: "/Turmeric.png",
+    description: "Pure organic turmeric for health benefits.",
+    link: "/products/organic-turmeric",
+  },
+  {
+    id: 3,
+    title: "Cumin Powder",
+    image: "/Cumin.png",
+    description: "Aromatic cumin for your dishes.",
+    link: "/products/cumin",
+  },
+  {
+    id: 4,
+    title: "Coriander Powder",
+    image: "/Coriander.png",
+    description: "Fresh and aromatic coriander powder.",
+    link: "/products/coriander",
+  },
+  {
+    id: 5,
+    title: "Garam Masala",
+    image: "/GaramMasala.png",
+    description: "A blend of rich and aromatic spices.",
+    link: "/products/garam-masala",
+  },
+];
+
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
@@ -168,319 +206,407 @@ const Home: React.FC = () => {
           mt: 3,
           mx: 6,
           mb: 6,
+          px: isMobile ? 3 : 2,
           justifySelf: "center",
           maxWidth: "1500px !important",
         }}
       >
         <Box
           sx={{
-            mt: 15,
+            mt: isMobile ? 8 : 15,
           }}
         >
           <Typography
-            variant="h4"
-            sx={{ mb: 8, color: "primary.main" }}
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontWeight={600}
-            textAlign={"center"}
+            textAlign={isMobile ? "left" : "center"}
           >
             Featured Products
           </Typography>
-          <Grid container spacing={1} height={600}>
-            <Grid
-              size={{ xs: 12, md: 4 }}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Stack
-                direction={"column"}
-                spacing={1}
-                height="100%"
-                width="100%"
-              >
-                <Box
+          <Grid container spacing={1} height={isMobile ? "auto" : 600}>
+            {!isMobile ? (
+              <>
+                <Grid
+                  size={{ xs: 12, md: 4 }}
                   sx={{
-                    height: "100%",
-                    width: "100%",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      height: "100%",
-                      width: "100%",
-                      backgroundImage: 'url("/Chili.png")',
-                      backgroundSize: "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        color: "primary.contrastText",
-                        border: "1px solid",
-                        borderColor: "primary.contrastText",
-                        "&:hover": {
-                          color: "primary.main",
-                          border: "1px solid",
-                          borderColor: "primary.contrastText",
-                          backgroundColor: "primary.contrastText",
-                        },
-                      }}
-                      onClick={() => {
-                        router.push("/products");
-                      }}
-                    >
-                      Order Now
-                    </Button>
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    height: "100%",
-                    width: "100%",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      height: "100%",
-                      width: "100%",
-                      backgroundImage: 'url("/Cumin.png")',
-                      backgroundSize: "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        color: "primary.contrastText",
-                        border: "1px solid",
-                        borderColor: "primary.contrastText",
-                        "&:hover": {
-                          color: "primary.main",
-                          border: "1px solid",
-                          borderColor: "primary.contrastText",
-                          backgroundColor: "primary.contrastText",
-                        },
-                      }}
-                      onClick={() => {
-                        router.push("/products");
-                      }}
-                    >
-                      Order Now
-                    </Button>
-                  </Box>
-                </Box>
-              </Stack>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 4 }}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Box
-                sx={{
-                  height: "100%",
-                  width: "100%",
-                  overflow: "hidden",
-                  position: "relative",
-                }}
-              >
-                <Box
-                  sx={{
-                    height: "100%",
-                    width: "100%",
-                    backgroundImage: 'url("/GaramMasala.png")',
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    transition: "transform 0.3s ease-in-out",
-                    cursor: "pointer",
-                    borderRadius: "8px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                    },
                   }}
                 >
-                  <Button
-                    variant="outlined"
+                  <Stack
+                    direction={"column"}
+                    spacing={1}
+                    height="100%"
+                    width="100%"
+                  >
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          height: "100%",
+                          width: "100%",
+                          backgroundImage: 'url("/Chili.png")',
+                          backgroundSize: "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          transition: "transform 0.3s ease-in-out",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "end",
+                          justifyContent: "center",
+                          "&:hover": {
+                            transform: "scale(1.05)",
+                          },
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          sx={{
+                            color: "primary.contrastText",
+                            border: "1px solid",
+                            borderColor: "primary.contrastText",
+                            mb: 4,
+                            "&:hover": {
+                              color: "primary.main",
+                              border: "1px solid",
+                              borderColor: "primary.contrastText",
+                              backgroundColor: "primary.contrastText",
+                            },
+                          }}
+                          onClick={() => {
+                            router.push("/products");
+                          }}
+                        >
+                          Order Now
+                        </Button>
+                      </Box>
+                    </Box>
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          height: "100%",
+                          width: "100%",
+                          backgroundImage: 'url("/Cumin.png")',
+                          backgroundSize: "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          transition: "transform 0.3s ease-in-out",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "end",
+                          justifyContent: "center",
+                          "&:hover": {
+                            transform: "scale(1.05)",
+                          },
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          sx={{
+                            color: "primary.contrastText",
+                            border: "1px solid",
+                            borderColor: "primary.contrastText",
+                            mb: 4,
+                            "&:hover": {
+                              color: "primary.main",
+                              border: "1px solid",
+                              borderColor: "primary.contrastText",
+                              backgroundColor: "primary.contrastText",
+                            },
+                          }}
+                          onClick={() => {
+                            router.push("/products");
+                          }}
+                        >
+                          Order Now
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid
+                  size={{ xs: 12, md: 4 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Box
                     sx={{
-                      color: "primary.contrastText",
-                      border: "1px solid",
-                      borderColor: "primary.contrastText",
-                      "&:hover": {
-                        color: "primary.main",
-                        border: "1px solid",
-                        borderColor: "primary.contrastText",
-                        backgroundColor: "primary.contrastText",
-                      },
-                    }}
-                    onClick={() => {
-                      router.push("/products");
+                      height: "100%",
+                      width: "100%",
+                      overflow: "hidden",
+                      position: "relative",
                     }}
                   >
-                    Order Now
-                  </Button>
-                </Box>
-              </Box>
-            </Grid>
-            <Grid
-              size={{ xs: 12, md: 4 }}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Stack
-                direction={"column"}
-                spacing={1}
-                height="100%"
-                width="100%"
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        backgroundImage: 'url("/GaramMasala.png")',
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        transition: "transform 0.3s ease-in-out",
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "end",
+                        justifyContent: "center",
+                        "&:hover": {
+                          transform: "scale(1.05)",
+                        },
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          color: "primary.contrastText",
+                          border: "1px solid",
+                          borderColor: "primary.contrastText",
+                          mb: 4,
+                          "&:hover": {
+                            color: "primary.main",
+                            border: "1px solid",
+                            borderColor: "primary.contrastText",
+                            backgroundColor: "primary.contrastText",
+                          },
+                        }}
+                        onClick={() => {
+                          router.push("/products");
+                        }}
+                      >
+                        Order Now
+                      </Button>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid
+                  size={{ xs: 12, md: 4 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Stack
+                    direction={"column"}
+                    spacing={1}
+                    height="100%"
+                    width="100%"
+                  >
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          height: "100%",
+                          width: "100%",
+                          backgroundImage: 'url("/Turmeric.png")',
+                          backgroundSize: "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          transition: "transform 0.3s ease-in-out",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "end",
+                          justifyContent: "center",
+                          "&:hover": {
+                            transform: "scale(1.05)",
+                          },
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          sx={{
+                            color: "primary.contrastText",
+                            border: "1px solid",
+                            borderColor: "primary.contrastText",
+                            mb: 4,
+                            "&:hover": {
+                              color: "primary.main",
+                              border: "1px solid",
+                              borderColor: "primary.contrastText",
+                              backgroundColor: "primary.contrastText",
+                            },
+                          }}
+                          onClick={() => {
+                            router.push("/products");
+                          }}
+                        >
+                          Order Now
+                        </Button>
+                      </Box>
+                    </Box>
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          height: "100%",
+                          width: "100%",
+                          backgroundImage: 'url("/Coriander.png")',
+                          backgroundSize: "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          transition: "transform 0.3s ease-in-out",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "end",
+                          justifyContent: "center",
+                          "&:hover": {
+                            transform: "scale(1.05)",
+                          },
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          sx={{
+                            color: "primary.contrastText",
+                            border: "1px solid",
+                            borderColor: "primary.contrastText",
+                            mb: 4,
+                            "&:hover": {
+                              color: "primary.main",
+                              border: "1px solid",
+                              borderColor: "primary.contrastText",
+                              backgroundColor: "primary.contrastText",
+                            },
+                          }}
+                          onClick={() => {
+                            router.push("/products");
+                          }}
+                        >
+                          Order Now
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </Grid>
+              </>
+            ) : (
+              <Grid
+                size={{ xs: 12, md: 12 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <Box
-                  sx={{
-                    height: "100%",
-                    width: "100%",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
+                <Stack
+                  direction={"column"}
+                  spacing={4}
+                  height="100%"
+                  width="100%"
                 >
-                  <Box
-                    sx={{
-                      height: "100%",
-                      width: "100%",
-                      backgroundImage: 'url("/Turmeric.png")',
-                      backgroundSize: "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
+                  {featuredProducts.map((product) => (
+                    <Stack
+                      key={product.id}
+                      direction={"row"}
+                      spacing={3}
+                      height={100}
                       sx={{
-                        color: "primary.contrastText",
-                        border: "1px solid",
-                        borderColor: "primary.contrastText",
-                        "&:hover": {
-                          color: "primary.main",
-                          border: "1px solid",
-                          borderColor: "primary.contrastText",
-                          backgroundColor: "primary.contrastText",
-                        },
-                      }}
-                      onClick={() => {
-                        router.push("/products");
+                        display: "flex",
+                        alignItems: "center",
+                        padding: 2,
+                        borderRadius: "8px",
+                        position: "relative",
+                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
                     >
-                      Order Now
-                    </Button>
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    height: "100%",
-                    width: "100%",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      height: "100%",
-                      width: "100%",
-                      backgroundImage: 'url("/Coriander.png")',
-                      backgroundSize: "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        color: "primary.contrastText",
-                        border: "1px solid",
-                        borderColor: "primary.contrastText",
-                        "&:hover": {
-                          color: "primary.main",
-                          border: "1px solid",
-                          borderColor: "primary.contrastText",
-                          backgroundColor: "primary.contrastText",
-                        },
-                      }}
-                      onClick={() => {
-                        router.push("/products");
-                      }}
-                    >
-                      Order Now
-                    </Button>
-                  </Box>
-                </Box>
-              </Stack>
-            </Grid>
+                      <Box
+                        sx={{
+                          height: 100,
+                          width: 100,
+                          borderRadius: "8px",
+                          backgroundImage: `url("${product.image}")`,
+                          backgroundSize: "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                        }}
+                      />
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          color="text.primary"
+                          sx={{ mb: 0.5 }}
+                        >
+                          {product.title}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 4 }}
+                        >
+                          {product.description}
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            backgroundClip: "primary.main",
+                            color: "primary.contrastText",
+                            position: "absolute",
+                            right: 16,
+                            bottom: 16,
+                            boxShadow: "none",
+                          }}
+                          onClick={() => {
+                            router.push("/products");
+                          }}
+                        >
+                          Order Now
+                        </Button>
+                      </Box>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Grid>
+            )}
           </Grid>
         </Box>
         <Box
           sx={{
-            mt: 15,
+            mt: isMobile ? 8 : 15,
           }}
         >
           <Typography
-            variant="h4"
-            sx={{ mb: 8, color: "primary.main" }}
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontWeight={600}
-            textAlign={"center"}
+            textAlign={isMobile ? "left" : "center"}
           >
             Product Categories
           </Typography>
@@ -544,15 +670,15 @@ const Home: React.FC = () => {
         </Box>
         <Box
           sx={{
-            mt: 15,
+            mt: isMobile ? 8 : 15,
           }}
         >
           <Typography
-            variant="h4"
-            sx={{ mb: 8, color: "primary.main" }}
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontWeight={600}
-            textAlign={"center"}
+            textAlign={isMobile ? "left" : "center"}
           >
             Upcoming Categories
           </Typography>
@@ -560,7 +686,7 @@ const Home: React.FC = () => {
         </Box>
         <Box
           sx={{
-            mt: 15,
+            mt: isMobile ? 8 : 15,
           }}
         >
           <Box
@@ -574,17 +700,19 @@ const Home: React.FC = () => {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Stack direction={"column"} alignItems="center" spacing={15}>
                   <Typography
-                    variant="h4"
-                    sx={{
-                      color: "primary.main",
-                    }}
+                    variant={isMobile ? "h5" : "h4"}
+                    sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
                     fontFamily={michroma.style.fontFamily}
                     fontWeight={600}
-                    textAlign={"center"}
+                    textAlign={isMobile ? "left" : "center"}
                   >
                     From India to The World
                   </Typography>
-                  <Grid container spacing={8} sx={{ mt: "64px !important" }}>
+                  <Grid
+                    container
+                    spacing={isMobile ? 4 : 8}
+                    sx={{ mt: "64px !important" }}
+                  >
                     {achievements.map((achievement, index) => (
                       <Grid
                         size={12}
@@ -680,7 +808,7 @@ const Home: React.FC = () => {
         </Box>
         <Box
           sx={{
-            mt: 15,
+            mt: isMobile ? 8 : 15,
           }}
         >
           <Grid container spacing={8}>
@@ -705,14 +833,19 @@ const Home: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
-                variant="h4"
-                sx={{ color: "primary.main" }}
+                variant={isMobile ? "h5" : "h4"}
+                sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
                 fontFamily={michroma.style.fontFamily}
                 fontWeight={600}
+                textAlign={isMobile ? "left" : "center"}
               >
                 Why Choose Us
               </Typography>
-              <Grid container spacing={8} sx={{ mt: "64px !important" }}>
+              <Grid
+                container
+                spacing={isMobile ? 4 : 8}
+                sx={{ mt: "64px !important" }}
+              >
                 {chooseUs.map((item, index) => (
                   <Grid
                     size={12}
@@ -737,15 +870,15 @@ const Home: React.FC = () => {
         </Box>
         <Box
           sx={{
-            mt: 15,
+            mt: isMobile ? 8 : 15,
           }}
         >
           <Typography
-            variant="h4"
-            sx={{ mb: 8, mt: 4, color: "primary.main" }}
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontWeight={600}
-            textAlign={"center"}
+            textAlign={isMobile ? "left" : "center"}
           >
             Our Testimonials
           </Typography>

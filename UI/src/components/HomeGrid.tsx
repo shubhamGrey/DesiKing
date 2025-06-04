@@ -1,28 +1,35 @@
 import theme from "@/styles/theme";
-import { Box, Grid, Stack, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useSwipeable } from "react-swipeable";
 
 const HomeGrid = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [boxIndex, setBoxIndex] = useState(0);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
+
+  const boxes: Array<keyof typeof images> = [
+    "box1",
+    "box2",
+    "box3",
+    "box4",
+    "box5",
+  ];
   const images = {
-    box1: ["/VerticleSpice1.jpg", "/VerticleSpice4.jpg", "/VerticleSpice3.jpg"],
-    box2: ["/VerticleSpice6.jpg", "/VerticleSpice2.jpg", "/VerticleSpice5.jpg"],
-    box3: [
-      "/HorizontalSpice3.jpg",
-      "/HorizontalSpice1.jpg",
-      "/HorizontalSpice6.jpg",
-    ],
-    box4: [
-      "/HorizontalSpice4.jpg",
-      "/HorizontalSpice5.jpg",
-      "/HorizontalSpice2.jpg",
-    ],
-    box5: [
-      "/HorizontalSpice9.jpg",
-      "/HorizontalSpice8.jpg",
-      "/HorizontalSpice7.jpg",
-    ],
+    box1: ["/RedChili1.jpg", "/RedChili2.jpg", "/VerticleSpice6.jpg"],
+    box2: ["/Turmeric1.jpg", "/Turmeric2.jpg", "/Turmeric3.jpg"],
+    box3: ["/Cumin1.jpg", "/Cumin2.jpg", "/Cumin3.jpg"],
+    box4: ["/Coriander1.jpg", "/HorizontalSpice1.jpg", "/VerticleSpice2.jpg"],
+    box5: ["/GaramMasala1.jpg", "/GaramMasala2.jpg", "/VerticleSpice1.jpg"],
   };
 
   useEffect(() => {
@@ -30,7 +37,33 @@ const HomeGrid = () => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.box1.length);
     }, 3000);
     return () => clearInterval(interval);
+  }, [images.box1.length]);
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () =>
+      setBoxIndex((prevIndex) => (prevIndex + 1) % boxes.length),
+    onSwipedRight: () =>
+      setBoxIndex((prevIndex) =>
+        prevIndex === 0 ? boxes.length - 1 : prevIndex - 1
+      ),
   });
+
+  const getBoxLabel = () => {
+    switch (boxes[boxIndex]) {
+      case "box1":
+        return "Red Chili";
+      case "box2":
+        return "Organic Turmeric";
+      case "box3":
+        return "Cumin";
+      case "box4":
+        return "Coriander";
+      case "box5":
+        return "Garam Masala";
+      default:
+        return "";
+    }
+  };
 
   return (
     <>
@@ -184,44 +217,73 @@ const HomeGrid = () => {
           </Grid>
         </Grid>
       ) : (
-        <Grid container spacing={1} height={800}>
-          {Object.entries(images).map((item) => (
-            <Grid
-              key={item[0]}
-              size={12}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Box
-                sx={{
-                  height: "100%",
-                  width: "100%",
-                  overflow: "hidden",
-                  position: "relative",
-                }}
-              >
+        <Grid container spacing={1} height={400}>
+          <Grid
+            size={12}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Box {...swipeHandlers} sx={{ height: "100%", width: "100%" }}>
+              {boxes.map((box, idx) => (
                 <Box
-                  component="div"
-                  className="image-slider"
+                  key={box}
                   sx={{
                     height: "100%",
                     width: "100%",
-                    backgroundImage: `url(${item[1][currentIndex]})`,
-                    backgroundSize: "100% 100%",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    display: "flex",
-                    alignItems: "end",
-                    justifyContent: "center",
-                    transition: "background-image 1s ease-in-out",
+                    overflow: "hidden",
+                    position: "relative",
+                    display: boxIndex === idx ? "block" : "none",
                   }}
-                />
-              </Box>
-            </Grid>
-          ))}
+                >
+                  <Box
+                    component="div"
+                    className="image-slider"
+                    sx={{
+                      height: "100%",
+                      width: "100%",
+                      backgroundImage: `url(${images[box][currentIndex]})`,
+                      backgroundSize: "100% 100%",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      display: "flex",
+                      alignItems: "end",
+                      justifyContent: "start",
+                      transition: "background-image 1s ease-in-out",
+                    }}
+                  >
+                    <Stack
+                      direction="column"
+                      spacing={2}
+                      sx={{ p: 3, width: 170 }}
+                    >
+                      <Typography variant="h4" color="primary.contrastText">
+                        {getBoxLabel()}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        size="small"
+                        sx={{
+                          backgroundColor: "primary.contrastText",
+                          color: "primary.main",
+                          fontWeight: 600,
+                          boxShadow: "none",
+                        }}
+                        onClick={() => {
+                          router.push("/products");
+                        }}
+                      >
+                        View Product
+                      </Button>
+                    </Stack>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </Grid>
         </Grid>
       )}
     </>

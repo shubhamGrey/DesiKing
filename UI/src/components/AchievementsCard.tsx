@@ -1,5 +1,6 @@
 import { pacifico } from "@/app/layout";
-import { Box, Stack, Typography } from "@mui/material";
+import theme from "@/styles/theme";
+import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 
 interface AchievementsCardProps {
@@ -23,6 +24,8 @@ const AchievementsCard = ({
     chooseUs: useRef<HTMLDivElement>(null),
     testimonials: useRef<HTMLDivElement>(null),
   };
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleScroll = () => {
     let updated = false;
@@ -58,7 +61,7 @@ const AchievementsCard = ({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        width: "70%",
+        width: isMobile ? "85%" : "70%",
         height: "100%",
       }}
       sx={{
@@ -78,7 +81,11 @@ const AchievementsCard = ({
         width={"100%"}
       >
         {icon}
-        <Stack direction={"row"} alignItems="center" sx={{ ml: 4 }}>
+        <Stack
+          direction={isMobile ? "column" : "row"}
+          alignItems="center"
+          sx={{ ml: 4 }}
+        >
           <Typography
             variant="h3"
             fontFamily={pacifico.style.fontFamily}
