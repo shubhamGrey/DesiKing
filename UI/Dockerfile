@@ -1,5 +1,7 @@
 FROM node:21-alpine AS builder
 
+USER root
+
 WORKDIR /app
 
 COPY . ./UI/
