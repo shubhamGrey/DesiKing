@@ -191,7 +191,10 @@ export default function Header() {
                     key={index}
                     edge="end"
                     sx={{
-                      color: "primary.contrastText",
+                      color:
+                        pathname == "/contact"
+                          ? "primary.main"
+                          : "primary.contrastText",
                       mr: 1,
                     }}
                   >
@@ -201,7 +204,12 @@ export default function Header() {
                 <IconButton
                   edge="end"
                   onClick={toggleDrawer(true)}
-                  sx={{ color: "primary.contrastText" }}
+                  sx={{
+                    color:
+                      pathname == "/contact"
+                        ? "primary.main"
+                        : "primary.contrastText",
+                  }}
                 >
                   <MenuIcon />
                 </IconButton>
@@ -216,8 +224,10 @@ export default function Header() {
         <Box
           sx={{
             width: "100%",
-            backgroundColor: "primary.main",
-            color: "primary.contrastText",
+            backgroundColor:
+              pathname != "/contact" ? "primary.main" : "primary.contrastText",
+            color:
+              pathname != "/contact" ? "primary.contrastText" : "primary.main",
           }}
           role="presentation"
           onClick={toggleDrawer(false)}

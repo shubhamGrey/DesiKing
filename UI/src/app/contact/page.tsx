@@ -27,6 +27,8 @@ import {
 import { Michroma } from "next/font/google";
 import theme from "@/styles/theme";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import BrandLogo from "../../../public/AgroNexisWhite.png";
 
 const michroma = Michroma({
   subsets: ["latin"],
@@ -51,13 +53,42 @@ export default function Contact() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ContactFormData>();
+  } = useForm<ContactFormData>({
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phoneNumber: "",
+      message: "",
+    },
+  });
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("Form submitted:", data);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "sendEmail",
+          name: [data.firstName, data.lastName].join(" "),
+          email: data.email,
+          message: data.message,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send email");
+      }
+
+      const result = await response.json();
+      console.log("Email sent successfully:", result);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+
     setIsSubmitting(false);
     reset();
   };
@@ -131,6 +162,16 @@ export default function Contact() {
           >
             We&apos;d love to hear from you!
           </Typography>
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              my: 8,
+            }}
+          >
+            <Image src={BrandLogo} alt="Brand Logo" height={316} width={300} />
+          </Box>
           <Stack direction={"column"} spacing={2} alignItems="center">
             <Typography
               variant="h4"
