@@ -154,7 +154,7 @@ export default function Contact() {
           }}
         >
           <Typography
-            variant="h2"
+            variant={isMobile ? "h3" : "h2"}
             color="primary.contrastText"
             sx={{ mb: 2, textAlign: "left" }}
             fontFamily={michroma.style.fontFamily}
@@ -214,6 +214,7 @@ export default function Contact() {
             ))}
           </Stack>
         </Box>
+        <Box sx={{ height: 200 }}></Box>
       </Grid>
       <Grid
         size={{ xs: 12, md: 6 }}

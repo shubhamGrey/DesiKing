@@ -774,7 +774,7 @@ const Home: React.FC = () => {
           }}
         >
           <iframe
-            src="https://www.youtube.com/embed/tYRz6M819nE?si=HM5pGluLwBIaXdnR"
+            src="https://www.youtube.com/embed/tYRz6M819nE?si=HM5pGluLwBIaXdnR?autoplay=1&mute=1"
             title="Agro Nexis - Our Story"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
