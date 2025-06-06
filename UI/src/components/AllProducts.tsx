@@ -119,10 +119,11 @@ export default function AllProducts({ items }: AllProductsProps) {
               borderRadius: "8px",
               overflow: "hidden",
               position: "relative",
-              opacity: category.coming_soon ? 0.6 : 1,
+              opacity: 1,
               pointerEvents: category.coming_soon ? "none" : "auto",
               cursor: "pointer",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              height: 240
             }}
             onClick={() => {
               if (!category.coming_soon) {
@@ -132,7 +133,7 @@ export default function AllProducts({ items }: AllProductsProps) {
           >
             <CardMedia
               component="img"
-              height="140"
+              height="184"
               image={category.image}
               alt={category.title}
               sx={{

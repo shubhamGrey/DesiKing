@@ -24,6 +24,7 @@ import LinkedIn from "@mui/icons-material/LinkedIn";
 import Spices from "../../../public/Spices.png";
 import Founder from "../../../public/Founder.PNG";
 import CoFounder from "../../../public/Co Founder.jpg";
+import CoFounderOld from "../../../public/Co Founder Old.PNG";
 import Director from "../../../public/Director.jpg";
 import Image from "next/image";
 import { Michroma } from "next/font/google";
@@ -364,8 +365,8 @@ export default function About() {
       <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
         <Grid size={{ xs: 12, md: 3 }}>
           <Stack direction={"column"} spacing={2} justifyContent={"center"}>
-            <Image src={Founder} alt="Founder" height={276} width={200} />
-            <Image src={CoFounder} alt="Co Founder" height={276} width={200} />
+            <Image src={Founder} alt="Founder" height={230} width={200} />
+            <Image src={CoFounderOld} alt="Co Founder" height={230} width={200} />
           </Stack>
         </Grid>
         <Grid size={{ xs: 12, md: 9 }}>
@@ -408,16 +409,16 @@ export default function About() {
               <br /> &quot;Agro Nexis India Overseas Private Limited&quot; is a
               start-up business with a strong determination to be global one day
               with India and International presence. Incepted in the year 2025
-              by Shri Vijay Sharma, youngest son of Late Shri Ram Prasad Sharma,
-              it is an inspiring and successful business inception that will
-              blends a remarkable history and legacy with visionary growth and
-              innovation in near future. ANIOPL incepted with a pure heart to be
-              always remained committed to create premium quality products and
-              continues to build successful brands across many other processed
-              food categories. A strong believes that the product range from the
-              ANIOPL will be evolved magnificently over the years and its
-              undeterred pursuit of ‘Quality & Innovation’ which will lead
-              consumer to the loyalty and satisfaction.
+              by Shri Vijay Sharma, it is an inspiring and successful business
+              inception that will blends a remarkable history and legacy with
+              visionary growth and innovation in near future. ANIOPL incepted
+              with a pure heart to be always remained committed to create
+              premium quality products and continues to build successful brands
+              across many other processed food categories. A strong believes
+              that the product range from the ANIOPL will be evolved
+              magnificently over the years and its undeterred pursuit of
+              ‘Quality & Innovation’ which will lead consumer to the loyalty and
+              satisfaction.
             </Typography>
           </Stack>
         </Grid>
@@ -442,7 +443,7 @@ export default function About() {
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
-            <Image src={CoFounder} alt="Co Founder" width={200} height={276} />
+            <Image src={CoFounder} alt="Co Founder" width={200} height={230} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Vijay Sharma
             </Typography>
@@ -470,7 +471,7 @@ export default function About() {
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
-            <Image src={Director} alt="Director" width={200} height={276} />
+            <Image src={Director} alt="Director" width={200} height={230} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Purnima Sharma
             </Typography>

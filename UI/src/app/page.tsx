@@ -263,7 +263,7 @@ const Home: React.FC = () => {
                           borderRadius: "8px",
                           display: "flex",
                           alignItems: "end",
-                          justifyContent: "center",
+                          justifyContent: "end",
                           "&:hover": {
                             transform: "scale(1.05)",
                           },
@@ -276,6 +276,7 @@ const Home: React.FC = () => {
                             border: "1px solid",
                             borderColor: "primary.contrastText",
                             mb: 4,
+                            mr: 4,
                             "&:hover": {
                               color: "primary.main",
                               border: "1px solid",
@@ -312,7 +313,7 @@ const Home: React.FC = () => {
                           borderRadius: "8px",
                           display: "flex",
                           alignItems: "end",
-                          justifyContent: "center",
+                          justifyContent: "end",
                           "&:hover": {
                             transform: "scale(1.05)",
                           },
@@ -325,6 +326,7 @@ const Home: React.FC = () => {
                             border: "1px solid",
                             borderColor: "primary.contrastText",
                             mb: 4,
+                            mr: 4,
                             "&:hover": {
                               color: "primary.main",
                               border: "1px solid",
@@ -371,7 +373,7 @@ const Home: React.FC = () => {
                         borderRadius: "8px",
                         display: "flex",
                         alignItems: "end",
-                        justifyContent: "center",
+                        justifyContent: "end",
                         "&:hover": {
                           transform: "scale(1.05)",
                         },
@@ -384,6 +386,7 @@ const Home: React.FC = () => {
                           border: "1px solid",
                           borderColor: "primary.contrastText",
                           mb: 4,
+                          mr: 4,
                           "&:hover": {
                             color: "primary.main",
                             border: "1px solid",
@@ -435,7 +438,7 @@ const Home: React.FC = () => {
                           borderRadius: "8px",
                           display: "flex",
                           alignItems: "end",
-                          justifyContent: "center",
+                          justifyContent: "end",
                           "&:hover": {
                             transform: "scale(1.05)",
                           },
@@ -448,6 +451,7 @@ const Home: React.FC = () => {
                             border: "1px solid",
                             borderColor: "primary.contrastText",
                             mb: 4,
+                            mr: 4,
                             "&:hover": {
                               color: "primary.main",
                               border: "1px solid",
@@ -484,7 +488,7 @@ const Home: React.FC = () => {
                           borderRadius: "8px",
                           display: "flex",
                           alignItems: "end",
-                          justifyContent: "center",
+                          justifyContent: "end",
                           "&:hover": {
                             transform: "scale(1.05)",
                           },
@@ -497,6 +501,7 @@ const Home: React.FC = () => {
                             border: "1px solid",
                             borderColor: "primary.contrastText",
                             mb: 4,
+                            mr: 4,
                             "&:hover": {
                               color: "primary.main",
                               border: "1px solid",
@@ -627,6 +632,7 @@ const Home: React.FC = () => {
                   cursor: "pointer",
                   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   width: "100%",
+                  height: "450px",
                   mr: index === product_categories.length - 1 ? 0 : 2,
                 }}
                 onClick={() => {
@@ -635,7 +641,7 @@ const Home: React.FC = () => {
               >
                 <CardMedia
                   component="img"
-                  height="200"
+                  height="394"
                   image={category.image}
                   alt={category.title}
                   sx={{
@@ -768,9 +774,9 @@ const Home: React.FC = () => {
           }}
         >
           <iframe
-            src="https://www.youtube.com/embed/tYRz6M819nE"
+            src="https://www.youtube.com/embed/tYRz6M819nE?si=HM5pGluLwBIaXdnR"
             title="Agro Nexis - Our Story"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             style={{
               position: "absolute",
