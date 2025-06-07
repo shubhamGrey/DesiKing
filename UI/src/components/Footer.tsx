@@ -43,12 +43,12 @@ export default function Footer() {
     },
     {
       label: "Terms Condition",
-      href: "/terms-condition",
+      href: "/terms",
       icon: <ArticleRounded fontSize="small" />,
     },
     {
       label: "Privacy Policy",
-      href: "/privacy-policy",
+      href: "/policy",
       icon: <PrivacyTipRounded fontSize="small" />,
     },
   ]);
@@ -98,6 +98,7 @@ export default function Footer() {
         pt: 6,
         pb: 2,
         position: "relative",
+        borderTop: "0.5px solid #b36a26",
       }}
     >
       <Grid container spacing={4}>
@@ -109,6 +110,21 @@ export default function Footer() {
             width={150}
             style={{ marginBottom: 12 }}
           />
+          <Typography
+            variant="body1"
+            sx={{ color: "primary.contrastText", mb: 2 }}
+          >
+            AGRO NEXIS is committed to delivering pure, authentic Indian spices
+            sourced directly from trusted farms. With a focus on quality,
+            hygiene, and flavor, we bring the true taste of India to homes,
+            restaurants, and global markets.
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ color: "primary.contrastText", mb: 2 }}
+          >
+            CIN No. - U47211DL2025PTC445306
+          </Typography>
           <Box>
             {socialMedia.map((media, i) => (
               <IconButton key={i} sx={{ color: "primary.contrastText" }}>

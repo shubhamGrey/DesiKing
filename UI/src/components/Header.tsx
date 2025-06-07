@@ -5,7 +5,6 @@ import {
   AppBar,
   Box,
   Toolbar,
-  Typography,
   Link as MuiLink,
   Stack,
   IconButton,
@@ -28,19 +27,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
-import DesiKing from "../../public/DesiKing.png";
-import Carousal from "@/components/Carousal";
-import Purity from "../../public/Purity.png";
-import Quality from "../../public/Quality.png";
-import Taste from "../../public/Taste.png";
-import Globe from "../../public/Globe.png";
-
-const carousalImages = [
-  { image: Purity },
-  { image: Quality },
-  { image: Taste },
-  { image: Globe },
-];
+import { michroma } from "@/app/layout";
 
 export default function Header() {
   const pathname = usePathname();
@@ -71,8 +58,10 @@ export default function Header() {
           sx={{
             justifyContent: "start",
             height: 64,
-            backgroundColor: "primary.main",
-            color: "primary.contrastText",
+            backgroundColor:
+              pathname === "/contact" ? "primary.contrastText" : "primary.main",
+            color:
+              pathname === "/contact" ? "primary.main" : "primary.contrastText",
             borderBottom: "0.5px solid #b36a26",
           }}
         >
@@ -92,6 +81,7 @@ export default function Header() {
                   height: 90,
                   width: 90,
                   cursor: "pointer",
+                  ml: 1,
                 }}
               >
                 <Link href="/" passHref>
@@ -122,8 +112,13 @@ export default function Header() {
                           href={href}
                           underline="none"
                           sx={{
-                            color: "primary.contrastText",
-                            fontWeight: isActive ? "bold" : "normal",
+                            color: isActive
+                              ? "secondary.main"
+                              : pathname === "/contact"
+                              ? "primary.main"
+                              : "primary.contrastText",
+                            fontFamily: michroma.style.fontFamily,
+                            fontSize: "14px",
                           }}
                         >
                           {label.toUpperCase()}
@@ -145,7 +140,10 @@ export default function Header() {
                       <IconButton
                         key={index}
                         sx={{
-                          color: "primary.contrastText",
+                          color:
+                            pathname === "/contact"
+                              ? "primary.main"
+                              : "primary.contrastText",
                         }}
                       >
                         {icon}
@@ -175,6 +173,7 @@ export default function Header() {
                   height: 90,
                   width: 90,
                   cursor: "pointer",
+                  ml: 1,
                 }}
               >
                 <Link href="/" passHref>
@@ -192,7 +191,10 @@ export default function Header() {
                     key={index}
                     edge="end"
                     sx={{
-                      color: "primary.contrastText",
+                      color:
+                        pathname == "/contact"
+                          ? "primary.main"
+                          : "primary.contrastText",
                       mr: 1,
                     }}
                   >
@@ -202,7 +204,12 @@ export default function Header() {
                 <IconButton
                   edge="end"
                   onClick={toggleDrawer(true)}
-                  sx={{ color: "primary.contrastText" }}
+                  sx={{
+                    color:
+                      pathname == "/contact"
+                        ? "primary.main"
+                        : "primary.contrastText",
+                  }}
                 >
                   <MenuIcon />
                 </IconButton>
@@ -211,45 +218,16 @@ export default function Header() {
           )}
         </Toolbar>
       </AppBar>
-      {pathname !== "/" ? (
-        <Box
-          sx={{
-            backgroundImage: 'url("/Header Image.png")',
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            px: 2,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Image
-            src={DesiKing}
-            alt="Desi King"
-            style={{ width: "30%", height: "30%", marginTop: 32 }}
-          />
-          <Typography
-            variant="body1"
-            sx={{ mb: 4, mt: 2 }}
-            color="#000000"
-            fontSize={isMobile ? "0.2rem" : "1rem"}
-          >
-            A legacy of authenticity in every pinch.
-          </Typography>
-        </Box>
-      ) : (
-        <Carousal items={carousalImages} />
-      )}
 
       {/* Drawer for Mobile */}
       <Drawer anchor="bottom" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box
           sx={{
             width: "100%",
-            backgroundColor: "primary.main",
-            color: "primary.contrastText",
+            backgroundColor:
+              pathname != "/contact" ? "primary.main" : "primary.contrastText",
+            color:
+              pathname != "/contact" ? "primary.contrastText" : "primary.main",
           }}
           role="presentation"
           onClick={toggleDrawer(false)}

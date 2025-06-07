@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main  # Change if your default branch is different
+    paths:
+      - 'Backend/**'  # Adjust to match your backend project structure
 
 jobs:
   deploy:

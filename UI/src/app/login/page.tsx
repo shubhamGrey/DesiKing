@@ -5,7 +5,7 @@ import Image from "next/image";
 import BrandLogo from "../../../public/AgroNexisGreen.png";
 import LoginImg from "../../../public/Login.png";
 
-import LoginForm from "@/views/login_form";
+import LoginForm from "@/components/LoginForm";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {

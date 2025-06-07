@@ -1,6 +1,6 @@
-import { michroma, pacifico } from "@/app/layout";
+import { pacifico } from "@/app/layout";
 import theme from "@/styles/theme";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 
 interface AchievementsCardProps {
@@ -24,6 +24,8 @@ const AchievementsCard = ({
     chooseUs: useRef<HTMLDivElement>(null),
     testimonials: useRef<HTMLDivElement>(null),
   };
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleScroll = () => {
     let updated = false;
@@ -50,7 +52,7 @@ const AchievementsCard = ({
     window.addEventListener("scroll", handleScroll);
     handleScroll(); // Initial check
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  });
 
   return (
     <Box
@@ -59,7 +61,7 @@ const AchievementsCard = ({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        width: "70%",
+        width: isMobile ? "85%" : "70%",
         height: "100%",
       }}
       sx={{
@@ -79,22 +81,27 @@ const AchievementsCard = ({
         width={"100%"}
       >
         {icon}
-        <Stack direction={"column"} alignItems="center" sx={{ ml: 4 }}>
+        <Stack
+          direction={isMobile ? "column" : "row"}
+          alignItems="center"
+          sx={{ ml: 4 }}
+        >
           <Typography
-            variant="h2"
+            variant="h3"
             fontFamily={pacifico.style.fontFamily}
             fontWeight={600}
             textAlign={"center"}
+            sx={{ mb: 1 }}
           >
             {value}
           </Typography>
 
           <Typography
-            variant="h6"
-            fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
+            variant="h5"
+            fontFamily={pacifico.style.fontFamily}
             fontWeight={600}
             textAlign={"center"}
+            sx={{ ml: 3 }}
           >
             {name}
           </Typography>
@@ -102,7 +109,7 @@ const AchievementsCard = ({
       </Stack>
 
       <Typography
-        variant="body1"
+        variant="body2"
         color={"text.primary"}
         textAlign={"justify"}
         sx={{ mt: 2 }}

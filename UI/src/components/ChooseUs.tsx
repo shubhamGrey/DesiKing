@@ -1,5 +1,4 @@
-import { pacifico } from "@/app/layout";
-import theme from "@/styles/theme";
+import { michroma } from "@/app/layout";
 import { Box, Stack, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -44,7 +43,7 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
     window.addEventListener("scroll", handleScroll);
     handleScroll(); // Initial check
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  });
 
   return (
     <Box
@@ -53,41 +52,50 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        mb: 10,
-        transform: visibleSectionsRef.current.has("achievements")
-          ? "translateX(0)"
-          : "translateX(100%)", // Changed from -100% to 100%
-        opacity: visibleSectionsRef.current.has("achievements") ? 1 : 0,
-        transition: "transform 0.8s ease, opacity 0.8s ease",
+        overflow: "hidden", // Prevent horizontal scroll bar
       }}
-      ref={sectionRefs.achievements}
     >
-      <Stack
-        direction={"row"}
-        alignItems="start"
-        justifyContent="center"
-        color={"primary.main"}
+      <Box
+        sx={{
+          transform: visibleSectionsRef.current.has("achievements")
+            ? "translateX(0)"
+            : "translateX(100%)", // Changed from -100% to 100%
+          opacity: visibleSectionsRef.current.has("achievements") ? 1 : 0,
+          transition: "transform 0.8s ease, opacity 0.8s ease",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        ref={sectionRefs.achievements}
       >
-        {icon}
-        <Stack direction={"column"} alignItems="center" sx={{ ml: 4 }}>
-          <Typography
-            variant="h4"
-            sx={{ width: "100%", mb: 2 }}
-            fontFamily={pacifico.style.fontFamily}
-            color={"primary.main"}
-          >
-            {name}
-          </Typography>
+        <Stack
+          direction={"row"}
+          alignItems="start"
+          justifyContent="center"
+          color={"primary.main"}
+        >
+          {icon}
+          <Stack direction={"column"} alignItems="center" sx={{ ml: 4 }}>
+            <Typography
+              variant="h5"
+              sx={{ width: "100%", mb: 2 }}
+              fontFamily={michroma.style.fontFamily}
+              color={"primary.main"}
+            >
+              {name}
+            </Typography>
 
-          <Typography
-            variant="body1"
-            color={"text.primary"}
-            textAlign={"justify"}
-          >
-            {description}
-          </Typography>
+            <Typography
+              variant="body2"
+              color={"text.primary"}
+              textAlign={"justify"}
+            >
+              {description}
+            </Typography>
+          </Stack>
         </Stack>
-      </Stack>
+      </Box>
     </Box>
   );
 };

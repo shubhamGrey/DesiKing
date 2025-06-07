@@ -23,8 +23,9 @@ import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
 import LinkedIn from "@mui/icons-material/LinkedIn";
 import Spices from "../../../public/Spices.png";
 import Founder from "../../../public/Founder.PNG";
-import CoFounder from "../../../public/Co Founder.PNG";
-import Director from "../../../public/Director.PNG";
+import CoFounder from "../../../public/Co Founder.jpg";
+import CoFounderOld from "../../../public/Co Founder Old.PNG";
+import Director from "../../../public/Director.jpg";
 import Image from "next/image";
 import { Michroma } from "next/font/google";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -54,7 +55,7 @@ const highlights = [
   },
 ];
 
-export default function AboutLight() {
+export default function About() {
   const coreValues = [
     "Quality & Purity",
     "Building Brand & Trust",
@@ -64,13 +65,35 @@ export default function AboutLight() {
 
   return (
     <Container sx={{ mt: 3, mx: 6, mb: 6, justifySelf: "center" }}>
-      <Grid container spacing={8} alignItems="center">
+      <Box
+        style={{
+          position: "relative",
+          paddingBottom: "56.25%",
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
+        <iframe
+          src="https://www.youtube.com/embed/tYRz6M819nE"
+          title="Agro Nexis - Our Story"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        ></iframe>
+      </Box>
+
+      <Grid container spacing={8} sx={{ mt: 15 }} alignItems="center">
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{ mb: 3, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
             fontWeight={600}
           >
             Who we are
@@ -89,7 +112,7 @@ export default function AboutLight() {
               }}
             />
             <Typography
-              variant="h4"
+              variant="h5"
               sx={{
                 mb: 2,
                 ml: 1,
@@ -163,7 +186,6 @@ export default function AboutLight() {
                   color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Our Vision
@@ -218,7 +240,6 @@ export default function AboutLight() {
                   color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Core Values
@@ -279,7 +300,6 @@ export default function AboutLight() {
                   color: "primary.main",
                 }}
                 fontFamily={michroma.style.fontFamily}
-                fontStyle={"italic"}
                 fontWeight={600}
               >
                 Our Mission
@@ -307,15 +327,15 @@ export default function AboutLight() {
       </Grid>
 
       <Typography
-        variant="h3"
+        variant="h4"
         sx={{ mb: 6, mt: 15, color: "primary.main" }}
         fontFamily={michroma.style.fontFamily}
-        fontStyle={"italic"}
         fontWeight={600}
         textAlign={"center"}
       >
         What Makes Us Special
       </Typography>
+
       <Grid container spacing={3}>
         {highlights.map((item, index) => (
           <Grid size={{ xs: 12, md: 3 }} key={index}>
@@ -345,20 +365,19 @@ export default function AboutLight() {
       <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
         <Grid size={{ xs: 12, md: 3 }}>
           <Stack direction={"column"} spacing={2} justifyContent={"center"}>
-            <Image src={Founder} alt="Founder" />
-            <Image src={CoFounder} alt="Co Founder" />
+            <Image src={Founder} alt="Founder" height={230} width={200} />
+            <Image src={CoFounderOld} alt="Co Founder" height={230} width={200} />
           </Stack>
         </Grid>
         <Grid size={{ xs: 12, md: 9 }}>
           <Stack>
             <Typography
-              variant="h3"
+              variant="h4"
               sx={{
                 mb: 6,
                 color: "primary.main",
               }}
               fontFamily={michroma.style.fontFamily}
-              fontStyle={"italic"}
               fontWeight={600}
               textAlign={"center"}
             >
@@ -390,16 +409,16 @@ export default function AboutLight() {
               <br /> &quot;Agro Nexis India Overseas Private Limited&quot; is a
               start-up business with a strong determination to be global one day
               with India and International presence. Incepted in the year 2025
-              by Shri Vijay Sharma, youngest son of Late Shri Ram Prasad Sharma,
-              it is an inspiring and successful business inception that will
-              blends a remarkable history and legacy with visionary growth and
-              innovation in near future. ANIOPL incepted with a pure heart to be
-              always remained committed to create premium quality products and
-              continues to build successful brands across many other processed
-              food categories. A strong believes that the product range from the
-              ANIOPL will be evolved magnificently over the years and its
-              undeterred pursuit of ‘Quality & Innovation’ which will lead
-              consumer to the loyalty and satisfaction.
+              by Shri Vijay Sharma, it is an inspiring and successful business
+              inception that will blends a remarkable history and legacy with
+              visionary growth and innovation in near future. ANIOPL incepted
+              with a pure heart to be always remained committed to create
+              premium quality products and continues to build successful brands
+              across many other processed food categories. A strong believes
+              that the product range from the ANIOPL will be evolved
+              magnificently over the years and its undeterred pursuit of
+              ‘Quality & Innovation’ which will lead consumer to the loyalty and
+              satisfaction.
             </Typography>
           </Stack>
         </Grid>
@@ -408,13 +427,12 @@ export default function AboutLight() {
       <Grid container spacing={4} sx={{ mt: 15 }} alignItems="center">
         <Grid size={12} sx={{ display: "flex", justifyContent: "center" }}>
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{
               mb: 6,
               color: "primary.main",
             }}
             fontFamily={michroma.style.fontFamily}
-            fontStyle={"italic"}
             fontWeight={600}
           >
             Our Team (The best team)
@@ -425,7 +443,7 @@ export default function AboutLight() {
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
-            <Image src={CoFounder} alt="Co Founder" width={200} height={280} />
+            <Image src={CoFounder} alt="Co Founder" width={200} height={230} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Vijay Sharma
             </Typography>
@@ -453,7 +471,7 @@ export default function AboutLight() {
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
-            <Image src={Director} alt="Director" width={200} height={280} />
+            <Image src={Director} alt="Director" width={200} height={230} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Purnima Sharma
             </Typography>
