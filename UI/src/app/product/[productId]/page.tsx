@@ -15,11 +15,7 @@ import {
 import { Container, Stack, styled } from "@mui/system";
 import Image from "next/image";
 import theme from "@/styles/theme";
-import {
-  FavoriteBorderOutlined,
-  ShoppingBagOutlined,
-  ArrowRight,
-} from "@mui/icons-material";
+import { FavoriteBorderOutlined, ArrowRight } from "@mui/icons-material";
 import { michroma } from "@/app/layout";
 
 interface Product {

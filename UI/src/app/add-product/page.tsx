@@ -1,49 +1,45 @@
 "use client";
 
-import React, { useState } from "react";
+import theme from "@/styles/theme";
+import {
+  Add,
+  Close,
+  CloudUpload,
+  Delete,
+  NavigateNext,
+} from "@mui/icons-material";
 import {
   Box,
+  Breadcrumbs,
   Button,
   Card,
   CardContent,
-  Container,
-  Grid,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Chip,
-  Stack,
-  useMediaQuery,
-  IconButton,
-  Avatar,
-  Divider,
-  Paper,
-  Switch,
-  FormControlLabel,
-  InputAdornment,
+  Container,
   Dialog,
   DialogContent,
-  DialogActions,
-  Breadcrumbs,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
   Link,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+  useMediaQuery,
 } from "@mui/material";
-import {
-  CloudUpload,
-  Add,
-  Delete,
-  Save,
-  Preview,
-  Close,
-  NavigateNext,
-} from "@mui/icons-material";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import theme from "@/styles/theme";
-import { michroma } from "../layout";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { michroma } from "../layout";
 
 interface ProductFormData {
   name: string;
@@ -130,7 +126,6 @@ const AddProduct: React.FC = () => {
     control,
     handleSubmit,
     watch,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormData>({
     defaultValues: {
@@ -198,7 +193,7 @@ const AddProduct: React.FC = () => {
     setSelectedCertifications((prev) =>
       prev.includes(certification)
         ? prev.filter((c) => c !== certification)
-        : [...prev, certification],
+        : [...prev, certification]
     );
   };
 
@@ -970,7 +965,10 @@ const AddProduct: React.FC = () => {
                         display: "grid",
                         gridTemplateColumns: isMobile
                           ? "repeat(auto-fit, minmax(80px, 1fr))"
-                          : `repeat(${Math.min(uploadedImages.length, 6)}, 1fr)`,
+                          : `repeat(${Math.min(
+                              uploadedImages.length,
+                              6
+                            )}, 1fr)`,
                         gap: 1.5,
                         width: "100%",
                       }}
