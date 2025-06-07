@@ -17,15 +17,18 @@ namespace Agronexis.Model.EntityModel
         public string? Name { get; set; } = "";
         public string? Description { get; set; } = "";
         public decimal Price { get; set; }
+        public string? ImageUrl { get; set; }
         public string? Currency { get; set; }
+        public string? KeyFeatures { get; set; }
+        public string? Uses { get; set; }
         public Guid BrandId { get; set; }
         [ForeignKey("Category")]
         public Guid CategoryId { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public bool? IsActive { get; set; }
-        public bool? IsDeleted { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
         public Category Category { get; set; }
         public ICollection<Inventory> Inventories { get; set; }
     }
