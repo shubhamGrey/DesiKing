@@ -14,7 +14,7 @@ interface CartItemType {
   image: string;
 }
 
-export const Cart: React.FC = () => {
+const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItemType[]>([
     {
       id: 1,
