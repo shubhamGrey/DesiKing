@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Agronexis.Model.EntityModel
+namespace Agronexis.Model.ResponseModel
 {
-    [Table("Role", Schema = "dbo")]
-    public class Role
+    public class ProductResponseModel
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public string? Name { get; set; } = "";
         public string? Description { get; set; } = "";
+        public decimal Price { get; set; }
+        public string? Currency { get; set; }
+        public Guid BrandId { get; set; }
+        public Guid CategoryId { get; set; }
+        public DateTime? ManufacturingDate { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public Guid BrandId { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
-        public ICollection<User> Users { get; set; }
     }
 }

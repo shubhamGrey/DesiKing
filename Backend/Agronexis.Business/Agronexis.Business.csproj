@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Agronexis.DataAccess\Agronexis.DataAccess.csproj" />
+  </ItemGroup>
+
 </Project>

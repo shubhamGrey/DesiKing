@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Agronexis.Model.RequestModel;
+using Agronexis.Model.ResponseModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +10,9 @@ namespace Agronexis.Business.Configurations
 {
     public interface IConfigService
     {
-
+        List<ProductResponseModel> GetProducts(string xCorrelationId);
+        ProductResponseModel GetProductById(string id, string xCorrelationId);
+        string SaveOrUpdateProduct(ProductRequestModel product, string xCorrelationId);
+        string DeleteProductById(string id, string xCorrelationId);
     }
 }

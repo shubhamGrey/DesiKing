@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250531225807_InitialCreate")]
+    [Migration("20250607151251_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -40,10 +40,10 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LogoURL")
@@ -104,10 +104,13 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -281,11 +284,17 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("KeyFeatures")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ManufacturingDate")
                         .HasColumnType("timestamp with time zone");
@@ -298,6 +307,9 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("Uses")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -353,10 +365,10 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -438,10 +450,10 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")

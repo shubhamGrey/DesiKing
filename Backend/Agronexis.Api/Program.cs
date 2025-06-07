@@ -1,3 +1,5 @@
+using Agronexis.Business.Configurations;
+using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
+builder.Services.AddTransient<IConfigService, ConfigService>();
+builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
