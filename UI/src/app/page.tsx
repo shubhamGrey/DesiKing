@@ -632,7 +632,7 @@ const Home: React.FC = () => {
                   cursor: "pointer",
                   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   width: "100%",
-                  height: "450px",
+                  height: isMobile ? "230px" : "450px",
                   mr: index === product_categories.length - 1 ? 0 : 2,
                 }}
                 onClick={() => {
@@ -641,7 +641,7 @@ const Home: React.FC = () => {
               >
                 <CardMedia
                   component="img"
-                  height="394"
+                  height={isMobile ? 178 : 394}
                   image={category.image}
                   alt={category.title}
                   sx={{
@@ -662,7 +662,7 @@ const Home: React.FC = () => {
                   }}
                 >
                   <Typography
-                    variant="body1"
+                    variant={isMobile ? "body2" : "body1"}
                     gutterBottom
                     sx={{ mb: 0 }}
                     color="text.primary"

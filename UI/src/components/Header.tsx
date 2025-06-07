@@ -21,10 +21,11 @@ import {
   SearchOutlined,
   PermIdentityOutlined,
   ShoppingCartOutlined,
+  Add,
 } from "@mui/icons-material";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
 import { michroma } from "@/app/layout";
@@ -32,6 +33,7 @@ import { michroma } from "@/app/layout";
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const leftNavLinks = [
@@ -43,6 +45,7 @@ export default function Header() {
 
   const rightNavLinks = [
     { icon: <SearchOutlined /> },
+    { icon: <Add /> },
     { icon: <PermIdentityOutlined /> },
     { icon: <ShoppingCartOutlined /> },
   ];
@@ -145,6 +148,17 @@ export default function Header() {
                               ? "primary.main"
                               : "primary.contrastText",
                         }}
+                        onClick={() => {
+                          if (icon.type === ShoppingCartOutlined) {
+                            router.push("/cart");
+                          } else if (icon.type === PermIdentityOutlined) {
+                            router.push("/profile");
+                          } else if (icon.type === SearchOutlined) {
+                            router.push("/search");
+                          } else if (icon.type === Add) {
+                            router.push("/add-product");
+                          }
+                        }}
                       >
                         {icon}
                       </IconButton>
@@ -196,6 +210,17 @@ export default function Header() {
                           ? "primary.main"
                           : "primary.contrastText",
                       mr: 1,
+                    }}
+                    onClick={() => {
+                      if (icon.type === ShoppingCartOutlined) {
+                        router.push("/cart");
+                      } else if (icon.type === PermIdentityOutlined) {
+                        router.push("/profile");
+                      } else if (icon.type === SearchOutlined) {
+                        router.push("/search");
+                      } else if (icon.type === Add) {
+                        router.push("/add-product");
+                      }
                     }}
                   >
                     {icon}
