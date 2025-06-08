@@ -60,7 +60,7 @@ interface ProductFormData {
   nutritionalInfo?: string;
   certifications: string[];
   tags: string[];
-  isOrganic: boolean;
+  isPremium: boolean;
   isFeatured: boolean;
   status: "draft" | "published" | "archived";
   metaTitle?: string;
@@ -100,7 +100,7 @@ const subcategories = {
 };
 
 const certificationOptions = [
-  "Organic",
+  "Premium",
   "FSSAI Certified",
   "ISO 22000",
   "HACCP",
@@ -144,7 +144,7 @@ const AddProduct: React.FC = () => {
       storageInstructions: "",
       certifications: [],
       tags: [],
-      isOrganic: false,
+      isPremium: false,
       isFeatured: false,
       status: "draft",
     },
@@ -1088,12 +1088,12 @@ const AddProduct: React.FC = () => {
                 </Typography>
                 <Stack spacing={2}>
                   <Controller
-                    name="isOrganic"
+                    name="isPremium"
                     control={control}
                     render={({ field }) => (
                       <FormControlLabel
                         control={<Switch {...field} />}
-                        label="Organic Product"
+                        label="Premium Product"
                       />
                     )}
                   />

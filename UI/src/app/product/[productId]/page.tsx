@@ -483,21 +483,21 @@ const ProductDetails = () => {
                     Array.isArray(
                       selectedProduct[section.id as keyof Product]
                     ) &&
-                    selectedProduct[section.id as keyof Product]?.map(
-                      (item, index) => (
-                        <Typography
-                          key={index}
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mb: 1 }}
-                        >
-                          <ArrowRight
-                            sx={{ fontSize: 16, verticalAlign: "middle" }}
-                          />{" "}
-                          {item}
-                        </Typography>
-                      )
-                    )}
+                    (
+                      selectedProduct[section.id as keyof Product] as string[]
+                    ).map((item, index) => (
+                      <Typography
+                        key={index}
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 1 }}
+                      >
+                        <ArrowRight
+                          sx={{ fontSize: 16, verticalAlign: "middle" }}
+                        />{" "}
+                        {item}
+                      </Typography>
+                    ))}
                 </AccordionDetails>
               </Accordion>
             ))}
