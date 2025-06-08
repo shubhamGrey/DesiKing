@@ -46,7 +46,7 @@ services:
     container_name: nextcloud-app
     restart: always
     ports:
-      - 8080:8080
+      - 8080:80
     links:
       - db
     volumes:
