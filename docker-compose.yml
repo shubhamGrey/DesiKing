@@ -62,4 +62,4 @@ networks:
 
 volumes:
   db:
-  nextcloud_data:
+  nextcloud:
