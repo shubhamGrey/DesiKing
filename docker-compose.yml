@@ -61,26 +61,26 @@ services:
       - MYSQL_USER=nextclouduser
       - MYSQL_HOST=db
 
-  # backend:
-  #   build:
-  #     context: ./Backend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Production
-  #     - ConnectionStrings__DefaultConnection=Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123
-  #   depends_on:
-  #     - backend-db
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123
+    depends_on:
+      - backend-db
 
-  # backend-db:
-  #   image: postgres:16
-  #   environment:
-  #     POSTGRES_DB: agronexisdb
-  #     POSTGRES_USER: agronexis
-  #     POSTGRES_PASSWORD: agronexis@123
-  #   volumes:
-  #     - backend-db-data:/var/lib/postgresql/data
+  backend-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: agronexisdb
+      POSTGRES_USER: agronexis
+      POSTGRES_PASSWORD: agronexis@123
+    volumes:
+      - backend-db-data:/var/lib/postgresql/data
 
 networks:
   webnet:
