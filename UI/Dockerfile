@@ -7,8 +7,7 @@ WORKDIR /app
 COPY . ./UI/
 
 WORKDIR /app/UI
-RUN npm ci
-RUN npm run build
+RUN npm ci && npm run build
 
 FROM node:21-alpine AS runner
 
