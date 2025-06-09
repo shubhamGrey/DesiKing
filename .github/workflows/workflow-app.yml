@@ -41,7 +41,7 @@ jobs:
         run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output publish
 
       - name: Copy published files to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -50,13 +50,14 @@ jobs:
           target: "/var/www/agronexis/Backend"
 
       - name: Copy Dockerfile to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "Backend/Dockerfile"
           target: "/var/www/agronexis/Backend"
+          strip_components: 1
 
       - name: Run database migrations and restart backend
         uses: appleboy/ssh-action@v1.0.3
