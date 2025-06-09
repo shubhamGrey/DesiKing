@@ -5,7 +5,7 @@ WORKDIR /app
 COPY publish/ .
 
 # Expose the port your app runs on (change if needed)
-EXPOSE 5000
+EXPOSE 5001
 
 # Start the application
 ENTRYPOINT ["dotnet", "Agronexis.Api.dll"]
