@@ -51,7 +51,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "publish/*, ./Dockerfile"
+          source: "publish/* Backend/Dockerfile"
           target: "/var/www/agronexis/Backend"  # Change to your VPS app path
 
       - name: Run database migrations and restart backend
