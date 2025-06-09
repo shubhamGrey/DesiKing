@@ -48,6 +48,9 @@ jobs:
           key: ${{ secrets.VPS_KEY }}
           source: "publish/*"
           target: "/var/www/agronexis/Backend"
+      
+      - name: Move Dockerfile to workspace root
+          run: cp ./Backend/Dockerfile Dockerfile
 
       - name: Copy Dockerfile to VPS
         uses: appleboy/scp-action@v0.1.8
@@ -55,9 +58,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "Backend/Dockerfile"
+          source: "Dockerfile"
           target: "/var/www/agronexis/Backend"
-          strip_components: 1
 
       - name: Run database migrations and restart backend
         uses: appleboy/ssh-action@v1.0.3
