@@ -50,7 +50,7 @@ jobs:
           target: "/var/www/agronexis/Backend"
       
       - name: Move Dockerfile to workspace root
-          run: cp ./Backend/Dockerfile Dockerfile
+          run: cp Backend/Dockerfile Dockerfile
 
       - name: Copy Dockerfile to VPS
         uses: appleboy/scp-action@v0.1.7
