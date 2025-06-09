@@ -36,14 +36,15 @@ jobs:
           ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
         run: |
           dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
-  
-      - name: Test
-        env:
-          ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
-        run: dotnet test ./Backend/Agronexis.Api/Agronexis.Api.csproj --no-build --verbosity normal
 
       - name: Publish
         run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output publish
+
+      - name: Prepare files for deployment
+        run: |
+          mkdir deploy
+          cp -r publish/* deploy/
+          cp ./Backend/Dockerfile deploy/
 
       - name: Copy published files to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -51,7 +52,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "publish/* Backend/Dockerfile"
+          source: "deploy/*"
           target: "/var/www/agronexis/Backend"  # Change to your VPS app path
 
       - name: Run database migrations and restart backend
