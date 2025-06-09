@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the project files
-COPY Agronexis.Api/*.csproj ./Agronexis.Api/
+COPY Agronexis.Api/*.csproj ./Agronexis.Api
 RUN dotnet restore ./Agronexis.Api/Agronexis.Api.csproj
 
 # Copy the rest of the application files and build the application
