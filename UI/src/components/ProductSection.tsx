@@ -1,4 +1,5 @@
 "use client";
+import theme from "@/styles/theme";
 import {
   Box,
   Card,
@@ -7,6 +8,7 @@ import {
   CardMedia,
   Grid,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
@@ -35,6 +37,7 @@ interface ProductDetails {
 
 const ProductSection = ({ item }: ProductDetails) => {
   const router = useRouter();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
     <Box sx={{ mx: 3, my: 10 }}>
@@ -74,7 +77,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                   backgroundColor: "transparent",
                   borderRadius: 2,
                   cursor: "pointer",
-                  minHeight: "273px",
+                  minHeight: isMobile ? "224px" : "273px",
                   boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
                   "&:hover": {
                     transform: "scale(1.05)",
@@ -92,7 +95,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                 >
                   <CardMedia
                     component="img"
-                    height="217px"
+                    height={isMobile ? "172px" : "217px"}
                     image={product.image}
                     alt={product.name}
                   />
@@ -106,7 +109,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                     }}
                   >
                     <Typography
-                      variant="body1"
+                      variant={isMobile ? "body2" : "body1"}
                       fontWeight={600}
                       gutterBottom
                       sx={{ mb: 0 }}

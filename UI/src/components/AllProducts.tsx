@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Card,
   CardMedia,
   CardContent,
   Typography,
-  IconButton,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
 interface Category {
@@ -26,6 +24,7 @@ interface AllProductsProps {
 export default function AllProducts({ items }: AllProductsProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(4);
+  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
   const theme = useTheme();
@@ -42,29 +41,24 @@ export default function AllProducts({ items }: AllProductsProps) {
     }
   }, [isSmallScreen, isMediumScreen]);
 
-  const nextSlide = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (currentSlide + cardsPerView < items.length) {
-      setCurrentSlide(
-        Math.min(currentSlide + cardsPerView, items.length - cardsPerView)
-      );
-    }
-  };
+  useEffect(() => {
+    autoScrollInterval.current = setInterval(() => {
+      setCurrentSlide((prev) => {
+        const nextIndex = prev + 1;
+        return nextIndex >= items.length - cardsPerView + 1 ? 0 : nextIndex;
+      });
+    }, 3000); // Auto-scroll every 3 seconds
 
-  const prevSlide = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (currentSlide > 0) {
-      setCurrentSlide(Math.max(currentSlide - cardsPerView, 0));
-    }
-  };
+    return () => {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+      }
+    };
+  }, [items.length, cardsPerView]);
 
   return (
-    <Box
-      role="region"
-      aria-label="Fish category carousel"
-      sx={{
+    <section
+      style={{
         position: "relative",
         width: "100%",
         display: "flex",
@@ -74,30 +68,6 @@ export default function AllProducts({ items }: AllProductsProps) {
         marginBottom: "40px",
       }}
     >
-      <IconButton
-        onClick={prevSlide}
-        aria-label="Previous category"
-        disabled={currentSlide === 0}
-        sx={{
-          position: "absolute",
-          left: "16px",
-          zIndex: 1,
-          bgcolor: "transparent",
-          color: "primary.main",
-          border: "1px solid",
-          borderColor: "primary.main",
-          "&:hover": { bgcolor: "primary.main", color: "primary.contrastText" },
-          "&:focus": {
-            outline: "none",
-          },
-          "&:disabled": {
-            bgcolor: "#E0E0E0",
-            border: "none",
-          },
-        }}
-      >
-        <ArrowBack />
-      </IconButton>
       <Box
         sx={{
           display: "flex",
@@ -108,10 +78,9 @@ export default function AllProducts({ items }: AllProductsProps) {
           pb: 1,
         }}
       >
-        {items.map((category, index) => (
+        {items.map((category) => (
           <Card
-            key={index}
-            role="group"
+            key={category.title}
             aria-label={`${category.title} category`}
             sx={{
               minWidth: `${100 / cardsPerView - (1 / cardsPerView) * 4}%`,
@@ -123,7 +92,7 @@ export default function AllProducts({ items }: AllProductsProps) {
               pointerEvents: category.coming_soon ? "none" : "auto",
               cursor: "pointer",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-              height: 240
+              height: 240,
             }}
             onClick={() => {
               if (!category.coming_soon) {
@@ -184,30 +153,6 @@ export default function AllProducts({ items }: AllProductsProps) {
           </Card>
         ))}
       </Box>
-      <IconButton
-        onClick={nextSlide}
-        aria-label="Next category"
-        disabled={currentSlide + cardsPerView >= items.length}
-        sx={{
-          position: "absolute",
-          right: "16px",
-          zIndex: 1,
-          bgcolor: "transparent",
-          color: "primary.main",
-          border: "1px solid",
-          borderColor: "primary.main",
-          "&:hover": { bgcolor: "primary.main", color: "primary.contrastText" },
-          "&:focus": {
-            outline: "none",
-          },
-          "&:disabled": {
-            bgcolor: "#E0E0E0",
-            border: "none",
-          },
-        }}
-      >
-        <ArrowForward />
-      </IconButton>
-    </Box>
+    </section>
   );
 }

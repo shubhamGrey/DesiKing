@@ -248,8 +248,8 @@ export default function About() {
             <List dense={true} sx={{ mt: 3 }}>
               {coreValues.map((item) => {
                 return (
-                  <ListItem key={item}>
-                    <ListItemIcon>
+                  <ListItem key={item} sx={{ alignItems: "start" }}>
+                    <ListItemIcon sx={{ mt: 0.5, minWidth: 48 }}>
                       <FiberManualRecordIcon sx={{ color: "primary.main" }} />
                     </ListItemIcon>
                     <ListItemText>
@@ -366,7 +366,12 @@ export default function About() {
         <Grid size={{ xs: 12, md: 3 }}>
           <Stack direction={"column"} spacing={2} justifyContent={"center"}>
             <Image src={Founder} alt="Founder" height={230} width={200} />
-            <Image src={CoFounderOld} alt="Co Founder" height={230} width={200} />
+            <Image
+              src={CoFounderOld}
+              alt="Co Founder"
+              height={230}
+              width={200}
+            />
           </Stack>
         </Grid>
         <Grid size={{ xs: 12, md: 9 }}>
