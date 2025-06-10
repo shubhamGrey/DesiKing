@@ -14,5 +14,9 @@ namespace Agronexis.Business.Configurations
         ProductResponseModel GetProductById(string id, string xCorrelationId);
         string SaveOrUpdateProduct(ProductRequestModel product, string xCorrelationId);
         string DeleteProductById(string id, string xCorrelationId);
+        List<CategoryResponseModel> GetCategories(string xCorrelationId);
+        CategoryResponseModel GetCategoryById(string id, string xCorrelationId);
+        string SaveOrUpdateCategory(CategoryRequestModel product, string xCorrelationId);
+        string DeleteCategoryById(string id, string xCorrelationId);
     }
 }

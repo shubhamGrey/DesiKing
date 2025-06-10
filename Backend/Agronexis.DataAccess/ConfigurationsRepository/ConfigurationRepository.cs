@@ -56,7 +56,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public string SaveOrUpdateProduct(ProductRequestModel product, string xCorrelationId)
         {
-            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == product.Id && x.IsActive);
+            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
 
             if (productDetail == null)
             {
@@ -93,6 +93,86 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             {
                 productDetail.IsDeleted = true;
                 _dbContext.Products.Update(productDetail);
+                _dbContext.SaveChanges();
+                return "Record deleted successfully.";
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public List<CategoryResponseModel> GetCategories(string xCorrelationId)
+        {
+            List<CategoryResponseModel> categoryList = _dbContext.Categories.Where(x => x.IsActive).Select(x => new CategoryResponseModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                ImageUrl = x.ImageUrl,
+                IsActive = x.IsActive,
+                IsDeleted = x.IsDeleted,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).ToList();
+
+            return categoryList;
+        }
+
+        public CategoryResponseModel GetCategoryById(string id, string xCorrelationId)
+        {
+            CategoryResponseModel category = _dbContext.Categories.Where(x => x.IsActive && x.Id == new Guid(id)).Select(x => new CategoryResponseModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                ImageUrl = x.ImageUrl,
+                IsActive = x.IsActive,
+                IsDeleted = x.IsDeleted,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).FirstOrDefault();
+
+            return category;
+        }
+
+        public string SaveOrUpdateCategory(CategoryRequestModel category, string xCorrelationId)
+        {
+            var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
+
+            if (categoryDetail == null)
+            {
+                categoryDetail = new();
+                categoryDetail.Name = category.Name;
+                categoryDetail.Description = category.Description;
+                categoryDetail.ImageUrl = category.ImageUrl;
+                categoryDetail.CreatedDate = DateTime.UtcNow;
+                categoryDetail.IsActive = true;
+
+                _dbContext.Categories.Add(categoryDetail);
+            }
+            else if (categoryDetail != null && categoryDetail.Id == category.Id)
+            {
+                categoryDetail.Name = category.Name;
+                categoryDetail.Description = category.Description;
+                categoryDetail.ImageUrl = category.ImageUrl;
+                categoryDetail.ModifiedDate = DateTime.UtcNow;
+                categoryDetail.IsActive = category.IsActive;
+
+                _dbContext.Categories.Update(categoryDetail);
+            }
+            _dbContext.SaveChanges();
+            return categoryDetail.Id.ToString();
+        }
+
+        public string DeleteCategoryById(string id, string xCorrelationId)
+        {
+            var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+
+            if (categoryDetail != null)
+            {
+                categoryDetail.IsDeleted = true;
+                _dbContext.Categories.Update(categoryDetail);
                 _dbContext.SaveChanges();
                 return "Record deleted successfully.";
             }

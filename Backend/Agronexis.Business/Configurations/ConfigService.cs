@@ -20,7 +20,6 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.GetProducts(xCorrelationId);
         }
-
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
             return _repository.GetProductById(id, xCorrelationId);
@@ -32,6 +31,26 @@ namespace Agronexis.Business.Configurations
         public string DeleteProductById(string id, string xCorrelationId)
         {
             return _repository.DeleteProductById(id, xCorrelationId);
+        }
+
+        public List<CategoryResponseModel> GetCategories(string xCorrelationId)
+        {
+            return _repository.GetCategories(xCorrelationId);
+        }
+
+        public CategoryResponseModel GetCategoryById(string id, string xCorrelationId)
+        {
+            return _repository.GetCategoryById(id, xCorrelationId);
+        }
+
+        public string SaveOrUpdateCategory(CategoryRequestModel product, string xCorrelationId)
+        {
+            return _repository.SaveOrUpdateCategory(product, xCorrelationId);
+        }
+
+        public string DeleteCategoryById(string id, string xCorrelationId)
+        {
+            return _repository.DeleteCategoryById(id, xCorrelationId);
         }
     }
 }
