@@ -55,8 +55,8 @@ services:
       - db
     volumes:
       - nextcloud:/var/www/html
-      - /etc/letsencrypt/archive/cloud.agronexis.com/fullchain2.pem:/etc/nginx/certs/cloud/fullchain.pem:ro
-      - /etc/letsencrypt/archive/cloud.agronexis.com/privkey2.pem:/etc/nginx/certs/cloud/privkey.pem:ro
+      - /etc/letsencrypt/archive/cloud.agronexis.com/fullchain1.pem:/etc/nginx/certs/cloud/fullchain.pem:ro
+      - /etc/letsencrypt/archive/cloud.agronexis.com/privkey1.pem:/etc/nginx/certs/cloud/privkey.pem:ro
     environment:
       - MYSQL_PASSWORD=agroNexis@2025
       - MYSQL_DATABASE=nextcloud
