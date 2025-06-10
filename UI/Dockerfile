@@ -2,6 +2,8 @@ FROM node:21-alpine AS builder
 
 USER root
 
+RUN mkdir -p /etc/nginx/certs/cloud
+
 WORKDIR /app
 
 COPY . ./UI/
