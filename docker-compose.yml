@@ -42,8 +42,6 @@ services:
       - MYSQL_PASSWORD=agroNexis@2025
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextclouduser
-    networks:
-      - webnet
 
   app:
     image: nextcloud:28
@@ -62,8 +60,6 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextclouduser
       - MYSQL_HOST=db
-    networks:
-      - webnet
 
   backend:
     container_name: backend
