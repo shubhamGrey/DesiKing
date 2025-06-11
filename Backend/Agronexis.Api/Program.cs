@@ -16,6 +16,18 @@ builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddMemoryCache();
 
+var allowedOrigins = new[] { "http://localhost:3002" };
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", builder =>
+    {
+        builder.WithOrigins(allowedOrigins)
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -33,6 +45,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
 
