@@ -1,10 +1,13 @@
-[Route("api")]
-[ApiController]
-public class RootController : ControllerBase
+namespace Agronexis.Api.Controllers
 {
-    [HttpGet]
-    public IActionResult Get()
+    [Route("api")]
+    [ApiController]
+    public class RootController : ControllerBase
     {
-        return Ok("API is running");
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok("API is running");
+        }
     }
 }
