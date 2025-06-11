@@ -21,7 +21,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
-    app.UseSwagger();
+    app.UseSwagger(c =>
+    {
+        c.RouteTemplate = "api/swagger/{documentName}/swagger.json"; // Serve JSON here
+    });
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Agronexis API V1");
