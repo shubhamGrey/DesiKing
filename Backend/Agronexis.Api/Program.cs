@@ -16,16 +16,37 @@ builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddMemoryCache();
 
+var allowedOrigins = new[] { "http://localhost:3002" };
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", builder =>
+    {
+        builder.WithOrigins(allowedOrigins)
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(c =>
+    {
+        c.RouteTemplate = "api/swagger/{documentName}/swagger.json"; // Serve JSON here
+    });
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Agronexis API V1");
+        c.RoutePrefix = "api/swagger"; // This sets UI to load at /api/swagger
+    });
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
 
