@@ -64,9 +64,14 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 productDetail.Name = product.Name;
                 productDetail.Description = product.Description;
                 productDetail.Price = product.Price;
+                productDetail.ImageUrl = product.ImageUrl;
                 productDetail.ManufacturingDate = product.ManufacturingDate;
-                productDetail.KeyFeatures = JsonSerializer.Serialize(productDetail.KeyFeatures);
-                productDetail.Uses = JsonSerializer.Serialize(productDetail.Uses);
+                productDetail.KeyFeatures = JsonSerializer.Serialize(product.KeyFeatures);
+                productDetail.Uses = JsonSerializer.Serialize(product.Uses);
+                productDetail.CategoryId = new Guid(product.CategoryId);
+                productDetail.IsActive = true;
+                productDetail.CreatedDate = DateTime.UtcNow;
+                productDetail.Currency = product.Currency;
 
                 _dbContext.Products.Add(productDetail);
             }
