@@ -39,7 +39,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            ProductResponseModel product = _dbContext.Products.Where(x => x.IsActive && x.Id == new Guid(id)).Select(x => new ProductResponseModel
+            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).Select(x => new ProductResponseModel
             {
                 Id = x.Id,
                 Name = x.Name,
@@ -83,6 +83,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 productDetail.ManufacturingDate = product.ManufacturingDate;
                 productDetail.KeyFeatures = JsonSerializer.Serialize(productDetail.KeyFeatures);
                 productDetail.Uses = JsonSerializer.Serialize(productDetail.Uses);
+                productDetail.ModifiedDate = DateTime.UtcNow;
+                productDetail.IsActive = product.IsActive;
 
                 _dbContext.Products.Update(productDetail);
             }
@@ -96,6 +98,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             if (productDetail != null)
             {
+                productDetail.IsActive = false;
                 productDetail.IsDeleted = true;
                 _dbContext.Products.Update(productDetail);
                 _dbContext.SaveChanges();
@@ -126,7 +129,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public CategoryResponseModel GetCategoryById(string id, string xCorrelationId)
         {
-            CategoryResponseModel category = _dbContext.Categories.Where(x => x.IsActive && x.Id == new Guid(id)).Select(x => new CategoryResponseModel
+            CategoryResponseModel category = _dbContext.Categories.Where(x => x.Id == new Guid(id)).Select(x => new CategoryResponseModel
             {
                 Id = x.Id,
                 Name = x.Name,
@@ -176,8 +179,96 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             if (categoryDetail != null)
             {
+                categoryDetail.IsActive = false;
                 categoryDetail.IsDeleted = true;
                 _dbContext.Categories.Update(categoryDetail);
+                _dbContext.SaveChanges();
+                return "Record deleted successfully.";
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public List<BrandResponseModel> GetBrands(string xCorrelationId)
+        {
+            List<BrandResponseModel> brandList = _dbContext.Brands.Where(x => x.IsActive).Select(x => new BrandResponseModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Code = x.Code,
+                Description = x.Description,
+                LogoUrl = x.LogoURL,
+                IsActive = x.IsActive,
+                IsDeleted = x.IsDeleted,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).ToList();
+
+            return brandList;
+        }
+
+        public BrandResponseModel GetBrandById(string id, string xCorrelationId)
+        {
+            BrandResponseModel brandDetail = _dbContext.Brands.Where(x => x.Id == new Guid(id)).Select(x => new BrandResponseModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Code = x.Code,
+                Description = x.Description,
+                LogoUrl = x.LogoURL,
+                IsActive = x.IsActive,
+                IsDeleted = x.IsDeleted,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).FirstOrDefault();
+
+            return brandDetail;
+        }
+
+        public string SaveOrUpdateBrand(BrandRequestModel brandReq, string xCorrelationId)
+        {
+            var brandDetail = _dbContext.Brands.FirstOrDefault(x => x.Id == brandReq.Id);
+
+            if (brandDetail == null)
+            {
+                brandDetail = new()
+                {
+                    Name = brandReq.Name,
+                    Code = brandReq.Code,
+                    Description = brandReq.Description,
+                    LogoURL = brandReq.LogoUrl,
+                    CreatedDate = DateTime.UtcNow,
+                    IsActive = true
+                };
+
+                _dbContext.Brands.Add(brandDetail);
+            }
+            else if (brandDetail != null && brandDetail.Id == brandReq.Id)
+            {
+                brandDetail.Name = brandReq.Name;
+                brandDetail.Code = brandReq.Code;
+                brandDetail.Description = brandReq.Description;
+                brandDetail.LogoURL = brandReq.LogoUrl;
+                brandDetail.ModifiedDate = DateTime.UtcNow;
+                brandDetail.IsActive = brandReq.IsActive;
+
+                _dbContext.Brands.Update(brandDetail);
+            }
+            _dbContext.SaveChanges();
+            return brandDetail.Id.ToString();
+        }
+
+        public string DeleteBrandById(string id, string xCorrelationId)
+        {
+            var brandDetail = _dbContext.Brands.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+
+            if (brandDetail != null)
+            {
+                brandDetail.IsActive = false;
+                brandDetail.IsDeleted = true;
+                _dbContext.Brands.Update(brandDetail);
                 _dbContext.SaveChanges();
                 return "Record deleted successfully.";
             }

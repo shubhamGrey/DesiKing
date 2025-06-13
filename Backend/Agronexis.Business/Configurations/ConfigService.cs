@@ -52,5 +52,25 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.DeleteCategoryById(id, xCorrelationId);
         }
+
+        public List<BrandResponseModel> GetBrands(string xCorrelationId)
+        {
+            return _repository.GetBrands(xCorrelationId);
+        }
+
+        public BrandResponseModel GetBrandById(string id, string xCorrelationId)
+        {
+            return _repository.GetBrandById(id, xCorrelationId);
+        }
+
+        public string SaveOrUpdateBrand(BrandRequestModel product, string xCorrelationId)
+        {
+            return _repository.SaveOrUpdateBrand(product, xCorrelationId);
+        }
+
+        public string DeleteBrandById(string id, string xCorrelationId)
+        {
+            return _repository.DeleteBrandById(id, xCorrelationId);
+        }
     }
 }

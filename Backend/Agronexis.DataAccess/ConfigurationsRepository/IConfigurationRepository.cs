@@ -18,5 +18,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         CategoryResponseModel GetCategoryById(string id, string xCorrelationId);
         string SaveOrUpdateCategory(CategoryRequestModel product, string xCorrelationId);
         string DeleteCategoryById(string id, string xCorrelationId);
+        List<BrandResponseModel> GetBrands(string xCorrelationId);
+        BrandResponseModel GetBrandById(string id, string xCorrelationId);
+        string SaveOrUpdateBrand(BrandRequestModel product, string xCorrelationId);
+        string DeleteBrandById(string id, string xCorrelationId);
     }
 }
