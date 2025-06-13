@@ -25,7 +25,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { Controller, set, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { michroma } from "../layout";
 import { v4 as uuidv4 } from "uuid";
 

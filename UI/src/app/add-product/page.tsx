@@ -1,13 +1,7 @@
 "use client";
 
 import theme from "@/styles/theme";
-import {
-  Add,
-  Close,
-  CloudUpload,
-  Delete,
-  NavigateNext,
-} from "@mui/icons-material";
+import { Add, CloudUpload, Delete, NavigateNext } from "@mui/icons-material";
 import {
   Box,
   Breadcrumbs,
@@ -16,8 +10,6 @@ import {
   CardContent,
   Chip,
   Container,
-  Dialog,
-  DialogContent,
   Divider,
   FormControl,
   FormControlLabel,
@@ -120,8 +112,6 @@ const AddProduct: React.FC = () => {
   >([]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [openImagePreview, setOpenImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
 
   const {
@@ -210,16 +200,6 @@ const AddProduct: React.FC = () => {
     setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleImagePreview = (image: string) => {
-    setPreviewImage(image);
-    setOpenImagePreview(true);
-  };
-
-  const handleCloseImagePreview = () => {
-    setOpenImagePreview(false);
-    setPreviewImage(null);
-  };
-
   const onSubmit = async (data: ProductFormData) => {
     const finalData = {
       ...data,
@@ -235,18 +215,7 @@ const AddProduct: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          name: "string",
-          description: "string",
-          imageUrl: "string",
-          keyFeatures: ["string"],
-          uses: ["string"],
-          price: 0,
-          manufacturingDate: "2025-06-11T21:48:38.474Z",
-          category: "string",
-          categoryImage: "string",
-        }),
+        body: JSON.stringify(finalData),
       });
 
       if (!response.ok) {
@@ -914,9 +883,6 @@ const AddProduct: React.FC = () => {
                           objectFit: "contain",
                           cursor: "pointer",
                         }}
-                        onClick={() =>
-                          handleImagePreview(uploadedImages[selectedImageIndex])
-                        }
                       />
                       <IconButton
                         sx={{
