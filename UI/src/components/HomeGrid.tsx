@@ -25,11 +25,41 @@ const HomeGrid = () => {
     "box5",
   ];
   const images = {
-    box1: ["/Turmeric1.jpg", "/Turmeric2.webp", "/Turmeric3.png", "/Turmeric4.jpg", "/Turmeric5.jpg"],
-    box2: ["/RedChili1.avif", "/RedChili2.webp", "/RedChili2.jpg", "/RedChili4.jpg", "/RedChili5.webp"],
-    box3: ["/Cumin1.jpg", "/Cumin2.jpg", "/Cumin3.jpg", "/Cumin4.jpg", "/Cumin5.jpg"],
-    box4: ["/GaramMasala1.jpg", "/GaramMasala2.jpg", "/GaramMasala3.jpg", "/GaramMasala4.webp", "/GaramMasala5.jpg"],
-    box5: ["/Coriander1.jpg", "/Coriander2.jpg","/Coriander3.jpg","/Coriander4.jpeg","/Coriander5.webp"],
+    box1: [
+      "/Turmeric1.jpg",
+      "/Turmeric2.webp",
+      "/Turmeric3.png",
+      "/Turmeric4.jpg",
+      "/Turmeric5.jpg",
+    ],
+    box2: [
+      "/RedChili1.avif",
+      "/RedChili2.webp",
+      "/RedChili2.jpg",
+      "/RedChili4.jpg",
+      "/RedChili5.webp",
+    ],
+    box3: [
+      "/Cumin1.jpg",
+      "/Cumin2.jpg",
+      "/Cumin3.jpg",
+      "/Cumin4.jpg",
+      "/Cumin5.jpg",
+    ],
+    box4: [
+      "/GaramMasala1.jpg",
+      "/GaramMasala2.jpg",
+      "/GaramMasala3.jpg",
+      "/GaramMasala4.webp",
+      "/GaramMasala5.jpg",
+    ],
+    box5: [
+      "/Coriander1.jpg",
+      "/Coriander2.jpg",
+      "/Coriander3.jpg",
+      "/Coriander4.jpeg",
+      "/Coriander5.webp",
+    ],
   };
 
   useEffect(() => {
@@ -51,9 +81,9 @@ const HomeGrid = () => {
   const getBoxLabel = () => {
     switch (boxes[boxIndex]) {
       case "box1":
-        return "Red Chili";
-      case "box2":
         return "Organic Turmeric";
+      case "box2":
+        return "Red Chili";
       case "box3":
         return "Cumin";
       case "box4":
