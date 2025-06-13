@@ -16,7 +16,7 @@ builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddMemoryCache();
 
-var allowedOrigins = new[] { "http://localhost:3002" };
+var allowedOrigins = new[] { "http://localhost:3002", "https://agronexis.com", "https://www.agronexis.com" };
 
 builder.Services.AddCors(options =>
 {
@@ -41,12 +41,12 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "api/swagger/{documentName}/swagger.json"; // Serve JSON here
+        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // Serve JSON here
     });
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Agronexis API V1");
-        c.RoutePrefix = "api/swagger"; // This sets UI to load at /api/swagger
+        c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1");
+        c.RoutePrefix = "app/swagger"; // This sets UI to load at /api/swagger
     });
 }
 
