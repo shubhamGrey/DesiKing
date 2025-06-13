@@ -18,5 +18,6 @@ namespace Agronexis.Model.RequestModel
         public List<string> Uses { get; set; } = [];
         public string? CategoryId { get; set; }
         public DateTime ManufacturingDate { get; set; }
+        public bool IsActive { get; set; }
     }
 }
