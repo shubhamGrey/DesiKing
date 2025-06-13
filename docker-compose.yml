@@ -21,15 +21,17 @@ services:
       - "443:443"
     volumes:
       - ./UI/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt/archive/agronexis.com/fullchain2.pem:/etc/nginx/certs/fullchain.pem:ro
-      - /etc/letsencrypt/archive/agronexis.com/privkey2.pem:/etc/nginx/certs/privkey.pem:ro
+      - /etc/letsencrypt/live/agronexis.com/fullchain.pem:/etc/nginx/certs/agronexis-fullchain.pem:ro
+      - /etc/letsencrypt/live/agronexis.com/privkey.pem:/etc/nginx/certs/agronexis-privkey.pem:ro
+      - /etc/letsencrypt/live/cloud.agronexis.com/fullchain.pem:/etc/nginx/certs/cloud-fullchain.pem:ro
+      - /etc/letsencrypt/live/cloud.agronexis.com/privkey.pem:/etc/nginx/certs/cloud-privkey.pem:ro
     depends_on:
       - nextjs
       - app
       - backend
     networks:
       - webnet
-  
+
   db:
     image: mariadb:11
     container_name: nextcloud-db
@@ -55,8 +57,6 @@ services:
       - db
     volumes:
       - nextcloud:/var/www/html
-      # - /etc/letsencrypt/archive/cloud.agronexis.com/fullchain1.pem:/etc/nginx/certs/cloud/fullchain.pem:ro
-      # - /etc/letsencrypt/archive/cloud.agronexis.com/privkey1.pem:/etc/nginx/certs/cloud/privkey.pem:ro
     environment:
       - MYSQL_PASSWORD=agroNexis@2025
       - MYSQL_DATABASE=nextcloud

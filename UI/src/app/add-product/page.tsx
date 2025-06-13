@@ -1,13 +1,7 @@
 "use client";
 
 import theme from "@/styles/theme";
-import {
-  Add,
-  Close,
-  CloudUpload,
-  Delete,
-  NavigateNext,
-} from "@mui/icons-material";
+import { Add, CloudUpload, Delete, NavigateNext } from "@mui/icons-material";
 import {
   Box,
   Breadcrumbs,
@@ -16,8 +10,6 @@ import {
   CardContent,
   Chip,
   Container,
-  Dialog,
-  DialogContent,
   Divider,
   FormControl,
   FormControlLabel,
@@ -109,6 +101,8 @@ const certificationOptions = [
   "Vegan",
 ];
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const AddProduct: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
@@ -118,8 +112,6 @@ const AddProduct: React.FC = () => {
   >([]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [openImagePreview, setOpenImagePreview] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
 
   const {
@@ -208,16 +200,6 @@ const AddProduct: React.FC = () => {
     setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleImagePreview = (image: string) => {
-    setPreviewImage(image);
-    setOpenImagePreview(true);
-  };
-
-  const handleCloseImagePreview = () => {
-    setOpenImagePreview(false);
-    setPreviewImage(null);
-  };
-
   const onSubmit = async (data: ProductFormData) => {
     const finalData = {
       ...data,
@@ -226,17 +208,28 @@ const AddProduct: React.FC = () => {
       images: uploadedImages,
     };
 
-    console.log("Product data:", finalData);
-
     // Here you would typically send the data to your API
-    // await fetch('/api/products', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(finalData)
-    // });
+    try {
+      const response = await fetch(`${API_URL}/Product`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add product");
+      }
+
+      const result = await response.json();
+      console.log("API Response:", result);
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert("An error occurred while adding the product. Please try again.");
+    }
 
     // Show success message and redirect
-    alert("Product added successfully!");
     router.push("/products");
   };
 
@@ -890,9 +883,6 @@ const AddProduct: React.FC = () => {
                           objectFit: "contain",
                           cursor: "pointer",
                         }}
-                        onClick={() =>
-                          handleImagePreview(uploadedImages[selectedImageIndex])
-                        }
                       />
                       <IconButton
                         sx={{
@@ -1233,68 +1223,6 @@ const AddProduct: React.FC = () => {
           </Grid>
         </Grid>
       </form>
-
-      {/* Image Preview Dialog */}
-      <Dialog
-        open={openImagePreview}
-        onClose={handleCloseImagePreview}
-        maxWidth="md"
-        fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            backgroundColor: "transparent",
-            boxShadow: "none",
-          },
-        }}
-      >
-        <DialogContent
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            p: 2,
-            backgroundColor: "transparent",
-          }}
-        >
-          {previewImage && (
-            <Box
-              sx={{
-                position: "relative",
-                maxWidth: "100%",
-                maxHeight: "80vh",
-              }}
-            >
-              <Image
-                src={previewImage}
-                alt="Preview"
-                width={600}
-                height={600}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  objectFit: "contain",
-                  borderRadius: "8px",
-                }}
-              />
-              <IconButton
-                sx={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.9)",
-                  },
-                }}
-                onClick={handleCloseImagePreview}
-              >
-                <Close />
-              </IconButton>
-            </Box>
-          )}
-        </DialogContent>
-      </Dialog>
     </Container>
   );
 };

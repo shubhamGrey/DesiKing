@@ -66,18 +66,21 @@ export default function Contact() {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "sendEmail",
-          name: [data.firstName, data.lastName].join(" "),
-          email: data.email,
-          message: data.message,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/contact`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "sendEmail",
+            name: [data.firstName, data.lastName].join(" "),
+            email: data.email,
+            message: data.message,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send email");
