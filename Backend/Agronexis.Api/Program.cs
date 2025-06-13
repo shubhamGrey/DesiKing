@@ -41,7 +41,7 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // Serve JSON here
+        c.RouteTemplate = "api/swagger/{documentName}/swagger.json"; // Serve JSON here
     });
     app.UseSwaggerUI(c =>
     {
