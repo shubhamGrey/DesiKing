@@ -2,7 +2,6 @@ using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,12 +29,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-// Add proxy forwarding headers
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
