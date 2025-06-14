@@ -2,6 +2,7 @@ using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
