@@ -12,12 +12,13 @@ namespace Agronexis.Model.RequestModel
         public string? Name { get; set; }
         public string? Description { get; set; }
         public decimal Price { get; set; }
-        public string? ImageUrl { get; set; }
+        public List<string> ImageUrls { get; set; } = [];
         public string Currency { get; set; } = "INR";
         public List<string> KeyFeatures { get; set; } = [];
         public List<string> Uses { get; set; } = [];
         public string? CategoryId { get; set; }
         public DateTime ManufacturingDate { get; set; }
         public bool IsActive { get; set; }
+        public Guid BrandId { get; set; }
     }
 }

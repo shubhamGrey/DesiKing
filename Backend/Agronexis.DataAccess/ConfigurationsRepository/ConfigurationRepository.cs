@@ -54,37 +54,42 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return product;
         }
 
-        public string SaveOrUpdateProduct(ProductRequestModel product, string xCorrelationId)
+        public string SaveOrUpdateProduct(ProductRequestModel productReq, string xCorrelationId)
         {
-            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
+            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == productReq.Id);
 
             if (productDetail == null)
             {
-                productDetail = new();
-                productDetail.Name = product.Name;
-                productDetail.Description = product.Description;
-                productDetail.Price = product.Price;
-                productDetail.ImageUrl = product.ImageUrl;
-                productDetail.ManufacturingDate = product.ManufacturingDate;
-                productDetail.KeyFeatures = JsonSerializer.Serialize(product.KeyFeatures);
-                productDetail.Uses = JsonSerializer.Serialize(product.Uses);
-                productDetail.CategoryId = new Guid(product.CategoryId);
-                productDetail.IsActive = true;
-                productDetail.CreatedDate = DateTime.UtcNow;
-                productDetail.Currency = product.Currency;
+                productDetail = new()
+                {
+                    Name = productReq.Name,
+                    Description = productReq.Description,
+                    Price = productReq.Price,
+                    ManufacturingDate = productReq.ManufacturingDate,
+                    ImageUrl = JsonSerializer.Serialize(productReq.ImageUrls),
+                    KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures),
+                    Uses = JsonSerializer.Serialize(productReq.Uses),
+                    CategoryId = new Guid(productReq.CategoryId),
+                    IsActive = true,
+                    CreatedDate = DateTime.UtcNow,
+                    Currency = productReq.Currency,
+                    BrandId = productReq.BrandId
+                };
 
                 _dbContext.Products.Add(productDetail);
             }
-            else if(productDetail != null && productDetail.Id == product.Id)
+            else if(productDetail != null && productDetail.Id == productReq.Id)
             {
-                productDetail.Name = product.Name;
-                productDetail.Description = product.Description;
-                productDetail.Price = product.Price;
-                productDetail.ManufacturingDate = product.ManufacturingDate;
+                productDetail.Name = productReq.Name;
+                productDetail.Description = productReq.Description;
+                productDetail.Price = productReq.Price;
+                productDetail.ManufacturingDate = productReq.ManufacturingDate;
+                productDetail.ImageUrl = JsonSerializer.Serialize(productReq.ImageUrls);
                 productDetail.KeyFeatures = JsonSerializer.Serialize(productDetail.KeyFeatures);
                 productDetail.Uses = JsonSerializer.Serialize(productDetail.Uses);
                 productDetail.ModifiedDate = DateTime.UtcNow;
-                productDetail.IsActive = product.IsActive;
+                productDetail.IsActive = productReq.IsActive;
+                productDetail.BrandId = productReq.BrandId;
 
                 _dbContext.Products.Update(productDetail);
             }
@@ -118,6 +123,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 Name = x.Name,
                 Description = x.Description,
                 ImageUrl = x.ImageUrl,
+                BrandId = x.BrandId,
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 CreatedDate = x.CreatedDate,
@@ -135,6 +141,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 Name = x.Name,
                 Description = x.Description,
                 ImageUrl = x.ImageUrl,
+                BrandId = x.BrandId,
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 CreatedDate = x.CreatedDate,
@@ -150,12 +157,15 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             if (categoryDetail == null)
             {
-                categoryDetail = new();
-                categoryDetail.Name = category.Name;
-                categoryDetail.Description = category.Description;
-                categoryDetail.ImageUrl = category.ImageUrl;
-                categoryDetail.CreatedDate = DateTime.UtcNow;
-                categoryDetail.IsActive = true;
+                categoryDetail = new()
+                {
+                    Name = category.Name,
+                    Description = category.Description,
+                    ImageUrl = category.ImageUrl,
+                    BrandId = category.BrandId,
+                    CreatedDate = DateTime.UtcNow,
+                    IsActive = true
+                };
 
                 _dbContext.Categories.Add(categoryDetail);
             }
@@ -164,6 +174,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 categoryDetail.Name = category.Name;
                 categoryDetail.Description = category.Description;
                 categoryDetail.ImageUrl = category.ImageUrl;
+                categoryDetail.BrandId = category.BrandId;
                 categoryDetail.ModifiedDate = DateTime.UtcNow;
                 categoryDetail.IsActive = category.IsActive;
 
