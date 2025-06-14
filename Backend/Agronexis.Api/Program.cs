@@ -45,7 +45,7 @@ if (app.Environment.IsProduction())
     });
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1");
+        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Agronexis API V1");
         c.RoutePrefix = "api/swagger"; // This sets UI to load at /api/swagger
     });
 }
