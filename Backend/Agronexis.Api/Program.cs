@@ -30,6 +30,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UsePathBase("/app");
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -41,13 +47,12 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "swagger/{documentName}/swagger.json"; // This becomes /api/swagger/...
+        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // Serve JSON here
     });
-
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1");
-        c.RoutePrefix = "swagger"; // This becomes /api/swagger
+        c.RoutePrefix = "app/swagger"; // This sets UI to load at /api/swagger
     });
 }
 
