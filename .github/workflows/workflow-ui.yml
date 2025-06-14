@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'UI/**'
+      - 'docker-compose.yml'
 
 jobs:
   deploy:

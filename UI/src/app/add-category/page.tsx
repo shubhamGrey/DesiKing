@@ -95,7 +95,6 @@ const AddCategory: React.FC = () => {
     if (uploadedImage) {
       try {
         const url = await uploadViaApi(uploadedImage);
-        console.log("Image uploaded successfully:", url);
 
         const finalData = {
           ...data,
@@ -115,9 +114,6 @@ const AddCategory: React.FC = () => {
         if (!response.ok) {
           throw new Error("Failed to add category");
         }
-
-        const result = await response.json();
-        console.log("API Response:", result);
 
         // Show success toast
         setToastOpen(true);
