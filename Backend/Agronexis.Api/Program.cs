@@ -2,7 +2,6 @@ using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,12 +30,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UsePathBase("/app");
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -48,12 +41,12 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // Serve JSON here
+        c.RouteTemplate = "api/swagger/{documentName}/swagger.json"; // Serve JSON here
     });
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1");
-        c.RoutePrefix = "app/swagger"; // This sets UI to load at /api/swagger
+        c.RoutePrefix = "api/swagger"; // This sets UI to load at /api/swagger
     });
 }
 
