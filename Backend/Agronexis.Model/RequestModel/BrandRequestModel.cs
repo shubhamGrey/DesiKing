@@ -14,5 +14,7 @@ namespace Agronexis.Model.RequestModel
         public string? Description { get; set; }
         public string? LogoUrl { get; set; }
         public bool IsActive { get; set; }
+        public string? MetaTitle { get; set; }
+        public string? MetaDescription { get; set; }
     }
 }

@@ -31,7 +31,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 Currency = x.Currency,
                 ManufacturingDate = x.ManufacturingDate,
                 IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted
+                IsDeleted = x.IsDeleted,
+                MetaTitle = x.MetaTitle,
+                MetaDescription = x.MetaDescription
             }).ToList();
 
             return productList;
@@ -48,7 +50,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 Currency = x.Currency,
                 ManufacturingDate = x.ManufacturingDate,
                 IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted
+                IsDeleted = x.IsDeleted,
+                MetaTitle = x.MetaTitle,
+                MetaDescription = x.MetaDescription
             }).FirstOrDefault();
 
             return product;
@@ -66,14 +70,16 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Description = productReq.Description,
                     Price = productReq.Price,
                     ManufacturingDate = productReq.ManufacturingDate,
-                    ImageUrl = JsonSerializer.Serialize(productReq.ImageUrls),
+                    ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls),
                     KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures),
                     Uses = JsonSerializer.Serialize(productReq.Uses),
                     CategoryId = new Guid(productReq.CategoryId),
                     IsActive = true,
                     CreatedDate = DateTime.UtcNow,
                     Currency = productReq.Currency,
-                    BrandId = productReq.BrandId
+                    BrandId = productReq.BrandId,
+                    MetaTitle = productReq.MetaTitle,
+                    MetaDescription = productReq.MetaDescription
                 };
 
                 _dbContext.Products.Add(productDetail);
@@ -84,12 +90,14 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 productDetail.Description = productReq.Description;
                 productDetail.Price = productReq.Price;
                 productDetail.ManufacturingDate = productReq.ManufacturingDate;
-                productDetail.ImageUrl = JsonSerializer.Serialize(productReq.ImageUrls);
+                productDetail.ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls);
                 productDetail.KeyFeatures = JsonSerializer.Serialize(productDetail.KeyFeatures);
                 productDetail.Uses = JsonSerializer.Serialize(productDetail.Uses);
                 productDetail.ModifiedDate = DateTime.UtcNow;
                 productDetail.IsActive = productReq.IsActive;
                 productDetail.BrandId = productReq.BrandId;
+                productDetail.MetaTitle = productReq.MetaTitle;
+                productDetail.MetaDescription = productReq.MetaDescription;
 
                 _dbContext.Products.Update(productDetail);
             }
@@ -127,7 +135,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
+                ModifiedDate = x.ModifiedDate,
+                MetaTitle = x.MetaTitle,
+                MetaDescription = x.MetaDescription
             }).ToList();
 
             return categoryList;
@@ -145,7 +155,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
+                ModifiedDate = x.ModifiedDate,
+                MetaTitle = x.MetaTitle,
+                MetaDescription = x.MetaDescription
             }).FirstOrDefault();
 
             return category;
@@ -164,7 +176,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     ImageUrl = category.ImageUrl,
                     BrandId = category.BrandId,
                     CreatedDate = DateTime.UtcNow,
-                    IsActive = true
+                    IsActive = true,
+                    MetaTitle = category.MetaTitle,
+                    MetaDescription = category.MetaDescription
                 };
 
                 _dbContext.Categories.Add(categoryDetail);
@@ -177,6 +191,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 categoryDetail.BrandId = category.BrandId;
                 categoryDetail.ModifiedDate = DateTime.UtcNow;
                 categoryDetail.IsActive = category.IsActive;
+                categoryDetail.MetaTitle = category.MetaTitle;
+                categoryDetail.MetaDescription = category.MetaDescription;
 
                 _dbContext.Categories.Update(categoryDetail);
             }
@@ -214,7 +230,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
+                ModifiedDate = x.ModifiedDate,
+                MetaTitle = x.MetaTitle,
+                MetaDescription = x.MetaDescription
             }).ToList();
 
             return brandList;
@@ -232,7 +250,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
+                ModifiedDate = x.ModifiedDate,
+                MetaTitle = x.MetaTitle,
+                MetaDescription = x.MetaDescription
             }).FirstOrDefault();
 
             return brandDetail;
@@ -251,7 +271,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Description = brandReq.Description,
                     LogoURL = brandReq.LogoUrl,
                     CreatedDate = DateTime.UtcNow,
-                    IsActive = true
+                    IsActive = true,
+                    MetaTitle = brandReq.MetaTitle,
+                    MetaDescription = brandReq.MetaDescription
                 };
 
                 _dbContext.Brands.Add(brandDetail);
@@ -264,6 +286,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 brandDetail.LogoURL = brandReq.LogoUrl;
                 brandDetail.ModifiedDate = DateTime.UtcNow;
                 brandDetail.IsActive = brandReq.IsActive;
+                brandDetail.MetaTitle = brandReq.MetaTitle;
+                brandDetail.Description = brandReq.Description;
 
                 _dbContext.Brands.Update(brandDetail);
             }

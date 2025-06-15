@@ -20,5 +20,7 @@ namespace Agronexis.Model.RequestModel
         public DateTime ManufacturingDate { get; set; }
         public bool IsActive { get; set; }
         public Guid BrandId { get; set; }
+        public string? MetaTitle { get; set; }
+        public string? MetaDescription { get; set; }
     }
 }

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250607151251_InitialCreate")]
+    [Migration("20250615091118_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -47,6 +47,12 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("LogoURL")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -112,6 +118,12 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("timestamp with time zone");
@@ -284,7 +296,7 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("ImageUrls")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
@@ -298,6 +310,12 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.Property<DateTime?>("ManufacturingDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("timestamp with time zone");
