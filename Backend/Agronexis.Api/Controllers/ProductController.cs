@@ -15,6 +15,7 @@ namespace Agronexis.Api.Controllers
     {
         private readonly IConfigService _configService;
         string XCorrelationID = string.Empty;
+        private readonly IMemoryCache memoryCache;
 
         public ProductController(IConfigService configService, IMemoryCache memoryCache)
         {
