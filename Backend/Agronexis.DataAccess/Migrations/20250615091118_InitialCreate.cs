@@ -24,6 +24,8 @@ namespace Agronexis.DataAccess.Migrations
                     Code = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     LogoURL = table.Column<string>(type: "text", nullable: true),
+                    MetaTitle = table.Column<string>(type: "text", nullable: true),
+                    MetaDescription = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
@@ -62,6 +64,8 @@ namespace Agronexis.DataAccess.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     ImageUrl = table.Column<string>(type: "text", nullable: true),
                     BrandId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MetaTitle = table.Column<string>(type: "text", nullable: true),
+                    MetaDescription = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
@@ -201,7 +205,7 @@ namespace Agronexis.DataAccess.Migrations
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    ImageUrls = table.Column<string>(type: "text", nullable: true),
                     Currency = table.Column<string>(type: "text", nullable: true),
                     KeyFeatures = table.Column<string>(type: "text", nullable: true),
                     Uses = table.Column<string>(type: "text", nullable: true),
@@ -211,7 +215,9 @@ namespace Agronexis.DataAccess.Migrations
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    MetaTitle = table.Column<string>(type: "text", nullable: true),
+                    MetaDescription = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
