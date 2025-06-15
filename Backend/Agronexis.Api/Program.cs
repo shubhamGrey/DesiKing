@@ -41,13 +41,13 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "api/swagger/{documentName}/swagger.json"; // becomes /api/swagger/v1/swagger.json
+        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // becomes /api/swagger/v1/swagger.json
     });
 
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1"); // use public path!
-        c.RoutePrefix = "api/swagger"; // internally under /api/swagger
+        c.RoutePrefix = "app/swagger"; // internally under /api/swagger
     });
 }
 
