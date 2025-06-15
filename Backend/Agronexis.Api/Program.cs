@@ -14,7 +14,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
 builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
-builder.Services.AddMemoryCache();
+// builder.Services.AddMemoryCache();
 
 var allowedOrigins = new[] { "http://localhost:3002", "https://agronexis.com", "https://www.agronexis.com" };
 
