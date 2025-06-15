@@ -16,9 +16,10 @@ namespace Agronexis.Api.Controllers
         private readonly IConfigService _configService;
         string XCorrelationID = string.Empty;
 
-        public BrandController(IConfigService configService)
+        public BrandController(IConfigService configService, IMemoryCache memoryCache)
         {
             _configService = configService;
+            this.memoryCache = memoryCache;
         }
 
         // GET api/Brand
