@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . ./UI/
 
 WORKDIR /app/UI
-RUN rm -rf node_modules .next package-lock.json && npm install && npm run build
+RUN npm install && npm run build
 
 FROM node:21-alpine AS runner
 
