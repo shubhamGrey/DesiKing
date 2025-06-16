@@ -8,7 +8,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useRouter } from "next/navigation";
 
 interface Category {
   title: string;
@@ -24,7 +23,6 @@ export default function AllProducts({ items }: AllProductsProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(4);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
-  const router = useRouter();
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));

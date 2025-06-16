@@ -29,7 +29,23 @@ const sampleItems = Array.from({ length: 12 }, (_, i) => ({
   inStock: true,
 }));
 
-const ProductCard = ({ item, wishlist }: any) => (
+interface Product {
+  id: number;
+  title: string;
+  price: string;
+  image: string;
+  rating: number;
+  sold: number;
+  inStock: boolean;
+}
+
+const ProductCard = ({
+  item,
+  wishlist,
+}: {
+  item: Product;
+  wishlist: boolean;
+}) => (
   <Card
     sx={{
       borderRadius: 3,

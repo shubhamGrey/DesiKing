@@ -61,38 +61,6 @@ interface ProductFormData {
   metaDescription?: string;
 }
 
-const categories = [
-  { value: "powdered-spices", label: "Powdered Spices" },
-  { value: "whole-spices", label: "Whole Spices" },
-  { value: "cereals-grains", label: "Cereals & Grains" },
-  { value: "flours", label: "Flours" },
-  { value: "fats-oils", label: "Fats & Oils" },
-  { value: "fruits-nuts", label: "Fruits & Nuts" },
-  { value: "bakery-products", label: "Bakery Products" },
-  { value: "sugars", label: "Refined & Raw Sugars" },
-  { value: "salts", label: "Salts" },
-];
-
-const subcategories = {
-  "powdered-spices": [
-    "Turmeric Powder",
-    "Red Chili Powder",
-    "Coriander Powder",
-    "Cumin Powder",
-    "Garam Masala",
-  ],
-  "whole-spices": [
-    "Turmeric Roots",
-    "Cumin Seeds",
-    "Coriander Seeds",
-    "Dry Red Chilies",
-    "Bay Leaves",
-    "Cloves",
-    "Cardamom",
-    "Cinnamon",
-  ],
-};
-
 const certificationOptions = [
   "Premium",
   "FSSAI Certified",
