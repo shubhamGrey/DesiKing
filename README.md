@@ -63,7 +63,7 @@ Then open [http://localhost:3000](http://localhost:3000)
 
 ## 📤 File Upload to Nextcloud
 
-- Files uploaded via the frontend are sent to `/api/upload`
+- Files uploaded via the frontend are sent to `/api/uploadToCloud`
 - The backend API uploads to Nextcloud using WebDAV
 - Uploaded file URL is returned in the response
 
