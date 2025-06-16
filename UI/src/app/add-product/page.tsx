@@ -71,8 +71,6 @@ const certificationOptions = [
   "Vegan",
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 interface Brand {
   name: string;
   id: string;
@@ -271,13 +269,16 @@ const AddProduct: React.FC = () => {
         console.log("Final Data to Submit:", finalData);
 
         // Here you would typically send the data to your API
-        const response = await fetch(`${API_URL}/Product`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(finalData),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/Product`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(finalData),
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to add category");
