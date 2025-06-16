@@ -4,6 +4,10 @@ USER root
 
 RUN mkdir -p /etc/nginx/certs/cloud
 
+RUN rm -rf -d /app/UI
+
+RUN mkdir -p /app/UI
+
 WORKDIR /app
 
 COPY . ./UI/
