@@ -2,8 +2,10 @@
 import React, { useState } from "react";
 import { CartItem } from "../../components/Cart/CartItem";
 import { OrderSummary } from "../../components/Cart/OrderSummary";
-import { Box, Button, Typography, Stack } from "@mui/material";
+import { Box, Button, Typography, Stack, useMediaQuery } from "@mui/material";
 import { michroma } from "@/app/layout";
+import theme from "@/styles/theme";
+import RecommendationsAndWishlist from "@/components/Cart/RecommendationsAndWishlist";
 
 interface CartItemType {
   id: number;
@@ -44,6 +46,7 @@ const Cart: React.FC = () => {
         "https://images.pexels.com/photos/1334598/pexels-photo-1334598.jpeg",
     },
   ]);
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [discount, setDiscount] = useState(0);
 
@@ -88,25 +91,25 @@ const Cart: React.FC = () => {
     <Box
       sx={{
         minHeight: "100vh",
+        justifyContent: "center",
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Box
         sx={{
           maxWidth: "1200px",
-          margin: "0 auto",
           padding: "40px 24px",
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "1fr 400px" },
-          gap: { xs: "32px", md: "40px" },
+          gap: { xs: "32px", md: "48px" },
+          mt: 3,
         }}
       >
         <Box
           sx={{
-            borderRadius: "12px",
-            padding: "32px",
             boxShadow: "none",
-            border: "1px solid",
-            borderColor: "primary.main",
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: "32px" }}>
@@ -117,7 +120,7 @@ const Cart: React.FC = () => {
                 justifyContent: "space-between",
               }}
             >
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction={"row"} spacing={1} alignItems="center">
                 <Typography
                   variant="h4"
                   color="primary.main"
@@ -129,7 +132,10 @@ const Cart: React.FC = () => {
                 <Typography
                   variant="body2"
                   color="text.primary"
-                  sx={{ ml: "16px !important", mt: "16px !important" }}
+                  sx={{
+                    ml: "16px !important",
+                    mt: "16px !important",
+                  }}
                 >
                   ({itemCount()} products)
                 </Typography>
@@ -139,30 +145,32 @@ const Cart: React.FC = () => {
               </Button>
             </Box>
 
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "2fr 1fr 1fr auto",
-                gap: "24px",
-                padding: "8px 0",
-                borderBottom: "1px solid #e9ecef",
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#888888", // Updated color
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              <Typography variant="body1" color="primary.main">
-                Product
-              </Typography>
-              <Typography variant="body1" color="primary.main" align="center">
-                Count
-              </Typography>
-              <Typography variant="body1" color="primary.main" align="center">
-                Price
-              </Typography>
-            </Box>
+            {!isMobile && (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr 1fr 1fr auto",
+                  gap: "24px",
+                  padding: "8px 0",
+                  borderBottom: "1px solid #e9ecef",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#888888", // Updated color
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                <Typography variant="body1" color="primary.main">
+                  Product
+                </Typography>
+                <Typography variant="body1" color="primary.main" align="center">
+                  Count
+                </Typography>
+                <Typography variant="body1" color="primary.main" align="center">
+                  Price
+                </Typography>
+              </Box>
+            )}
 
             <Box role="list" sx={{ display: "flex", flexDirection: "column" }}>
               {cartItems.map((item) => (
@@ -189,6 +197,7 @@ const Cart: React.FC = () => {
           onApplyPromoCode={applyPromoCode}
         />
       </Box>
+      <RecommendationsAndWishlist />
     </Box>
   );
 };

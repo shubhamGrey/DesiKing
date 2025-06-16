@@ -87,9 +87,9 @@ const HomeGrid = () => {
       case "box3":
         return "Cumin";
       case "box4":
-        return "Coriander";
-      case "box5":
         return "Garam Masala";
+      case "box5":
+        return "Coriander";
       default:
         return "";
     }

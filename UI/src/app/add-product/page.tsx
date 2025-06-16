@@ -31,16 +31,15 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { michroma } from "../layout";
-import { v4 as uuidv4 } from "uuid";
 
 interface ProductFormData {
   name: string;
   description: string;
   category: string;
-  subcategory: string;
+  brand: string;
   price: number;
   discountedPrice?: number;
   sku: string;
@@ -106,6 +105,28 @@ const certificationOptions = [
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+interface Brand {
+  name: string;
+  id: string;
+  isActive: boolean; // Added isActive property
+}
+
+interface FormattedBrand {
+  label: string;
+  value: string;
+}
+
+interface Category {
+  name: string;
+  id: string;
+  isActive: boolean; // Added isActive property
+}
+
+interface FormattedCategory {
+  label: string;
+  value: string;
+}
+
 const AddProduct: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
@@ -117,6 +138,56 @@ const AddProduct: React.FC = () => {
   const [tagInput, setTagInput] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [toastOpen, setToastOpen] = useState(false);
+  const [brands, setBrands] = useState<FormattedBrand[]>([]);
+  const [categories, setCategories] = useState<FormattedCategory[]>([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/Brand`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res): Promise<Brand[]> => res.json())
+      .then((data: Brand[]) => {
+        const formattedBrands: FormattedBrand[] = data
+          .filter((brand) => brand.isActive)
+          .map((brand) => ({
+            label: brand.name,
+            value: brand.id,
+          }));
+        setBrands(formattedBrands);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching brands:", error);
+      });
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/Category`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res): Promise<Category[]> => res.json())
+      .then((data: Category[]) => {
+        const formattedCategories: FormattedCategory[] = data
+          .filter((cat) => cat.isActive)
+          .map((cat) => ({
+            label: cat.name,
+            value: cat.id,
+          }));
+        setCategories(formattedCategories);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching categories:", error);
+      });
+
+    return () => {
+      // Cleanup if necessary
+      setBrands([]);
+      setCategories([]);
+    };
+  }, []);
 
   const handleToastClose = () => {
     setToastOpen(false);
@@ -125,14 +196,13 @@ const AddProduct: React.FC = () => {
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormData>({
     defaultValues: {
       name: "",
       description: "",
       category: "",
-      subcategory: "",
+      brand: "",
       price: 0,
       sku: "",
       stock: 0,
@@ -167,8 +237,6 @@ const AddProduct: React.FC = () => {
     control,
     name: "uses",
   });
-
-  const selectedCategory = watch("category");
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -227,17 +295,15 @@ const AddProduct: React.FC = () => {
 
         const finalData = {
           ...data,
-          id: uuidv4(),
           certifications: selectedCertifications,
           tags,
-          images: uploadedImages,
           imageUrls, // Array of all uploaded image URLs
         };
 
         console.log("Final Data to Submit:", finalData);
 
         // Here you would typically send the data to your API
-        const response = await fetch(`${API_URL}/Category`, {
+        const response = await fetch(`${API_URL}/Product`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -397,25 +463,28 @@ const AddProduct: React.FC = () => {
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Controller
-                        name="subcategory"
+                        name="brand"
+                        rules={{ required: "Brand is required" }}
                         control={control}
                         render={({ field }) => (
-                          <FormControl fullWidth size="small">
-                            <InputLabel>Subcategory</InputLabel>
-                            <Select
-                              {...field}
-                              label="Subcategory"
-                              disabled={!selectedCategory}
-                            >
-                              {selectedCategory &&
-                                subcategories[
-                                  selectedCategory as keyof typeof subcategories
-                                ]?.map((subcat) => (
-                                  <MenuItem key={subcat} value={subcat}>
-                                    {subcat}
-                                  </MenuItem>
-                                ))}
+                          <FormControl
+                            fullWidth
+                            size="small"
+                            error={!!errors.brand}
+                          >
+                            <InputLabel>Brand</InputLabel>
+                            <Select {...field} label="Brand">
+                              {brands.map((brand) => (
+                                <MenuItem key={brand.value} value={brand.value}>
+                                  {brand.label}
+                                </MenuItem>
+                              ))}
                             </Select>
+                            {errors.brand && (
+                              <Typography variant="caption" color="error">
+                                {errors.brand.message}
+                              </Typography>
+                            )}
                           </FormControl>
                         )}
                       />

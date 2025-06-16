@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
@@ -32,6 +32,18 @@ import theme from "@/styles/theme";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
+
+// Define the Category type
+type Category = {
+  name: string;
+  imageUrl: string;
+  isActive: boolean;
+};
+
+type FormattedCategory = {
+  title: string;
+  image: string;
+};
 
 const achievements = [
   {
@@ -108,55 +120,6 @@ const chooseUs = [
   },
 ];
 
-const product_categories = [
-  {
-    title: "POWDERED SPICES",
-    image: "/Powdered Spices.jpg",
-  },
-  {
-    title: "WHOLE SPICES",
-    image: "/Whole spices.jpg",
-  },
-];
-
-const upcoming_product_categories = [
-  {
-    title: "CEREALS & GRAINS",
-    image: "/Cereals Grains.JPG",
-    coming_soon: true,
-  },
-  {
-    title: "FLOURS",
-    image: "/Flour.jpg",
-    coming_soon: true,
-  },
-  {
-    title: "FATS & OILS",
-    image: "/Fats oil.jpeg",
-    coming_soon: true,
-  },
-  {
-    title: "FRUITS & NUTS",
-    image: "/Fruits Nuts.jpeg",
-    coming_soon: true,
-  },
-  {
-    title: "BAKERY PRODUCTS",
-    image: "Bakery Products.jpeg",
-    coming_soon: true,
-  },
-  {
-    title: "REFINED & RAW SUGARS",
-    image: "/Sugar.jpeg",
-    coming_soon: true,
-  },
-  {
-    title: "SALTS",
-    image: "/Salt.jpg",
-    coming_soon: true,
-  },
-];
-
 const featuredProducts = [
   {
     id: 1,
@@ -198,6 +161,51 @@ const featuredProducts = [
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
+
+  const [productCategories, setProductCategories] = React.useState<
+    FormattedCategory[]
+  >([]);
+
+  const [upcomingpProductCategories, setUpcomingpProductCategories] =
+    React.useState<FormattedCategory[]>([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/Category`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res): Promise<Category[]> => res.json())
+      .then((data: Category[]) => {
+        const formattedActiveCategory: FormattedCategory[] = data
+          .filter((cat) => cat.isActive)
+          .map((cat) => ({
+            title: cat.name,
+            image: cat.imageUrl,
+          }));
+
+        const formattedUpcomingCategory: FormattedCategory[] = data
+          .filter((cat) => !cat.isActive)
+          .map((cat) => ({
+            title: cat.name,
+            image: cat.imageUrl,
+          }));
+
+        setProductCategories(formattedActiveCategory);
+        setUpcomingpProductCategories(formattedUpcomingCategory);
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+      });
+
+    return () => {
+      // Cleanup function if needed
+      setProductCategories([]);
+      setUpcomingpProductCategories([]);
+    };
+  }, []);
+
   return (
     <>
       <HomeGrid />
@@ -622,7 +630,7 @@ const Home: React.FC = () => {
               pb: 1,
             }}
           >
-            {product_categories.map((category, index) => (
+            {productCategories.map((category, index) => (
               <Card
                 key={index}
                 role="group"
@@ -633,7 +641,7 @@ const Home: React.FC = () => {
                   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   width: "100%",
                   height: isMobile ? "230px" : "450px",
-                  mr: index === product_categories.length - 1 ? 0 : 2,
+                  mr: index === productCategories.length - 1 ? 0 : 2,
                 }}
                 onClick={() => {
                   router.push("/products");
@@ -642,7 +650,7 @@ const Home: React.FC = () => {
                 <CardMedia
                   component="img"
                   height={isMobile ? 178 : 394}
-                  image={category.image}
+                  image={encodeURI(category.image)}
                   alt={category.title}
                   sx={{
                     "&:hover": {
@@ -688,7 +696,7 @@ const Home: React.FC = () => {
           >
             Upcoming Categories
           </Typography>
-          <AllProducts items={upcoming_product_categories} />
+          <AllProducts items={upcomingpProductCategories} />
         </Box>
         <Box
           sx={{

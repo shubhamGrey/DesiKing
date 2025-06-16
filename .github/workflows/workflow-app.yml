@@ -71,7 +71,7 @@ jobs:
           key: ${{ secrets.VPS_KEY }}
           script: |
             cd /var/www/agronexis/Backend
-            # Optional: Run EF Core migrations if you use them
-            # dotnet ef database update --project ./Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
-            # Restart the backend service (systemd example)
             sudo systemctl restart agronexis.service
+            docker compose down
+            docker compose build --no-cache backend
+            docker compose up -d

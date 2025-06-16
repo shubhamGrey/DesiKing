@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 interface Category {
   title: string;
   image: string;
-  coming_soon?: boolean;
 }
 
 interface AllProductsProps {
@@ -89,15 +88,10 @@ export default function AllProducts({ items }: AllProductsProps) {
               overflow: "hidden",
               position: "relative",
               opacity: 1,
-              pointerEvents: category.coming_soon ? "none" : "auto",
+              pointerEvents: "none",
               cursor: "pointer",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               height: 240,
-            }}
-            onClick={() => {
-              if (!category.coming_soon) {
-                router.push("/products");
-              }
             }}
           >
             <CardMedia
@@ -105,14 +99,6 @@ export default function AllProducts({ items }: AllProductsProps) {
               height="184"
               image={category.image}
               alt={category.title}
-              sx={{
-                "&:hover": !category.coming_soon
-                  ? {
-                      transform: "scale(1.05)",
-                      transition: "transform 0.3s ease-in-out",
-                    }
-                  : {},
-              }}
             />
             <CardContent
               sx={{
@@ -133,23 +119,6 @@ export default function AllProducts({ items }: AllProductsProps) {
                 {category.title}
               </Typography>
             </CardContent>
-            {category.coming_soon && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: "#FFF",
-                  fontSize: "1.2rem",
-                  fontWeight: "bold",
-                }}
-              />
-            )}
           </Card>
         ))}
       </Box>
