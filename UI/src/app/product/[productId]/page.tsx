@@ -30,8 +30,8 @@ const ProductDetailsComponent = () => {
       It adds a warm, earthy flavor to dishes and is rich in curcumin, a powerful antioxidant.",
     images: [
       "/Turmeric1.jpg",
-      "/Turmeric2.webp",
-      "/Turmeric3.png",
+      "/Turmeric2.jpeg",
+      "/Turmeric3.JPG",
       "/Turmeric4.jpg",
       "/Turmeric5.jpg",
     ],

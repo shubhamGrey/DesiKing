@@ -7,9 +7,11 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSwipeable } from "react-swipeable";
+import styles from "../styles/global.module.css";
 
 const HomeGrid = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -27,31 +29,31 @@ const HomeGrid = () => {
   const images = {
     box1: [
       "/Turmeric1.jpg",
-      "/Turmeric2.webp",
-      "/Turmeric3.png",
+      "/Turmeric2.jpeg",
+      "/Turmeric3.JPG",
       "/Turmeric4.jpg",
       "/Turmeric5.jpg",
     ],
     box2: [
       "/RedChili1.avif",
       "/RedChili2.webp",
-      "/RedChili2.jpg",
-      "/RedChili4.jpg",
-      "/RedChili5.webp",
+      "/RedChili3.jpg",
+      "/RedChili4.JPG",
+      "/RedChili5.jpg",
     ],
     box3: [
-      "/Cumin1.jpg",
-      "/Cumin2.jpg",
-      "/Cumin3.jpg",
-      "/Cumin4.jpg",
-      "/Cumin5.jpg",
-    ],
-    box4: [
       "/GaramMasala1.jpg",
       "/GaramMasala2.jpg",
       "/GaramMasala3.jpg",
       "/GaramMasala4.webp",
       "/GaramMasala5.jpg",
+    ],
+    box4: [
+      "/Cumin1.jpg",
+      "/Cumin2.jpg",
+      "/Cumin3.jpg",
+      "/Cumin4.jpg",
+      "/Cumin5.jpg",
     ],
     box5: [
       "/Coriander1.jpg",
@@ -81,13 +83,13 @@ const HomeGrid = () => {
   const getBoxLabel = () => {
     switch (boxes[boxIndex]) {
       case "box1":
-        return "Organic Turmeric";
+        return "Turmeric";
       case "box2":
         return "Red Chili";
       case "box3":
-        return "Cumin";
-      case "box4":
         return "Garam Masala";
+      case "box4":
+        return "Cumin";
       case "box5":
         return "Coriander";
       default:
@@ -98,9 +100,9 @@ const HomeGrid = () => {
   return (
     <>
       {!isMobile ? (
-        <Grid container spacing={1} height={800}>
+        <Grid container spacing={1} height={800} sx={{ mx: 1 }}>
           <Grid
-            size={{ xs: 12, md: 6 }}
+            size={{ xs: 12, md: 4 }}
             sx={{
               display: "flex",
               alignItems: "center",
@@ -158,9 +160,8 @@ const HomeGrid = () => {
               </Box>
             </Stack>
           </Grid>
-
           <Grid
-            size={{ xs: 12, md: 6 }}
+            size={{ xs: 12, md: 4 }}
             sx={{
               display: "flex",
               alignItems: "center",
@@ -170,7 +171,33 @@ const HomeGrid = () => {
             <Stack direction={"column"} spacing={1} height="100%" width="100%">
               <Box
                 sx={{
-                  height: "100%",
+                  height: "30%",
+                  width: "100%",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "black",
+                  }}
+                >
+                  <Image
+                    src="/DesiKing.png"
+                    alt="Brand Logo"
+                    fill
+                    className={styles.imageAnimate}
+                  />
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  height: "70%",
                   width: "100%",
                   overflow: "hidden",
                   position: "relative",
@@ -191,6 +218,17 @@ const HomeGrid = () => {
                   }}
                 />
               </Box>
+            </Stack>
+          </Grid>
+          <Grid
+            size={{ xs: 12, md: 4 }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Stack direction={"column"} spacing={1} height="100%" width="100%">
               <Box
                 sx={{
                   height: "100%",
