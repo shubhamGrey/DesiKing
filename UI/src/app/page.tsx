@@ -123,38 +123,38 @@ const chooseUs = [
 const featuredProducts = [
   {
     id: 1,
-    title: "Red Chili Powder",
-    image: "/2.png",
-    description: "Spicy and flavorful red chili powder.",
-    link: "/products/red-chili",
-  },
-  {
-    id: 2,
     title: "Turmeric Powder",
     image: "/1.png",
     description: "Pure organic turmeric for health benefits.",
     link: "/products/organic-turmeric",
   },
   {
+    id: 2,
+    title: "Red Chili Powder",
+    image: "/2.png",
+    description: "Spicy and flavorful red chili powder.",
+    link: "/products/red-chili",
+  },
+  {
     id: 3,
+    title: "Garam Masala",
+    image: "/5.png",
+    description: "A blend of rich and aromatic spices.",
+    link: "/products/garam-masala",
+  },
+  {
+    id: 4,
     title: "Cumin Powder",
     image: "/4.png",
     description: "Aromatic cumin for your dishes.",
     link: "/products/cumin",
   },
   {
-    id: 4,
+    id: 5,
     title: "Coriander Powder",
     image: "/3.png",
     description: "Fresh and aromatic coriander powder.",
     link: "/products/coriander",
-  },
-  {
-    id: 5,
-    title: "Garam Masala",
-    image: "/5.png",
-    description: "A blend of rich and aromatic spices.",
-    link: "/products/garam-masala",
   },
 ];
 
