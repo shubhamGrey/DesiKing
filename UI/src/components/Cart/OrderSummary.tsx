@@ -45,7 +45,18 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         Promo code
       </Typography>
 
-      <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          mb: 4,
+          color: "primary.main",
+          padding: "10px 12px",
+          borderRadius: "50px",
+          backgroundColor: "primary.contrastText",
+          height: "40px",
+        }}
+      >
         <TextField
           fullWidth
           placeholder="Type here..."
@@ -54,20 +65,9 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           variant="outlined"
           size="small"
           sx={{
-            color: "primary.main",
-            padding: "10px 12px",
-            borderRadius: "50px",
-            backgroundColor: "primary.contarstText",
-            height: "40px",
-          }}
-          slotProps={{
-            input: {
-              sx: {
-                color: "primary.main",
-                padding: "10px 12px",
-                borderRadius: "50px",
-                backgroundColor: "primary.contarstText",
-                height: "40px",
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                border: "none",
               },
             },
           }}
@@ -78,8 +78,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           sx={{
             textTransform: "none",
             fontWeight: "500",
-            color: "primary.main",
-            backgroundColor: "primary.contrastText",
+            color: "primary.contrastText",
+            backgroundColor: "primary.main",
+            borderRadius: "50px",
+            width: "50%",
           }}
         >
           Apply

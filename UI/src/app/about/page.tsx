@@ -22,7 +22,7 @@ import EmojiPeopleRoundedIcon from "@mui/icons-material/EmojiPeopleRounded";
 import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
 import LinkedIn from "@mui/icons-material/LinkedIn";
 import Spices from "../../../public/Spices.png";
-import Founder from "../../../public/Founder.PNG";
+import Founder from "../../../public/Founder.jpg";
 import CoFounder from "../../../public/Co Founder.jpg";
 import CoFounderOld from "../../../public/Co Founder Old.PNG";
 import Director from "../../../public/Director.jpg";

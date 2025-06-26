@@ -2,7 +2,6 @@ using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +14,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
 builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
-builder.Services.AddMemoryCache();
+// builder.Services.AddMemoryCache();
 
 var allowedOrigins = new[] { "http://localhost:3002", "https://agronexis.com", "https://www.agronexis.com" };
 
@@ -31,13 +30,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UsePathBase("/api");
-
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -49,13 +41,13 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "swagger/{documentName}/swagger.json"; // becomes /api/swagger/v1/swagger.json
+        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // becomes /api/swagger/v1/swagger.json
     });
 
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1"); // use public path!
-        c.RoutePrefix = "swagger"; // internally under /api/swagger
+        c.RoutePrefix = "app/swagger"; // internally under /api/swagger
     });
 }
 

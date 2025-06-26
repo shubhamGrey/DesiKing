@@ -21,30 +21,70 @@ import {
   useMediaQuery,
   Snackbar,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { michroma } from "../layout";
-import { v4 as uuidv4 } from "uuid";
 
-interface ProductFormData {
+interface CategoryFormData {
   name: string;
   description: string;
+  brandId?: string; // Added brand property
   metaTitle?: string;
   metaDescription?: string;
   isActive?: boolean;
   imageUrl?: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+interface Brand {
+  name: string;
+  id: string;
+  isActive: boolean; // Added isActive property
+}
+
+interface FormattedBrand {
+  label: string;
+  value: string;
+}
 
 const AddCategory: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const [uploadedImage, setuploadedImage] = useState<File | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
+  const [brands, setBrands] = useState<FormattedBrand[]>([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/Brand`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res): Promise<Brand[]> => res.json())
+      .then((data: Brand[]) => {
+        const formattedBrands: FormattedBrand[] = data
+          .filter((brand) => brand.isActive)
+          .map((brand) => ({
+            label: brand.name,
+            value: brand.id,
+          }));
+        setBrands(formattedBrands);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching brands:", error);
+      });
+    return () => {
+      // Cleanup if necessary
+      setBrands([]);
+    };
+  }, []);
 
   const handleToastClose = () => {
     setToastOpen(false);
@@ -54,7 +94,7 @@ const AddCategory: React.FC = () => {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ProductFormData>({
+  } = useForm<CategoryFormData>({
     defaultValues: {
       name: "",
       description: "",
@@ -88,28 +128,30 @@ const AddCategory: React.FC = () => {
     if (!res.ok) throw new Error("Upload failed");
 
     const data = await res.json();
-    return data.path;
+    return data.previewUrl;
   };
 
-  const onSubmit = async (data: ProductFormData) => {
+  const onSubmit = async (data: CategoryFormData) => {
     if (uploadedImage) {
       try {
         const url = await uploadViaApi(uploadedImage);
 
         const finalData = {
           ...data,
-          id: uuidv4(),
           imageUrl: url,
         };
 
         // Here you would typically send the data to your API
-        const response = await fetch(`${API_URL}/Category`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(finalData),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/Category`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(finalData),
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to add category");
@@ -212,7 +254,7 @@ const AddCategory: React.FC = () => {
                     Basic Information
                   </Typography>
                   <Grid container spacing={3}>
-                    <Grid size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Controller
                         name="name"
                         control={control}
@@ -230,7 +272,39 @@ const AddCategory: React.FC = () => {
                         )}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="brandId"
+                        control={control}
+                        rules={{ required: "Brand is required" }}
+                        render={({ field }) => (
+                          <FormControl
+                            fullWidth
+                            size="small"
+                            error={!!errors.brandId}
+                          >
+                            <InputLabel>Brand</InputLabel>
+                            <Select
+                              {...field}
+                              value={field.value ?? ""}
+                              label="Brand"
+                            >
+                              {brands.map((brand) => (
+                                <MenuItem key={brand.value} value={brand.value}>
+                                  {brand.label}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                            {errors.brandId && (
+                              <Typography variant="caption" color="error">
+                                {errors.brandId.message}
+                              </Typography>
+                            )}
+                          </FormControl>
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 12 }}>
                       <Controller
                         name="description"
                         control={control}

@@ -15,10 +15,12 @@ namespace Agronexis.Api.Controllers
     {
         private readonly IConfigService _configService;
         string XCorrelationID = string.Empty;
+        // private readonly IMemoryCache memoryCache;
 
         public CategoryController(IConfigService configService)
         {
             _configService = configService;
+            // this.memoryCache = memoryCache;
         }
 
         // GET api/Category

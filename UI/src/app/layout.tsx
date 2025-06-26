@@ -32,6 +32,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en">
+      <head>
+        <title>
+          Agro Nexi - Top Brand of Spices &amp; Processed Foods in India
+        </title>
+        <link rel="icon" href="/AgroNexisWhite.png" />
+      </head>
       <body
         className={poppins.className}
         style={{ backgroundColor: "#fffaf0", margin: "0px" }}

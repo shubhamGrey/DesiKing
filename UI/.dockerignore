@@ -1,0 +1,9 @@
+.next
+node_modules
+*.log
+.git
+.gitignore
+README.md
+.DS_Store
+*.tsbuildinfo
+src/pages/upload.ts

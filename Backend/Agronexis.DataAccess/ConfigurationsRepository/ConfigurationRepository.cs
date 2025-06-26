@@ -86,7 +86,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 _dbContext.Products.Add(productDetail);
             }
-            else if(productDetail != null && productDetail.Id == productReq.Id)
+            else if (productDetail != null && productDetail.Id == productReq.Id)
             {
                 productDetail.Name = productReq.Name;
                 productDetail.Description = productReq.Description;
@@ -127,7 +127,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public List<CategoryResponseModel> GetCategories(string xCorrelationId)
         {
-            List<CategoryResponseModel> categoryList = _dbContext.Categories.Where(x => x.IsActive).Select(x => new CategoryResponseModel
+            List<CategoryResponseModel> categoryList = _dbContext.Categories.Select(x => new CategoryResponseModel
             {
                 Id = x.Id,
                 Name = x.Name,

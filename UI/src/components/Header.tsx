@@ -17,6 +17,9 @@ import {
   Grid,
   Menu,
   MenuItem,
+  InputBase,
+  styled,
+  alpha,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -32,6 +35,48 @@ import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
 import { michroma } from "@/app/layout";
 
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginLeft: 0,
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(1),
+    width: "auto",
+  },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  width: "100%",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    [theme.breakpoints.up("sm")]: {
+      width: "12ch",
+      "&:focus": {
+        width: "20ch",
+      },
+    },
+  },
+}));
+
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -46,7 +91,6 @@ export default function Header() {
   ];
 
   const rightNavLinks = [
-    { icon: <SearchOutlined /> },
     { icon: <Add /> },
     { icon: <PermIdentityOutlined /> },
     { icon: <ShoppingCartOutlined /> },
@@ -150,6 +194,15 @@ export default function Header() {
                   }}
                 >
                   <Stack direction="row" spacing={1}>
+                    <Search>
+                      <SearchIconWrapper>
+                        <SearchOutlined />
+                      </SearchIconWrapper>
+                      <StyledInputBase
+                        placeholder="Search…"
+                        inputProps={{ "aria-label": "search" }}
+                      />
+                    </Search>
                     {rightNavLinks.map(({ icon }, index) => (
                       <IconButton
                         key={index}
@@ -164,8 +217,6 @@ export default function Header() {
                             router.push("/cart");
                           } else if (icon.type === PermIdentityOutlined) {
                             router.push("/profile");
-                          } else if (icon.type === SearchOutlined) {
-                            router.push("/search");
                           } else if (icon.type === Add) {
                             handleClick(e);
                           }

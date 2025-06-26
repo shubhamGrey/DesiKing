@@ -186,7 +186,7 @@ const productsList = [
         description:
           "AGRO NEXIS Dry Red Chillies are carefully selected and sun-dried to preserve their vibrant color and fiery heat. \
           These chillies add a bold kick to dishes and are essential in many traditional spice blends.",
-        image: "/DryRedChili.JPG",
+        image: "/DryRedChili.jpg",
         key_features: [
           "Sun-Dried for Maximum Flavor",
           "Vibrant Color and Heat",
