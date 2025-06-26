@@ -31,7 +31,7 @@ const ProductDetailsComponent = () => {
     images: [
       "/Turmeric1.jpg",
       "/Turmeric2.jpeg",
-      "/Turmeric3.JPG",
+      "/Turmeric3.jpg",
       "/Turmeric4.jpg",
       "/Turmeric5.jpg",
     ],
