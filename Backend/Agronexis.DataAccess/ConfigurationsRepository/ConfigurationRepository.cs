@@ -33,7 +33,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription
+                MetaDescription = x.MetaDescription,
+                BrandId = x.BrandId
             }).ToList();
 
             return productList;
@@ -52,7 +53,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = x.IsActive,
                 IsDeleted = x.IsDeleted,
                 MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription
+                MetaDescription = x.MetaDescription,
+                BrandId = x.BrandId
             }).FirstOrDefault();
 
             return product;
