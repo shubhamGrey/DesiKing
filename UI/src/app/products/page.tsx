@@ -17,7 +17,7 @@ const productsList = [
           "AGRO NEXIS Turmeric Powder is made from the finest turmeric roots, known for its vibrant color and health benefits. \
       Ground to perfection to preserve its natural aroma and flavor, this turmeric powder is ideal for cooking, baking, and health supplements. \
       It adds a warm, earthy flavor to dishes and is rich in curcumin, a powerful antioxidant.",
-        image: "/Turmeric.png",
+        image: "/Turmeric.jpg",
         key_features: [
           "100% Pure and Natural",
           "Rich in Curcumin",
@@ -33,32 +33,12 @@ const productsList = [
       },
       {
         id: 2,
-        name: "Cumin Powder",
-        description:
-          "AGRO NEXIS Cumin Powder is made from handpicked cumin seeds, expertly ground to preserve their distinctive warm, earthy aroma and slightly bitter taste. \
-      This versatile spice enhances the flavor profile of countless dishes and is valued for its digestive benefits.",
-        image: "/Cumin.png",
-        key_features: [
-          "100% Pure and Natural",
-          "Rich, Earthy Flavor",
-          "No Artificial Additives",
-          "Sourced from Trusted Farmers",
-          "Packed in a Hygienic Environment",
-        ],
-        uses: [
-          "Cumin powder is essential in curries, stews, soups, and spice blends.",
-          "It is commonly used in Indian, Middle Eastern, and Mexican cuisines.",
-          "Also used as a seasoning for roasted vegetables, meats, and snacks.",
-        ],
-      },
-      {
-        id: 3,
         name: "Red Chili Powder",
         description:
           "AGRO NEXIS Red Chili Powder is crafted from premium quality dried red chilies, delivering a vibrant color and fiery heat to your dishes. \
       Finely ground to retain its natural pungency and aroma, this chili powder is perfect for adding spice and depth to a variety of cuisines. \
       It is a staple ingredient for those who love bold and spicy flavors.",
-        image: "/Chili.png",
+        image: "/RedChili.jpg",
         key_features: [
           "100% Pure and Natural",
           "Vibrant Color and Spicy Flavor",
@@ -73,33 +53,13 @@ const productsList = [
         ],
       },
       {
-        id: 4,
-        name: "Coriander Powder",
-        description:
-          "AGRO NEXIS Coriander Powder is produced from select coriander seeds, ground to a fine powder to capture their fresh, citrusy aroma and mild flavor. \
-      This spice is a must-have for adding a subtle, sweet undertone to your recipes and is known for its digestive properties.",
-        image: "/Coriander.png",
-        key_features: [
-          "100% Pure and Natural",
-          "Fresh, Citrusy Aroma",
-          "No Artificial Additives",
-          "Sourced from Trusted Farmers",
-          "Packed in a Hygienic Environment",
-        ],
-        uses: [
-          "Coriander powder is widely used in curries, gravies, and spice blends.",
-          "It enhances the flavor of soups, salads, and marinades.",
-          "Common in Indian, Middle Eastern, and Mediterranean cuisines.",
-        ],
-      },
-      {
-        id: 5,
+        id: 3,
         name: "Garam Masala",
         description:
           "AGRO NEXIS Garam Masala is a signature blend of premium, hand-selected spices, expertly ground to deliver a rich, aromatic flavor profile. \
           This traditional Indian spice mix enhances the taste and aroma of a wide variety of dishes, making it an essential addition to any kitchen. \
           Perfect for curries, gravies, and marinades, our Garam Masala is crafted to preserve the freshness and natural oils of each spice.",
-        image: "/GaramMasala.png",
+        image: "/GaramMasala.jpg",
         key_features: [
           "Authentic Blend of Premium Spices",
           "Warm and Aromatic Flavor",
@@ -111,6 +71,46 @@ const productsList = [
           "Garam Masala is ideal for seasoning curries, lentil dishes, and vegetable preparations.",
           "Sprinkle over finished dishes for an extra burst of flavor and aroma.",
           "Use in marinades for meats, poultry, and paneer to enhance taste.",
+        ],
+      },
+      {
+        id: 4,
+        name: "Cumin Powder",
+        description:
+          "AGRO NEXIS Cumin Powder is made from handpicked cumin seeds, expertly ground to preserve their distinctive warm, earthy aroma and slightly bitter taste. \
+      This versatile spice enhances the flavor profile of countless dishes and is valued for its digestive benefits.",
+        image: "/Cumin.jpg",
+        key_features: [
+          "100% Pure and Natural",
+          "Rich, Earthy Flavor",
+          "No Artificial Additives",
+          "Sourced from Trusted Farmers",
+          "Packed in a Hygienic Environment",
+        ],
+        uses: [
+          "Cumin powder is essential in curries, stews, soups, and spice blends.",
+          "It is commonly used in Indian, Middle Eastern, and Mexican cuisines.",
+          "Also used as a seasoning for roasted vegetables, meats, and snacks.",
+        ],
+      },
+      {
+        id: 5,
+        name: "Coriander Powder",
+        description:
+          "AGRO NEXIS Coriander Powder is produced from select coriander seeds, ground to a fine powder to capture their fresh, citrusy aroma and mild flavor. \
+      This spice is a must-have for adding a subtle, sweet undertone to your recipes and is known for its digestive properties.",
+        image: "/Coriander.jpg",
+        key_features: [
+          "100% Pure and Natural",
+          "Fresh, Citrusy Aroma",
+          "No Artificial Additives",
+          "Sourced from Trusted Farmers",
+          "Packed in a Hygienic Environment",
+        ],
+        uses: [
+          "Coriander powder is widely used in curries, gravies, and spice blends.",
+          "It enhances the flavor of soups, salads, and marinades.",
+          "Common in Indian, Middle Eastern, and Mediterranean cuisines.",
         ],
       },
     ],

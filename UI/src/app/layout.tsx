@@ -34,9 +34,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <title>
-          Agro Nexi - Top Brand of Spices &amp; Processed Foods in India
+          Agro Nexis - Top Brand of Spices &amp; Processed Foods in India
         </title>
-        <link rel="icon" href="/AgroNexisWhite.png" />
+        <link rel="icon" href="/AgroNexisGreen.png" />
       </head>
       <body
         className={poppins.className}
