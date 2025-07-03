@@ -22,5 +22,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         BrandResponseModel GetBrandById(string id, string xCorrelationId);
         string SaveOrUpdateBrand(BrandRequestModel product, string xCorrelationId);
         string DeleteBrandById(string id, string xCorrelationId);
+        List<RoleResponseModel> GetRoles(string xCorrelationId);
+        RoleResponseModel GetRoleById(string id, string xCorrelationId);
+        string SaveOrUpdateRole(RoleRequestModel product, string xCorrelationId);
+        string DeleteRoleById(string id, string xCorrelationId);
+        Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId);
+        Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId);
     }
 }

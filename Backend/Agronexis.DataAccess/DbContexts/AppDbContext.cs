@@ -1,4 +1,6 @@
-﻿using Agronexis.Model.EntityModel;
+﻿using Agronexis.Model;
+using Agronexis.Model.EntityModel;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

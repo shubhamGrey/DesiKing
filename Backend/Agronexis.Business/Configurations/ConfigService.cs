@@ -72,5 +72,34 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.DeleteBrandById(id, xCorrelationId);
         }
+
+        public List<RoleResponseModel> GetRoles(string xCorrelationId)
+        {
+            return _repository.GetRoles(xCorrelationId);
+        }
+
+        public RoleResponseModel GetRoleById(string id, string xCorrelationId)
+        {
+            return _repository.GetRoleById(id, xCorrelationId);
+        }
+
+        public string SaveOrUpdateRole(RoleRequestModel product, string xCorrelationId)
+        {
+            return _repository.SaveOrUpdateRole(product, xCorrelationId);
+        }
+
+        public string DeleteRoleById(string id, string xCorrelationId)
+        {
+            return _repository.DeleteRoleById(id, xCorrelationId);
+        }
+
+        public async Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId)
+        {
+            return await _repository.UserLogin(model, xCorrelationId);
+        }
+        public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
+        {
+            return await _repository.UserRegistration(model, xCorrelationId);
+        }
     }
 }

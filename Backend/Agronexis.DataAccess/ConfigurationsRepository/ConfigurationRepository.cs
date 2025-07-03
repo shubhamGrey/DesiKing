@@ -2,10 +2,15 @@
 using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -16,9 +21,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
     public class ConfigurationRepository : IConfigurationRepository
     {
         private readonly AppDbContext _dbContext;
-        public ConfigurationRepository(AppDbContext dbContext)
+        private readonly IConfiguration _configuration;
+        public ConfigurationRepository(AppDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            _configuration = configuration;
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
@@ -76,7 +83,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures),
                     Uses = JsonSerializer.Serialize(productReq.Uses),
                     CategoryId = new Guid(productReq.CategoryId),
-                    IsActive = true,
+                    IsActive = productReq.IsActive,
                     CreatedDate = DateTime.UtcNow,
                     Currency = productReq.Currency,
                     BrandId = productReq.BrandId,
@@ -178,7 +185,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     ImageUrl = category.ImageUrl,
                     BrandId = category.BrandId,
                     CreatedDate = DateTime.UtcNow,
-                    IsActive = true,
+                    IsActive = category.IsActive,
                     MetaTitle = category.MetaTitle,
                     MetaDescription = category.MetaDescription
                 };
@@ -273,7 +280,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Description = brandReq.Description,
                     LogoURL = brandReq.LogoUrl,
                     CreatedDate = DateTime.UtcNow,
-                    IsActive = true,
+                    IsActive = brandReq.IsActive,
                     MetaTitle = brandReq.MetaTitle,
                     MetaDescription = brandReq.MetaDescription
                 };
@@ -313,6 +320,166 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             {
                 return null;
             }
+        }
+
+        public List<RoleResponseModel> GetRoles(string xCorrelationId)
+        {
+            List<RoleResponseModel> roleList = _dbContext.Roles.Where(x => x.IsActive).Select(x => new RoleResponseModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                IsActive = x.IsActive,
+                IsDeleted = x.IsDeleted,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).ToList();
+
+            return roleList;
+        }
+
+        public RoleResponseModel GetRoleById(string id, string xCorrelationId)
+        {
+            RoleResponseModel roleDetail = _dbContext.Roles.Where(x => x.Id == new Guid(id)).Select(x => new RoleResponseModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                IsActive = x.IsActive,
+                IsDeleted = x.IsDeleted,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).FirstOrDefault();
+
+            return roleDetail;
+        }
+
+        public string SaveOrUpdateRole(RoleRequestModel roleRequest, string xCorrelationId)
+        {
+            var roleDetail = _dbContext.Roles.FirstOrDefault(x => x.Id == roleRequest.Id);
+
+            if (roleDetail == null)
+            {
+                roleDetail = new()
+                {
+                    Name = roleRequest.Name,
+                    Description = roleRequest.Description,
+                    CreatedDate = DateTime.UtcNow,
+                    IsActive = roleRequest.IsActive,
+                    BrandId = roleRequest.BrandId
+                };
+
+                _dbContext.Roles.Add(roleDetail);
+            }
+            else if (roleDetail != null && roleDetail.Id == roleRequest.Id)
+            {
+                roleDetail.Name = roleRequest.Name;
+                roleDetail.Description = roleRequest.Description;
+                roleDetail.ModifiedDate = DateTime.UtcNow;
+                roleDetail.IsActive = roleRequest.IsActive;
+                roleDetail.BrandId = roleRequest.BrandId;
+
+                _dbContext.Roles.Update(roleDetail);
+            }
+            _dbContext.SaveChanges();
+            return roleDetail.Id.ToString();
+        }
+
+        public string DeleteRoleById(string id, string xCorrelationId)
+        {
+            var roleDetail = _dbContext.Roles.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+
+            if (roleDetail != null)
+            {
+                roleDetail.IsActive = false;
+                roleDetail.IsDeleted = true;
+                _dbContext.Roles.Update(roleDetail);
+                _dbContext.SaveChanges();
+                return "Record deleted successfully.";
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId)
+        {
+            LoginResponseModel loginResponse = new();
+            var user = await Authenticate(model.Email, model.Password);
+            if (user != null)
+            {
+                var token = GenerateJwtToken(user);
+                loginResponse.Token = token;
+            }
+
+            return loginResponse;
+        }
+
+        public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
+        {
+            RegistrationResponseModel signupResponse = new();
+            var userExists = await Authenticate(model.Email, model.Password);
+            if (userExists == null)
+            {
+                var user = new User
+                {
+                    Email = model.Email,
+                    UserName = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    MobileNumber = model.MobileNumber,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    CreatedDate = DateTime.UtcNow,
+                    IsActive = true,
+                    RoleId = model.RoleId,
+                    BrandId = model.BrandId
+                };
+
+                _dbContext.Users.Add(user);
+                _dbContext.SaveChanges();
+
+                signupResponse.RegisteredId = userExists?.Id.ToString();
+                signupResponse.Message = "User registered successfully";
+            }
+            else if (userExists != null)
+            {
+                signupResponse.RegisteredId = userExists?.Id.ToString();
+                signupResponse.Message = "User already exists";
+            }
+
+            return signupResponse;
+        }
+
+        private async Task<User> Authenticate(string email, string password)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            if (user == null) return null;
+
+            bool verified = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
+            return verified ? user : null;
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

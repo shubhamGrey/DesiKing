@@ -1,49 +1,48 @@
 ﻿using Agronexis.Business.Configurations;
-using Agronexis.Model;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
+using Agronexis.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using static Agronexis.Common.Constants;
 
 namespace Agronexis.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BrandController : ControllerBase
+    public class RoleController : ControllerBase
     {
         private readonly IConfigService _configService;
         string XCorrelationID = string.Empty;
 
-        public BrandController(IConfigService configService)
+        public RoleController(IConfigService configService)
         {
             _configService = configService;
         }
 
-        // GET api/Brand
+        // GET api/Role
         [Authorize]
         [HttpGet]
-        public ActionResult<IEnumerable<BrandResponseModel>> GetBrands()
+        public ActionResult<IEnumerable<RoleResponseModel>> GetRoles()
         {
             SetXCorrelationId();
-            var itemList = _configService.GetBrands(XCorrelationID);
+            var itemList = _configService.GetRoles(XCorrelationID);
             return itemList;
         }
 
-        // GET api/Brand/{id}
+        // GET api/Role/{id}
         [HttpGet("{id}")]
-        public ActionResult<BrandResponseModel> GetBrandById(string id)
+        public ActionResult<RoleResponseModel> GetRoleById(string id)
         {
             SetXCorrelationId();
-            var item = _configService.GetBrandById(id, XCorrelationID);
+            var item = _configService.GetRoleById(id, XCorrelationID);
             return item;
         }
 
-        // POST api/Brand
+        // POST api/Role
         [HttpPost]
-        public ActionResult<ApiResponseModel> SaveOrUpdateBrand([FromBody] BrandRequestModel Brand)
+        public ActionResult<ApiResponseModel> SaveOrUpdateRole([FromBody] RoleRequestModel role)
         {
             SetXCorrelationId();
             ApiResponseModel response = new()
@@ -51,7 +50,7 @@ namespace Agronexis.Api.Controllers
                 Info = new ApiResponseInfoModel()
             };
 
-            var item = _configService.SaveOrUpdateBrand(Brand, XCorrelationID);
+            var item = _configService.SaveOrUpdateRole(role, XCorrelationID);
             if (item == null)
             {
                 response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
@@ -66,9 +65,9 @@ namespace Agronexis.Api.Controllers
             return response;
         }
 
-        // DELETE api/Brand/{id}
+        // DELETE api/Role/{id}
         [HttpDelete("{id}")]
-        public ActionResult<ApiResponseModel> DeleteBrand(string id)
+        public ActionResult<ApiResponseModel> DeleteRole(string id)
         {
             SetXCorrelationId();
             ApiResponseModel response = new()
@@ -76,7 +75,7 @@ namespace Agronexis.Api.Controllers
                 Info = new ApiResponseInfoModel()
             };
 
-            var item = _configService.DeleteBrandById(id, XCorrelationID);
+            var item = _configService.DeleteRoleById(id, XCorrelationID);
             if (item == null)
             {
                 response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();

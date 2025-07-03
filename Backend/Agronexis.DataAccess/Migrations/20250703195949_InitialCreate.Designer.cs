@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250615091118_InitialCreate")]
+    [Migration("20250703195949_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -477,6 +477,9 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
+                    b.Property<string>("MobileNumber")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -485,6 +488,9 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
