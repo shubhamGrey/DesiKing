@@ -291,7 +291,7 @@ const Products = () => {
     <>
       <Box
         sx={{
-          backgroundImage: 'url("/Header Image.png")',
+          backgroundImage: 'url("/ProductBackground.png")',
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
@@ -310,7 +310,7 @@ const Products = () => {
         <Typography
           variant="body1"
           sx={{ mb: 4, mt: 2 }}
-          color="#000000"
+          color="primary.contrastText"
           fontSize={isMobile ? "0.2rem" : "1rem"}
         >
           A legacy of authenticity in every pinch.
