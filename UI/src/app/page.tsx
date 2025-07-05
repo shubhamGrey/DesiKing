@@ -32,6 +32,7 @@ import theme from "@/styles/theme";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
+import Image from "next/image";
 
 // Define the Category type
 type Category = {
@@ -233,7 +234,7 @@ const Home: React.FC = () => {
           >
             Featured Products
           </Typography>
-          <Grid container spacing={3} height={isMobile ? "auto" : 500}>
+          <Grid container spacing={3}>
             {!isMobile ? (
               featuredProducts.map((product) => (
                 <Grid
@@ -242,34 +243,42 @@ const Home: React.FC = () => {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    justifyContent: "end",
                   }}
                 >
                   <Box
                     sx={{
-                      height: "100%",
+                      height: "fit-content",
                       width: "100%",
-                      backgroundImage: `url("${product.image}")`,
-                      backgroundSize: "contain",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right",
                       transition: "transform 0.3s ease-in-out",
-                      cursor: "pointer",
                       borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "end",
-                      justifyContent: "end",
                       "&:hover": {
                         transform: "scale(1.05)",
                       },
                     }}
                   >
+                    <Image
+                      src={product.image}
+                      alt={product.title}
+                      width={200}
+                      height={200}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        borderRadius: "8px",
+                      }}
+                    />
                     <Button
                       variant="outlined"
                       sx={{
                         color: "primary.main",
                         border: "2px solid",
                         borderColor: "primary.main",
+                        position: "relative",
+                        top: -53,
+                        left: "50%",
+                        cursor: "pointer",
                         mb: 2,
                         mr: 1,
                         "&:hover": {
@@ -310,7 +319,6 @@ const Home: React.FC = () => {
                       key={product.id}
                       direction={"row"}
                       spacing={3}
-                      height={100}
                       sx={{
                         display: "flex",
                         alignItems: "center",
@@ -320,50 +328,57 @@ const Home: React.FC = () => {
                         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                       }}
                     >
-                      <Box
-                        sx={{
-                          height: 100,
-                          width: 100,
-                          borderRadius: "8px",
-                          backgroundImage: `url("${product.image}")`,
-                          backgroundSize: "cover",
-                          backgroundRepeat: "no-repeat",
-                          backgroundPosition: "center",
-                        }}
-                      />
-                      <Box>
-                        <Typography
-                          variant="h6"
-                          color="text.primary"
-                          sx={{ mb: 0.5 }}
-                        >
-                          {product.title}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mb: 4 }}
-                        >
-                          {product.description}
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          sx={{
-                            backgroundClip: "primary.main",
-                            color: "primary.contrastText",
-                            position: "absolute",
-                            right: 16,
-                            bottom: 16,
-                            boxShadow: "none",
-                          }}
-                          onClick={() => {
-                            router.push("/products");
-                          }}
-                        >
-                          Order Now
-                        </Button>
-                      </Box>
+                      <Grid container spacing={2}>
+                        <Grid size={{ xs: 4, md: 4 }}>
+                          <Image
+                            src={product.image}
+                            alt={product.title}
+                            width={100}
+                            height={100}
+                            style={{
+                              height: "100%",
+                              width: "100%",
+                              borderRadius: "8px",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 8, md: 8 }}>
+                          <Box>
+                            <Typography
+                              variant="h6"
+                              color="text.primary"
+                              sx={{ mb: 0.5 }}
+                            >
+                              {product.title}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 4 }}
+                            >
+                              {product.description}
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              sx={{
+                                backgroundClip: "primary.main",
+                                color: "primary.contrastText",
+                                position: "absolute",
+                                right: 16,
+                                bottom: 16,
+                                boxShadow: "none",
+                              }}
+                              onClick={() => {
+                                router.push("/products");
+                              }}
+                            >
+                              Order Now
+                            </Button>
+                          </Box>
+                        </Grid>
+                      </Grid>
                     </Stack>
                   ))}
                 </Stack>

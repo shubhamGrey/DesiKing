@@ -1,18 +1,10 @@
 import React from "react";
 import { michroma } from "@/app/layout";
 import theme from "@/styles/theme";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Grid,
-  Rating,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Grid, Rating, Stack, Typography } from "@mui/material";
 import { styled, useMediaQuery } from "@mui/system";
 import Image from "next/image";
-import { FavoriteBorderOutlined } from "@mui/icons-material";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 
 // Define the type for selectedProduct
 interface Product {
@@ -48,7 +40,7 @@ const StyledRating = styled(Rating)({
 
 const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
   const [selectedQuantity, setSelectedQuantity] = React.useState(1);
-  const [selectedPacket, setSelectedPacket] = React.useState("100gm");
+  // const [selectedPacket, setSelectedPacket] = React.useState("100gm");
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [currentImage, setCurrentImage] = React.useState(0);
@@ -78,6 +70,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
               width: "100%",
               height: isMobile ? "400px" : "600px",
               borderRadius: 8,
+              objectFit: "cover",
             }}
           />
           <Box display="flex" flexDirection="row" gap={1}>
@@ -161,7 +154,8 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                   variant="body2"
                   sx={{ color: "text.secondary", my: "8px !important" }}
                 >
-                  ({selectedPacket})
+                  {/* ({selectedPacket}) */}
+                  (100 gm)
                 </Typography>
               </Stack>
             </Stack>
@@ -169,7 +163,8 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
         </Box>
         <Box>
           <Box>
-            <Typography
+            {/* Packets section */}
+            {/* <Typography
               variant="body2"
               sx={{ color: "primary.main", mb: 1, mr: 16.4 }}
               textAlign={"right"}
@@ -211,7 +206,9 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                   {size}
                 </Button>
               ))}
-            </ButtonGroup>
+            </ButtonGroup> */}
+
+            {/* Quantity section */}
             <Typography
               variant="body2"
               sx={{ color: "primary.main", mb: 1, mr: 16 }}
@@ -289,7 +286,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                 },
               }}
             >
-              <FavoriteBorderOutlined />
+              <AddShoppingCartIcon />
             </Button>
             <Button
               variant="contained"
@@ -304,24 +301,9 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
               }}
               fullWidth
             >
-              Add to Cart
+              Buy Now
             </Button>
           </Stack>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "primary.main",
-              color: "primary.contrastText",
-              fontWeight: 600,
-              "&:hover": {
-                backgroundColor: "secondary.main",
-              },
-              borderRadius: 0,
-            }}
-            fullWidth
-          >
-            Buy Now
-          </Button>
         </Box>
       </Grid>
     </Grid>
