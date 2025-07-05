@@ -23,7 +23,7 @@ namespace Agronexis.Api.Controllers
         }
 
         // GET api/Brand
-        [Authorize]
+        // [Authorize]
         [HttpGet]
         public ActionResult<IEnumerable<BrandResponseModel>> GetBrands()
         {
