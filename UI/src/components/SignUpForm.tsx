@@ -1,27 +1,44 @@
 import React from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  useMediaQuery,
+  Theme,
+} from "@mui/material";
 
 interface SignUpFormProps {
-  handleSignUp: () => void;
+  handleSignUp: (credentials: {
+    username: string;
+    password: string;
+    email: string;
+    full_name: string;
+    phone_number: string;
+  }) => void;
 }
 
 const SignUpForm: React.FC<SignUpFormProps> = ({ handleSignUp }) => {
+  const isMobile = useMediaQuery((theme: Theme) =>
+    theme.breakpoints.down("sm")
+  );
+
   return (
     <Box
       sx={{
         width: "100%",
-        maxWidth: 375,
+        maxWidth: isMobile ? "90%" : 375,
         backgroundColor: "transparent",
         borderRadius: 2,
-        p: 4,
+        p: isMobile ? 2 : 4,
         textAlign: "center",
       }}
     >
       <Typography
-        variant="h4"
+        variant={isMobile ? "h5" : "h4"}
         fontWeight="bold"
         fontFamily="Rockwell"
-        fontSize={40}
+        fontSize={isMobile ? 30 : 40}
         sx={{ color: "primary.dark" }}
         gutterBottom
       >
@@ -110,11 +127,20 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ handleSignUp }) => {
           color: "#ffffff",
           border: "2px solid",
           borderColor: "primary.main",
-          py: 1.2,
+          py: isMobile ? 1 : 1.2,
           borderRadius: 8,
           mt: 2,
         }}
-        onClick={handleSignUp}
+        onClick={() => {
+          const credentials = {
+            username: "exampleUsername", // Replace with actual form data
+            password: "examplePassword", // Replace with actual form data
+            email: "exampleEmail", // Replace with actual form data
+            full_name: "exampleFullName", // Replace with actual form data
+            phone_number: "examplePhoneNumber", // Replace with actual form data
+          };
+          handleSignUp(credentials);
+        }}
       >
         <Typography
           variant="body1"

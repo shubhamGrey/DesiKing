@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import { Button, Typography, Box, useMediaQuery } from "@mui/material";
+import theme from "@/styles/theme";
 
 interface QuantityControlProps {
   quantity: number;
@@ -14,59 +16,56 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
   onDecrease,
   itemName,
 }) => {
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-      <button
+    <Box
+      display="flex"
+      alignItems="center"
+      gap={isMobile ? 0 : 1}
+      sx={{ m: 0, pb: 1 }}
+    >
+      <Button
         onClick={onDecrease}
         aria-label={`Decrease quantity of ${itemName}`}
         disabled={quantity <= 1}
-        style={{
-          width: "32px",
-          height: "32px",
+        variant="outlined"
+        sx={{
+          minWidth: isMobile ? "20px" : "32px",
+          height: isMobile ? "20px" : "32px",
           borderRadius: "50%",
-          border: "1px solid #cccccc", // Updated border color
-          backgroundColor: "white",
-          cursor: quantity > 1 ? "pointer" : "not-allowed",
-          fontSize: "16px",
-          color: "#555555", // Updated text color
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          padding: 0,
+          fontSize: isMobile ? "12px" : "16px",
           opacity: quantity > 1 ? 1 : 0.5,
         }}
       >
         −
-      </button>
-      <span
+      </Button>
+      <Typography
         aria-label={`Quantity: ${quantity}`}
-        style={{
-          fontSize: "16px",
-          fontWeight: "500",
+        sx={{
+          fontSize: isMobile ? "12px" : "16px",
+          fontWeight: 500,
           minWidth: "24px",
           textAlign: "center",
         }}
       >
         {quantity}
-      </span>
-      <button
+      </Typography>
+      <Button
         onClick={onIncrease}
         aria-label={`Increase quantity of ${itemName}`}
-        style={{
-          width: "32px",
-          height: "32px",
+        variant="outlined"
+        sx={{
+          minWidth: isMobile ? "20px" : "32px",
+          height: isMobile ? "20px" : "32px",
           borderRadius: "50%",
-          border: "1px solid #cccccc", // Updated border color
-          backgroundColor: "white",
-          cursor: "pointer",
-          fontSize: "16px",
-          color: "#555555", // Updated text color
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          padding: 0,
+          fontSize: isMobile ? "12px" : "16px",
         }}
       >
         +
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 };

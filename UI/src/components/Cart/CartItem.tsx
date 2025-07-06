@@ -190,11 +190,12 @@ export const CartItem: React.FC<CartItemProps> = ({
         spacing={2}
         alignItems="end"
         justifyContent="space-between"
+        height="100%"
       >
         <IconButton
           onClick={handleRemove}
           aria-label={`Remove ${name} from cart`}
-          sx={{ color: "secondary.main" }} // Updated remove button color
+          sx={{ color: "secondary.main", p: 0 }} // Updated remove button color
         >
           <DeleteRoundedIcon />
         </IconButton>

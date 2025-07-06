@@ -1,27 +1,36 @@
 import React from "react";
-import { Box, Button, TextField, Typography, Link } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Link,
+  useMediaQuery,
+} from "@mui/material";
 
 interface LoginFormProps {
-  handleLogin: () => void;
+  handleLogin: (credentials: { username: string; password: string }) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
+  const isMobile = useMediaQuery("(max-width:600px)");
+
   return (
     <Box
       sx={{
         width: "100%",
-        maxWidth: 375,
+        maxWidth: isMobile ? "90%" : 375,
         backgroundColor: "transparent",
         borderRadius: 2,
-        p: 4,
+        p: isMobile ? 2 : 4,
         textAlign: "center",
       }}
     >
       <Typography
-        variant="h4"
+        variant={isMobile ? "h5" : "h4"}
         fontWeight="bold"
         fontFamily="Rockwell"
-        fontSize={40}
+        fontSize={isMobile ? 30 : 40}
         sx={{ color: "primary.dark" }}
         gutterBottom
       >
@@ -62,15 +71,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         fullWidth
         variant="contained"
         sx={{
-          backgroundColor: "primary.main", // orange color
+          backgroundColor: "primary.main",
           color: "#ffffff",
           border: "2px solid",
           borderColor: "primary.main",
-          py: 1.2,
+          py: isMobile ? 1 : 1.2,
           borderRadius: 8,
           mt: 2,
         }}
-        onClick={handleLogin}
+        onClick={() =>
+          handleLogin({ username: "test@example.com", password: "password123" })
+        }
       >
         <Typography
           variant="body1"

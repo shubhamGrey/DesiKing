@@ -5,7 +5,6 @@ import { OrderSummary } from "../../components/Cart/OrderSummary";
 import { Box, Button, Typography, Stack, useMediaQuery } from "@mui/material";
 import { michroma } from "@/app/layout";
 import theme from "@/styles/theme";
-import RecommendationsAndWishlist from "@/components/Cart/RecommendationsAndWishlist";
 
 interface CartItemType {
   id: number;
@@ -38,6 +37,33 @@ const Cart: React.FC = () => {
     },
     {
       id: 3,
+      name: "Apple HomePod mini",
+      color: "Silver",
+      price: 99.99,
+      quantity: 1,
+      image:
+        "https://images.pexels.com/photos/1334598/pexels-photo-1334598.jpeg",
+    },
+    {
+      id: 4,
+      name: "Apple AirPods Pro",
+      color: "White",
+      price: 249.99,
+      quantity: 1,
+      image:
+        "https://images.pexels.com/photos/4812923/pexels-photo-4812923.jpeg",
+    },
+    {
+      id: 5,
+      name: "Apple AirPods Max",
+      color: "Silver",
+      price: 549.99,
+      quantity: 1,
+      image:
+        "https://images.pexels.com/photos/4812923/pexels-photo-4812923.jpeg",
+    },
+    {
+      id: 6,
       name: "Apple HomePod mini",
       color: "Silver",
       price: 99.99,
@@ -197,7 +223,6 @@ const Cart: React.FC = () => {
           onApplyPromoCode={applyPromoCode}
         />
       </Box>
-      <RecommendationsAndWishlist />
     </Box>
   );
 };
