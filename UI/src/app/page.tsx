@@ -695,13 +695,13 @@ const Home: React.FC = () => {
           }}
           onClick={() => {
             window.open(
-              "https://www.youtube.com/watch?v=tYRz6M819nE",
+              "https://www.youtube.com/watch?v=vwXHoR_T2EU",
               "_blank"
             );
           }}
         >
           <iframe
-            src="https://www.youtube.com/embed/tYRz6M819nE?si=HM5pGluLwBIaXdnR?autoplay=1&mute=1"
+            src="https://www.youtube.com/embed/vwXHoR_T2EU?autoplay=1&mute=1&controls=0&loop=1&playlist=vwXHoR_T2EU"
             title="Agro Nexis - Our Story"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
