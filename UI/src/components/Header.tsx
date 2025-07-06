@@ -24,7 +24,6 @@ import {
   SearchOutlined,
   PermIdentityOutlined,
   ShoppingCartOutlined,
-  Add,
 } from "@mui/icons-material";
 import Image from "next/image";
 import Link from "next/link";
@@ -259,7 +258,7 @@ export default function Header() {
                           : "primary.contrastText",
                       mr: 1,
                     }}
-                    onClick={(e) => {
+                    onClick={() => {
                       if (icon.type === ShoppingCartOutlined) {
                         router.push("/cart");
                       } else if (icon.type === PermIdentityOutlined) {

@@ -60,7 +60,6 @@ interface ProductFormData {
   storageInstructions: string;
   nutritionalInfo?: string;
   certifications: string[];
-  tags: string[];
   isPremium: boolean;
   isFeatured: boolean;
   status: "draft" | "published" | "archived";
@@ -107,8 +106,6 @@ const AddProduct: React.FC = () => {
   const [selectedCertifications, setSelectedCertifications] = useState<
     string[]
   >([]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [toastOpen, setToastOpen] = useState(false);
   const [brands, setBrands] = useState<FormattedBrand[]>([]);
@@ -200,7 +197,6 @@ const AddProduct: React.FC = () => {
       shelfLife: "",
       storageInstructions: "",
       certifications: [],
-      tags: [],
       isPremium: false,
       isFeatured: false,
       status: "draft",
@@ -291,7 +287,6 @@ const AddProduct: React.FC = () => {
         const finalData = {
           ...data,
           certifications: selectedCertifications,
-          tags,
           imageUrls, // Array of all uploaded image URLs
         };
 
