@@ -550,7 +550,7 @@ const Home: React.FC = () => {
                     }}
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click
-                      handleDeleteCategoryByType(category.id, false);
+                      handleDeleteCategoryByType(category.id);
                     }}
                   >
                     <Delete fontSize="small" />
@@ -614,9 +614,7 @@ const Home: React.FC = () => {
           </Typography>
           <AllProducts
             items={upcomingpProductCategories}
-            onDelete={(categoryId) =>
-              handleDeleteCategoryByType(categoryId, true)
-            }
+            onDelete={(categoryId) => handleDeleteCategoryByType(categoryId)}
           />
         </Box>
         <Box
