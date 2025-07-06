@@ -285,6 +285,17 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                   backgroundColor: "secondary.main",
                 },
               }}
+              onClick={() => {
+                const isLoggedIn = Boolean(
+                  localStorage.getItem("access_Token")
+                ); // Example check for user login
+                if (!isLoggedIn) {
+                  window.location.href = "/login"; // Redirect to login page
+                } else {
+                  // Add to cart logic here
+                  console.log("Product added to cart");
+                }
+              }}
             >
               <AddShoppingCartIcon />
             </Button>
@@ -300,6 +311,17 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                 borderRadius: 0,
               }}
               fullWidth
+              onClick={() => {
+                const isLoggedIn = Boolean(
+                  localStorage.getItem("access_Token")
+                ); // Example check for user login
+                if (!isLoggedIn) {
+                  window.location.href = "/login"; // Redirect to login page
+                } else {
+                  // Add to cart logic here
+                  console.log("Product added to cart");
+                }
+              }}
             >
               Buy Now
             </Button>

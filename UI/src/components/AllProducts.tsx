@@ -7,9 +7,13 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  IconButton,
 } from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
 
 interface Category {
+  id: string;
   title: string;
   image: string;
 }
@@ -17,12 +21,14 @@ interface Category {
 interface AllProductsProps {
   items: Category[];
   route?: string;
+  onDelete?: (id: string) => void; // Added onDelete prop
 }
 
-export default function AllProducts({ items }: AllProductsProps) {
+export default function AllProducts({ items, onDelete }: AllProductsProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(4);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -86,12 +92,68 @@ export default function AllProducts({ items }: AllProductsProps) {
               overflow: "hidden",
               position: "relative",
               opacity: 1,
-              pointerEvents: "none",
-              cursor: "pointer",
+              // cursor: "pointer",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               height: 240,
             }}
           >
+            {/* Edit and Delete Icon Buttons */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                display: "flex",
+                gap: 2,
+                zIndex: 1,
+              }}
+            >
+              <IconButton
+                color="primary"
+                size="small"
+                sx={{
+                  border: "2px solid",
+                  borderColor: "primary.main",
+                  borderRadius: "50%",
+                  transition: "all 0.3s ease-in-out",
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    borderColor: "primary.main",
+                  },
+                }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click
+                  sessionStorage.setItem("categoryId", category.id);
+                  router.push("/add-category");
+                }}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+              <IconButton
+                color="error"
+                size="small"
+                sx={{
+                  border: "2px solid",
+                  borderColor: "error.main",
+                  borderRadius: "50%",
+                  transition: "all 0.3s ease-in-out",
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "error.main",
+                    color: "error.contrastText",
+                    borderColor: "error.main",
+                  },
+                }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click
+                  if (onDelete) onDelete(category.id); // Call onDelete if provided
+                }}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </Box>
             <CardMedia
               component="img"
               height="184"

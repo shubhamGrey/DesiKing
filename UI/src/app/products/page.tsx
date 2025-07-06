@@ -1,9 +1,11 @@
 "use client";
 import ProductSection from "@/components/ProductSection";
-import { Box, Typography, useMediaQuery } from "@mui/material";
+import { Box, Typography, useMediaQuery, Fab } from "@mui/material";
 import Image from "next/image";
 import DesiKing from "../../../public/DesiKing.png";
 import theme from "@/styles/theme";
+import AddIcon from "@mui/icons-material/Add";
+import { useRouter } from "next/navigation";
 
 const productsList = [
   {
@@ -286,6 +288,7 @@ const productsList = [
 
 const Products = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
 
   return (
     <>
@@ -319,6 +322,18 @@ const Products = () => {
       {productsList.map((category, index) => (
         <ProductSection key={index} item={category} />
       ))}
+      <Fab
+        color="primary"
+        aria-label="add"
+        sx={{
+          position: "fixed",
+          bottom: 16,
+          right: 16,
+        }}
+        onClick={() => router.push("/add-product")}
+      >
+        <AddIcon />
+      </Fab>
     </>
   );
 };

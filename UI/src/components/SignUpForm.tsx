@@ -1,11 +1,11 @@
 import React from "react";
-import { Box, Button, TextField, Typography, Link } from "@mui/material";
+import { Box, Button, TextField, Typography } from "@mui/material";
 
-interface LoginFormProps {
-  handleLogin: () => void;
+interface SignUpFormProps {
+  handleSignUp: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ handleSignUp }) => {
   return (
     <Box
       sx={{
@@ -25,12 +25,41 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         sx={{ color: "primary.dark" }}
         gutterBottom
       >
-        Login
+        Sign Up
       </Typography>
 
       <TextField
         fullWidth
+        label="Full Name"
+        margin="normal"
+        variant="outlined"
+        slotProps={{
+          input: {
+            style: {
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              borderRadius: 30,
+            },
+          },
+        }}
+      />
+      <TextField
+        fullWidth
         label="Email address"
+        margin="normal"
+        variant="outlined"
+        slotProps={{
+          input: {
+            style: {
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              borderRadius: 30,
+            },
+          },
+        }}
+      />
+
+      <TextField
+        fullWidth
+        label="Phone Number"
         margin="normal"
         variant="outlined"
         slotProps={{
@@ -57,6 +86,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
           },
         }}
       />
+      <TextField
+        fullWidth
+        label="Confirm Password"
+        type="password"
+        margin="normal"
+        variant="outlined"
+        slotProps={{
+          input: {
+            style: {
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              borderRadius: 30,
+            },
+          },
+        }}
+      />
 
       <Button
         fullWidth
@@ -70,29 +114,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
           borderRadius: 8,
           mt: 2,
         }}
-        onClick={handleLogin}
+        onClick={handleSignUp}
       >
         <Typography
           variant="body1"
           fontWeight="bold"
           sx={{ color: "primary.contrastText" }}
         >
-          Log in
+          Sign Up
         </Typography>
       </Button>
-
-      <Box sx={{ textAlign: "center", mt: 2 }}>
-        <Link
-          href="#"
-          variant="body2"
-          fontWeight="600"
-          sx={{ textDecoration: "none", color: "primary.main" }}
-        >
-          Forgot password?
-        </Link>
-      </Box>
     </Box>
   );
 };
 
-export default LoginForm;
+export default SignUpForm;

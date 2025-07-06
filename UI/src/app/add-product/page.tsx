@@ -11,12 +11,10 @@ import {
   CardContent,
   Chip,
   Container,
-  Divider,
   FormControl,
   FormControlLabel,
   Grid,
   IconButton,
-  InputAdornment,
   InputLabel,
   Link,
   MenuItem,
@@ -40,11 +38,20 @@ interface ProductFormData {
   description: string;
   category: string;
   brand: string;
-  price: number;
-  discountedPrice?: number;
-  sku: string;
+  price: {
+    amount: string;
+    currency: string;
+    isDiscounted: boolean;
+    discountPercentage: number;
+    discountedAmount: string;
+    weight: string;
+  }[];
+  sku: {
+    sku: string;
+    weight: string;
+    barcode: string;
+  }[];
   stock: number;
-  weight: string;
   keyFeatures: { feature: string }[];
   uses: { use: string }[];
   ingredients?: string;
@@ -169,10 +176,24 @@ const AddProduct: React.FC = () => {
       description: "",
       category: "",
       brand: "",
-      price: 0,
-      sku: "",
+      price: [
+        {
+          amount: "",
+          currency: "INR",
+          isDiscounted: false,
+          discountPercentage: 0,
+          discountedAmount: "",
+          weight: "",
+        },
+      ],
+      sku: [
+        {
+          sku: "",
+          weight: "",
+          barcode: "",
+        },
+      ],
       stock: 0,
-      weight: "",
       keyFeatures: [{ feature: "" }],
       uses: [{ use: "" }],
       origin: "",
@@ -204,6 +225,25 @@ const AddProduct: React.FC = () => {
     name: "uses",
   });
 
+  const {
+    fields: priceFields,
+    append: appendPrice,
+    remove: removePrice,
+    update: updatePrice,
+  } = useFieldArray({
+    control,
+    name: "price",
+  });
+
+  const {
+    fields: skuFields,
+    append: appendSku,
+    remove: removeSku,
+  } = useFieldArray({
+    control,
+    name: "sku",
+  });
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
@@ -223,17 +263,6 @@ const AddProduct: React.FC = () => {
     );
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags((prev) => [...prev, tagInput.trim()]);
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
-  };
-
   const uploadViaApi = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -246,7 +275,7 @@ const AddProduct: React.FC = () => {
     if (!res.ok) throw new Error("Upload failed");
 
     const data = await res.json();
-    return data.path;
+    return data.previewUrl;
   };
 
   const uploadAllImages = async (files: File[]): Promise<string[]> => {
@@ -350,7 +379,7 @@ const AddProduct: React.FC = () => {
                 "&:hover": { backgroundColor: "secondary.main" },
               }}
             >
-              Add Product
+              Save Product
             </Button>
           </Stack>
           <Typography variant="body2" color="text.secondary">
@@ -481,7 +510,7 @@ const AddProduct: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Pricing & Inventory */}
+              {/* Pricing Details */}
               <Card
                 sx={{
                   mb: 4,
@@ -494,120 +523,220 @@ const AddProduct: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 3,
+                    }}
                   >
-                    Pricing & Inventory
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <Controller
-                        name="price"
-                        control={control}
-                        rules={{ required: "Price is required", min: 0 }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            type="number"
-                            label="Price"
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  $
-                                </InputAdornment>
-                              ),
-                            }}
-                            error={!!errors.price}
-                            helperText={errors.price?.message}
-                          />
-                        )}
-                      />
+                    <Typography
+                      variant="h6"
+                      fontFamily={michroma.style.fontFamily}
+                      color="primary.main"
+                    >
+                      Pricing Details
+                    </Typography>
+                    <Button
+                      startIcon={<Add />}
+                      onClick={() =>
+                        appendPrice({
+                          amount: "",
+                          currency: "INR",
+                          isDiscounted: false,
+                          discountPercentage: 0,
+                          discountedAmount: "",
+                          weight: "",
+                        })
+                      }
+                      size="small"
+                      disabled={priceFields.length >= 5} // Disable if 5 price fields already exist
+                    >
+                      Add Price
+                    </Button>
+                  </Box>
+                  {priceFields.map((field, index) => (
+                    <Grid container spacing={2} key={field.id} sx={{ mb: 2 }}>
+                      <Grid size={3}>
+                        <Controller
+                          name={`price.${index}.amount`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Amount"
+                              placeholder="e.g., 100"
+                              fullWidth
+                              size="small"
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={2}>
+                        <Controller
+                          name={`price.${index}.currency`}
+                          control={control}
+                          render={({ field }) => (
+                            <FormControl fullWidth size="small">
+                              <InputLabel>Currency</InputLabel>
+                              <Select {...field} label="Currency">
+                                <MenuItem value="INR">INR</MenuItem>
+                                <MenuItem value="USD">USD</MenuItem>
+                              </Select>
+                            </FormControl>
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={3}>
+                        <Controller
+                          name={`price.${index}.weight`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Weight"
+                              placeholder="e.g., 500g"
+                              fullWidth
+                              size="small"
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={3}>
+                        <Controller
+                          name={`price.${index}.discountPercentage`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Discount %"
+                              placeholder="e.g., 10"
+                              fullWidth
+                              size="small"
+                              type="number"
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                field.onChange(e);
+                                updatePrice(index, {
+                                  ...priceFields[index],
+                                  isDiscounted: value > 0,
+                                });
+                              }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={1}>
+                        <IconButton
+                          onClick={() => removePrice(index)}
+                          sx={{ color: "secondary.main" }}
+                          disabled={priceFields.length === 1} // Disable if only one price field exists
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Grid>
                     </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <Controller
-                        name="discountedPrice"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            type="number"
-                            label="Discounted Price (Optional)"
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  $
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        )}
-                      />
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* SKU Details */}
+              <Card
+                sx={{
+                  mb: 4,
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                  border: "1px solid",
+                  borderColor: "primary.main",
+                  borderRadius: "8px",
+                }}
+                elevation={0}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 3,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontFamily={michroma.style.fontFamily}
+                      color="primary.main"
+                    >
+                      SKU Details
+                    </Typography>
+                    <Button
+                      startIcon={<Add />}
+                      onClick={() =>
+                        appendSku({ sku: "", weight: "", barcode: "" })
+                      }
+                      size="small"
+                    >
+                      Add SKU
+                    </Button>
+                  </Box>
+                  {skuFields.map((field, index) => (
+                    <Grid container spacing={2} key={field.id} sx={{ mb: 2 }}>
+                      <Grid size={4}>
+                        <Controller
+                          name={`sku.${index}.sku`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="SKU"
+                              placeholder="e.g., SKU12345"
+                              fullWidth
+                              size="small"
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={4}>
+                        <Controller
+                          name={`sku.${index}.weight`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Weight"
+                              placeholder="e.g., 1kg"
+                              fullWidth
+                              size="small"
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={3}>
+                        <Controller
+                          name={`sku.${index}.barcode`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Barcode"
+                              placeholder="e.g., 1234567890123"
+                              fullWidth
+                              size="small"
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={1}>
+                        <IconButton
+                          onClick={() => removeSku(index)}
+                          sx={{ color: "secondary.main" }}
+                          disabled={skuFields.length === 1} // Disable if only one SKU field exists
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Grid>
                     </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <Controller
-                        name="weight"
-                        control={control}
-                        rules={{ required: "Weight is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="Weight/Package Size"
-                            placeholder="e.g., 100g, 500g, 1kg"
-                            error={!!errors.weight}
-                            helperText={errors.weight?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="sku"
-                        control={control}
-                        rules={{ required: "SKU is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="SKU"
-                            placeholder="e.g., TUR-100G-001"
-                            error={!!errors.sku}
-                            helperText={errors.sku?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="stock"
-                        control={control}
-                        rules={{
-                          required: "Stock quantity is required",
-                          min: 0,
-                        }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            type="number"
-                            label="Stock Quantity"
-                            error={!!errors.stock}
-                            helperText={errors.stock?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
+                  ))}
                 </CardContent>
               </Card>
 
@@ -1169,21 +1298,6 @@ const AddProduct: React.FC = () => {
                         />
                       )}
                     />
-                    <Divider />
-                    <Controller
-                      name="status"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControl fullWidth size="small">
-                          <InputLabel>Status</InputLabel>
-                          <Select {...field} label="Status">
-                            <MenuItem value="draft">Draft</MenuItem>
-                            <MenuItem value="added">Added</MenuItem>
-                            <MenuItem value="archived">Archived</MenuItem>
-                          </Select>
-                        </FormControl>
-                      )}
-                    />
                   </Stack>
                 </CardContent>
               </Card>
@@ -1235,61 +1349,6 @@ const AddProduct: React.FC = () => {
                       </Box>
                     ))}
                   </Stack>
-                </CardContent>
-              </Card>
-
-              {/* Tags */}
-              <Card
-                sx={{
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    Tags
-                  </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      placeholder="Add a tag..."
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                      InputProps={{
-                        endAdornment: (
-                          <Button size="small" onClick={handleAddTag}>
-                            Add
-                          </Button>
-                        ),
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {tags.map((tag) => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        onDelete={() => handleRemoveTag(tag)}
-                        size="small"
-                      />
-                    ))}
-                  </Box>
                 </CardContent>
               </Card>
             </Grid>

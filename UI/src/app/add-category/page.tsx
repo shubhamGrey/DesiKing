@@ -35,7 +35,7 @@ import { michroma } from "../layout";
 interface CategoryFormData {
   name: string;
   description: string;
-  brandId?: string; // Added brand property
+  brandId?: string;
   metaTitle?: string;
   metaDescription?: string;
   isActive?: boolean;
@@ -45,7 +45,7 @@ interface CategoryFormData {
 interface Brand {
   name: string;
   id: string;
-  isActive: boolean; // Added isActive property
+  isActive: boolean;
 }
 
 interface FormattedBrand {
@@ -56,9 +56,31 @@ interface FormattedBrand {
 const AddCategory: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
+  const categoryId =
+    typeof window !== "undefined" ? sessionStorage.getItem("categoryId") : null;
   const [uploadedImage, setuploadedImage] = useState<File | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
   const [brands, setBrands] = useState<FormattedBrand[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // State to force re-render
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors, isSubmitting },
+  } = useForm<CategoryFormData>({
+    defaultValues: {
+      name: "",
+      description: "",
+      metaTitle: "",
+      metaDescription: "",
+      imageUrl: "",
+      isActive: true,
+      brandId: "",
+    },
+  });
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/Brand`, {
@@ -80,40 +102,47 @@ const AddCategory: React.FC = () => {
       .catch((error: unknown) => {
         console.error("Error fetching brands:", error);
       });
-    return () => {
-      // Cleanup if necessary
-      setBrands([]);
-    };
-  }, []);
+
+    if (categoryId) {
+      setIsEditMode(true);
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/Category/${categoryId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data: CategoryFormData) => {
+          setValue("name", data.name);
+          setValue("description", data.description);
+          setValue("metaTitle", data.metaTitle || "");
+          setValue("metaDescription", data.metaDescription || "");
+          setValue("isActive", data.isActive || false);
+          setValue("brandId", data.brandId || "");
+          setValue("imageUrl", data.imageUrl || ""); // Ensure imageUrl is set
+        })
+        .catch((error: unknown) => {
+          console.error("Error fetching category:", error);
+        });
+    }
+  }, [categoryId, setValue]);
 
   const handleToastClose = () => {
     setToastOpen(false);
   };
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<CategoryFormData>({
-    defaultValues: {
-      name: "",
-      description: "",
-      metaTitle: "",
-      metaDescription: "",
-      imageUrl: "",
-      isActive: true,
-    },
-  });
-
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
       setuploadedImage(files[0]);
+      setValue("imageUrl", ""); // Clear imageUrl when a new image is uploaded
     }
   };
 
   const removeImage = () => {
     setuploadedImage(null);
+    setValue("imageUrl", ""); // Clear imageUrl when the image is removed
+    setRefreshKey((prev) => prev + 1); // Increment refreshKey to trigger re-render
   };
 
   const uploadViaApi = async (file: File): Promise<string> => {
@@ -132,46 +161,58 @@ const AddCategory: React.FC = () => {
   };
 
   const onSubmit = async (data: CategoryFormData) => {
-    if (uploadedImage) {
-      try {
-        const url = await uploadViaApi(uploadedImage);
+    try {
+      let imageUrl = data.imageUrl;
 
-        const finalData = {
-          ...data,
-          imageUrl: url,
-        };
-
-        // Here you would typically send the data to your API
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/Category`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(finalData),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to add category");
-        }
-
-        // Show success toast
-        setToastOpen(true);
-      } catch (error) {
-        console.error("Error adding category:", error);
-        alert("An error occurred while adding the category. Please try again.");
+      if (uploadedImage) {
+        imageUrl = await uploadViaApi(uploadedImage);
       }
+
+      const finalData = {
+        ...data,
+        imageUrl,
+        id: categoryId ?? undefined, // Use existing ID if editing
+      };
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/Category`;
+
+      const method = "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalData),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          categoryId ? "Failed to update category" : "Failed to add category"
+        );
+      }
+
+      setToastOpen(true);
+      router.push("/");
+    } catch (error) {
+      console.error(
+        categoryId ? "Error updating category:" : "Error adding category:",
+        error
+      );
+      alert(
+        categoryId
+          ? "An error occurred while updating the category. Please try again."
+          : "An error occurred while adding the category. Please try again."
+      );
+    } finally {
+      sessionStorage.removeItem("categoryId"); // Clear categoryId after submission
     }
   };
 
   return (
     <>
       <Container sx={{ mt: isMobile ? 8 : 12, mb: 6, px: isMobile ? 2 : 4 }}>
-        {/* Header */}
         <Box sx={{ mb: 4 }}>
-          {/* Breadcrumb */}
           <Breadcrumbs
             separator={<NavigateNext fontSize="small" />}
             sx={{ mb: 3 }}
@@ -179,7 +220,10 @@ const AddCategory: React.FC = () => {
             <Link
               component="button"
               variant="body1"
-              onClick={() => router.push("/products")}
+              onClick={() => {
+                sessionStorage.removeItem("categoryId");
+                router.push("/");
+              }}
               sx={{
                 color: "primary.main",
                 textDecoration: "none",
@@ -189,10 +233,10 @@ const AddCategory: React.FC = () => {
                 },
               }}
             >
-              Products
+              Product Categories
             </Link>
             <Typography variant="body1" color="text.primary">
-              Add Category
+              {isEditMode ? "Edit Category" : "Add Category"}
             </Typography>
           </Breadcrumbs>
 
@@ -208,30 +252,49 @@ const AddCategory: React.FC = () => {
               fontWeight={600}
               color="primary.main"
             >
-              Add Category
+              {isEditMode ? "Edit Category" : "Add Category"}
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={handleSubmit(onSubmit)}
-              disabled={isSubmitting}
-              sx={{
-                backgroundColor: "primary.main",
-                "&:hover": { backgroundColor: "secondary.main" },
-              }}
-            >
-              Add Category
-            </Button>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  sessionStorage.removeItem("categoryId");
+                  router.push("/");
+                }}
+                sx={{
+                  borderColor: "primary.main",
+                  color: "primary.main",
+                  "&:hover": {
+                    borderColor: "secondary.main",
+                    color: "secondary.main",
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleSubmit(onSubmit)}
+                disabled={isSubmitting}
+                sx={{
+                  backgroundColor: "primary.main",
+                  "&:hover": { backgroundColor: "secondary.main" },
+                }}
+              >
+                {isEditMode ? "Update Category" : "Save Category"}
+              </Button>
+            </Stack>
           </Stack>
           <Typography variant="body2" color="text.secondary">
-            Fill in the category information below to add a new product category
-            to your catalog.
+            {isEditMode
+              ? "Update the category information below."
+              : "Fill in the category information below to add a new product category to your catalog."}
           </Typography>
         </Box>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={4}>
-            {/* Basic Information */}
             <Grid size={{ xs: 12, md: 8 }}>
               <Card
                 sx={{
@@ -327,7 +390,6 @@ const AddCategory: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* SEO */}
               <Card
                 sx={{
                   backgroundColor: "transparent",
@@ -384,9 +446,7 @@ const AddCategory: React.FC = () => {
               </Card>
             </Grid>
 
-            {/* Sidebar */}
             <Grid size={{ xs: 12, md: 4 }}>
-              {/* Product Images */}
               <Card
                 sx={{
                   mb: 4,
@@ -407,9 +467,8 @@ const AddCategory: React.FC = () => {
                   >
                     Category Image
                   </Typography>
-                  {uploadedImage ? (
-                    <Box>
-                      {/* Main Preview Image */}
+                  {uploadedImage || getValues("imageUrl") ? (
+                    <Box key={refreshKey}>
                       <Box
                         sx={{
                           width: "100%",
@@ -427,9 +486,9 @@ const AddCategory: React.FC = () => {
                           src={
                             uploadedImage
                               ? URL.createObjectURL(uploadedImage)
-                              : ""
+                              : getValues("imageUrl") || "" // Ensure fallback to an empty string
                           }
-                          alt={"Category Image"}
+                          alt="Category Image"
                           width={400}
                           height={312}
                           style={{
@@ -457,7 +516,6 @@ const AddCategory: React.FC = () => {
                         </IconButton>
                       </Box>
 
-                      {/* Upload More Images Area - Full Width Row */}
                       <Box>
                         <input
                           accept="image/*"
@@ -557,7 +615,6 @@ const AddCategory: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Product Settings */}
               <Card
                 sx={{
                   mb: 4,
@@ -605,7 +662,6 @@ const AddCategory: React.FC = () => {
         </form>
       </Container>
 
-      {/* Success Toast */}
       <Snackbar
         open={toastOpen}
         autoHideDuration={3000}
@@ -617,7 +673,9 @@ const AddCategory: React.FC = () => {
           severity="success"
           sx={{ width: "100%" }}
         >
-          Category added successfully!
+          {isEditMode
+            ? "Category updated successfully!"
+            : "Category added successfully!"}
         </Alert>
       </Snackbar>
     </>
