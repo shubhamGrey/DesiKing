@@ -704,14 +704,10 @@ const Home: React.FC = () => {
               paddingBottom: "56.25%",
               height: 0,
               overflow: "hidden",
-              // cursor: "pointer",
+              width: "100vw", // Updated to take the entire screen width
+              left: "50%", // Center align
+              transform: "translateX(-50%)", // Center align
             }}
-            // onClick={() => {
-            //   window.open(
-            //     "https://www.youtube.com/watch?v=vwXHoR_T2EU",
-            //     "_blank"
-            //   );
-            // }}
           >
             <iframe
               src="https://www.youtube.com/embed/vwXHoR_T2EU?autoplay=1&mute=1&controls=0&loop=1&playlist=vwXHoR_T2EU"
