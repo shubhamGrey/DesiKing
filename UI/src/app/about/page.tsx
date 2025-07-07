@@ -74,7 +74,7 @@ export default function About() {
         }}
       >
         <iframe
-          src="https://www.youtube.com/embed/vwXHoR_T2EU"
+          src="https://www.youtube.com/embed/tYRz6M819nE"
           title="Agro Nexis - Our Story"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen

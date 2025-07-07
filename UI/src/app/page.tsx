@@ -685,58 +685,47 @@ const Home: React.FC = () => {
           </Box>
         </Box>
         <Box
-          style={{
-            position: "relative",
-            paddingBottom: "56.25%",
-            height: 0,
-            overflow: "hidden",
-            marginTop: "120px",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            window.open(
-              "https://www.youtube.com/watch?v=vwXHoR_T2EU",
-              "_blank"
-            );
+          sx={{
+            mt: isMobile ? 8 : 15,
           }}
         >
-          <iframe
-            src="https://www.youtube.com/embed/vwXHoR_T2EU?autoplay=1&mute=1&controls=0&loop=1&playlist=vwXHoR_T2EU"
-            title="Agro Nexis - Our Story"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-            }}
-          ></iframe>
-          <Box
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              bgcolor: "rgba(0, 0, 0, 0.8)",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#FFF",
-              fontSize: "1.2rem",
-              fontWeight: "bold",
-            }}
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
+            fontFamily={michroma.style.fontFamily}
+            fontWeight={600}
+            textAlign={isMobile ? "left" : "center"}
           >
-            <Typography
-              variant="h4"
-              sx={{ color: "primary.contrastText" }}
-              fontFamily={michroma.style.fontFamily}
-              fontWeight={600}
-            >
-              Our Story
-            </Typography>
+            Our Story
+          </Typography>
+          <Box
+            style={{
+              position: "relative",
+              paddingBottom: "56.25%",
+              height: 0,
+              overflow: "hidden",
+              // cursor: "pointer",
+            }}
+            // onClick={() => {
+            //   window.open(
+            //     "https://www.youtube.com/watch?v=vwXHoR_T2EU",
+            //     "_blank"
+            //   );
+            // }}
+          >
+            <iframe
+              src="https://www.youtube.com/embed/vwXHoR_T2EU?autoplay=1&mute=1&controls=0&loop=1&playlist=vwXHoR_T2EU"
+              title="Agro Nexis - Our Story"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            ></iframe>
           </Box>
         </Box>
         <Box
