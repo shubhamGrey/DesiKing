@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Agronexis.Model.ResponseModel
+namespace Agronexis.Common.AppConfig
 {
-    public class LoginResponseModel
+    public interface IAppConfig
     {
-        public string? AccessToken { get; set; }
 
     }
 }

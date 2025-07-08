@@ -12,8 +12,6 @@ namespace Agronexis.Model.ResponseModel
         public Guid Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public decimal Price { get; set; }
-        public string? Currency { get; set; }
         public Guid BrandId { get; set; }
         public Guid CategoryId { get; set; }
         public DateTime? ManufacturingDate { get; set; }
@@ -23,5 +21,16 @@ namespace Agronexis.Model.ResponseModel
         public bool IsDeleted { get; set; }
         public string? MetaTitle { get; set; }
         public string? MetaDescription { get; set; }
+        public List<string> ImageUrls { get; set; } = [];
+        public List<string> KeyFeatures { get; set; } = [];
+        public List<string> Uses { get; set; } = [];
+        public string? Origin { get; set; }
+        public string? ShelfLife { get; set; }
+        public string? StorageInstructions { get; set; }
+        public List<string> Certifications { get; set; } = [];
+        public bool IsPremium { get; set; }
+        public bool IsFeatured { get; set; }
+        public string? Ingredients { get; set; }
+        public string? NutritionalInfo { get; set; }
     }
 }

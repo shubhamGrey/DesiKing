@@ -284,11 +284,11 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Certifications")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -296,10 +296,19 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("ImageUrls")
                         .HasColumnType("text");
 
+                    b.Property<string>("Ingredients")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPremium")
                         .HasColumnType("boolean");
 
                     b.Property<string>("KeyFeatures")
@@ -320,8 +329,17 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<string>("NutritionalInfo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Origin")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShelfLife")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StorageInstructions")
+                        .HasColumnType("text");
 
                     b.Property<string>("Uses")
                         .HasColumnType("text");

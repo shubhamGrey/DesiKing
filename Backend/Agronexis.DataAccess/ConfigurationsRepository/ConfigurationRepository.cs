@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Agronexis.DataAccess.ConfigurationsRepository
 {
@@ -29,19 +30,29 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
-            List<ProductResponseModel> productList = _dbContext.Products.Where(x => x.IsActive).Select(x => new ProductResponseModel
+            List<ProductResponseModel> productList = _dbContext.Products.Where(x => x.IsActive).AsEnumerable().Select(x => new ProductResponseModel
             {
                 Id = x.Id,
                 Name = x.Name,
                 Description = x.Description,
-                Price = x.Price,
-                Currency = x.Currency,
                 ManufacturingDate = x.ManufacturingDate,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
+                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.ImageUrls),
+                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.KeyFeatures),
+                Uses = JsonSerializer.Deserialize<List<string>>(x.Uses),
+                CategoryId = x.CategoryId,
+                BrandId = x.BrandId,
                 MetaTitle = x.MetaTitle,
                 MetaDescription = x.MetaDescription,
-                BrandId = x.BrandId
+                CreatedDate = DateTime.UtcNow,
+                Origin = x.Origin,
+                ShelfLife = x.ShelfLife,
+                StorageInstructions = x.StorageInstructions,
+                Certifications = JsonSerializer.Deserialize<List<string>>(x.Certifications),
+                IsActive = x.IsActive,
+                IsPremium = x.IsPremium,
+                IsFeatured = x.IsFeatured,
+                Ingredients = x.Ingredients,
+                NutritionalInfo = x.NutritionalInfo
             }).ToList();
 
             return productList;
@@ -49,19 +60,29 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).Select(x => new ProductResponseModel
+            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).AsEnumerable().Select(x => new ProductResponseModel
             {
                 Id = x.Id,
                 Name = x.Name,
                 Description = x.Description,
-                Price = x.Price,
-                Currency = x.Currency,
                 ManufacturingDate = x.ManufacturingDate,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
+                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.ImageUrls),
+                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.KeyFeatures),
+                Uses = JsonSerializer.Deserialize<List<string>>(x.Uses),
+                CategoryId = x.CategoryId,
+                BrandId = x.BrandId,
                 MetaTitle = x.MetaTitle,
                 MetaDescription = x.MetaDescription,
-                BrandId = x.BrandId
+                CreatedDate = DateTime.UtcNow,
+                Origin = x.Origin,
+                ShelfLife = x.ShelfLife,
+                StorageInstructions = x.StorageInstructions,
+                Certifications = JsonSerializer.Deserialize<List<string>>(x.Certifications),
+                IsActive = x.IsActive,
+                IsPremium = x.IsPremium,
+                IsFeatured = x.IsFeatured,
+                Ingredients = x.Ingredients,
+                NutritionalInfo = x.NutritionalInfo
             }).FirstOrDefault();
 
             return product;
@@ -77,18 +98,24 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 {
                     Name = productReq.Name,
                     Description = productReq.Description,
-                    Price = productReq.Price,
                     ManufacturingDate = productReq.ManufacturingDate,
                     ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls),
                     KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures),
                     Uses = JsonSerializer.Serialize(productReq.Uses),
-                    CategoryId = new Guid(productReq.CategoryId),
-                    IsActive = productReq.IsActive,
-                    CreatedDate = DateTime.UtcNow,
-                    Currency = productReq.Currency,
+                    CategoryId = productReq.CategoryId,
                     BrandId = productReq.BrandId,
                     MetaTitle = productReq.MetaTitle,
-                    MetaDescription = productReq.MetaDescription
+                    MetaDescription = productReq.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = productReq.Origin,
+                    ShelfLife = productReq.ShelfLife,
+                    StorageInstructions = productReq.StorageInstructions,
+                    Certifications = JsonSerializer.Serialize(productReq.Certifications),
+                    IsActive = productReq.IsActive,
+                    IsPremium = productReq.IsPremium,
+                    IsFeatured = productReq.IsFeatured,
+                    Ingredients = productReq.Ingredients,
+                    NutritionalInfo = productReq.NutritionalInfo
                 };
 
                 _dbContext.Products.Add(productDetail);
@@ -97,16 +124,24 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             {
                 productDetail.Name = productReq.Name;
                 productDetail.Description = productReq.Description;
-                productDetail.Price = productReq.Price;
                 productDetail.ManufacturingDate = productReq.ManufacturingDate;
                 productDetail.ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls);
-                productDetail.KeyFeatures = JsonSerializer.Serialize(productDetail.KeyFeatures);
-                productDetail.Uses = JsonSerializer.Serialize(productDetail.Uses);
-                productDetail.ModifiedDate = DateTime.UtcNow;
-                productDetail.IsActive = productReq.IsActive;
+                productDetail.KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures);
+                productDetail.Uses = JsonSerializer.Serialize(productReq.Uses);
+                productDetail.CategoryId = productReq.CategoryId;
                 productDetail.BrandId = productReq.BrandId;
                 productDetail.MetaTitle = productReq.MetaTitle;
                 productDetail.MetaDescription = productReq.MetaDescription;
+                productDetail.CreatedDate = DateTime.UtcNow;
+                productDetail.Origin = productReq.Origin;
+                productDetail.ShelfLife = productReq.ShelfLife;
+                productDetail.StorageInstructions = productReq.StorageInstructions;
+                productDetail.Certifications = JsonSerializer.Serialize(productReq.Certifications);
+                productDetail.IsActive = productReq.IsActive;
+                productDetail.IsPremium = productReq.IsPremium;
+                productDetail.IsFeatured = productReq.IsFeatured;
+                productDetail.Ingredients = productReq.Ingredients;
+                productDetail.NutritionalInfo = productReq.NutritionalInfo;
 
                 _dbContext.Products.Update(productDetail);
             }
@@ -410,7 +445,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             if (user != null)
             {
                 var token = GenerateJwtToken(user);
-                loginResponse.Token = token;
+                loginResponse.AccessToken = token;
             }
 
             return loginResponse;
