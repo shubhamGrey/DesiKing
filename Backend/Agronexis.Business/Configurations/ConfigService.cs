@@ -24,6 +24,12 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.GetProductById(id, xCorrelationId);
         }
+
+        public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
+        {
+            return _repository.GetProductsByCategory(categoryId, xCorrelationId);
+        }
+
         public string SaveOrUpdateProduct(ProductRequestModel product, string xCorrelationId)
         {
             return _repository.SaveOrUpdateProduct(product, xCorrelationId);

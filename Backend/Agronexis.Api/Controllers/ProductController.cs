@@ -41,6 +41,26 @@ namespace Agronexis.Api.Controllers
             return item;
         }
 
+        // GET api/product/category/{categoryId}
+        [HttpGet("category/{categoryId}")]
+        public ActionResult<IEnumerable<ProductResponseModel>> GetProductsByCategory(string categoryId)
+        {
+            SetXCorrelationId();
+            var items = _configService.GetProductsByCategory(categoryId, XCorrelationID);
+            if (items == null || !items.Any())
+            {
+                return NotFound(new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = ((int)ServerStatusCodes.NotFound).ToString(),
+                        Message = ApiResponseMessage.DATANOTFOUND
+                    }
+                });
+            }
+            return Ok(items);
+        }
+
         // POST api/product
         [HttpPost]
         public ActionResult<ApiResponseModel> SaveOrUpdateProduct([FromBody] ProductRequestModel product)

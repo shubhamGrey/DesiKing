@@ -12,6 +12,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
     {
         List<ProductResponseModel> GetProducts(string xCorrelationId);
         ProductResponseModel GetProductById(string id, string xCorrelationId);
+        List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId);
         string SaveOrUpdateProduct(ProductRequestModel product, string xCorrelationId);
         string DeleteProductById(string id, string xCorrelationId);
         List<CategoryResponseModel> GetCategories(string xCorrelationId);

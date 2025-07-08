@@ -100,6 +100,44 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return product;
         }
 
+        public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
+        {
+            List<ProductResponseModel> productList = _dbContext.Products
+                .Where(x => x.IsActive && x.CategoryId == new Guid(categoryId))
+                .Join(_dbContext.Categories,
+                      product => product.CategoryId,
+                      category => category.Id,
+                      (product, category) => new { product, category })
+                .AsEnumerable()
+                .Select(x => new ProductResponseModel
+                {
+                    Id = x.product.Id,
+                    Name = x.product.Name,
+                    Description = x.product.Description,
+                    ManufacturingDate = x.product.ManufacturingDate,
+                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.product.ImageUrls),
+                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.product.KeyFeatures),
+                    Uses = JsonSerializer.Deserialize<List<string>>(x.product.Uses),
+                    CategoryId = x.product.CategoryId,
+                    CategoryName = x.category.Name,
+                    BrandId = x.product.BrandId,
+                    MetaTitle = x.product.MetaTitle,
+                    MetaDescription = x.product.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = x.product.Origin,
+                    ShelfLife = x.product.ShelfLife,
+                    StorageInstructions = x.product.StorageInstructions,
+                    Certifications = JsonSerializer.Deserialize<List<string>>(x.product.Certifications),
+                    IsActive = x.product.IsActive,
+                    IsPremium = x.product.IsPremium,
+                    IsFeatured = x.product.IsFeatured,
+                    Ingredients = x.product.Ingredients,
+                    NutritionalInfo = x.product.NutritionalInfo
+                }).ToList();
+
+            return productList;
+        }
+
         public string SaveOrUpdateProduct(ProductRequestModel productReq, string xCorrelationId)
         {
             var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == productReq.Id);
