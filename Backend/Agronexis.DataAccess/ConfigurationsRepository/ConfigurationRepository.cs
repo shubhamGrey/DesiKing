@@ -83,7 +83,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                           CategoryId = x.product.CategoryId,
                           CategoryName = x.category.Name,
                           BrandId = x.product.BrandId,
-                          MetaTitle = x.product.MetaTiproduct.tle,
+                          MetaTitle = x.product.MetaTitle,
                           MetaDescription = x.product.MetaDescription,
                           CreatedDate = DateTime.UtcNow,
                           Origin = x.product.Origin,
