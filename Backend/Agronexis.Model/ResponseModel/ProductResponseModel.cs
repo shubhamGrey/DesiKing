@@ -14,6 +14,7 @@ namespace Agronexis.Model.ResponseModel
         public string? Description { get; set; }
         public Guid BrandId { get; set; }
         public Guid CategoryId { get; set; }
+        public string CategoryName { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
