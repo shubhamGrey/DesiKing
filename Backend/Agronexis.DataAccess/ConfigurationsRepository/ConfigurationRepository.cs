@@ -68,30 +68,34 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).AsEnumerable().Select(x => new ProductResponseModel
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                ManufacturingDate = x.ManufacturingDate,
-                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.ImageUrls),
-                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.KeyFeatures),
-                Uses = JsonSerializer.Deserialize<List<string>>(x.Uses),
-                CategoryId = x.CategoryId,
-                BrandId = x.BrandId,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription,
-                CreatedDate = DateTime.UtcNow,
-                Origin = x.Origin,
-                ShelfLife = x.ShelfLife,
-                StorageInstructions = x.StorageInstructions,
-                Certifications = JsonSerializer.Deserialize<List<string>>(x.Certifications),
-                IsActive = x.IsActive,
-                IsPremium = x.IsPremium,
-                IsFeatured = x.IsFeatured,
-                Ingredients = x.Ingredients,
-                NutritionalInfo = x.NutritionalInfo
-            }).FirstOrDefault();
+            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).Join(_dbContext.Categories,
+                      product => product.CategoryId,
+                      category => category.Id,
+                      (product, category) => new { product, category }).AsEnumerable().Select(x => new ProductResponseModel
+                      {
+                          Id = x.Id,
+                          Name = x.Name,
+                          Description = x.Description,
+                          ManufacturingDate = x.ManufacturingDate,
+                          ImageUrls = JsonSerializer.Deserialize<List<string>>(x.ImageUrls),
+                          KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.KeyFeatures),
+                          Uses = JsonSerializer.Deserialize<List<string>>(x.Uses),
+                          CategoryId = x.CategoryId,
+                          CategoryName = x.category.Name,
+                          BrandId = x.BrandId,
+                          MetaTitle = x.MetaTitle,
+                          MetaDescription = x.MetaDescription,
+                          CreatedDate = DateTime.UtcNow,
+                          Origin = x.Origin,
+                          ShelfLife = x.ShelfLife,
+                          StorageInstructions = x.StorageInstructions,
+                          Certifications = JsonSerializer.Deserialize<List<string>>(x.Certifications),
+                          IsActive = x.IsActive,
+                          IsPremium = x.IsPremium,
+                          IsFeatured = x.IsFeatured,
+                          Ingredients = x.Ingredients,
+                          NutritionalInfo = x.NutritionalInfo
+                      }).FirstOrDefault();
 
             return product;
         }
