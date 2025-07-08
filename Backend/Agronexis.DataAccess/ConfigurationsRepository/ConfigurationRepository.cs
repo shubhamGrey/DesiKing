@@ -246,7 +246,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public string DeleteCategoryById(string id, string xCorrelationId)
         {
-            var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+            var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == new Guid(id));
 
             if (categoryDetail != null)
             {

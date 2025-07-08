@@ -15,8 +15,6 @@ import {
   useMediaQuery,
   ListItemButton,
   Grid,
-  Menu,
-  MenuItem,
   InputBase,
   styled,
   alpha,
@@ -26,7 +24,6 @@ import {
   SearchOutlined,
   PermIdentityOutlined,
   ShoppingCartOutlined,
-  Add,
 } from "@mui/icons-material";
 import Image from "next/image";
 import Link from "next/link";
@@ -91,19 +88,9 @@ export default function Header() {
   ];
 
   const rightNavLinks = [
-    { icon: <Add /> },
     { icon: <PermIdentityOutlined /> },
     { icon: <ShoppingCartOutlined /> },
   ];
-
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
   const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
@@ -212,47 +199,17 @@ export default function Header() {
                               ? "primary.main"
                               : "primary.contrastText",
                         }}
-                        onClick={(e) => {
+                        onClick={() => {
                           if (icon.type === ShoppingCartOutlined) {
                             router.push("/cart");
                           } else if (icon.type === PermIdentityOutlined) {
                             router.push("/profile");
-                          } else if (icon.type === Add) {
-                            handleClick(e);
                           }
                         }}
                       >
                         {icon}
                       </IconButton>
                     ))}
-                    <Menu
-                      id="basic-menu"
-                      anchorEl={anchorEl}
-                      open={open}
-                      onClose={handleClose}
-                      slotProps={{
-                        list: {
-                          "aria-labelledby": "basic-button",
-                        },
-                      }}
-                    >
-                      <MenuItem
-                        onClick={() => {
-                          handleClose();
-                          router.push("/add-product");
-                        }}
-                      >
-                        Add Product
-                      </MenuItem>
-                      <MenuItem
-                        onClick={() => {
-                          handleClose();
-                          router.push("/add-category");
-                        }}
-                      >
-                        Add Category
-                      </MenuItem>
-                    </Menu>
                   </Stack>
                 </Grid>
               </Grid>
@@ -301,15 +258,13 @@ export default function Header() {
                           : "primary.contrastText",
                       mr: 1,
                     }}
-                    onClick={(e) => {
+                    onClick={() => {
                       if (icon.type === ShoppingCartOutlined) {
                         router.push("/cart");
                       } else if (icon.type === PermIdentityOutlined) {
                         router.push("/profile");
                       } else if (icon.type === SearchOutlined) {
                         router.push("/search");
-                      } else if (icon.type === Add) {
-                        handleClick(e);
                       }
                     }}
                   >

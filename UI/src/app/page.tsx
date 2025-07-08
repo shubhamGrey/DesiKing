@@ -12,6 +12,7 @@ import {
   Stack,
   Typography,
   useMediaQuery,
+  IconButton,
 } from "@mui/material";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
@@ -21,6 +22,9 @@ import {
   HandshakeOutlined,
   HealthAndSafetyOutlined,
   SoupKitchenOutlined,
+  Edit,
+  Delete,
+  Add,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
 import { michroma } from "./layout";
@@ -33,15 +37,18 @@ import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
 import Image from "next/image";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 // Define the Category type
 type Category = {
+  id: string;
   name: string;
   imageUrl: string;
   isActive: boolean;
 };
 
 type FormattedCategory = {
+  id: string;
   title: string;
   image: string;
 };
@@ -170,25 +177,67 @@ const Home: React.FC = () => {
   const [upcomingpProductCategories, setUpcomingpProductCategories] =
     React.useState<FormattedCategory[]>([]);
 
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = React.useState<
+    string | null
+  >(null);
+
+  const handleDeleteCategoryByType = React.useCallback((categoryId: string) => {
+    setSelectedCategoryId(categoryId);
+    setIsModalOpen(true);
+  }, []);
+
+  const confirmDelete = React.useCallback(() => {
+    if (selectedCategoryId) {
+      fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Category/${selectedCategoryId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then(() => {
+          setProductCategories((prev) =>
+            prev.filter((cat) => cat.id !== selectedCategoryId)
+          );
+          setUpcomingpProductCategories((prev) =>
+            prev.filter((cat) => cat.id !== selectedCategoryId)
+          );
+        })
+        .catch((error) => {
+          console.error("Error deleting category:", error);
+        })
+        .finally(() => {
+          setIsModalOpen(false);
+          setSelectedCategoryId(null);
+        });
+    }
+  }, [selectedCategoryId]);
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/Category`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     })
       .then((res): Promise<Category[]> => res.json())
       .then((data: Category[]) => {
         const formattedActiveCategory: FormattedCategory[] = data
           .filter((cat) => cat.isActive)
+          .sort((a, b) => a.name.localeCompare(b.name))
           .map((cat) => ({
+            id: cat.id,
             title: cat.name,
             image: cat.imageUrl,
           }));
 
         const formattedUpcomingCategory: FormattedCategory[] = data
           .filter((cat) => !cat.isActive)
+          .sort((a, b) => a.name.localeCompare(b.name))
           .map((cat) => ({
+            id: cat.id,
             title: cat.name,
             image: cat.imageUrl,
           }));
@@ -391,15 +440,42 @@ const Home: React.FC = () => {
             mt: isMobile ? 8 : 15,
           }}
         >
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: isMobile ? 3 : 8,
+            }}
           >
-            Product Categories
-          </Typography>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ color: "primary.main" }}
+              fontFamily={michroma.style.fontFamily}
+              fontWeight={600}
+              textAlign="center"
+              flexGrow={1}
+            >
+              Product Categories
+            </Typography>
+            <IconButton
+              color="primary"
+              onClick={() => router.push("/add-category")}
+              sx={{
+                border: "2px solid",
+                borderColor: "primary.main",
+                borderRadius: "50%",
+                transition: "all 0.3s ease-in-out",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                  borderColor: "primary.main",
+                },
+              }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Box>
           <Box
             sx={{
               display: "flex",
@@ -413,6 +489,7 @@ const Home: React.FC = () => {
                 role="group"
                 aria-label={`${category.title} category`}
                 sx={{
+                  position: "relative", // Added for positioning buttons
                   borderRadius: "8px",
                   cursor: "pointer",
                   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
@@ -424,6 +501,61 @@ const Home: React.FC = () => {
                   router.push("/products");
                 }}
               >
+                {/* Edit and Delete Icon Buttons */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    display: "flex",
+                    gap: 2,
+                    zIndex: 1,
+                  }}
+                >
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    sx={{
+                      border: "2px solid",
+                      borderColor: "primary.main",
+                      borderRadius: "50%",
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "primary.main",
+                        color: "primary.contrastText",
+                        borderColor: "primary.main",
+                      },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      sessionStorage.setItem("categoryId", category.id);
+                      router.push("/add-category");
+                    }}
+                  >
+                    <Edit fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    size="small"
+                    sx={{
+                      border: "2px solid",
+                      borderColor: "error.main",
+                      borderRadius: "50%",
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "error.main",
+                        color: "error.contrastText",
+                        borderColor: "error.main",
+                      },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      handleDeleteCategoryByType(category.id);
+                    }}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </Box>
                 <CardMedia
                   component="img"
                   height={isMobile ? 178 : 394}
@@ -459,6 +591,13 @@ const Home: React.FC = () => {
             ))}
           </Box>
         </Box>
+        <ConfirmationModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={confirmDelete}
+          title="Delete Category"
+          message="Are you sure you want to delete this category?"
+        />
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
@@ -473,7 +612,10 @@ const Home: React.FC = () => {
           >
             Upcoming Categories
           </Typography>
-          <AllProducts items={upcomingpProductCategories} />
+          <AllProducts
+            items={upcomingpProductCategories}
+            onDelete={(categoryId) => handleDeleteCategoryByType(categoryId)}
+          />
         </Box>
         <Box
           sx={{
@@ -543,58 +685,43 @@ const Home: React.FC = () => {
           </Box>
         </Box>
         <Box
-          style={{
-            position: "relative",
-            paddingBottom: "56.25%",
-            height: 0,
-            overflow: "hidden",
-            marginTop: "120px",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            window.open(
-              "https://www.youtube.com/watch?v=tYRz6M819nE",
-              "_blank"
-            );
+          sx={{
+            mt: isMobile ? 8 : 15,
           }}
         >
-          <iframe
-            src="https://www.youtube.com/embed/tYRz6M819nE?si=HM5pGluLwBIaXdnR?autoplay=1&mute=1"
-            title="Agro Nexis - Our Story"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-            }}
-          ></iframe>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
+            fontFamily={michroma.style.fontFamily}
+            fontWeight={600}
+            textAlign={isMobile ? "left" : "center"}
+          >
+            Our Story
+          </Typography>
           <Box
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              bgcolor: "rgba(0, 0, 0, 0.8)",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#FFF",
-              fontSize: "1.2rem",
-              fontWeight: "bold",
+            style={{
+              position: "relative",
+              paddingBottom: "56.25%",
+              height: 0,
+              overflow: "hidden",
+              width: "100vw", // Updated to take the entire screen width
+              left: "50%", // Center align
+              transform: "translateX(-50%)", // Center align
             }}
           >
-            <Typography
-              variant="h4"
-              sx={{ color: "primary.contrastText" }}
-              fontFamily={michroma.style.fontFamily}
-              fontWeight={600}
-            >
-              Our Story
-            </Typography>
+            <iframe
+              src="https://www.youtube.com/embed/vwXHoR_T2EU?autoplay=1&mute=1&controls=0&loop=1&playlist=vwXHoR_T2EU"
+              title="Agro Nexis - Our Story"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            ></iframe>
           </Box>
         </Box>
         <Box

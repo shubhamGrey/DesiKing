@@ -66,11 +66,14 @@ export default function About() {
   return (
     <Container sx={{ mt: 3, mx: 6, mb: 6, justifySelf: "center" }}>
       <Box
-        style={{
+        sx={{
           position: "relative",
           paddingBottom: "56.25%",
-          height: 0,
+          height: 100,
           overflow: "hidden",
+          width: "100vw", // Updated to take the entire screen width
+          left: "50%", // Center align
+          transform: "translateX(-50%)", // Center align
         }}
       >
         <iframe
