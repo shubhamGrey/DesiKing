@@ -12,7 +12,7 @@ namespace Agronexis.Common.AppConfig
         public IConfiguration configurationBuilder { get; }
         public AppConfigService()
         {
-            configurationBuilder = new ConfigurationBuilder().AddJsonFile("appsettings.Production.json").Build();
+            configurationBuilder = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         }
     }
 }
