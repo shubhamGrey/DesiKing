@@ -88,8 +88,8 @@ export default function Header() {
   ];
 
   const rightNavLinks = [
-    { icon: <PermIdentityOutlined /> },
-    { icon: <ShoppingCartOutlined /> },
+    { icon: <PermIdentityOutlined />, href: "/profile" },
+    { icon: <ShoppingCartOutlined />, href: "/cart" },
   ];
 
   const toggleDrawer = (open: boolean) => () => {
@@ -190,26 +190,26 @@ export default function Header() {
                         inputProps={{ "aria-label": "search" }}
                       />
                     </Search>
-                    {rightNavLinks.map(({ icon }, index) => (
-                      <IconButton
-                        key={index}
-                        sx={{
-                          color:
-                            pathname === "/contact"
+                    {rightNavLinks.map(({ icon, href }, index) => {
+                      const isActive = pathname === href;
+                      return (
+                        <IconButton
+                          key={index}
+                          sx={{
+                            color: isActive
+                              ? "secondary.main"
+                              : pathname === "/contact"
                               ? "primary.main"
                               : "primary.contrastText",
-                        }}
-                        onClick={() => {
-                          if (icon.type === ShoppingCartOutlined) {
-                            router.push("/cart");
-                          } else if (icon.type === PermIdentityOutlined) {
-                            router.push("/profile");
-                          }
-                        }}
-                      >
-                        {icon}
-                      </IconButton>
-                    ))}
+                          }}
+                          onClick={() => {
+                            router.push(href);
+                          }}
+                        >
+                          {icon}
+                        </IconButton>
+                      );
+                    })}
                   </Stack>
                 </Grid>
               </Grid>
@@ -247,30 +247,28 @@ export default function Header() {
                 </Link>
               </Box>
               <Box>
-                {rightNavLinks.map(({ icon }, index) => (
-                  <IconButton
-                    key={index}
-                    edge="end"
-                    sx={{
-                      color:
-                        pathname == "/contact"
+                {rightNavLinks.map(({ icon, href }, index) => {
+                  const isActive = pathname === href;
+                  return (
+                    <IconButton
+                      key={index}
+                      edge="end"
+                      sx={{
+                        color: isActive
+                          ? "secondary.main"
+                          : pathname === "/contact"
                           ? "primary.main"
                           : "primary.contrastText",
-                      mr: 1,
-                    }}
-                    onClick={() => {
-                      if (icon.type === ShoppingCartOutlined) {
-                        router.push("/cart");
-                      } else if (icon.type === PermIdentityOutlined) {
-                        router.push("/profile");
-                      } else if (icon.type === SearchOutlined) {
-                        router.push("/search");
-                      }
-                    }}
-                  >
-                    {icon}
-                  </IconButton>
-                ))}
+                        mr: 1,
+                      }}
+                      onClick={() => {
+                        router.push(href);
+                      }}
+                    >
+                      {icon}
+                    </IconButton>
+                  );
+                })}
                 <IconButton
                   edge="end"
                   onClick={toggleDrawer(true)}
@@ -304,17 +302,29 @@ export default function Header() {
           onKeyDown={toggleDrawer(false)}
         >
           <List>
-            {leftNavLinks.map(({ label, href }) => (
-              <ListItem key={label} disablePadding>
-                <ListItemButton
-                  component={Link}
-                  href={href}
-                  selected={pathname === href}
-                >
-                  <ListItemText primary={label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
+            {leftNavLinks.map(({ label, href }) => {
+              const isActive = pathname === href;
+              return (
+                <ListItem key={label} disablePadding>
+                  <ListItemButton
+                    component={Link}
+                    href={href}
+                    selected={pathname === href}
+                    sx={{
+                      color: isActive
+                        ? "secondary.main"
+                        : pathname === "/contact"
+                        ? "primary.main"
+                        : "primary.contrastText",
+                      fontFamily: michroma.style.fontFamily,
+                      fontSize: "14px",
+                    }}
+                  >
+                    <ListItemText primary={label} />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
           </List>
         </Box>
       </Drawer>

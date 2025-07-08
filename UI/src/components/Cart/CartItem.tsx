@@ -10,6 +10,7 @@ import {
 import { QuantityControl } from "./QuantityControl";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import theme from "@/styles/theme";
+import { useRouter } from "next/navigation";
 
 interface CartItemProps {
   id: number;
@@ -33,6 +34,7 @@ export const CartItem: React.FC<CartItemProps> = ({
   onRemove,
 }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
 
   const handleIncrease = () => {
     onUpdateQuantity(id, quantity + 1);
@@ -76,6 +78,7 @@ export const CartItem: React.FC<CartItemProps> = ({
             justifyContent: "center",
             overflow: "hidden",
           }}
+          onClick={() => router.push(`/product/${id}`)}
         >
           <img
             src={image}

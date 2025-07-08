@@ -1,228 +1,416 @@
 "use client";
-import React, { useState } from "react";
-import { CartItem } from "../../components/Cart/CartItem";
-import { OrderSummary } from "../../components/Cart/OrderSummary";
-import { Box, Button, Typography, Stack, useMediaQuery } from "@mui/material";
-import { michroma } from "@/app/layout";
-import theme from "@/styles/theme";
 
-interface CartItemType {
-  id: number;
+import React, { useState } from "react";
+import {
+  Box,
+  Grid,
+  TextField,
+  Typography,
+  Button,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
+  Stack,
+  Divider,
+  Card,
+  CardContent,
+  useMediaQuery,
+} from "@mui/material";
+import Image from "next/image";
+import theme from "@/styles/theme";
+import { michroma } from "../layout"; // Import michroma font style
+import EmptyCart from "@/components/EmptyCart"; // Import EmptyCart component
+
+interface CartItem {
   name: string;
-  color: string;
   price: number;
   quantity: number;
   image: string;
 }
 
-const Cart: React.FC = () => {
-  const [cartItems, setCartItems] = useState<CartItemType[]>([
-    {
-      id: 1,
-      name: "Apple AirPods Pro",
-      color: "White",
-      price: 249.99,
-      quantity: 1,
-      image:
-        "https://images.pexels.com/photos/4812923/pexels-photo-4812923.jpeg",
-    },
-    {
-      id: 2,
-      name: "Apple AirPods Max",
-      color: "Silver",
-      price: 549.99,
-      quantity: 1,
-      image:
-        "https://images.pexels.com/photos/4812923/pexels-photo-4812923.jpeg",
-    },
-    {
-      id: 3,
-      name: "Apple HomePod mini",
-      color: "Silver",
-      price: 99.99,
-      quantity: 1,
-      image:
-        "https://images.pexels.com/photos/1334598/pexels-photo-1334598.jpeg",
-    },
-    {
-      id: 4,
-      name: "Apple AirPods Pro",
-      color: "White",
-      price: 249.99,
-      quantity: 1,
-      image:
-        "https://images.pexels.com/photos/4812923/pexels-photo-4812923.jpeg",
-    },
-    {
-      id: 5,
-      name: "Apple AirPods Max",
-      color: "Silver",
-      price: 549.99,
-      quantity: 1,
-      image:
-        "https://images.pexels.com/photos/4812923/pexels-photo-4812923.jpeg",
-    },
-    {
-      id: 6,
-      name: "Apple HomePod mini",
-      color: "Silver",
-      price: 99.99,
-      quantity: 1,
-      image:
-        "https://images.pexels.com/photos/1334598/pexels-photo-1334598.jpeg",
-    },
-  ]);
+const Cart = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [paymentMethod, setPaymentMethod] = useState("cod");
 
-  const [discount, setDiscount] = useState(0);
+  const cartItems: CartItem[] = [
+    // {
+    //   name: "Portable Stereo Speaker",
+    //   price: 250.49,
+    //   quantity: 1,
+    //   image: "/images/speaker.png",
+    // },
+    // {
+    //   name: "i-Type Instant Camera",
+    //   price: 630.2,
+    //   quantity: 2,
+    //   image: "/images/camera.png",
+    // },
+    // {
+    //   name: "Positive Vibration ANC",
+    //   price: 320.0,
+    //   quantity: 1,
+    //   image: "/images/headphones.png",
+    // },
+  ];
 
-  const updateQuantity = (itemId: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+  const subtotal: number = cartItems.reduce(
+    (acc: number, item: CartItem) => acc + item.price * item.quantity,
+    0
+  );
 
-  const removeItem = (itemId: number) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
-  };
-
-  const applyPromoCode = (promoCode: string) => {
-    if (promoCode.toLowerCase() === "save10") {
-      setDiscount(subtotal() * 0.1);
-    } else {
-      setDiscount(0);
-    }
-  };
-
-  const subtotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
-
-  const total = () => {
-    return subtotal() - discount;
-  };
-
-  const itemCount = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  if (cartItems.length === 0) {
+    return <EmptyCart />; // Render EmptyCart component if cart is empty
+  }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        justifyContent: "center",
-        alignItems: "center",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Box
-        sx={{
-          maxWidth: "1200px",
-          padding: "40px 24px",
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 400px" },
-          gap: { xs: "32px", md: "48px" },
-          mt: 3,
-        }}
+    <Box sx={{ mt: isMobile ? 8 : 12, mb: 6, px: isMobile ? 2 : 4 }}>
+      <Typography
+        variant={isMobile ? "h5" : "h4"}
+        fontFamily={michroma.style.fontFamily} // Apply michroma font style
+        fontWeight={600}
+        color="primary.main"
+        sx={{ mb: 4 }}
       >
-        <Box
-          sx={{
-            boxShadow: "none",
-          }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Stack direction={"row"} spacing={1} alignItems="center">
-                <Typography
-                  variant="h4"
-                  color="primary.main"
-                  fontFamily={michroma.style.fontFamily}
-                  fontWeight={600}
-                >
-                  Cart{" "}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.primary"
+        Cart
+      </Typography>
+      <Grid container spacing={4}>
+        {/* Left Column: Delivery Info and Payment Method */}
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Card
+            sx={{
+              mb: 4,
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              border: "1px solid",
+              borderColor: "primary.main",
+              borderRadius: "8px",
+            }}
+          >
+            <CardContent>
+              <Typography
+                variant="h6"
+                fontFamily={michroma.style.fontFamily} // Apply michroma font style
+                color="primary.main"
+                sx={{ mb: 3 }}
+              >
+                Delivery Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={6}>
+                  <TextField
+                    label="Name"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your name"
+                    defaultValue="Bryan Cranston"
+                  />
+                </Grid>
+                <Grid size={6}>
+                  <TextField
+                    label="Mobile Number"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your mobile number"
+                    defaultValue="+1 424-236-3574"
+                  />
+                </Grid>
+                <Grid size={6}>
+                  <TextField
+                    label="Email"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your email"
+                    defaultValue="thejon.l"
+                  />
+                </Grid>
+                <Grid size={6}>
+                  <TextField
+                    label="City"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your city"
+                    defaultValue="Hawthorne"
+                  />
+                </Grid>
+                <Grid size={4}>
+                  <TextField
+                    label="State"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your state"
+                    defaultValue="California"
+                  />
+                </Grid>
+                <Grid size={4}>
+                  <TextField
+                    label="ZIP"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your ZIP code"
+                    defaultValue="90250"
+                  />
+                </Grid>
+                <Grid size={4}>
+                  <TextField
+                    label="State"
+                    select
+                    fullWidth
+                    size="small"
+                    SelectProps={{ native: true }}
+                    defaultValue="CA"
+                  >
+                    <option value="CA">CA</option>
+                    <option value="TX">TX</option>
+                  </TextField>
+                </Grid>
+                <Grid size={12}>
+                  <TextField
+                    label="Address"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your address"
+                    defaultValue="4796 Libby Street"
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          <Card
+            sx={{
+              mb: 4,
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              border: "1px solid",
+              borderColor: "primary.main",
+              borderRadius: "8px",
+            }}
+          >
+            <CardContent>
+              <Typography
+                variant="h6"
+                fontFamily={michroma.style.fontFamily} // Apply michroma font style
+                color="primary.main"
+                sx={{ mb: 3 }}
+              >
+                Payment Method
+              </Typography>
+              <RadioGroup
+                row
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <FormControlLabel
+                  value="credit"
+                  control={<Radio />}
+                  label="Credit Card"
+                />
+                <FormControlLabel
+                  value="debit"
+                  control={<Radio />}
+                  label="Debit Card"
+                />
+                <FormControlLabel value="upi" control={<Radio />} label="UPI" />
+                <FormControlLabel
+                  value="netbanking"
+                  control={<Radio />}
+                  label="Internet Banking"
+                />
+                <FormControlLabel
+                  value="cod"
+                  control={<Radio />}
+                  label="Cash on Delivery"
+                />
+              </RadioGroup>
+              <Box mt={2}>
+                {paymentMethod === "credit" && (
+                  <Grid container spacing={2}>
+                    <Grid size={12}>
+                      <TextField
+                        label="Card Number"
+                        fullWidth
+                        size="small"
+                        placeholder="Enter your card number"
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <TextField
+                        label="Expiry Date (MM/YY)"
+                        fullWidth
+                        size="small"
+                        placeholder="MM/YY"
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <TextField
+                        label="CVV"
+                        fullWidth
+                        size="small"
+                        placeholder="Enter CVV"
+                      />
+                    </Grid>
+                    <Grid size={12}>
+                      <TextField
+                        label="Name on Card"
+                        fullWidth
+                        size="small"
+                        placeholder="Enter name on card"
+                      />
+                    </Grid>
+                  </Grid>
+                )}
+                {paymentMethod === "debit" && (
+                  <Grid container spacing={2}>
+                    <Grid size={12}>
+                      <TextField
+                        label="Card Number"
+                        fullWidth
+                        size="small"
+                        placeholder="Enter your card number"
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <TextField
+                        label="Expiry Date (MM/YY)"
+                        fullWidth
+                        size="small"
+                        placeholder="MM/YY"
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <TextField
+                        label="CVV"
+                        fullWidth
+                        size="small"
+                        placeholder="Enter CVV"
+                      />
+                    </Grid>
+                    <Grid size={12}>
+                      <TextField
+                        label="Name on Card"
+                        fullWidth
+                        size="small"
+                        placeholder="Enter name on card"
+                      />
+                    </Grid>
+                  </Grid>
+                )}
+                {paymentMethod === "upi" && (
+                  <TextField
+                    label="UPI ID"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your UPI ID"
+                  />
+                )}
+                {paymentMethod === "netbanking" && (
+                  <TextField
+                    label="Bank Name"
+                    select
+                    fullWidth
+                    size="small"
+                    SelectProps={{ native: true }}
+                  >
+                    <option value="">Select Bank</option>
+                    <option value="SBI">State Bank of India</option>
+                    <option value="HDFC">HDFC Bank</option>
+                    <option value="ICICI">ICICI Bank</option>
+                    <option value="AXIS">Axis Bank</option>
+                  </TextField>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Right Column: Order Summary */}
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Card
+            sx={{
+              mb: 4,
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              border: "1px solid",
+              borderColor: "primary.main",
+              borderRadius: "8px",
+            }}
+          >
+            <CardContent>
+              <Typography
+                variant="h6"
+                fontFamily={michroma.style.fontFamily} // Apply michroma font style
+                color="primary.main"
+                sx={{ mb: 3 }}
+              >
+                Order Summary
+              </Typography>
+              <Stack spacing={2}>
+                {cartItems.map((item, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={48}
+                        height={48}
+                        style={{ borderRadius: "6px" }}
+                      />
+                      <Box>
+                        <Typography fontWeight={500}>{item.name}</Typography>
+                        <Typography variant="body2">
+                          ${item.price.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Typography>x{item.quantity}</Typography>
+                  </Box>
+                ))}
+
+                <Divider />
+
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography>Subtotal</Typography>
+                  <Typography>${subtotal.toFixed(2)}</Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography>Shipping</Typography>
+                  <Typography>--</Typography>
+                </Box>
+
+                <Divider />
+
+                <Box
                   sx={{
-                    ml: "16px !important",
-                    mt: "16px !important",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontWeight: 600,
                   }}
                 >
-                  ({itemCount()} products)
-                </Typography>
+                  <Typography>Total (USD)</Typography>
+                  <Typography>${subtotal.toFixed(2)}</Typography>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{ mt: 2, py: 1.5, fontWeight: 600 }}
+                >
+                  Confirm Order
+                </Button>
               </Stack>
-              <Button variant="text" color="secondary" onClick={clearCart}>
-                Clear cart
-              </Button>
-            </Box>
-
-            {!isMobile && (
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "2fr 1fr 1fr auto",
-                  gap: "24px",
-                  padding: "8px 0",
-                  borderBottom: "1px solid #e9ecef",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: "#888888", // Updated color
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                <Typography variant="body1" color="primary.main">
-                  Product
-                </Typography>
-                <Typography variant="body1" color="primary.main" align="center">
-                  Count
-                </Typography>
-                <Typography variant="body1" color="primary.main" align="center">
-                  Price
-                </Typography>
-              </Box>
-            )}
-
-            <Box role="list" sx={{ display: "flex", flexDirection: "column" }}>
-              {cartItems.map((item) => (
-                <CartItem
-                  key={item.id}
-                  id={item.id}
-                  name={item.name}
-                  color={item.color}
-                  price={item.price}
-                  quantity={item.quantity}
-                  image={item.image}
-                  onUpdateQuantity={updateQuantity}
-                  onRemove={removeItem}
-                />
-              ))}
-            </Box>
-          </Box>
-        </Box>
-
-        <OrderSummary
-          subtotal={subtotal()}
-          discount={discount}
-          total={total()}
-          onApplyPromoCode={applyPromoCode}
-        />
-      </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

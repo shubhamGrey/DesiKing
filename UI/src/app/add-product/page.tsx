@@ -27,11 +27,13 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"; // Add this import
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"; // Add this import
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { michroma } from "../layout";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 
 interface ProductFormData {
   name: string;
@@ -52,17 +54,18 @@ interface ProductFormData {
     barcode: string;
   }[];
   stock: number;
-  keyFeatures: { feature: string }[];
-  uses: { use: string }[];
+  keyFeatures: string[];
+  uses: string[];
   ingredients?: string;
   origin: string;
   shelfLife: string;
+  manufacturingDate?: string;
   storageInstructions: string;
   nutritionalInfo?: string;
   certifications: string[];
   isPremium: boolean;
   isFeatured: boolean;
-  status: "draft" | "published" | "archived";
+  isActive?: boolean;
   metaTitle?: string;
   metaDescription?: string;
 }
@@ -110,6 +113,9 @@ const AddProduct: React.FC = () => {
   const [toastOpen, setToastOpen] = useState(false);
   const [brands, setBrands] = useState<FormattedBrand[]>([]);
   const [categories, setCategories] = useState<FormattedCategory[]>([]);
+  const [keyFeatures, setKeyFeatures] = useState<string[]>([""]);
+  const [uses, setUses] = useState<string[]>([""]);
+  const [manufacturingDate, setManufacturingDate] = useState<Date | null>(null); // Add state for date picker
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/Brand`, {
@@ -191,41 +197,23 @@ const AddProduct: React.FC = () => {
         },
       ],
       stock: 0,
-      keyFeatures: [{ feature: "" }],
-      uses: [{ use: "" }],
+      keyFeatures: [],
+      uses: [],
       origin: "",
       shelfLife: "",
       storageInstructions: "",
       certifications: [],
       isPremium: false,
       isFeatured: false,
-      status: "draft",
+      manufacturingDate: "",
+      isActive: true,
     },
-  });
-
-  const {
-    fields: featureFields,
-    append: appendFeature,
-    remove: removeFeature,
-  } = useFieldArray({
-    control,
-    name: "keyFeatures",
-  });
-
-  const {
-    fields: useFields,
-    append: appendUse,
-    remove: removeUse,
-  } = useFieldArray({
-    control,
-    name: "uses",
   });
 
   const {
     fields: priceFields,
     append: appendPrice,
     remove: removePrice,
-    update: updatePrice,
   } = useFieldArray({
     control,
     name: "price",
@@ -239,6 +227,32 @@ const AddProduct: React.FC = () => {
     control,
     name: "sku",
   });
+
+  const handleAddKeyFeature = () => {
+    setKeyFeatures((prev) => [...prev, ""]);
+  };
+
+  const handleRemoveKeyFeature = (index: number) => {
+    setKeyFeatures((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleKeyFeatureChange = (index: number, value: string) => {
+    setKeyFeatures((prev) =>
+      prev.map((feature, i) => (i === index ? value : feature))
+    );
+  };
+
+  const handleAddUse = () => {
+    setUses((prev) => [...prev, ""]);
+  };
+
+  const handleRemoveUse = (index: number) => {
+    setUses((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUseChange = (index: number, value: string) => {
+    setUses((prev) => prev.map((use, i) => (i === index ? value : use)));
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -286,11 +300,32 @@ const AddProduct: React.FC = () => {
 
         const finalData = {
           ...data,
+          keyFeatures,
+          uses,
           certifications: selectedCertifications,
-          imageUrls, // Array of all uploaded image URLs
+          imageUrls,
+          brandId: data.brand,
+          categoryId: data.category,
+          manufacturingDate: manufacturingDate
+            ? new Date(manufacturingDate).toISOString() // Convert to UTC
+            : "", // Handle null case
         };
 
-        console.log("Final Data to Submit:", finalData);
+        // Update discountedAmount based on discountPercentage
+        finalData.price = finalData.price.map((price) => {
+          if (price.discountPercentage > 0) {
+            price.isDiscounted = true;
+            const discount =
+              (parseFloat(price.amount) * price.discountPercentage) / 100;
+            price.discountedAmount = (
+              parseFloat(price.amount) - discount
+            ).toFixed(2);
+          } else {
+            price.isDiscounted = false;
+            price.discountedAmount = price.amount;
+          }
+          return price;
+        });
 
         // Here you would typically send the data to your API
         const response = await fetch(
@@ -308,8 +343,7 @@ const AddProduct: React.FC = () => {
           throw new Error("Failed to add category");
         }
 
-        const result = await response.json();
-        console.log("API Response:", result);
+        await response.json();
 
         // Show success toast
         setToastOpen(true);
@@ -321,7 +355,7 @@ const AddProduct: React.FC = () => {
   };
 
   return (
-    <>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container sx={{ mt: isMobile ? 8 : 12, mb: 6, px: isMobile ? 2 : 4 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
@@ -610,14 +644,6 @@ const AddProduct: React.FC = () => {
                               fullWidth
                               size="small"
                               type="number"
-                              onChange={(e) => {
-                                const value = parseFloat(e.target.value);
-                                field.onChange(e);
-                                updatePrice(index, {
-                                  ...priceFields[index],
-                                  isDiscounted: value > 0,
-                                });
-                              }}
                             />
                           )}
                         />
@@ -787,7 +813,36 @@ const AddProduct: React.FC = () => {
                         )}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <DatePicker
+                        label="Manufacturing Date"
+                        value={manufacturingDate}
+                        onChange={(newValue: Date | null) =>
+                          setManufacturingDate(newValue)
+                        }
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            size: "small",
+                          },
+                          day: {
+                            sx: {
+                              "&.Mui-selected": {
+                                backgroundColor: "primary.main", // Set selected date background to primary color
+                                color: "white", // Ensure text is readable
+                                "&:hover": {
+                                  backgroundColor: "primary.dark", // Change hover color for selected date
+                                },
+                              },
+                              "&:hover": {
+                                backgroundColor: "action.hover", // Change hover color for non-selected dates
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 8 }}>
                       <Controller
                         name="ingredients"
                         control={control}
@@ -868,33 +923,30 @@ const AddProduct: React.FC = () => {
                     </Typography>
                     <Button
                       startIcon={<Add />}
-                      onClick={() => appendFeature({ feature: "" })}
+                      onClick={handleAddKeyFeature}
                       size="small"
                     >
                       Add Feature
                     </Button>
                   </Box>
-                  {featureFields.map((field, index) => (
-                    <Grid container spacing={2} key={field.id} sx={{ mb: 2 }}>
-                      <Grid size={{ xs: 10 }}>
-                        <Controller
-                          name={`keyFeatures.${index}.feature`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              fullWidth
-                              placeholder="e.g., 100% Pure and Natural"
-                              size="small"
-                            />
-                          )}
+                  {keyFeatures.map((feature, index) => (
+                    <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                      <Grid size={10}>
+                        <TextField
+                          fullWidth
+                          placeholder="e.g., 100% Pure and Natural"
+                          size="small"
+                          value={feature}
+                          onChange={(e) =>
+                            handleKeyFeatureChange(index, e.target.value)
+                          }
                         />
                       </Grid>
-                      <Grid size={{ xs: 2 }}>
+                      <Grid size={2}>
                         <IconButton
-                          onClick={() => removeFeature(index)}
+                          onClick={() => handleRemoveKeyFeature(index)}
                           sx={{ color: "secondary.main" }}
-                          disabled={featureFields.length === 1}
+                          disabled={keyFeatures.length === 1}
                         >
                           <Delete />
                         </IconButton>
@@ -934,33 +986,30 @@ const AddProduct: React.FC = () => {
                     </Typography>
                     <Button
                       startIcon={<Add />}
-                      onClick={() => appendUse({ use: "" })}
+                      onClick={handleAddUse}
                       size="small"
                     >
                       Add Use
                     </Button>
                   </Box>
-                  {useFields.map((field, index) => (
-                    <Grid container spacing={2} key={field.id} sx={{ mb: 2 }}>
-                      <Grid size={{ xs: 10 }}>
-                        <Controller
-                          name={`uses.${index}.use`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              fullWidth
-                              placeholder="e.g., Perfect for curries and traditional dishes"
-                              size="small"
-                            />
-                          )}
+                  {uses.map((use, index) => (
+                    <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+                      <Grid size={10}>
+                        <TextField
+                          fullWidth
+                          placeholder="e.g., Perfect for curries and traditional dishes"
+                          size="small"
+                          value={use}
+                          onChange={(e) =>
+                            handleUseChange(index, e.target.value)
+                          }
                         />
                       </Grid>
-                      <Grid size={{ xs: 2 }}>
+                      <Grid size={2}>
                         <IconButton
-                          onClick={() => removeUse(index)}
+                          onClick={() => handleRemoveUse(index)}
                           sx={{ color: "secondary.main" }}
-                          disabled={useFields.length === 1}
+                          disabled={uses.length === 1}
                         >
                           <Delete />
                         </IconButton>
@@ -1293,6 +1342,16 @@ const AddProduct: React.FC = () => {
                         />
                       )}
                     />
+                    <Controller
+                      name="isActive"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={<Switch {...field} />}
+                          label="Active Product"
+                        />
+                      )}
+                    />
                   </Stack>
                 </CardContent>
               </Card>
@@ -1366,7 +1425,7 @@ const AddProduct: React.FC = () => {
           Product added successfully!
         </Alert>
       </Snackbar>
-    </>
+    </LocalizationProvider>
   );
 };
 
