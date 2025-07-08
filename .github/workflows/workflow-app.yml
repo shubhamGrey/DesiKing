@@ -33,11 +33,11 @@ jobs:
       - name: Build
         run: dotnet build ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --no-restore
 
-      - name: Run EF Core migrations
-        env:
-          ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
-        run: |
-          dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
+      # - name: Run EF Core migrations
+      #   env:
+      #     ConnectionStrings__DefaultConnection: "Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123"
+      #   run: |
+      #     dotnet ef database update --project ./Backend/Agronexis.Api/Agronexis.Api.csproj --context Agronexis.DataAccess.DbContexts.AppDbContext
 
       - name: Publish
         run: dotnet publish ./Backend/Agronexis.Api/Agronexis.Api.csproj --configuration Release --output publish
