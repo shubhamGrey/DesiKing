@@ -39,6 +39,6 @@ namespace Agronexis.Model.EntityModel
         public bool IsDeleted { get; set; }
         public Category Category { get; set; }
         public ICollection<Inventory> Inventories { get; set; }
-
+        public string? ThumbnailUrl { get; set; }
     }
 }

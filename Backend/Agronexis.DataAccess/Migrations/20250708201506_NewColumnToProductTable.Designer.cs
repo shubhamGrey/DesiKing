@@ -3,6 +3,7 @@ using System;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250708201506_NewColumnToProductTable")]
+    partial class NewColumnToProductTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -341,7 +344,7 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("StorageInstructions")
                         .HasColumnType("text");
 
-                    b.Property<string>("ThumbnailUrl")
+                    b.Property<string>("Thumbnail")
                         .HasColumnType("text");
 
                     b.Property<string>("Uses")

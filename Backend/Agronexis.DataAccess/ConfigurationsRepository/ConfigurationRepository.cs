@@ -60,7 +60,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     IsPremium = x.product.IsPremium,
                     IsFeatured = x.product.IsFeatured,
                     Ingredients = x.product.Ingredients,
-                    NutritionalInfo = x.product.NutritionalInfo
+                    NutritionalInfo = x.product.NutritionalInfo,
+                    ThumbnailUrl = x.product.ThumbnailUrl
                 }).ToList();
 
             return productList;
@@ -90,7 +91,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsPremium = x.IsPremium,
                 IsFeatured = x.IsFeatured,
                 Ingredients = x.Ingredients,
-                NutritionalInfo = x.NutritionalInfo
+                NutritionalInfo = x.NutritionalInfo,
+                ThumbnailUrl = x.ThumbnailUrl
             }).FirstOrDefault();
 
             return product;
@@ -123,7 +125,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     IsPremium = productReq.IsPremium,
                     IsFeatured = productReq.IsFeatured,
                     Ingredients = productReq.Ingredients,
-                    NutritionalInfo = productReq.NutritionalInfo
+                    NutritionalInfo = productReq.NutritionalInfo,
+                    ThumbnailUrl = productReq.ThumbnailUrl
                 };
 
                 _dbContext.Products.Add(productDetail);
@@ -150,6 +153,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 productDetail.IsFeatured = productReq.IsFeatured;
                 productDetail.Ingredients = productReq.Ingredients;
                 productDetail.NutritionalInfo = productReq.NutritionalInfo;
+                productDetail.ThumbnailUrl = productReq.ThumbnailUrl;
 
                 _dbContext.Products.Update(productDetail);
             }
