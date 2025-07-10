@@ -69,33 +69,75 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).AsEnumerable().Select(x => new ProductResponseModel
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                ManufacturingDate = x.ManufacturingDate,
-                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.ImageUrls),
-                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.KeyFeatures),
-                Uses = JsonSerializer.Deserialize<List<string>>(x.Uses),
-                CategoryId = x.CategoryId,
-                BrandId = x.BrandId,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription,
-                CreatedDate = DateTime.UtcNow,
-                Origin = x.Origin,
-                ShelfLife = x.ShelfLife,
-                StorageInstructions = x.StorageInstructions,
-                Certifications = JsonSerializer.Deserialize<List<string>>(x.Certifications),
-                IsActive = x.IsActive,
-                IsPremium = x.IsPremium,
-                IsFeatured = x.IsFeatured,
-                Ingredients = x.Ingredients,
-                NutritionalInfo = x.NutritionalInfo,
-                ThumbnailUrl = x.ThumbnailUrl
-            }).FirstOrDefault();
+            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).Join(_dbContext.Categories,
+                      product => product.CategoryId,
+                      category => category.Id,
+                      (product, category) => new { product, category }).AsEnumerable().Select(x => new ProductResponseModel
+                      {
+                          Id = x.product.Id,
+                          Name = x.product.Name,
+                          Description = x.product.Description,
+                          ManufacturingDate = x.product.ManufacturingDate,
+                          ImageUrls = JsonSerializer.Deserialize<List<string>>(x.product.ImageUrls),
+                          KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.product.KeyFeatures),
+                          Uses = JsonSerializer.Deserialize<List<string>>(x.product.Uses),
+                          CategoryId = x.product.CategoryId,
+                          CategoryName = x.category.Name,
+                          BrandId = x.product.BrandId,
+                          MetaTitle = x.product.MetaTitle,
+                          MetaDescription = x.product.MetaDescription,
+                          CreatedDate = DateTime.UtcNow,
+                          Origin = x.product.Origin,
+                          ShelfLife = x.product.ShelfLife,
+                          StorageInstructions = x.product.StorageInstructions,
+                          Certifications = JsonSerializer.Deserialize<List<string>>(x.product.Certifications),
+                          IsActive = x.product.IsActive,
+                          IsPremium = x.product.IsPremium,
+                          IsFeatured = x.product.IsFeatured,
+                          Ingredients = x.product.Ingredients,
+                          NutritionalInfo = x.product.NutritionalInfo,
+                          ThumbnailUrl = x.product.ThumbnailUrl
+                      }).FirstOrDefault();
 
             return product;
+        }
+
+        public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
+        {
+            List<ProductResponseModel> productList = _dbContext.Products
+                .Where(x => x.IsActive && x.CategoryId == new Guid(categoryId))
+                .Join(_dbContext.Categories,
+                      product => product.CategoryId,
+                      category => category.Id,
+                      (product, category) => new { product, category })
+                .AsEnumerable()
+                .Select(x => new ProductResponseModel
+                {
+                    Id = x.product.Id,
+                    Name = x.product.Name,
+                    Description = x.product.Description,
+                    ManufacturingDate = x.product.ManufacturingDate,
+                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.product.ImageUrls),
+                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.product.KeyFeatures),
+                    Uses = JsonSerializer.Deserialize<List<string>>(x.product.Uses),
+                    CategoryId = x.product.CategoryId,
+                    CategoryName = x.category.Name,
+                    BrandId = x.product.BrandId,
+                    MetaTitle = x.product.MetaTitle,
+                    MetaDescription = x.product.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = x.product.Origin,
+                    ShelfLife = x.product.ShelfLife,
+                    StorageInstructions = x.product.StorageInstructions,
+                    Certifications = JsonSerializer.Deserialize<List<string>>(x.product.Certifications),
+                    IsActive = x.product.IsActive,
+                    IsPremium = x.product.IsPremium,
+                    IsFeatured = x.product.IsFeatured,
+                    Ingredients = x.product.Ingredients,
+                    NutritionalInfo = x.product.NutritionalInfo
+                }).ToList();
+
+            return productList;
         }
 
         public string SaveOrUpdateProduct(ProductRequestModel productReq, string xCorrelationId)
