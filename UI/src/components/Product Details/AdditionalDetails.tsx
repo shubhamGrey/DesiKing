@@ -13,16 +13,31 @@ import React from "react";
 
 // Define the type for selectedProduct
 interface Product {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  images: string[];
-  key_features?: string[];
-  uses?: string[];
-  price: string;
-  category: string;
-  quantity?: string;
-  customer_reviews?: string[];
+  brandId: string;
+  categoryId: string;
+  categoryName: string;
+  manufacturingDate: string;
+  createdDate: string;
+  modifiedDate: string | null;
+  isActive: boolean;
+  isDeleted: boolean;
+  metaTitle: string;
+  metaDescription: string;
+  imageUrls: string[];
+  keyFeatures: string[];
+  uses: string[];
+  origin: string;
+  shelfLife: string;
+  storageInstructions: string;
+  certifications: string[];
+  isPremium: boolean;
+  isFeatured: boolean;
+  ingredients: string;
+  nutritionalInfo: string;
+  thumbnailUrl?: string;
 }
 
 const AdditionalDetails = ({
@@ -34,7 +49,7 @@ const AdditionalDetails = ({
 
   const [sections, setSections] = React.useState([
     {
-      id: "key_features",
+      id: "keyFeatures",
       title: "Key Features",
       expanded: false,
     },
@@ -62,7 +77,7 @@ const AdditionalDetails = ({
 
   const [selectedSection, setSelectedSection] = React.useState<
     keyof Product | null
-  >("key_features");
+  >("keyFeatures");
 
   return (
     <>

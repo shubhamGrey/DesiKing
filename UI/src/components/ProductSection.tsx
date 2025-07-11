@@ -9,7 +9,9 @@ import {
   Grid,
   Typography,
   useMediaQuery,
+  IconButton,
 } from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -22,15 +24,34 @@ const michroma = Michroma({
 
 interface ProductDetails {
   item: {
-    category: string;
-    category_image: string;
+    categoryName: string;
+    categoryId: string;
     products: {
-      id: number;
+      id: string;
       name: string;
       description: string;
-      image: string;
-      key_features?: string[];
-      uses?: string[];
+      brandId: string;
+      categoryId: string;
+      categoryName: string;
+      manufacturingDate: string;
+      createdDate: string;
+      modifiedDate: string | null;
+      isActive: boolean;
+      isDeleted: boolean;
+      metaTitle: string;
+      metaDescription: string;
+      imageUrls: string[];
+      keyFeatures: string[];
+      uses: string[];
+      origin: string;
+      shelfLife: string;
+      storageInstructions: string;
+      certifications: string[];
+      isPremium: boolean;
+      isFeatured: boolean;
+      ingredients: string;
+      nutritionalInfo: string;
+      thumbnailUrl?: string;
     }[];
   };
 }
@@ -59,7 +80,7 @@ const ProductSection = ({ item }: ProductDetails) => {
           textAlign={"center"}
           fontFamily={michroma.style.fontFamily}
         >
-          {item.category}
+          {item.categoryName}
         </Typography>
       </Box>
       <Box
@@ -83,12 +104,66 @@ const ProductSection = ({ item }: ProductDetails) => {
                     transform: "scale(1.05)",
                     transition: "transform 0.3s ease-in-out",
                   },
+                  position: "relative",
                 }}
                 elevation={0}
               >
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    display: "flex",
+                    gap: 2,
+                    zIndex: 1,
+                  }}
+                >
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    sx={{
+                      border: "2px solid",
+                      borderColor: "primary.main",
+                      borderRadius: "50%",
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "primary.main",
+                        color: "primary.contrastText",
+                        borderColor: "primary.main",
+                      },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sessionStorage.setItem("productId", product.id);
+                      router.push("/add-product");
+                    }}
+                  >
+                    <Edit fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    size="small"
+                    sx={{
+                      border: "2px solid",
+                      borderColor: "error.main",
+                      borderRadius: "50%",
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "error.main",
+                        color: "error.contrastText",
+                        borderColor: "error.main",
+                      },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("Delete product:", product.id);
+                    }}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </Box>
                 <CardActionArea
                   disableRipple
-                  // onClick={() => setSelectedProduct(product)}
                   onClick={() => {
                     router.push("/product/" + product.id);
                   }}
@@ -96,7 +171,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                   <CardMedia
                     component="img"
                     height={isMobile ? "172px" : "217px"}
-                    image={product.image}
+                    image={product.thumbnailUrl}
                     alt={product.name}
                   />
                   <CardContent

@@ -5,60 +5,124 @@ import ProductDetails from "@/components/Product Details/ProductDetails";
 import ProductShowcase from "@/components/Product Details/ProductShowcase";
 import { Box, Typography } from "@mui/material";
 import { Container } from "@mui/system";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  images: string[];
-  key_features?: string[];
-  uses?: string[];
-  price: string;
-  category: string;
-  quantity?: string;
-  customer_reviews?: string[];
+  brandId: string;
+  categoryId: string;
+  categoryName: string;
+  manufacturingDate: string;
+  createdDate: string;
+  modifiedDate: string | null;
+  isActive: boolean;
+  isDeleted: boolean;
+  metaTitle: string;
+  metaDescription: string;
+  imageUrls: string[];
+  keyFeatures: string[];
+  uses: string[];
+  origin: string;
+  shelfLife: string;
+  storageInstructions: string;
+  certifications: string[];
+  isPremium: boolean;
+  isFeatured: boolean;
+  ingredients: string;
+  nutritionalInfo: string;
+  thumbnailUrl?: string;
 }
 
 const ProductDetailsComponent = () => {
-  const [selectedProduct] = React.useState<Product>({
-    id: 1,
-    name: "Turmeric Powder",
-    description:
-      "AGRO NEXIS Turmeric Powder is made from the finest turmeric roots, known for its vibrant color and health benefits. \
-      Ground to perfection to preserve its natural aroma and flavor, this turmeric powder is ideal for cooking, baking, and health supplements. \
-      It adds a warm, earthy flavor to dishes and is rich in curcumin, a powerful antioxidant.",
-    images: [
-      "/Turmeric1.jpg",
-      "/Turmeric2.jpeg",
-      "/Turmeric3.jpg",
-      "/Turmeric4.jpg",
-      "/Turmeric5.jpg",
-    ],
-    key_features: [
-      "100% Pure and Natural",
-      "Rich in Curcumin",
-      "No Artificial Additives",
-      "Packed in a Hygienic Environment",
-      "Sourced from Trusted Farmers",
-    ],
-    uses: [
-      "Turmeric powder is versatile and can be used in various dishes such as curries, soups, stews, and even smoothies.",
-      "It is commonly used in Indian cuisine for its flavor and color.",
-      "In addition to culinary uses, turmeric powder is often added to health drinks and supplements for its potential health benefits.",
-    ],
-    price: "$10.99",
-    category: "Powdered Spices",
-    quantity: "100gm",
-    customer_reviews: [
-      "Excellent quality! The turmeric powder has a rich color and flavor.",
-      "I love using this in my cooking. It adds a wonderful aroma and taste to my dishes.",
-      "Great product! I appreciate the purity and natural ingredients.",
-      "This turmeric powder is a staple in my kitchen. Highly recommend it!",
-      "Fast shipping and well-packaged. The quality is top-notch.",
-      "I've tried many turmeric powders, and this one is by far the best. The flavor is amazing!",
-    ],
-  });
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const { productId } = useParams() as { productId: string };
+
+  useEffect(() => {
+    if (!productId) return;
+
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/product/${productId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Error fetching product: ${response.statusText}`);
+        }
+        const data: Product = await response.json();
+        setSelectedProduct(data);
+
+        // Fetch similar products
+        const similarResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/products/category/${data.categoryId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!similarResponse.ok) {
+          throw new Error(
+            `Error fetching similar products: ${similarResponse.statusText}`
+          );
+        }
+        const similarData: Product[] = await similarResponse.json();
+        setSimilarProducts(
+          similarData.filter((product) => product.id !== data.id)
+        );
+      } catch (error) {
+        console.error("Failed to fetch product data:", error);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  if (!selectedProduct) {
+    return (
+      <Box sx={{ padding: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box
+            sx={{ height: 200, backgroundColor: "grey.300", borderRadius: 2 }}
+          />
+          <Box
+            sx={{
+              height: 20,
+              width: "60%",
+              backgroundColor: "grey.300",
+              borderRadius: 1,
+            }}
+          />
+          <Box
+            sx={{
+              height: 20,
+              width: "80%",
+              backgroundColor: "grey.300",
+              borderRadius: 1,
+            }}
+          />
+          <Box
+            sx={{
+              height: 20,
+              width: "40%",
+              backgroundColor: "grey.300",
+              borderRadius: 1,
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -96,10 +160,10 @@ const ProductDetailsComponent = () => {
               color: "primary.main",
             }}
           >
-            [4]
+            [{similarProducts.length}]
           </Typography>
         </Typography>
-        <ProductShowcase />
+        <ProductShowcase products={similarProducts} />
       </Box>
     </>
   );
