@@ -30,6 +30,7 @@ namespace Agronexis.Model.RequestModel
         public bool IsFeatured { get; set; }
         public string? Ingredients { get; set; }
         public string? NutritionalInfo { get; set; }
+        public string? ThumbnailUrl { get; set; }
     }
 
     public class Price

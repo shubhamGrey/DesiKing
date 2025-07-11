@@ -33,5 +33,6 @@ namespace Agronexis.Model.ResponseModel
         public bool IsFeatured { get; set; }
         public string? Ingredients { get; set; }
         public string? NutritionalInfo { get; set; }
+        public string? ThumbnailUrl { get; set; }
     }
 }
