@@ -163,7 +163,14 @@ const ProductDetailsComponent = () => {
             [{similarProducts.length}]
           </Typography>
         </Typography>
-        <ProductShowcase products={similarProducts} />
+        <ProductShowcase
+          productSections={similarProducts.map((product) => ({
+            key: product.id,
+            title: product.name,
+            description: product.description,
+            image: product.imageUrls[0] || "",
+          }))}
+        />
       </Box>
     </>
   );

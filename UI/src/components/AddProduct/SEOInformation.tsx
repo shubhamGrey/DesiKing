@@ -1,9 +1,9 @@
 import React from "react";
 import { Grid, TextField, Card, CardContent, Typography } from "@mui/material";
-import { Control, Controller, FieldValues } from "react-hook-form";
+import { Control, Controller } from "react-hook-form";
 import { michroma } from "@/app/layout";
 
-const SEOInformation = ({ control }: { control: Control<FieldValues> }) => (
+const SEOInformation = ({ control }: { control: Control<any> }) => (
   <Card
     sx={{
       backgroundColor: "transparent",

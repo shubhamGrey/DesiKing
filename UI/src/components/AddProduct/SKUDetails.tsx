@@ -10,11 +10,11 @@ import {
   CardContent,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
-import { Control, Controller, FieldValues } from "react-hook-form";
+import { Control, Controller } from "react-hook-form";
 import { michroma } from "@/app/layout";
 
 interface SKUDetailsProps {
-  control: Control<FieldValues>; // Replace 'any' with the appropriate type for your control object
+  control: Control<any>; // Replace 'any' with the appropriate type for your control object
   skuFields: Array<{
     id: string;
     sku: string;

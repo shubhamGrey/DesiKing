@@ -7,12 +7,12 @@ import {
   CardContent,
   Typography,
 } from "@mui/material";
-import { Controller, Control, FieldValues } from "react-hook-form";
+import { Controller, Control } from "react-hook-form";
 import { michroma } from "@/app/layout";
 
 interface BasicInformationProps {
-  control: Control<FieldValues>;
-  errors: Record<string, import("react-hook-form").FieldError | undefined>;
+  control: Control<any>;
+  errors: Record<string, any>;
   brands: { value: string; label: string }[];
   categories: { value: string; label: string }[];
 }

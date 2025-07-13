@@ -105,8 +105,10 @@ interface FormattedCategory {
 const AddProduct: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
-  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
-  const [thumbnailImage, setThumbnailImage] = useState<File | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<(File | string)[]>([]);
+  const [thumbnailImage, setThumbnailImage] = useState<File | string | null>(
+    null
+  );
   const [selectedCertifications, setSelectedCertifications] = useState<
     string[]
   >([]);
@@ -121,6 +123,52 @@ const AddProduct: React.FC = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormData>({
+    defaultValues: {
+      name: "",
+      description: "",
+      category: "",
+      brand: "",
+      price: [
+        {
+          amount: "",
+          currency: "INR",
+          isDiscounted: false,
+          discountPercentage: 0,
+          discountedAmount: "",
+          weight: "",
+        },
+      ],
+      sku: [
+        {
+          sku: "",
+          weight: "",
+          barcode: "",
+        },
+      ],
+      stock: 0,
+      keyFeatures: [],
+      uses: [],
+      ingredients: "",
+      nutritionalInfo: "",
+      origin: "",
+      shelfLife: "",
+      storageInstructions: "",
+      certifications: [],
+      isPremium: false,
+      isFeatured: false,
+      manufacturingDate: "",
+      isActive: true,
+      metaTitle: "",
+      metaDescription: "",
+    },
+  });
 
   useEffect(() => {
     const productId = sessionStorage.getItem("productId");
@@ -228,54 +276,7 @@ const AddProduct: React.FC = () => {
       setBrands([]);
       setCategories([]);
     };
-  }, []);
-
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    getValues,
-    formState: { errors, isSubmitting },
-  } = useForm<ProductFormData>({
-    defaultValues: {
-      name: "",
-      description: "",
-      category: "",
-      brand: "",
-      price: [
-        {
-          amount: "",
-          currency: "INR",
-          isDiscounted: false,
-          discountPercentage: 0,
-          discountedAmount: "",
-          weight: "",
-        },
-      ],
-      sku: [
-        {
-          sku: "",
-          weight: "",
-          barcode: "",
-        },
-      ],
-      stock: 0,
-      keyFeatures: [],
-      uses: [],
-      ingredients: "",
-      nutritionalInfo: "",
-      origin: "",
-      shelfLife: "",
-      storageInstructions: "",
-      certifications: [],
-      isPremium: false,
-      isFeatured: false,
-      manufacturingDate: "",
-      isActive: true,
-      metaTitle: "",
-      metaDescription: "",
-    },
-  });
+  }, [setValue]);
 
   const {
     fields: priceFields,
@@ -336,7 +337,7 @@ const AddProduct: React.FC = () => {
     );
   };
 
-  const uploadViaApi = async (file: File): Promise<string> => {
+  const uploadViaApi = async (file: File | string): Promise<string> => {
     if (typeof file === "string") {
       return file;
     }
@@ -354,7 +355,9 @@ const AddProduct: React.FC = () => {
     return data.previewUrl;
   };
 
-  const uploadAllImages = async (files: File[]): Promise<string[]> => {
+  const uploadAllImages = async (
+    files: (File | string)[]
+  ): Promise<string[]> => {
     const uploadPromises = files.map((file) => uploadViaApi(file));
     return Promise.all(uploadPromises);
   };
@@ -367,7 +370,7 @@ const AddProduct: React.FC = () => {
 
     const finalData = {
       ...data,
-      id: isEditMode ? sessionStorage.getItem("productId") : undefined, // Only include ID if editing
+      id: isEditMode ? sessionStorage.getItem("productId") : undefined,
       keyFeatures,
       uses,
       certifications: selectedCertifications,
@@ -415,6 +418,16 @@ const AddProduct: React.FC = () => {
 
       await response.json();
       setToastOpen(true);
+
+      // Clear sessionStorage and redirect after success
+      if (isEditMode) {
+        sessionStorage.removeItem("productId");
+      }
+
+      // Redirect to products page after a short delay
+      setTimeout(() => {
+        router.push("/products");
+      }, 1500);
     } catch (error) {
       console.error("Error saving product:", error);
       alert("An error occurred while saving the product. Please try again.");
@@ -531,26 +544,24 @@ const AddProduct: React.FC = () => {
             <Grid size={{ xs: 12, md: 4 }}>
               <ThumbnailImage
                 thumbnailImage={thumbnailImage}
-                setThumbnailImage={setThumbnailImage}
                 handleThumbnailUpload={handleThumbnailUpload}
                 removeThumbnailImage={removeThumbnailImage}
-                getValues={getValues}
               />
               <ProductImages
                 uploadedImages={uploadedImages}
-                handleImageUpload={(event) => handleImageUpload(event)}
+                handleImageUpload={handleImageUpload}
                 setSelectedImageIndex={setSelectedImageIndex}
                 removeImage={removeImage}
                 selectedImageIndex={selectedImageIndex}
               />
               <ProductSettings
                 control={control}
-                isPremium={isPremium}
-                isFeatured={isFeatured}
                 isActive={isActive}
-                setIsPremium={setIsPremium}
-                setIsFeatured={setIsFeatured}
                 setIsActive={setIsActive}
+                isPremium={isPremium}
+                setIsPremium={setIsPremium}
+                isFeatured={isFeatured}
+                setIsFeatured={setIsFeatured}
               />
               <Certifications
                 certificationOptions={certificationOptions}

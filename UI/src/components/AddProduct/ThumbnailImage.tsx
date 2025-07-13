@@ -12,7 +12,7 @@ import Image from "next/image";
 import { michroma } from "@/app/layout";
 
 interface ThumbnailImageProps {
-  thumbnailImage: File | null;
+  thumbnailImage: File | string | null;
   handleThumbnailUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   removeThumbnailImage: () => void;
 }

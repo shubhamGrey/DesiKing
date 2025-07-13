@@ -14,11 +14,11 @@ import {
   CardContent,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
-import { Control, Controller, FieldValues } from "react-hook-form";
+import { Control, Controller } from "react-hook-form";
 import { michroma } from "@/app/layout";
 
 interface PricingDetailsProps {
-  control: Control<FieldValues>; // Replace 'any' with your form data type if known
+  control: Control<any>; // Replace 'any' with your form data type if known
   priceFields: Array<{ id: string }>; // Replace with the correct structure of priceFields
   appendPrice: (price: {
     amount: string;
@@ -107,11 +107,7 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({
                 render={({ field }) => (
                   <FormControl fullWidth size="small">
                     <InputLabel>Currency</InputLabel>
-                    <Select
-                      {...field}
-                      label="Currency"
-                      placeholder="Select currency"
-                    >
+                    <Select {...field} label="Currency">
                       <MenuItem value="INR">INR</MenuItem>
                       <MenuItem value="USD">USD</MenuItem>
                     </Select>

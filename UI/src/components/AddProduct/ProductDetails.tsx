@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid, TextField, Card, CardContent, Typography } from "@mui/material";
-import { Control, Controller, FieldValues } from "react-hook-form";
+import { Control, Controller } from "react-hook-form";
 import { DatePicker } from "@mui/x-date-pickers";
 import { michroma } from "@/app/layout";
 
@@ -9,7 +9,7 @@ const ProductDetails = ({
   manufacturingDate,
   setManufacturingDate,
 }: {
-  control: Control<FieldValues>;
+  control: Control<any>;
   manufacturingDate: Date | null;
   setManufacturingDate: (date: Date | null) => void;
 }) => (
