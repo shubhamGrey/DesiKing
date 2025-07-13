@@ -14,13 +14,20 @@ import {
   CardContent,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
-import { Controller } from "react-hook-form";
+import { Control, Controller, FieldValues } from "react-hook-form";
 import { michroma } from "@/app/layout";
 
 interface PricingDetailsProps {
-  control: any; // Replace 'any' with the appropriate type for your control if known
+  control: Control<FieldValues>; // Replace 'any' with your form data type if known
   priceFields: Array<{ id: string }>; // Replace with the correct structure of priceFields
-  appendPrice: (price: any) => void; // Replace 'any' with the correct type if known
+  appendPrice: (price: {
+    amount: string;
+    currency: string;
+    isDiscounted: boolean;
+    discountPercentage: number;
+    discountedAmount: string;
+    weight: string;
+  }) => void;
   removePrice: (index: number) => void;
 }
 

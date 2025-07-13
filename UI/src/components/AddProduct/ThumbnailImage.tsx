@@ -13,18 +13,14 @@ import { michroma } from "@/app/layout";
 
 interface ThumbnailImageProps {
   thumbnailImage: File | null;
-  setThumbnailImage: (image: File | null) => void;
   handleThumbnailUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   removeThumbnailImage: () => void;
-  getValues: () => Record<string, any>;
 }
 
 const ThumbnailImage: React.FC<ThumbnailImageProps> = ({
   thumbnailImage,
-  setThumbnailImage,
   handleThumbnailUpload,
   removeThumbnailImage,
-  getValues,
 }) => {
   return (
     <Card

@@ -8,11 +8,11 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
-import { Controller, Control } from "react-hook-form";
+import { Controller, Control, FieldValues } from "react-hook-form";
 import { michroma } from "@/app/layout";
 
 interface ProductSettingsProps {
-  control: Control<any>;
+  control: Control<FieldValues>;
   isActive?: boolean;
   setIsActive?: (value: boolean) => void;
   isPremium?: boolean;
