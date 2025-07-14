@@ -1,39 +1,37 @@
 "use client";
 
 import theme from "@/styles/theme";
-import { Add, CloudUpload, Delete, NavigateNext } from "@mui/icons-material";
+import { Add, NavigateNext } from "@mui/icons-material";
 import {
   Alert,
   Box,
   Breadcrumbs,
   Button,
-  Card,
-  CardContent,
-  Chip,
   Container,
-  FormControl,
-  FormControlLabel,
   Grid,
-  IconButton,
-  InputLabel,
   Link,
-  MenuItem,
-  Paper,
-  Select,
   Snackbar,
   Stack,
-  Switch,
-  TextField,
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"; // Add this import
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"; // Add this import
-import Image from "next/image";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { michroma } from "../layout";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import BasicInformation from "../../components/AddProduct/BasicInformation";
+import Certifications from "../../components/AddProduct/Certifications";
+import KeyFeatures from "../../components/AddProduct/KeyFeatures";
+import PricingDetails from "../../components/AddProduct/PricingDetails";
+import ProductDetails from "../../components/AddProduct/ProductDetails";
+import ProductImages from "../../components/AddProduct/ProductImages";
+import ProductSettings from "../../components/AddProduct/ProductSettings";
+import SEOInformation from "../../components/AddProduct/SEOInformation";
+import SKUDetails from "../../components/AddProduct/SKUDetails";
+import ThumbnailImage from "../../components/AddProduct/ThumbnailImage";
+import Uses from "../../components/AddProduct/Uses";
 
 interface ProductFormData {
   name: string;
@@ -68,6 +66,8 @@ interface ProductFormData {
   isActive?: boolean;
   metaTitle?: string;
   metaDescription?: string;
+  imageUrls?: File[];
+  thumbnailImage?: File | null;
 }
 
 const certificationOptions = [
@@ -83,7 +83,7 @@ const certificationOptions = [
 interface Brand {
   name: string;
   id: string;
-  isActive: boolean; // Added isActive property
+  isActive: boolean;
 }
 
 interface FormattedBrand {
@@ -94,7 +94,7 @@ interface FormattedBrand {
 interface Category {
   name: string;
   id: string;
-  isActive: boolean; // Added isActive property
+  isActive: boolean;
 }
 
 interface FormattedCategory {
@@ -105,7 +105,10 @@ interface FormattedCategory {
 const AddProduct: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
-  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<(File | string)[]>([]);
+  const [thumbnailImage, setThumbnailImage] = useState<File | string | null>(
+    null
+  );
   const [selectedCertifications, setSelectedCertifications] = useState<
     string[]
   >([]);
@@ -115,9 +118,120 @@ const AddProduct: React.FC = () => {
   const [categories, setCategories] = useState<FormattedCategory[]>([]);
   const [keyFeatures, setKeyFeatures] = useState<string[]>([""]);
   const [uses, setUses] = useState<string[]>([""]);
-  const [manufacturingDate, setManufacturingDate] = useState<Date | null>(null); // Add state for date picker
+  const [manufacturingDate, setManufacturingDate] = useState<Date | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormData>({
+    defaultValues: {
+      name: "",
+      description: "",
+      category: "",
+      brand: "",
+      price: [
+        {
+          amount: "",
+          currency: "INR",
+          isDiscounted: false,
+          discountPercentage: 0,
+          discountedAmount: "",
+          weight: "",
+        },
+      ],
+      sku: [
+        {
+          sku: "",
+          weight: "",
+          barcode: "",
+        },
+      ],
+      stock: 0,
+      keyFeatures: [],
+      uses: [],
+      ingredients: "",
+      nutritionalInfo: "",
+      origin: "",
+      shelfLife: "",
+      storageInstructions: "",
+      certifications: [],
+      isPremium: false,
+      isFeatured: false,
+      manufacturingDate: "",
+      isActive: true,
+      metaTitle: "",
+      metaDescription: "",
+    },
+  });
 
   useEffect(() => {
+    const productId = sessionStorage.getItem("productId");
+    if (productId) {
+      setIsEditMode(true);
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/Product/${productId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setValue("name", data.name);
+          setValue("description", data.description);
+          setValue("category", data.categoryId);
+          setValue("brand", data.brandId);
+          setValue("price", data.price);
+          setValue("sku", data.sku);
+          setValue("stock", data.stock);
+          setKeyFeatures(data.keyFeatures || []);
+          setUses(data.uses || []);
+          setValue("ingredients", data.ingredients || "");
+          setValue("nutritionalInfo", data.nutritionalInfo || "");
+          setValue("origin", data.origin);
+          setValue("shelfLife", data.shelfLife);
+          setValue("storageInstructions", data.storageInstructions);
+          setValue("certifications", data.certifications || []);
+
+          // Set both form values and state variables for switches
+          const premiumValue = data.isPremium || false;
+          const featuredValue = data.isFeatured || false;
+          const activeValue = data.isActive ?? true;
+
+          setValue("isPremium", premiumValue);
+          setValue("isFeatured", featuredValue);
+          setValue("isActive", activeValue);
+
+          setIsPremium(premiumValue);
+          setIsFeatured(featuredValue);
+          setIsActive(activeValue);
+
+          setValue("metaTitle", data.metaTitle);
+          setValue("metaDescription", data.metaDescription);
+          setManufacturingDate(
+            data.manufacturingDate ? new Date(data.manufacturingDate) : null
+          );
+          setUploadedImages(data.imageUrls || []);
+          setThumbnailImage(data.thumbnailUrl || null);
+          setSelectedCertifications(data.certifications || []);
+          setSelectedImageIndex(0);
+          if (data.imageUrls && data.imageUrls.length > 0) {
+            setSelectedImageIndex(0); // Reset to first image if available
+          } else {
+            setSelectedImageIndex(-1); // No images available
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching product data:", error);
+        });
+    }
+
+    // Fetch brands and categories
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/Brand`, {
       method: "GET",
       headers: {
@@ -159,56 +273,10 @@ const AddProduct: React.FC = () => {
       });
 
     return () => {
-      // Cleanup if necessary
       setBrands([]);
       setCategories([]);
     };
-  }, []);
-
-  const handleToastClose = () => {
-    setToastOpen(false);
-  };
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ProductFormData>({
-    defaultValues: {
-      name: "",
-      description: "",
-      category: "",
-      brand: "",
-      price: [
-        {
-          amount: "",
-          currency: "INR",
-          isDiscounted: false,
-          discountPercentage: 0,
-          discountedAmount: "",
-          weight: "",
-        },
-      ],
-      sku: [
-        {
-          sku: "",
-          weight: "",
-          barcode: "",
-        },
-      ],
-      stock: 0,
-      keyFeatures: [],
-      uses: [],
-      origin: "",
-      shelfLife: "",
-      storageInstructions: "",
-      certifications: [],
-      isPremium: false,
-      isFeatured: false,
-      manufacturingDate: "",
-      isActive: true,
-    },
-  });
+  }, [setValue]);
 
   const {
     fields: priceFields,
@@ -228,52 +296,57 @@ const AddProduct: React.FC = () => {
     name: "sku",
   });
 
-  const handleAddKeyFeature = () => {
-    setKeyFeatures((prev) => [...prev, ""]);
-  };
-
-  const handleRemoveKeyFeature = (index: number) => {
-    setKeyFeatures((prev) => prev.filter((_, i) => i !== index));
-  };
-
+  const handleAddKeyFeature = () => setKeyFeatures([...keyFeatures, ""]);
+  const handleRemoveKeyFeature = (index: number) =>
+    setKeyFeatures(keyFeatures.filter((_, i) => i !== index));
   const handleKeyFeatureChange = (index: number, value: string) => {
-    setKeyFeatures((prev) =>
-      prev.map((feature, i) => (i === index ? value : feature))
-    );
+    const updatedKeyFeatures = [...keyFeatures];
+    updatedKeyFeatures[index] = value;
+    setKeyFeatures(updatedKeyFeatures);
   };
 
-  const handleAddUse = () => {
-    setUses((prev) => [...prev, ""]);
-  };
-
-  const handleRemoveUse = (index: number) => {
-    setUses((prev) => prev.filter((_, i) => i !== index));
-  };
-
+  const handleAddUse = () => setUses([...uses, ""]);
+  const handleRemoveUse = (index: number) =>
+    setUses(uses.filter((_, i) => i !== index));
   const handleUseChange = (index: number, value: string) => {
-    setUses((prev) => prev.map((use, i) => (i === index ? value : use)));
+    const updatedUses = [...uses];
+    updatedUses[index] = value;
+    setUses(updatedUses);
   };
+
+  const handleThumbnailUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] || null;
+    setThumbnailImage(file);
+  };
+  const removeThumbnailImage = () => setThumbnailImage(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      setUploadedImages((prev) => [...prev, ...Array.from(files)]);
-    }
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    setUploadedImages([...uploadedImages, ...files]);
   };
-
   const removeImage = (index: number) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+    setUploadedImages(uploadedImages.filter((_, i) => i !== index));
+    setSelectedImageIndex(
+      selectedImageIndex >= index
+        ? Math.max(0, selectedImageIndex - 1)
+        : selectedImageIndex
+    );
   };
 
   const handleCertificationToggle = (certification: string) => {
     setSelectedCertifications((prev) =>
       prev.includes(certification)
-        ? prev.filter((c) => c !== certification)
+        ? prev.filter((item) => item !== certification)
         : [...prev, certification]
     );
   };
 
-  const uploadViaApi = async (file: File): Promise<string> => {
+  const uploadViaApi = async (file: File | string): Promise<string> => {
+    if (typeof file === "string") {
+      return file;
+    }
     const formData = new FormData();
     formData.append("file", file);
 
@@ -288,69 +361,82 @@ const AddProduct: React.FC = () => {
     return data.previewUrl;
   };
 
-  const uploadAllImages = async (files: File[]): Promise<string[]> => {
+  const uploadAllImages = async (
+    files: (File | string)[]
+  ): Promise<string[]> => {
     const uploadPromises = files.map((file) => uploadViaApi(file));
     return Promise.all(uploadPromises);
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    if (uploadedImages.length > 0) {
-      try {
-        const imageUrls = await uploadAllImages(uploadedImages);
+    const imageUrls = await uploadAllImages(uploadedImages);
+    const thumbnailImageUrl = thumbnailImage
+      ? await uploadViaApi(thumbnailImage)
+      : null;
 
-        const finalData = {
-          ...data,
-          keyFeatures,
-          uses,
-          certifications: selectedCertifications,
-          imageUrls,
-          brandId: data.brand,
-          categoryId: data.category,
-          manufacturingDate: manufacturingDate
-            ? new Date(manufacturingDate).toISOString() // Convert to UTC
-            : "", // Handle null case
-        };
+    const finalData = {
+      ...data,
+      id: isEditMode ? sessionStorage.getItem("productId") : undefined,
+      keyFeatures,
+      uses,
+      certifications: selectedCertifications,
+      imageUrls: imageUrls,
+      thumbnailUrl: thumbnailImageUrl,
+      brandId: data.brand,
+      categoryId: data.category,
+      manufacturingDate: manufacturingDate
+        ? new Date(manufacturingDate).toISOString()
+        : "",
+    };
 
-        // Update discountedAmount based on discountPercentage
-        finalData.price = finalData.price.map((price) => {
-          if (price.discountPercentage > 0) {
-            price.isDiscounted = true;
-            const discount =
-              (parseFloat(price.amount) * price.discountPercentage) / 100;
-            price.discountedAmount = (
-              parseFloat(price.amount) - discount
-            ).toFixed(2);
-          } else {
-            price.isDiscounted = false;
-            price.discountedAmount = price.amount;
-          }
-          return price;
-        });
-
-        // Here you would typically send the data to your API
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/Product`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(finalData),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to add category");
+    // Update discountedAmount based on discountPercentage
+    if (!isEditMode) {
+      finalData.price = finalData.price.map((price) => {
+        if (price.discountPercentage > 0) {
+          price.isDiscounted = true;
+          const discount =
+            (parseFloat(price.amount) * price.discountPercentage) / 100;
+          price.discountedAmount = (
+            parseFloat(price.amount) - discount
+          ).toFixed(2);
+        } else {
+          price.isDiscounted = false;
+          price.discountedAmount = price.amount;
         }
+        return price;
+      });
+    }
 
-        await response.json();
+    const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/Product`;
 
-        // Show success toast
-        setToastOpen(true);
-      } catch (error) {
-        console.error("Error adding category:", error);
-        alert("An error occurred while adding the category. Please try again.");
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save product");
       }
+
+      await response.json();
+      setToastOpen(true);
+
+      // Clear sessionStorage and redirect after success
+      if (isEditMode) {
+        sessionStorage.removeItem("productId");
+      }
+
+      // Redirect to products page after a short delay
+      setTimeout(() => {
+        router.push("/products");
+      }, 1500);
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("An error occurred while saving the product. Please try again.");
     }
   };
 
@@ -380,7 +466,7 @@ const AddProduct: React.FC = () => {
               Products
             </Link>
             <Typography variant="body1" color="text.primary">
-              Add Product
+              {isEditMode ? "Edit Product" : "Add Product"}
             </Typography>
           </Breadcrumbs>
 
@@ -396,7 +482,7 @@ const AddProduct: React.FC = () => {
               fontWeight={600}
               color="primary.main"
             >
-              Add Product
+              {isEditMode ? "Edit Product" : "Add Product"}
             </Typography>
             <Button
               variant="contained"
@@ -408,1003 +494,86 @@ const AddProduct: React.FC = () => {
                 "&:hover": { backgroundColor: "secondary.main" },
               }}
             >
-              Save Product
+              {isEditMode ? "Update Product" : "Save Product"}
             </Button>
           </Stack>
           <Typography variant="body2" color="text.secondary">
-            Fill in the product information below to add a new spice to your
-            catalog.
+            {isEditMode
+              ? "Edit the product information below to update the spice in your catalog."
+              : "Fill in the product information below to add a new spice to your catalog."}
           </Typography>
         </Box>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={4}>
-            {/* Basic Information */}
+            {/* Left Column */}
             <Grid size={{ xs: 12, md: 8 }}>
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    Basic Information
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="name"
-                        control={control}
-                        rules={{ required: "Product name is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="Product Name"
-                            placeholder="e.g., Premium Turmeric Powder"
-                            error={!!errors.name}
-                            helperText={errors.name?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="category"
-                        control={control}
-                        rules={{ required: "Category is required" }}
-                        render={({ field }) => (
-                          <FormControl
-                            fullWidth
-                            size="small"
-                            error={!!errors.category}
-                          >
-                            <InputLabel>Category</InputLabel>
-                            <Select {...field} label="Category">
-                              {categories.map((cat) => (
-                                <MenuItem key={cat.value} value={cat.value}>
-                                  {cat.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                            {errors.category && (
-                              <Typography variant="caption" color="error">
-                                {errors.category.message}
-                              </Typography>
-                            )}
-                          </FormControl>
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="brand"
-                        rules={{ required: "Brand is required" }}
-                        control={control}
-                        render={({ field }) => (
-                          <FormControl
-                            fullWidth
-                            size="small"
-                            error={!!errors.brand}
-                          >
-                            <InputLabel>Brand</InputLabel>
-                            <Select {...field} label="Brand">
-                              {brands.map((brand) => (
-                                <MenuItem key={brand.value} value={brand.value}>
-                                  {brand.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                            {errors.brand && (
-                              <Typography variant="caption" color="error">
-                                {errors.brand.message}
-                              </Typography>
-                            )}
-                          </FormControl>
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="description"
-                        control={control}
-                        rules={{ required: "Description is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            multiline
-                            rows={4}
-                            label="Product Description"
-                            placeholder="Describe the product, its quality, and benefits..."
-                            error={!!errors.description}
-                            helperText={errors.description?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-
-              {/* Pricing Details */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 3,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      fontFamily={michroma.style.fontFamily}
-                      color="primary.main"
-                    >
-                      Pricing Details
-                    </Typography>
-                    <Button
-                      startIcon={<Add />}
-                      onClick={() =>
-                        appendPrice({
-                          amount: "",
-                          currency: "INR",
-                          isDiscounted: false,
-                          discountPercentage: 0,
-                          discountedAmount: "",
-                          weight: "",
-                        })
-                      }
-                      size="small"
-                      disabled={priceFields.length >= 5} // Disable if 5 price fields already exist
-                    >
-                      Add Price
-                    </Button>
-                  </Box>
-                  {priceFields.map((field, index) => (
-                    <Grid container spacing={2} key={field.id} sx={{ mb: 2 }}>
-                      <Grid size={3}>
-                        <Controller
-                          name={`price.${index}.amount`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Amount"
-                              placeholder="e.g., 100"
-                              fullWidth
-                              size="small"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={2}>
-                        <Controller
-                          name={`price.${index}.currency`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Currency</InputLabel>
-                              <Select {...field} label="Currency">
-                                <MenuItem value="INR">INR</MenuItem>
-                                <MenuItem value="USD">USD</MenuItem>
-                              </Select>
-                            </FormControl>
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={3}>
-                        <Controller
-                          name={`price.${index}.weight`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Weight"
-                              placeholder="e.g., 500g"
-                              fullWidth
-                              size="small"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={3}>
-                        <Controller
-                          name={`price.${index}.discountPercentage`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Discount %"
-                              placeholder="e.g., 10"
-                              fullWidth
-                              size="small"
-                              type="number"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={1}>
-                        <IconButton
-                          onClick={() => removePrice(index)}
-                          sx={{ color: "secondary.main" }}
-                          disabled={priceFields.length === 1} // Disable if only one price field exists
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* SKU Details */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 3,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      fontFamily={michroma.style.fontFamily}
-                      color="primary.main"
-                    >
-                      SKU Details
-                    </Typography>
-                    <Button
-                      startIcon={<Add />}
-                      onClick={() =>
-                        appendSku({ sku: "", weight: "", barcode: "" })
-                      }
-                      size="small"
-                    >
-                      Add SKU
-                    </Button>
-                  </Box>
-                  {skuFields.map((field, index) => (
-                    <Grid container spacing={2} key={field.id} sx={{ mb: 2 }}>
-                      <Grid size={4}>
-                        <Controller
-                          name={`sku.${index}.sku`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="SKU"
-                              placeholder="e.g., SKU12345"
-                              fullWidth
-                              size="small"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={4}>
-                        <Controller
-                          name={`sku.${index}.weight`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Weight"
-                              placeholder="e.g., 1kg"
-                              fullWidth
-                              size="small"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={3}>
-                        <Controller
-                          name={`sku.${index}.barcode`}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Barcode"
-                              placeholder="e.g., 1234567890123"
-                              fullWidth
-                              size="small"
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid size={1}>
-                        <IconButton
-                          onClick={() => removeSku(index)}
-                          sx={{ color: "secondary.main" }}
-                          disabled={skuFields.length === 1} // Disable if only one SKU field exists
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Product Details */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    Product Details
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="origin"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="Origin"
-                            placeholder="e.g., India, Kerala"
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="shelfLife"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="Shelf Life"
-                            placeholder="e.g., 24 months"
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <DatePicker
-                        label="Manufacturing Date"
-                        value={manufacturingDate}
-                        onChange={(newValue: Date | null) =>
-                          setManufacturingDate(newValue)
-                        }
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: "small",
-                          },
-                          day: {
-                            sx: {
-                              "&.Mui-selected": {
-                                backgroundColor: "primary.main", // Set selected date background to primary color
-                                color: "white", // Ensure text is readable
-                                "&:hover": {
-                                  backgroundColor: "primary.dark", // Change hover color for selected date
-                                },
-                              },
-                              "&:hover": {
-                                backgroundColor: "action.hover", // Change hover color for non-selected dates
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 8 }}>
-                      <Controller
-                        name="ingredients"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="Ingredients"
-                            placeholder="List all ingredients..."
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="storageInstructions"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            multiline
-                            rows={2}
-                            label="Storage Instructions"
-                            placeholder="How to store the product properly..."
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="nutritionalInfo"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            multiline
-                            rows={3}
-                            label="Nutritional Information (Optional)"
-                            placeholder="Nutritional values per 100g..."
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-
-              {/* Key Features */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 3,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      fontFamily={michroma.style.fontFamily}
-                      color="primary.main"
-                    >
-                      Key Features
-                    </Typography>
-                    <Button
-                      startIcon={<Add />}
-                      onClick={handleAddKeyFeature}
-                      size="small"
-                    >
-                      Add Feature
-                    </Button>
-                  </Box>
-                  {keyFeatures.map((feature, index) => (
-                    <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-                      <Grid size={10}>
-                        <TextField
-                          fullWidth
-                          placeholder="e.g., 100% Pure and Natural"
-                          size="small"
-                          value={feature}
-                          onChange={(e) =>
-                            handleKeyFeatureChange(index, e.target.value)
-                          }
-                        />
-                      </Grid>
-                      <Grid size={2}>
-                        <IconButton
-                          onClick={() => handleRemoveKeyFeature(index)}
-                          sx={{ color: "secondary.main" }}
-                          disabled={keyFeatures.length === 1}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Uses */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 3,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      fontFamily={michroma.style.fontFamily}
-                      color="primary.main"
-                    >
-                      Product Uses
-                    </Typography>
-                    <Button
-                      startIcon={<Add />}
-                      onClick={handleAddUse}
-                      size="small"
-                    >
-                      Add Use
-                    </Button>
-                  </Box>
-                  {uses.map((use, index) => (
-                    <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-                      <Grid size={10}>
-                        <TextField
-                          fullWidth
-                          placeholder="e.g., Perfect for curries and traditional dishes"
-                          size="small"
-                          value={use}
-                          onChange={(e) =>
-                            handleUseChange(index, e.target.value)
-                          }
-                        />
-                      </Grid>
-                      <Grid size={2}>
-                        <IconButton
-                          onClick={() => handleRemoveUse(index)}
-                          sx={{ color: "secondary.main" }}
-                          disabled={uses.length === 1}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* SEO */}
-              <Card
-                sx={{
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    SEO Information
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="metaTitle"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            label="Meta Title"
-                            placeholder="SEO title for search engines"
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="metaDescription"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            multiline
-                            rows={3}
-                            label="Meta Description"
-                            placeholder="SEO description for search engines"
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
+              <BasicInformation
+                control={control}
+                errors={errors}
+                brands={brands}
+                categories={categories}
+              />
+              <PricingDetails
+                control={control}
+                priceFields={priceFields}
+                appendPrice={appendPrice}
+                removePrice={removePrice}
+              />
+              <SKUDetails
+                control={control}
+                skuFields={skuFields}
+                appendSku={appendSku}
+                removeSku={removeSku}
+              />
+              <ProductDetails
+                control={control}
+                manufacturingDate={manufacturingDate}
+                setManufacturingDate={setManufacturingDate}
+              />
+              <KeyFeatures
+                keyFeatures={keyFeatures}
+                handleAddKeyFeature={handleAddKeyFeature}
+                handleRemoveKeyFeature={handleRemoveKeyFeature}
+                handleKeyFeatureChange={handleKeyFeatureChange}
+              />
+              <Uses
+                uses={uses}
+                handleAddUse={handleAddUse}
+                handleRemoveUse={handleRemoveUse}
+                handleUseChange={handleUseChange}
+              />
+              <SEOInformation control={control} />
             </Grid>
 
-            {/* Sidebar */}
+            {/* Right Column */}
             <Grid size={{ xs: 12, md: 4 }}>
-              {/* Product Images */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    Product Images
-                  </Typography>
-                  {uploadedImages.length > 0 ? (
-                    <Box>
-                      {/* Main Preview Image */}
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: "300px",
-                          borderRadius: "8px",
-                          mb: 3,
-                          position: "relative",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          src={URL.createObjectURL(
-                            uploadedImages[selectedImageIndex]
-                          )}
-                          alt={`Product ${selectedImageIndex + 1}`}
-                          width={400}
-                          height={300}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                            cursor: "pointer",
-                          }}
-                        />
-                        <IconButton
-                          sx={{
-                            position: "absolute",
-                            top: 8,
-                            right: 8,
-                            backgroundColor: "rgba(0, 0, 0, 0.6)",
-                            color: "white",
-                            "&:hover": {
-                              backgroundColor: "secondary.main",
-                              color: "white",
-                            },
-                          }}
-                          size="small"
-                          onClick={() => removeImage(selectedImageIndex)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Box>
-
-                      {/* Upload More Images Area - Full Width Row */}
-                      <Box sx={{ mb: 3 }}>
-                        <input
-                          accept="image/*"
-                          style={{ display: "none" }}
-                          id="image-upload-more"
-                          multiple
-                          type="file"
-                          onChange={handleImageUpload}
-                        />
-                        <label htmlFor="image-upload-more">
-                          <Box
-                            sx={{
-                              width: "100%",
-                              height: "80px",
-                              border: "2px dashed",
-                              borderColor: "primary.main",
-                              borderRadius: "8px",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              backgroundColor: "transparent",
-                              "&:hover": { backgroundColor: "action.hover" },
-                            }}
-                          >
-                            <CloudUpload
-                              sx={{
-                                fontSize: 24,
-                                color: "primary.main",
-                                mb: 0.5,
-                              }}
-                            />
-                            <Typography
-                              variant="body2"
-                              color="primary.main"
-                              textAlign="center"
-                              fontWeight={500}
-                            >
-                              Click to upload or drag and drop
-                            </Typography>
-                          </Box>
-                        </label>
-                      </Box>
-
-                      {/* Thumbnail Images Row */}
-                      <Box
-                        sx={{
-                          display: "grid",
-                          gridTemplateColumns: isMobile
-                            ? "repeat(auto-fit, minmax(80px, 1fr))"
-                            : `repeat(${Math.min(
-                                uploadedImages.length,
-                                6
-                              )}, 1fr)`,
-                          gap: 1.5,
-                          width: "100%",
-                        }}
-                      >
-                        {uploadedImages.map((image, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              position: "relative",
-                              border: "2px solid",
-                              borderColor:
-                                selectedImageIndex === index
-                                  ? "primary.main"
-                                  : "#e0e0e0",
-                              borderRadius: "8px",
-                              overflow: "hidden",
-                              cursor: "pointer",
-                              width: "100%",
-                              aspectRatio: "1 / 1", // Ensures square thumbnails
-                              "&:hover": {
-                                borderColor: "primary.main",
-                              },
-                            }}
-                            onClick={() => setSelectedImageIndex(index)}
-                          >
-                            <Image
-                              src={URL.createObjectURL(image)}
-                              alt={`Thumbnail ${index + 1}`}
-                              width={100}
-                              height={100}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                            />
-                          </Box>
-                        ))}
-                      </Box>
-                    </Box>
-                  ) : (
-                    <Box sx={{ mb: 3 }}>
-                      <input
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        id="image-upload"
-                        multiple
-                        type="file"
-                        onChange={handleImageUpload}
-                      />
-                      <label htmlFor="image-upload">
-                        <Paper
-                          sx={{
-                            p: 4,
-                            textAlign: "center",
-                            border: "2px dashed",
-                            borderColor: "primary.main",
-                            cursor: "pointer",
-                            backgroundColor: "transparent",
-                            height: "300px",
-                            borderRadius: "8px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            "&:hover": { backgroundColor: "action.hover" },
-                          }}
-                          elevation={0}
-                        >
-                          <CloudUpload
-                            sx={{ fontSize: 48, color: "primary.main" }}
-                          />
-                          <Typography
-                            variant="body1"
-                            sx={{ mt: 2, mb: 1 }}
-                            color="primary.main"
-                          >
-                            Click to upload
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            or drag and drop
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ mt: 1 }}
-                          >
-                            PNG, JPG, JPEG up to 10MB
-                          </Typography>
-                        </Paper>
-                      </label>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Product Settings */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    Product Settings
-                  </Typography>
-                  <Stack spacing={2}>
-                    <Controller
-                      name="isPremium"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControlLabel
-                          control={<Switch {...field} />}
-                          label="Premium Product"
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="isFeatured"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControlLabel
-                          control={<Switch {...field} />}
-                          label="Featured Product"
-                        />
-                      )}
-                    />
-                    <Controller
-                      name="isActive"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControlLabel
-                          control={<Switch {...field} />}
-                          label="Active Product"
-                        />
-                      )}
-                    />
-                  </Stack>
-                </CardContent>
-              </Card>
-
-              {/* Certifications */}
-              <Card
-                sx={{
-                  mb: 4,
-                  backgroundColor: "transparent",
-                  boxShadow: "none",
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "8px",
-                }}
-                elevation={0}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    fontFamily={michroma.style.fontFamily}
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
-                    Certifications
-                  </Typography>
-                  <Stack spacing={1}>
-                    {certificationOptions.map((cert) => (
-                      <Box
-                        key={cert}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          p: 1,
-                          border: "1px solid",
-                          borderColor: selectedCertifications.includes(cert)
-                            ? "primary.main"
-                            : "divider",
-                          borderRadius: 1,
-                          cursor: "pointer",
-                          "&:hover": { backgroundColor: "action.hover" },
-                        }}
-                        onClick={() => handleCertificationToggle(cert)}
-                      >
-                        <Typography variant="body2">{cert}</Typography>
-                        {selectedCertifications.includes(cert) && (
-                          <Chip size="small" label="✓" color="primary" />
-                        )}
-                      </Box>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
+              <ThumbnailImage
+                thumbnailImage={thumbnailImage}
+                handleThumbnailUpload={handleThumbnailUpload}
+                removeThumbnailImage={removeThumbnailImage}
+              />
+              <ProductImages
+                uploadedImages={uploadedImages}
+                handleImageUpload={handleImageUpload}
+                setSelectedImageIndex={setSelectedImageIndex}
+                removeImage={removeImage}
+                selectedImageIndex={selectedImageIndex}
+              />
+              <ProductSettings
+                control={control}
+                isActive={isActive}
+                setIsActive={setIsActive}
+                isPremium={isPremium}
+                setIsPremium={setIsPremium}
+                isFeatured={isFeatured}
+                setIsFeatured={setIsFeatured}
+              />
+              <Certifications
+                certificationOptions={certificationOptions}
+                selectedCertifications={selectedCertifications}
+                onToggle={handleCertificationToggle}
+              />
             </Grid>
           </Grid>
         </form>
@@ -1414,15 +583,17 @@ const AddProduct: React.FC = () => {
       <Snackbar
         open={toastOpen}
         autoHideDuration={3000}
-        onClose={handleToastClose}
+        onClose={() => setToastOpen(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          onClose={handleToastClose}
+          onClose={() => setToastOpen(false)}
           severity="success"
           sx={{ width: "100%" }}
         >
-          Product added successfully!
+          {isEditMode
+            ? "Product updated successfully!"
+            : "Product added successfully!"}
         </Alert>
       </Snackbar>
     </LocalizationProvider>

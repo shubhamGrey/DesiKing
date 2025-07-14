@@ -8,16 +8,31 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 
 // Define the type for selectedProduct
 interface Product {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  images: string[];
-  key_features?: string[];
-  uses?: string[];
-  price: string;
-  category: string;
-  quantity?: string;
-  customer_reviews?: string[];
+  brandId: string;
+  categoryId: string;
+  categoryName: string;
+  manufacturingDate: string;
+  createdDate: string;
+  modifiedDate: string | null;
+  isActive: boolean;
+  isDeleted: boolean;
+  metaTitle: string;
+  metaDescription: string;
+  imageUrls: string[];
+  keyFeatures: string[];
+  uses: string[];
+  origin: string;
+  shelfLife: string;
+  storageInstructions: string;
+  certifications: string[];
+  isPremium: boolean;
+  isFeatured: boolean;
+  ingredients: string;
+  nutritionalInfo: string;
+  thumbnailUrl?: string;
 }
 
 // Styled components for consistent theme
@@ -64,7 +79,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
           component={ProductImageContainer}
         >
           <img
-            src={selectedProduct?.images[currentImage]}
+            src={selectedProduct?.imageUrls[currentImage]}
             alt={`Product Image ${currentImage + 1}`}
             style={{
               width: "100%",
@@ -74,7 +89,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
             }}
           />
           <Box display="flex" flexDirection="row" gap={1}>
-            {selectedProduct?.images.map((image, index) => (
+            {selectedProduct?.imageUrls.map((image, index) => (
               <Box
                 key={index}
                 onClick={() => handleImageChange(index)}
@@ -109,7 +124,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
       >
         <Box>
           <Typography variant="body1" sx={{ my: 2 }} color="text.main">
-            [{selectedProduct?.category}]
+            [{selectedProduct?.categoryName}]
           </Typography>
           <Box>
             <Stack
@@ -148,7 +163,8 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="h4" sx={{ color: "primary.main" }}>
-                  {selectedProduct?.price}
+                  {/* {selectedProduct?.price} */}
+                  $10.99
                 </Typography>
                 <Typography
                   variant="body2"
