@@ -454,8 +454,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Name = roleRequest.Name,
                     Description = roleRequest.Description,
                     CreatedDate = DateTime.UtcNow,
-                    IsActive = roleRequest.IsActive,
-                    BrandId = roleRequest.BrandId
+                    IsActive = roleRequest.IsActive
                 };
 
                 _dbContext.Roles.Add(roleDetail);
@@ -466,7 +465,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 roleDetail.Description = roleRequest.Description;
                 roleDetail.ModifiedDate = DateTime.UtcNow;
                 roleDetail.IsActive = roleRequest.IsActive;
-                roleDetail.BrandId = roleRequest.BrandId;
 
                 _dbContext.Roles.Update(roleDetail);
             }
@@ -495,7 +493,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         public async Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId)
         {
             LoginResponseModel loginResponse = new();
-            var user = await Authenticate(model.Email, model.Password);
+            var user = await Authenticate(model.Email, model.UserName, model.Password);
             if (user != null)
             {
                 var token = GenerateJwtToken(user);
@@ -508,21 +506,20 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
         {
             RegistrationResponseModel signupResponse = new();
-            var userExists = await Authenticate(model.Email, model.Password);
+            var userExists = await Authenticate(model.Email, model.UserName, model.Password);
             if (userExists == null)
             {
                 var user = new User
                 {
                     Email = model.Email,
-                    UserName = model.Email,
+                    UserName = model.UserName,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     MobileNumber = model.MobileNumber,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
                     CreatedDate = DateTime.UtcNow,
                     IsActive = true,
-                    RoleId = model.RoleId,
-                    BrandId = model.BrandId
+                    RoleId = model.RoleId
                 };
 
                 _dbContext.Users.Add(user);
@@ -540,9 +537,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return signupResponse;
         }
 
-        private async Task<User> Authenticate(string email, string password)
+        private async Task<User> Authenticate(string email, string username, string password)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => (u.Email == email || u.UserName == username) && u.IsActive);
             if (user == null) return null;
 
             bool verified = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
@@ -556,15 +553,16 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             var claims = new[]
             {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpiresInMinutes"])),
                 signingCredentials: creds
             );
 
