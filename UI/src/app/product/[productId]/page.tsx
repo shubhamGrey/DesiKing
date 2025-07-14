@@ -165,6 +165,7 @@ const ProductDetailsComponent = () => {
         </Typography>
         <ProductShowcase
           productSections={similarProducts.map((product) => ({
+            id: product.id,
             title: product.name,
             description: product.description,
             image: product.imageUrls[0] || "",

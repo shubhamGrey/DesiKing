@@ -13,11 +13,13 @@ import {
 } from "@mui/material";
 import { KeyboardArrowRight, KeyboardArrowLeft } from "@mui/icons-material";
 import theme from "@/styles/theme";
+import { useRouter } from "next/navigation";
 
 export default function ProductShowcase({
   productSections,
 }: {
   productSections: {
+    id: string;
     title: string;
     description: string;
     image: string;
@@ -26,6 +28,7 @@ export default function ProductShowcase({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [selectedIndex, setSelectedIndex] = useState(0);
   const product = productSections[selectedIndex];
+  const router = useRouter();
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () =>
@@ -44,7 +47,7 @@ export default function ProductShowcase({
           <List>
             {productSections.map((item, index) => (
               <ListItemButton
-                key={item.title}
+                key={item.id}
                 selected={index === selectedIndex}
                 onClick={() => setSelectedIndex(index)}
                 sx={{ borderBottom: "1px solid #E0E0E0", height: 80 }}
@@ -139,6 +142,9 @@ export default function ProductShowcase({
                 color: "primary.contrastText",
                 backgroundColor: "primary.main",
                 width: "fit-content",
+              }}
+              onClick={() => {
+                router.push(`/product/${productSections[selectedIndex].id}`); // Adjust the route as needed
               }}
             >
               <Typography variant="body1">Read More</Typography>
