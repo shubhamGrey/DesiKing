@@ -63,7 +63,7 @@ const ProductDetailsComponent = () => {
 
         // Fetch similar products
         const similarResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/products/category/${data.categoryId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/product/category/${data.categoryId}`,
           {
             method: "GET",
             headers: {
@@ -78,7 +78,7 @@ const ProductDetailsComponent = () => {
         }
         const similarData: Product[] = await similarResponse.json();
         setSimilarProducts(
-          similarData.filter((product) => product.id !== data.id)
+          similarData.filter((product) => product.id !== productId)
         );
       } catch (error) {
         console.error("Failed to fetch product data:", error);
@@ -165,7 +165,6 @@ const ProductDetailsComponent = () => {
         </Typography>
         <ProductShowcase
           productSections={similarProducts.map((product) => ({
-            key: product.id,
             title: product.name,
             description: product.description,
             image: product.imageUrls[0] || "",

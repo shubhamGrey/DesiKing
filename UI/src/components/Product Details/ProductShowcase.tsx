@@ -18,7 +18,6 @@ export default function ProductShowcase({
   productSections,
 }: {
   productSections: {
-    key: string;
     title: string;
     description: string;
     image: string;
@@ -45,7 +44,7 @@ export default function ProductShowcase({
           <List>
             {productSections.map((item, index) => (
               <ListItemButton
-                key={item.key}
+                key={item.title}
                 selected={index === selectedIndex}
                 onClick={() => setSelectedIndex(index)}
                 sx={{ borderBottom: "1px solid #E0E0E0", height: 80 }}
@@ -102,8 +101,8 @@ export default function ProductShowcase({
         <Grid size={{ xs: 12, md: 5 }}>
           <Box
             component="img"
-            src={product.image}
-            alt={product.key}
+            src={product?.image}
+            alt={product?.title}
             sx={{
               width: "100%",
               borderRadius: 2,
@@ -125,10 +124,10 @@ export default function ProductShowcase({
           >
             <Box>
               <Typography variant="h5" color="text.primary" gutterBottom>
-                {product.title}
+                {product?.title}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                {product.description}
+                {product?.description}
               </Typography>
             </Box>
             <Button

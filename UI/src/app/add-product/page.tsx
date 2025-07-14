@@ -326,8 +326,14 @@ const AddProduct: React.FC = () => {
     const files = event.target.files ? Array.from(event.target.files) : [];
     setUploadedImages([...uploadedImages, ...files]);
   };
-  const removeImage = (index: number) =>
+  const removeImage = (index: number) => {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index));
+    setSelectedImageIndex(
+      selectedImageIndex >= index
+        ? Math.max(0, selectedImageIndex - 1)
+        : selectedImageIndex
+    );
+  };
 
   const handleCertificationToggle = (certification: string) => {
     setSelectedCertifications((prev) =>

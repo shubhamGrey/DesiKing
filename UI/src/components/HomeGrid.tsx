@@ -35,8 +35,8 @@ const HomeGrid = () => {
       "/Turmeric5.jpg",
     ],
     box2: [
-      "/RedChili1.avif",
-      "/RedChili2.webp",
+      "/RedChili1.jpg",
+      "/RedChili2.jpg",
       "/RedChili3.jpg",
       "/RedChili4.jpg",
       "/RedChili5.jpg",

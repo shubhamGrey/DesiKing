@@ -65,7 +65,6 @@ const ProductImages: React.FC<ProductImagesProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
-                  backgroundColor: "#f5f5f5",
                 }}
               >
                 {uploadedImages.length > 0 && (
