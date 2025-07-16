@@ -75,20 +75,33 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            position: "relative",
+            width: "100%",
+            height: isMobile ? "400px" : "600px",
           }}
           component={ProductImageContainer}
         >
-          <img
-            src={selectedProduct?.imageUrls[currentImage]}
-            alt={`Product Image ${currentImage + 1}`}
-            style={{
-              width: "100%",
-              height: isMobile ? "400px" : "600px",
-              borderRadius: 8,
-              objectFit: "cover",
-            }}
-          />
-          <Box display="flex" flexDirection="row" gap={1}>
+          <Box sx={{ height: "100%", width: "100%", mb: "80px !important" }}>
+            <Image
+              src={selectedProduct?.imageUrls[currentImage] || ""}
+              alt={`Product Image ${currentImage + 1}`}
+              height={isMobile ? 300 : 500}
+              width={isMobile ? 300 : 500}
+              style={{
+                borderRadius: 8,
+                objectFit: "cover",
+                position: "relative",
+                height: "100%",
+                width: "100%",
+              }}
+            />
+          </Box>
+          <Box
+            display="flex"
+            flexDirection="row"
+            gap={1}
+            sx={{ position: "absolute", bottom: 0 }}
+          >
             {selectedProduct?.imageUrls.map((image, index) => (
               <Box
                 key={index}

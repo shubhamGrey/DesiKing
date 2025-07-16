@@ -11,6 +11,7 @@ import { QuantityControl } from "./QuantityControl";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import theme from "@/styles/theme";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface CartItemProps {
   id: number;
@@ -80,12 +81,12 @@ export const CartItem: React.FC<CartItemProps> = ({
           }}
           onClick={() => router.push(`/product/${id}`)}
         >
-          <img
+          <Image
             src={image}
             alt={name}
+            width={60}
+            height={60}
             style={{
-              width: "60px",
-              height: "60px",
               objectFit: "contain",
               objectPosition: "center",
             }}
@@ -156,12 +157,12 @@ export const CartItem: React.FC<CartItemProps> = ({
             overflow: "hidden",
           }}
         >
-          <img
+          <Image
             src={image}
             alt={name}
+            width={60}
+            height={60}
             style={{
-              width: "60px",
-              height: "60px",
               objectFit: "contain",
               objectPosition: "center",
             }}

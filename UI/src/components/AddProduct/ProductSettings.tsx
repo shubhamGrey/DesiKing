@@ -10,9 +10,10 @@ import {
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
 import { michroma } from "@/app/layout";
+import { ProductFormData } from "@/types/product";
 
 interface ProductSettingsProps {
-  control: Control<any>;
+  control: Control<ProductFormData>;
   isActive?: boolean;
   setIsActive?: (value: boolean) => void;
   isPremium?: boolean;
