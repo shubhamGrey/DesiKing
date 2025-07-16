@@ -3,13 +3,14 @@ import { Grid, TextField, Card, CardContent, Typography } from "@mui/material";
 import { Control, Controller } from "react-hook-form";
 import { DatePicker } from "@mui/x-date-pickers";
 import { michroma } from "@/app/layout";
+import { ProductFormData } from "@/types/product";
 
 const ProductDetails = ({
   control,
   manufacturingDate,
   setManufacturingDate,
 }: {
-  control: Control<any>;
+  control: Control<ProductFormData>;
   manufacturingDate: Date | null;
   setManufacturingDate: (date: Date | null) => void;
 }) => (

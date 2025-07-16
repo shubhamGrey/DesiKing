@@ -75,23 +75,39 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            position: "relative",
+            width: "100%",
+            height: isMobile ? "400px" : "600px",
           }}
           component={ProductImageContainer}
         >
-          <img
-            src={selectedProduct?.imageUrls[currentImage]}
-            alt={`Product Image ${currentImage + 1}`}
-            style={{
-              width: "100%",
-              height: isMobile ? "400px" : "600px",
-              borderRadius: 8,
-              objectFit: "cover",
-            }}
-          />
-          <Box display="flex" flexDirection="row" gap={1}>
+          <Box sx={{ height: "100%", width: "100%", mb: "80px !important" }}>
+            <Image
+              src={selectedProduct?.imageUrls[currentImage] || ""}
+              alt={`Product Image ${currentImage + 1}`}
+              height={isMobile ? 300 : 500}
+              width={isMobile ? 300 : 500}
+              unoptimized={selectedProduct?.imageUrls[currentImage]?.includes(
+                "cloud.agronexis.com"
+              )}
+              style={{
+                borderRadius: 8,
+                objectFit: "cover",
+                position: "relative",
+                height: "100%",
+                width: "100%",
+              }}
+            />
+          </Box>
+          <Box
+            display="flex"
+            flexDirection="row"
+            gap={1}
+            sx={{ position: "absolute", bottom: 0 }}
+          >
             {selectedProduct?.imageUrls.map((image, index) => (
               <Box
-                key={index}
+                key={`thumbnail-${image}-${index}`}
                 onClick={() => handleImageChange(index)}
                 sx={{
                   border: "2px solid",
@@ -105,6 +121,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                   alt={`Thumbnail ${index + 1}`}
                   width={60}
                   height={60}
+                  unoptimized={image?.includes("cloud.agronexis.com")}
                   style={{ objectFit: "contain" }}
                 />
               </Box>
@@ -163,7 +180,6 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="h4" sx={{ color: "primary.main" }}>
-                  {/* {selectedProduct?.price} */}
                   $10.99
                 </Typography>
                 <Typography

@@ -9,9 +9,10 @@ import {
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
 import { michroma } from "@/app/layout";
+import { ProductFormData } from "@/types/product";
 
 interface BasicInformationProps {
-  control: Control<any>;
+  control: Control<ProductFormData>;
   errors: Record<string, any>;
   brands: { value: string; label: string }[];
   categories: { value: string; label: string }[];
