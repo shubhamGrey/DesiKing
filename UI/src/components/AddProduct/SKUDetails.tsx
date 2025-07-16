@@ -12,9 +12,10 @@ import {
 import { Add, Delete } from "@mui/icons-material";
 import { Control, Controller } from "react-hook-form";
 import { michroma } from "@/app/layout";
+import { ProductFormData } from "@/types/product";
 
 interface SKUDetailsProps {
-  control: Control<any>; // Replace 'any' with the appropriate type for your control object
+  control: Control<ProductFormData>;
   skuFields: Array<{
     id: string;
     sku: string;

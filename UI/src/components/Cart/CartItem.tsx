@@ -86,6 +86,7 @@ export const CartItem: React.FC<CartItemProps> = ({
             alt={name}
             width={60}
             height={60}
+            unoptimized={image?.includes("cloud.agronexis.com")}
             style={{
               objectFit: "contain",
               objectPosition: "center",
@@ -162,6 +163,7 @@ export const CartItem: React.FC<CartItemProps> = ({
             alt={name}
             width={60}
             height={60}
+            unoptimized={image?.includes("cloud.agronexis.com")}
             style={{
               objectFit: "contain",
               objectPosition: "center",

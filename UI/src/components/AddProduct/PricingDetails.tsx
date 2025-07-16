@@ -16,10 +16,11 @@ import {
 import { Add, Delete } from "@mui/icons-material";
 import { Control, Controller } from "react-hook-form";
 import { michroma } from "@/app/layout";
+import { ProductFormData } from "@/types/product";
 
 interface PricingDetailsProps {
-  control: Control<any>; // Replace 'any' with your form data type if known
-  priceFields: Array<{ id: string }>; // Replace with the correct structure of priceFields
+  control: Control<ProductFormData>;
+  priceFields: Array<{ id: string }>;
   appendPrice: (price: {
     amount: string;
     currency: string;
