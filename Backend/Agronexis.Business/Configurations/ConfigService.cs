@@ -49,9 +49,9 @@ namespace Agronexis.Business.Configurations
             return _repository.GetCategoryById(id, xCorrelationId);
         }
 
-        public string SaveOrUpdateCategory(CategoryRequestModel product, string xCorrelationId)
+        public string SaveOrUpdateCategory(CategoryRequestModel category, string xCorrelationId)
         {
-            return _repository.SaveOrUpdateCategory(product, xCorrelationId);
+            return _repository.SaveOrUpdateCategory(category, xCorrelationId);
         }
 
         public string DeleteCategoryById(string id, string xCorrelationId)
@@ -69,9 +69,9 @@ namespace Agronexis.Business.Configurations
             return _repository.GetBrandById(id, xCorrelationId);
         }
 
-        public string SaveOrUpdateBrand(BrandRequestModel product, string xCorrelationId)
+        public string SaveOrUpdateBrand(BrandRequestModel brand, string xCorrelationId)
         {
-            return _repository.SaveOrUpdateBrand(product, xCorrelationId);
+            return _repository.SaveOrUpdateBrand(brand, xCorrelationId);
         }
 
         public string DeleteBrandById(string id, string xCorrelationId)
@@ -89,9 +89,9 @@ namespace Agronexis.Business.Configurations
             return _repository.GetRoleById(id, xCorrelationId);
         }
 
-        public string SaveOrUpdateRole(RoleRequestModel product, string xCorrelationId)
+        public string SaveOrUpdateRole(RoleRequestModel role, string xCorrelationId)
         {
-            return _repository.SaveOrUpdateRole(product, xCorrelationId);
+            return _repository.SaveOrUpdateRole(role, xCorrelationId);
         }
 
         public string DeleteRoleById(string id, string xCorrelationId)
@@ -106,6 +106,10 @@ namespace Agronexis.Business.Configurations
         public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
         {
             return await _repository.UserRegistration(model, xCorrelationId);
+        }
+        public string CreateOrder(OrderRequestModel order, string xCorrelationId)
+        {
+            return _repository.CreateOrder(order, xCorrelationId);
         }
     }
 }

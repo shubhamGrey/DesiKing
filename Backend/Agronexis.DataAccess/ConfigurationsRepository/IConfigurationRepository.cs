@@ -17,17 +17,18 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         string DeleteProductById(string id, string xCorrelationId);
         List<CategoryResponseModel> GetCategories(string xCorrelationId);
         CategoryResponseModel GetCategoryById(string id, string xCorrelationId);
-        string SaveOrUpdateCategory(CategoryRequestModel product, string xCorrelationId);
+        string SaveOrUpdateCategory(CategoryRequestModel category, string xCorrelationId);
         string DeleteCategoryById(string id, string xCorrelationId);
         List<BrandResponseModel> GetBrands(string xCorrelationId);
         BrandResponseModel GetBrandById(string id, string xCorrelationId);
-        string SaveOrUpdateBrand(BrandRequestModel product, string xCorrelationId);
+        string SaveOrUpdateBrand(BrandRequestModel brand, string xCorrelationId);
         string DeleteBrandById(string id, string xCorrelationId);
         List<RoleResponseModel> GetRoles(string xCorrelationId);
         RoleResponseModel GetRoleById(string id, string xCorrelationId);
-        string SaveOrUpdateRole(RoleRequestModel product, string xCorrelationId);
+        string SaveOrUpdateRole(RoleRequestModel role, string xCorrelationId);
         string DeleteRoleById(string id, string xCorrelationId);
         Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId);
         Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId);
+        string CreateOrder(OrderRequestModel order, string xCorrelationId);
     }
 }

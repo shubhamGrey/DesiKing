@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agronexis.DataAccess", "Agr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agronexis.Model", "Agronexis.Model\Agronexis.Model.csproj", "{897AB3A4-0A7B-4F17-9259-1940731D1EC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agronexis.ExternalApi", "Agronexis.ExternalApi\Agronexis.ExternalApi.csproj", "{CABFAC17-6C24-4E87-895C-4312107A73A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{897AB3A4-0A7B-4F17-9259-1940731D1EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{897AB3A4-0A7B-4F17-9259-1940731D1EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{897AB3A4-0A7B-4F17-9259-1940731D1EC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CABFAC17-6C24-4E87-895C-4312107A73A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CABFAC17-6C24-4E87-895C-4312107A73A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CABFAC17-6C24-4E87-895C-4312107A73A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CABFAC17-6C24-4E87-895C-4312107A73A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -21,5 +21,7 @@ namespace Agronexis.Model.EntityModel
         public Guid BrandId { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
+        [ForeignKey("OrderId")]
+        public Order Order { get; set; } = null!;
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -567,6 +568,43 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
+        {
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                UserId = orderRequest.UserId,
+                //RazorpayOrderId = orderRequest.RazorpayOrderId,
+                //ReceiptId = orderRequest.ReceiptId,
+                TotalAmount = orderRequest.TotalAmount,
+                Currency = orderRequest.Currency,
+                Status = orderRequest.Status,
+                BrandId = orderRequest.BrandId,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            foreach (var item in orderRequest.Items)
+            {
+                var orderItem = new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Price,
+                    BrandId = orderRequest.BrandId,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                };
+
+                order.OrderItems.Add(orderItem);
+            }
+
+            _dbContext.Orders.Add(order);
+            _dbContext.SaveChangesAsync();
+            return order.Id.ToString();
         }
     }
 }
