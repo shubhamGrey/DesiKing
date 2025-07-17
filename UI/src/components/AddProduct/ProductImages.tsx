@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { CloudUpload, Delete } from "@mui/icons-material";
 import Image from "next/image";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 
 interface ProductImagesProps {
   uploadedImages: (File | string)[];

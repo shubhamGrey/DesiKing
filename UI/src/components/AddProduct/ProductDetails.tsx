@@ -2,7 +2,7 @@ import React from "react";
 import { Grid, TextField, Card, CardContent, Typography } from "@mui/material";
 import { Control, Controller } from "react-hook-form";
 import { DatePicker } from "@mui/x-date-pickers";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 const ProductDetails = ({

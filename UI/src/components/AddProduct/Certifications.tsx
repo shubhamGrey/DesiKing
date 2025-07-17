@@ -1,6 +1,6 @@
 import React from "react";
 import { Stack, Typography, Box, Chip, Card, CardContent } from "@mui/material";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 
 interface CertificationsProps {
   certificationOptions: string[];

@@ -9,7 +9,7 @@ import {
   CardContent,
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 interface ProductSettingsProps {

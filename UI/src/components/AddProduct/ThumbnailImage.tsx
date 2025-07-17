@@ -9,13 +9,18 @@ import {
 } from "@mui/material";
 import { CloudUpload, Delete } from "@mui/icons-material";
 import Image from "next/image";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 
 interface ThumbnailImageProps {
   thumbnailImage: File | string | null;
   handleThumbnailUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   removeThumbnailImage: () => void;
 }
+
+// Helper function to check if image needs to be unoptimized
+const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+  return imageSrc.includes("cloud.agronexis.com");
+};
 
 const ThumbnailImage: React.FC<ThumbnailImageProps> = ({
   thumbnailImage,
@@ -68,6 +73,10 @@ const ThumbnailImage: React.FC<ThumbnailImageProps> = ({
                   alt="Thumbnail"
                   width={400}
                   height={300}
+                  unoptimized={
+                    typeof thumbnailImage === "string" &&
+                    shouldUnoptimizeImage(thumbnailImage)
+                  }
                   style={{
                     width: "100%",
                     height: "100%",

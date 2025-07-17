@@ -18,7 +18,12 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import theme from "@/styles/theme";
-import { michroma } from "../layout"; // Import michroma font style
+import { michroma } from "@/styles/fonts";
+
+// Helper function to check if image needs to be unoptimized
+const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+  return imageSrc.includes("cloud.agronexis.com");
+}; // Import michroma font style
 import EmptyCart from "@/components/EmptyCart"; // Import EmptyCart component
 
 interface CartItem {
@@ -360,6 +365,7 @@ const Cart = () => {
                         alt={item.name}
                         width={48}
                         height={48}
+                        unoptimized={shouldUnoptimizeImage(item.image)}
                         style={{ borderRadius: "6px" }}
                       />
                       <Box>

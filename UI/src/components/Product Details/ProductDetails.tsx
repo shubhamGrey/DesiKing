@@ -1,5 +1,5 @@
 import React from "react";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { Box, Button, Grid, Rating, Stack, Typography } from "@mui/material";
 import { styled, useMediaQuery } from "@mui/system";

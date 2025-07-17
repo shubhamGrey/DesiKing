@@ -10,7 +10,7 @@ import {
   CardContent,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 
 interface UsesProps {
   uses: string[];

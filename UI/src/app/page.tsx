@@ -27,7 +27,7 @@ import {
   Add,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
-import { michroma } from "./layout";
+import { michroma } from "@/styles/fonts";
 import Testimonials from "@/components/Testimonials";
 import Chef from "../../public/Chef.jpg";
 import Cook from "../../public/Home Cook.jpg";
@@ -38,6 +38,11 @@ import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
 import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
+
+// Helper function to check if image needs to be unoptimized
+const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+  return imageSrc.includes("cloud.agronexis.com");
+};
 
 // Define the Category type
 type Category = {
@@ -311,6 +316,7 @@ const Home: React.FC = () => {
                       alt={product.title}
                       width={200}
                       height={200}
+                      unoptimized={shouldUnoptimizeImage(product.image)}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -384,6 +390,7 @@ const Home: React.FC = () => {
                             alt={product.title}
                             width={100}
                             height={100}
+                            unoptimized={shouldUnoptimizeImage(product.image)}
                             style={{
                               height: "100%",
                               width: "100%",

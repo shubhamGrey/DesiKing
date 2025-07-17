@@ -8,7 +8,7 @@ import {
   Button,
   Typography,
 } from "@mui/material";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 
 interface ConfirmationModalProps {
   open: boolean;

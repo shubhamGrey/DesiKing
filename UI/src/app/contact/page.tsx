@@ -24,17 +24,11 @@ import {
   Phone,
   YouTube,
 } from "@mui/icons-material";
-import { Michroma } from "next/font/google";
+import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import BrandLogo from "../../../public/AgroNexisWhite.png";
-
-const michroma = Michroma({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-});
 
 interface ContactFormData {
   firstName: string;

@@ -1,5 +1,5 @@
 "use client";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 import AdditionalDetails from "@/components/Product Details/AdditionalDetails";
 import ProductDetails from "@/components/Product Details/ProductDetails";
 import ProductShowcase from "@/components/Product Details/ProductShowcase";

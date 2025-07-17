@@ -30,7 +30,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { michroma } from "../layout";
+import { michroma } from "@/styles/fonts";
+
+// Helper function to check if image needs to be unoptimized
+const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+  return imageSrc.includes("cloud.agronexis.com");
+};
 
 interface CategoryFormData {
   name: string;
@@ -115,11 +120,11 @@ const AddCategory: React.FC = () => {
         .then((data: CategoryFormData) => {
           setValue("name", data.name);
           setValue("description", data.description);
-          setValue("metaTitle", data.metaTitle || "");
-          setValue("metaDescription", data.metaDescription || "");
-          setValue("isActive", data.isActive || false);
-          setValue("brandId", data.brandId || "");
-          setValue("imageUrl", data.imageUrl || ""); // Ensure imageUrl is set
+          setValue("metaTitle", data.metaTitle ?? "");
+          setValue("metaDescription", data.metaDescription ?? "");
+          setValue("isActive", data.isActive ?? false);
+          setValue("brandId", data.brandId ?? "");
+          setValue("imageUrl", data.imageUrl ?? ""); // Ensure imageUrl is set
         })
         .catch((error: unknown) => {
           console.error("Error fetching category:", error);
@@ -486,11 +491,16 @@ const AddCategory: React.FC = () => {
                           src={
                             uploadedImage
                               ? URL.createObjectURL(uploadedImage)
-                              : getValues("imageUrl") || "" // Ensure fallback to an empty string
+                              : getValues("imageUrl") ?? "" // Ensure fallback to an empty string
                           }
                           alt="Category Image"
                           width={400}
                           height={312}
+                          unoptimized={
+                            !uploadedImage && getValues("imageUrl")
+                              ? shouldUnoptimizeImage(getValues("imageUrl")!)
+                              : false
+                          }
                           style={{
                             width: "100%",
                             height: "100%",

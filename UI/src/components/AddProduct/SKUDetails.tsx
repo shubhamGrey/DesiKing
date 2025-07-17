@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
 import { Control, Controller } from "react-hook-form";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 interface SKUDetailsProps {

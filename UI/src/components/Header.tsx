@@ -30,7 +30,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
-import { michroma } from "@/app/layout";
+import { michroma } from "@/styles/fonts";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
