@@ -28,17 +28,20 @@ const Terms: React.FC = () => {
           Introduction
         </Typography>
         <Typography variant="body2" gutterBottom>
-          For the purpose of these Terms and Conditions, the term
-          &quot;we&quot;, &quot;us&quot;, &quot;our&quot; used anywhere on this
-          page shall mean AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED, whose
-          registered/operational office is Plot 29G/1, Mehrauli South West Delhi
-          110030. &quot;you&quot;, &quot;your&quot;, &quot;user&quot;,
-          &quot;visitor&quot; shall mean any natural or legal person who is
-          visiting our website and/or agreed to purchase from us.
+          For the purpose of these Terms and Conditions, the term &quot;
+          <strong>we</strong>&quot;, &quot;<strong>us</strong>&quot;, &quot;
+          <strong>our</strong>&quot; used anywhere on this page shall mean{" "}
+          <strong>AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED</strong>, whose
+          registered/operational office is{" "}
+          <strong>Plot 29G/1, Mehrauli South West Delhi 110030</strong>. &quot;
+          <strong>you</strong>&quot;, &quot;<strong>your</strong>&quot;, &quot;
+          <strong>user</strong>&quot;, &quot;<strong>visitor</strong>&quot;
+          shall mean any natural or legal person who is visiting our website
+          and/or agreed to purchase from us.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
           Your use of the website and/or purchase from us are governed by
-          following Terms and Conditions:
+          following <strong>Terms and Conditions</strong>:
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
@@ -143,35 +146,38 @@ const Terms: React.FC = () => {
           Last updated on Jul 16 2025
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED believes in helping its
-          customers as far as possible, and has therefore a liberal cancellation
-          policy. Under this policy:
+          <strong>AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED</strong> believes in
+          helping its customers as far as possible, and has therefore a{" "}
+          <strong>liberal cancellation policy</strong>. Under this policy:
         </Typography>
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
             <Typography variant="body2" gutterBottom>
               Cancellations will be considered only if the request is made
-              within same day of placing the order. However, the cancellation
-              request may not be entertained if the orders have been
-              communicated to the vendors/merchants and they have initiated the
-              process of shipping them.
+              within <strong>same day of placing the order</strong>. However,
+              the cancellation request may <strong>not be entertained</strong>{" "}
+              if the orders have been communicated to the vendors/merchants and
+              they have initiated the process of shipping them.
             </Typography>
           </li>
           <li>
             <Typography variant="body2" gutterBottom>
-              AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED does not accept
-              cancellation requests for perishable items like flowers, eatables
-              etc. However, refund/replacement can be made if the customer
-              establishes that the quality of product delivered is not good.
+              <strong>AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED</strong> does{" "}
+              <strong>not accept cancellation requests</strong> for{" "}
+              <strong>perishable items</strong> like flowers, eatables etc.
+              However, <strong>refund/replacement can be made</strong> if the
+              customer establishes that the quality of product delivered is not
+              good.
             </Typography>
           </li>
           <li>
             <Typography variant="body2" gutterBottom>
-              In case of receipt of damaged or defective items please report the
-              same to our Customer Service team. The request will, however, be
-              entertained once the merchant has checked and determined the same
-              at his own end. This should be reported within same day of receipt
-              of the products.
+              In case of receipt of <strong>damaged or defective items</strong>{" "}
+              please report the same to our{" "}
+              <strong>Customer Service team</strong>. The request will, however,
+              be entertained once the merchant has checked and determined the
+              same at his own end. This should be reported within{" "}
+              <strong>same day of receipt of the products</strong>.
             </Typography>
           </li>
           <li>
@@ -476,7 +482,7 @@ const Terms: React.FC = () => {
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
             <Typography variant="body2" gutterBottom>
-              <strong>By email:</strong> care@agronexis.com
+              <strong>By email:</strong> <strong>care@agronexis.com</strong>
             </Typography>
           </li>
         </ul>

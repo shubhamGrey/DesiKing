@@ -21,12 +21,13 @@ const Shipping: React.FC = () => {
 
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography variant="body2" gutterBottom>
-          Agro Nexis India Overseas Private Limited (&quot;we&quot; and
-          &quot;us&quot;) is the operator of (https://www.agronexis.com)
-          (&quot;Website&quot;). By placing an order through this Website, you
-          will be agreeing to the terms below. These are provided to ensure both
-          parties are aware of and agree upon this arrangement to mutually
-          protect and set expectations on our service.
+          <strong>Agro Nexis India Overseas Private Limited</strong>{" "}
+          (&quot;we&quot; and &quot;us&quot;) is the operator of (
+          <strong>https://www.agronexis.com</strong>) (&quot;Website&quot;). By
+          placing an order through this Website, you will be{" "}
+          <strong>agreeing to the terms below</strong>. These are provided to
+          ensure both parties are aware of and agree upon this arrangement to
+          mutually protect and set expectations on our service.
         </Typography>
       </Box>
 
@@ -40,13 +41,13 @@ const Shipping: React.FC = () => {
           1. General
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Subject to stock availability. We try to maintain accurate stock
-          counts on our website but from time to time there may be a stock
-          discrepancy and we will not be able to fulfil all your items at the
-          time of purchase. In this instance, we will fulfil the available
-          products to you, and contact you about whether you would prefer to
-          await restocking of the back-ordered item or if you would prefer for
-          us to process a refund.
+          <strong>Subject to stock availability</strong>. We try to maintain
+          accurate stock counts on our website but from time to time there may
+          be a <strong>stock discrepancy</strong> and we will not be able to
+          fulfil all your items at the time of purchase. In this instance, we
+          will fulfil the available products to you, and contact you about
+          whether you would prefer to await restocking of the back-ordered item
+          or if you would prefer for us to process a <strong>refund</strong>.
         </Typography>
       </Box>
 
@@ -60,10 +61,11 @@ const Shipping: React.FC = () => {
           2. Shipping Costs
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Shipping costs are calculated during checkout based on weight,
-          dimensions, and destination of the items in the order. Payment for
-          shipping will be collected with the purchase. This price will be the
-          final price for shipping cost to the customer.
+          <strong>Shipping costs are calculated during checkout</strong> based
+          on weight, dimensions, and destination of the items in the order.
+          Payment for shipping will be collected with the purchase. This price
+          will be the <strong>final price for shipping cost</strong> to the
+          customer.
         </Typography>
       </Box>
 
@@ -86,16 +88,26 @@ const Shipping: React.FC = () => {
           3.1 Return Due To Change of Mind
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Agro Nexis India Overseas Private Limited will happily accept returns
-          due to a change of mind as long as a request to return is received by
-          us within 2 days of receipt of item and are returned to us in original
-          packaging, unused, and in resalable condition. Return shipping will be
-          paid at the customer&apos;s expense and will be required to arrange
-          their own shipping. Once returns are received and accepted, refunds
-          will be processed to store credit for a future purchase. We will
-          notify you once this has been completed through email. (Agro Nexis)
-          will refund the value of the goods returned but will NOT refund the
-          value of any shipping paid.
+          <strong>Agro Nexis India Overseas Private Limited</strong> will
+          happily accept returns due to a <strong>change of mind</strong> as
+          long as a request to return is received by us within{" "}
+          <strong>2 days of receipt of item</strong> and are returned to us in{" "}
+          <strong>
+            original packaging, unused, and in resalable condition
+          </strong>
+          .{" "}
+          <strong>
+            Return shipping will be paid at the customer&apos;s expense
+          </strong>{" "}
+          and will be required to arrange their own shipping. Once returns are
+          received and accepted, refunds will be processed to{" "}
+          <strong>store credit for a future purchase</strong>. We will notify
+          you once this has been completed through email.{" "}
+          <strong>
+            (Agro Nexis) will refund the value of the goods returned but will
+            NOT refund the value of any shipping paid
+          </strong>
+          .
         </Typography>
 
         <Typography
@@ -108,13 +120,14 @@ const Shipping: React.FC = () => {
           3.2 Warranty Returns
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Agro Nexis will happily honour any valid warranty claims, provided a
-          claim is submitted within 90 days of receipt of items. Customers will
-          be required to pre-pay the return shipping, however, we will reimburse
-          you upon successful warranty claim. Upon return receipt of items for a
-          warranty claim, you can expect Agro Nexis to process your warranty
-          claim within 7 days. Once the warranty claim is confirmed, you will
-          receive the choice of:
+          <strong>Agro Nexis</strong> will happily honour any{" "}
+          <strong>valid warranty claims</strong>, provided a claim is submitted
+          within <strong>90 days of receipt of items</strong>. Customers will be
+          required to <strong>pre-pay the return shipping</strong>, however, we
+          will reimburse you upon successful warranty claim. Upon return receipt
+          of items for a warranty claim, you can expect Agro Nexis to process
+          your warranty claim within <strong>7 days</strong>. Once the warranty
+          claim is confirmed, you will receive the choice of:
         </Typography>
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
@@ -409,7 +422,7 @@ const Shipping: React.FC = () => {
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
             <Typography variant="body2" gutterBottom>
-              <strong>Email:</strong> care@agronexis.com
+              <strong>Email:</strong> <strong>care@agronexis.com</strong>
             </Typography>
           </li>
         </ul>

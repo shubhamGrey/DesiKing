@@ -28,11 +28,12 @@ const TermsOfServices: React.FC = () => {
           Privacy Commitment
         </Typography>
         <Typography variant="body2" gutterBottom>
-          We are committed to safeguarding the privacy of our website visitors;
-          this policy sets out how we will treat your personal information. Our
-          website uses cookies. By using our website and agreeing to this
-          policy, you consent to our use of cookies in accordance with the terms
-          of this policy.
+          We are committed to <strong>safeguarding the privacy</strong> of our
+          website visitors; this policy sets out how we will treat your{" "}
+          <strong>personal information</strong>. Our website uses{" "}
+          <strong>cookies</strong>. By using our website and agreeing to this
+          policy, you <strong>consent to our use of cookies</strong> in
+          accordance with the terms of this policy.
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
@@ -45,23 +46,28 @@ const TermsOfServices: React.FC = () => {
           1. What Information Do We Collect?
         </Typography>
         <Typography variant="body2" gutterBottom>
-          We may collect, store and use the following kinds of personal
-          information:
+          We may collect, store and use the following kinds of{" "}
+          <strong>personal information</strong>:
         </Typography>
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
             <Typography variant="body2" gutterBottom>
               Information about your computer and about your visits to and use
-              of this website (including your IP address, geographical location,
-              browser type, and version, operating system, referral source,
-              length of visit, page views, website navigation)
+              of this website (including your{" "}
+              <strong>
+                IP address, geographical location, browser type, and version,
+                operating system, referral source, length of visit, page views,
+                website navigation
+              </strong>
+              )
             </Typography>
           </li>
           <li>
             <Typography variant="body2" gutterBottom>
-              Information relating to any transactions carried out between you
-              and us on or in relation to this website, including information
-              relating to any purchases you make of our goods or services
+              Information relating to any{" "}
+              <strong>transactions carried out</strong> between you and us on or
+              in relation to this website, including information relating to any{" "}
+              <strong>purchases you make</strong> of our goods or services
             </Typography>
           </li>
           <li>
@@ -93,26 +99,31 @@ const TermsOfServices: React.FC = () => {
           2. Cookies
         </Typography>
         <Typography variant="body2" gutterBottom>
-          A cookie consists of information sent by a web server to a web browser
-          and stored by the browser. The information is then sent back to the
-          server each time the browser requests a page from the server. This
-          enables the webserver to identify and track the web browser.
+          A <strong>cookie</strong> consists of information sent by a web server
+          to a web browser and stored by the browser. The information is then
+          sent back to the server each time the browser requests a page from the
+          server. This enables the webserver to{" "}
+          <strong>identify and track the web browser</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          We may use both &quot;session&quot; cookies and &quot;persistent&quot;
-          cookies on the website. We will use the session cookies to keep track
-          of you whilst you navigate the website. We will use the persistent
-          cookies to enable our website to recognize you when you visit.
+          We may use both <strong>&quot;session&quot; cookies</strong> and{" "}
+          <strong>&quot;persistent&quot; cookies</strong> on the website. We
+          will use the session cookies to{" "}
+          <strong>keep track of you whilst you navigate</strong> the website. We
+          will use the persistent cookies to enable our website to{" "}
+          <strong>recognize you when you visit</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          Session cookies will be deleted from your computer when you close your
-          browser. Persistent cookies will remain stored on your computer until
-          deleted, or until they reach a specified expiry date.
+          <strong>Session cookies will be deleted</strong> from your computer
+          when you close your browser.{" "}
+          <strong>Persistent cookies will remain stored</strong> on your
+          computer until deleted, or until they reach a specified expiry date.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          We use Google Analytics to analyse the use of this website. Google
-          Analytics generates statistical and other information about website
-          use by means of cookies, which are stored on users&apos; computers.
+          We use <strong>Google Analytics</strong> to analyse the use of this
+          website. Google Analytics generates statistical and other information
+          about website use by means of <strong>cookies</strong>, which are
+          stored on users&apos; computers.
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>

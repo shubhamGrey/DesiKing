@@ -29,22 +29,26 @@ const Refund: React.FC = () => {
           Return Policy Overview
         </Typography>
         <Typography variant="body2" gutterBottom>
-          We have a 2-day return policy, which means you have 2 days after
-          receiving your item to request a return as part of Change of Mind
-          facility (Refer Shipping Policy). To be eligible for a return, your
-          item must be in the same condition that you received it, unworn or
-          unused, with tags, and in its original packaging. You&apos;ll also
-          need the receipt or proof of purchase.
+          We have a <strong>2-day return policy</strong>, which means you have{" "}
+          <strong>2 days after receiving your item</strong> to request a return
+          as part of <strong>Change of Mind facility</strong> (Refer Shipping
+          Policy). To be eligible for a return, your item must be in the{" "}
+          <strong>same condition that you received it</strong>, unworn or
+          unused, with tags, and in its <strong>original packaging</strong>.
+          You&apos;ll also need the{" "}
+          <strong>receipt or proof of purchase</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          To start a return, you can contact us at care@agronexis.com. If your
-          return is accepted, we&apos;ll send you a return shipping label, as
-          well as instructions on how and where to send your package. Items sent
-          back to us without first requesting a return will not be accepted.
+          To start a return, you can contact us at{" "}
+          <strong>care@agronexis.com</strong>. If your return is accepted,
+          we&apos;ll send you a <strong>return shipping label</strong>, as well
+          as instructions on how and where to send your package. Items sent back
+          to us without first requesting a return will{" "}
+          <strong>not be accepted</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          You can always contact us for any return question at
-          care@agronexis.com.
+          You can always contact us for any return question at{" "}
+          <strong>care@agronexis.com</strong>.
         </Typography>
       </Box>
 
@@ -58,9 +62,10 @@ const Refund: React.FC = () => {
           Damages and Issues
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Please inspect your order upon reception and contact us immediately if
-          the item is defective, damaged or if you receive the wrong item, so
-          that we can evaluate the issue and make it right.
+          Please <strong>inspect your order upon reception</strong> and contact
+          us immediately if the item is <strong>defective, damaged</strong> or
+          if you <strong>receive the wrong item</strong>, so that we can
+          evaluate the issue and make it right.
         </Typography>
       </Box>
 
@@ -74,7 +79,7 @@ const Refund: React.FC = () => {
           Exceptions / Non-returnable Items
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Certain types of items cannot be returned, including:
+          Certain types of items <strong>cannot be returned</strong>, including:
         </Typography>
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
@@ -135,13 +140,21 @@ const Refund: React.FC = () => {
           Refunds
         </Typography>
         <Typography variant="body2" gutterBottom>
-          We will notify you once we&apos;ve received and inspected your return,
-          and let you know if the refund was approved or not. If approved,
-          you&apos;ll be automatically refunded on your original payment method.
+          We will notify you once we&apos;ve{" "}
+          <strong>received and inspected your return</strong>, and let you know
+          if the <strong>refund was approved or not</strong>. If approved,
+          you&apos;ll be{" "}
+          <strong>
+            automatically refunded on your original payment method
+          </strong>
+          .
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          Please remember it can take some time for your bank or credit card
-          company to process and post the refund too.
+          Please remember it can take some time for your{" "}
+          <strong>
+            bank or credit card company to process and post the refund
+          </strong>{" "}
+          too.
         </Typography>
       </Box>
 
@@ -160,7 +173,7 @@ const Refund: React.FC = () => {
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
             <Typography variant="body2" gutterBottom>
-              <strong>By email:</strong> care@agronexis.com
+              <strong>By email:</strong> <strong>care@agronexis.com</strong>
             </Typography>
           </li>
         </ul>

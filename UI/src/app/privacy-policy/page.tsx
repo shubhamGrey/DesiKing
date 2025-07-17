@@ -28,21 +28,24 @@ const Policy: React.FC = () => {
           Introduction
         </Typography>
         <Typography variant="body2" gutterBottom>
-          These terms and conditions govern your use of this website called
-          www.agronexis.com. By using this website, you accept these terms and
-          conditions in full. If you disagree with these terms and conditions or
-          any part of these terms and conditions, you must not use this website.
+          These terms and conditions govern your use of this website called{" "}
+          <strong>www.agronexis.com</strong>. By using this website, you{" "}
+          <strong>accept these terms and conditions in full</strong>. If you
+          disagree with these terms and conditions or any part of these terms
+          and conditions, you <strong>must not use this website</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          You must be at least 18 years of age to use this website. By using
-          this website and by agreeing to these terms and conditions you warrant
-          and represent that you are at least 18 years of age.
+          You must be at least <strong>18 years of age</strong> to use this
+          website. By using this website and by agreeing to these terms and
+          conditions you warrant and represent that you are at least{" "}
+          <strong>18 years of age</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          This website uses cookies. By using this website and agreeing to these
-          terms and conditions, you consent to our Agro Nexis India Overseas
-          Private Limited use of cookies in accordance with the terms of Agro
-          Nexis India Overseas Private Limited privacy policy/cookies policy.
+          This website uses <strong>cookies</strong>. By using this website and
+          agreeing to these terms and conditions, you consent to our{" "}
+          <strong>Agro Nexis India Overseas Private Limited</strong> use of
+          cookies in accordance with the terms of Agro Nexis India Overseas
+          Private Limited privacy policy/cookies policy.
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
@@ -55,15 +58,17 @@ const Policy: React.FC = () => {
           License To Use Website
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Unless otherwise stated, Agro Nexis India Overseas Private Limited
-          and/or its licensors own the intellectual property rights in the
+          Unless otherwise stated,{" "}
+          <strong>Agro Nexis India Overseas Private Limited</strong> and/or its
+          licensors own the <strong>intellectual property rights</strong> in the
           website and material on the website. Subject to the license below, all
-          these intellectual property rights are reserved.
+          these intellectual property rights are <strong>reserved</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
           You may view, download for caching purposes only, and print pages from
-          the website for your own personal use, subject to the restrictions set
-          out below and elsewhere in these terms and conditions.
+          the website for your own <strong>personal use</strong>, subject to the
+          restrictions set out below and elsewhere in these terms and
+          conditions.
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
@@ -121,33 +126,40 @@ const Policy: React.FC = () => {
           Acceptable Use
         </Typography>
         <Typography variant="body2" gutterBottom>
-          You must not use this website in any way that causes, or may cause,
-          damage to the website or impairment of the availability or
-          accessibility of the website; or in any way which is unlawful,
-          illegal, fraudulent or harmful, or in connection with any unlawful,
-          illegal, fraudulent or harmful purpose or activity.
+          You <strong>must not</strong> use this website in any way that causes,
+          or may cause, <strong>damage to the website</strong> or impairment of
+          the availability or accessibility of the website; or in any way which
+          is <strong>unlawful, illegal, fraudulent or harmful</strong>, or in
+          connection with any unlawful, illegal, fraudulent or harmful purpose
+          or activity.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          You must not use this website to copy, store, host, transmit, send,
-          use, publish or distribute any material which consists of (or is
-          linked to) any spyware, computer virus, Trojan horse, worm, keystroke
-          logger, rootkit, or other malicious computer software.
+          You <strong>must not</strong> use this website to copy, store, host,
+          transmit, send, use, publish or distribute any material which consists
+          of (or is linked to) any{" "}
+          <strong>
+            spyware, computer virus, Trojan horse, worm, keystroke logger,
+            rootkit, or other malicious computer software
+          </strong>
+          .
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          You must not conduct any systematic or automated data collection
-          activities (including without limitation scraping, data mining, data
-          extraction, and data harvesting) on or in relation to this website
-          without Agro Nexis India Overseas Private Limited express written
-          consent.
+          You <strong>must not</strong> conduct any{" "}
+          <strong>systematic or automated data collection activities</strong>{" "}
+          (including without limitation scraping, data mining, data extraction,
+          and data harvesting) on or in relation to this website without{" "}
+          <strong>Agro Nexis India Overseas Private Limited</strong> express
+          written consent.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          You must not use this website to transmit or send unsolicited
-          commercial communications.
+          You <strong>must not</strong> use this website to transmit or send{" "}
+          <strong>unsolicited commercial communications</strong>.
         </Typography>
         <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-          You must not use this website for any purposes related to marketing
-          without Agro Nexis India Overseas Private Limited express written
-          consent.
+          You <strong>must not</strong> use this website for any purposes
+          related to <strong>marketing</strong> without{" "}
+          <strong>Agro Nexis India Overseas Private Limited</strong> express
+          written consent.
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
@@ -530,7 +542,7 @@ const Policy: React.FC = () => {
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
           <li>
             <Typography variant="body2" gutterBottom>
-              <strong>By email:</strong> care@agronexis.com
+              <strong>By email:</strong> <strong>care@agronexis.com</strong>
             </Typography>
           </li>
         </ul>
