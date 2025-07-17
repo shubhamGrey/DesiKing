@@ -493,15 +493,13 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public async Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId)
         {
-            LoginResponseModel loginResponse = new();
             var user = await Authenticate(model.Email, model.UserName, model.Password);
             if (user != null)
             {
-                var token = GenerateJwtToken(user);
-                loginResponse.AccessToken = token;
+                return GenerateJwtToken(user);
             }
 
-            return loginResponse;
+            return new LoginResponseModel();
         }
 
         public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
@@ -547,7 +545,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return verified ? user : null;
         }
 
-        private string GenerateJwtToken(User user)
+        private LoginResponseModel GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -559,15 +557,28 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
             };
 
-            var token = new JwtSecurityToken(
+            var accessToken = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpiresInMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:AccessTokenExpiresInMinutes"])),
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var refreshToken = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:RefreshTokenExpiresInMinutes"])),
+                signingCredentials: creds
+            );
+            LoginResponseModel loginResponse = new()
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
+                RefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken)
+            };
+
+            return loginResponse;
         }
 
         public string CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
