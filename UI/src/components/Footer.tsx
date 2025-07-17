@@ -15,6 +15,9 @@ import {
   ContactPageRounded,
   ArticleRounded,
   PrivacyTipRounded,
+  PolicyRounded,
+  LocalShippingRounded,
+  MonetizationOnRounded,
 } from "@mui/icons-material";
 import BrandLogo from "../../public/AgroNexisWhite.png";
 import Image from "next/image";
@@ -42,14 +45,29 @@ export default function Footer() {
       icon: <ContactPageRounded fontSize="small" />,
     },
     {
-      label: "Terms Condition",
-      href: "/terms",
+      label: "Privacy Policy",
+      href: "/privacy-policy",
+      icon: <PrivacyTipRounded fontSize="small" />,
+    },
+    {
+      label: "Terms & Conditions",
+      href: "/terms-and-conditions",
       icon: <ArticleRounded fontSize="small" />,
     },
     {
-      label: "Privacy Policy",
-      href: "/policy",
-      icon: <PrivacyTipRounded fontSize="small" />,
+      label: "Terms of Services",
+      href: "/terms-of-services",
+      icon: <PolicyRounded fontSize="small" />,
+    },
+    {
+      label: "Refund Policy",
+      href: "/refund-policy",
+      icon: <MonetizationOnRounded fontSize="small" />,
+    },
+    {
+      label: "Shipping Policy",
+      href: "/shipping-policy",
+      icon: <LocalShippingRounded fontSize="small" />,
     },
   ]);
 
@@ -126,8 +144,11 @@ export default function Footer() {
             CIN No. - U47211DL2025PTC445306
           </Typography>
           <Box>
-            {socialMedia.map((media, i) => (
-              <IconButton key={i} sx={{ color: "primary.contrastText" }}>
+            {socialMedia.map((media) => (
+              <IconButton
+                key={media.href}
+                sx={{ color: "primary.contrastText" }}
+              >
                 <a
                   href={media.href}
                   target="_blank"
@@ -224,6 +245,7 @@ export default function Footer() {
               height="100%"
               style={{ border: 0 }}
               loading="lazy"
+              title="AgroNexis Office Location - Mehrauli, New Delhi"
             ></iframe>
           </Box>
         </Grid>
