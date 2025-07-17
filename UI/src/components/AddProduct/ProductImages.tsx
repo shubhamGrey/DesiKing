@@ -20,6 +20,11 @@ interface ProductImagesProps {
   removeImage: (index: number) => void;
 }
 
+// Helper function to check if image needs to be unoptimized
+const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+  return imageSrc.includes("cloud.agronexis.com");
+};
+
 const ProductImages: React.FC<ProductImagesProps> = ({
   uploadedImages,
   selectedImageIndex,
@@ -71,14 +76,18 @@ const ProductImages: React.FC<ProductImagesProps> = ({
                   <Image
                     src={
                       typeof uploadedImages[selectedImageIndex] === "string"
-                        ? (uploadedImages[selectedImageIndex] as string)
+                        ? uploadedImages[selectedImageIndex]
                         : URL.createObjectURL(
-                            uploadedImages[selectedImageIndex] as File
+                            uploadedImages[selectedImageIndex]
                           )
                     }
                     alt={`Product ${selectedImageIndex + 1}`}
                     width={400}
                     height={300}
+                    unoptimized={
+                      typeof uploadedImages[selectedImageIndex] === "string" &&
+                      shouldUnoptimizeImage(uploadedImages[selectedImageIndex])
+                    }
                     style={{
                       width: "100%",
                       height: "100%",
@@ -167,7 +176,9 @@ const ProductImages: React.FC<ProductImagesProps> = ({
               >
                 {uploadedImages.map((image, index) => (
                   <Box
-                    key={index}
+                    key={`thumbnail-${index}-${
+                      typeof image === "string" ? image : image.name
+                    }`}
                     sx={{
                       position: "relative",
                       border: "2px solid",
@@ -195,6 +206,10 @@ const ProductImages: React.FC<ProductImagesProps> = ({
                       alt={`Thumbnail ${index + 1}`}
                       width={100}
                       height={100}
+                      unoptimized={
+                        typeof image === "string" &&
+                        shouldUnoptimizeImage(image)
+                      }
                       style={{
                         width: "100%",
                         height: "100%",
