@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -15,7 +15,7 @@ import { CheckCircle, ErrorOutline, Home, Receipt } from "@mui/icons-material";
 import { michroma } from "@/styles/fonts";
 import { verifyPayment } from "@/utils/razorpayUtils";
 
-const PaymentResult: React.FC = () => {
+const PaymentResultContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isVerifying, setIsVerifying] = useState(true);
@@ -208,6 +208,31 @@ const PaymentResult: React.FC = () => {
         </Box>
       </Paper>
     </Container>
+  );
+};
+
+const PaymentResult: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            minHeight="60vh"
+          >
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Loading payment result...
+            </Typography>
+          </Box>
+        </Container>
+      }
+    >
+      <PaymentResultContent />
+    </Suspense>
   );
 };
 

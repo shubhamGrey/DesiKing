@@ -7,6 +7,7 @@ import {
   Link,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import Image from "next/image";
 import BrandLogo from "../../../public/AgroNexisGreen.png";
@@ -15,7 +16,7 @@ import LoginImg from "../../../public/Login.png";
 import LoginForm from "@/components/LoginForm";
 import SignUpForm from "@/components/SignUpForm";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
 import { UserSessionManager, type UserProfile } from "@/utils/userSession";
@@ -36,6 +37,25 @@ interface SignUpCredentials {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="100vh"
+        >
+          <CircularProgress size={60} />
+        </Box>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const theme = useTheme();

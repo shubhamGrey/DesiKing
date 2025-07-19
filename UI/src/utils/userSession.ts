@@ -33,6 +33,14 @@ export class UserSessionManager {
    */
   static setUserProfile(userProfile: UserProfile): void {
     try {
+      // Check if we're in a browser environment
+      if (
+        typeof window === "undefined" ||
+        typeof sessionStorage === "undefined"
+      ) {
+        return;
+      }
+
       sessionStorage.setItem(
         this.USER_PROFILE_KEY,
         JSON.stringify(userProfile)
@@ -48,6 +56,14 @@ export class UserSessionManager {
    */
   static getUserProfile(): UserProfile | null {
     try {
+      // Check if we're in a browser environment
+      if (
+        typeof window === "undefined" ||
+        typeof sessionStorage === "undefined"
+      ) {
+        return null;
+      }
+
       const profileData = sessionStorage.getItem(this.USER_PROFILE_KEY);
       if (profileData) {
         return JSON.parse(profileData) as UserProfile;
@@ -64,6 +80,14 @@ export class UserSessionManager {
    */
   static clearUserProfile(): void {
     try {
+      // Check if we're in a browser environment
+      if (
+        typeof window === "undefined" ||
+        typeof sessionStorage === "undefined"
+      ) {
+        return;
+      }
+
       sessionStorage.removeItem(this.USER_PROFILE_KEY);
       console.log("User profile cleared from session");
     } catch (error) {
