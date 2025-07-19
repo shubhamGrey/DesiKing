@@ -8,7 +8,7 @@ namespace Agronexis.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseController
     {
         private readonly IConfigService _configService;
         private readonly ILogger<ProductController> _logger;
