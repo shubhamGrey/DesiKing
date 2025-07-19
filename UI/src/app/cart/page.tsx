@@ -408,7 +408,12 @@ const Cart = () => {
                   variant="contained"
                   color="primary"
                   fullWidth
-                  sx={{ mt: 2, py: 1.5, fontWeight: 600 }}
+                  sx={{
+                    mt: 2,
+                    py: 1.5,
+                    fontWeight: 600,
+                    "&:hover": { backgroundColor: "secondary.main" },
+                  }}
                 >
                   Confirm Order
                 </Button>
