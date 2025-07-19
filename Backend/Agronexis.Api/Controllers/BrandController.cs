@@ -34,9 +34,34 @@ namespace Agronexis.Api.Controllers
         [HttpGet("{id}")]
         public ActionResult<BrandResponseModel> GetBrandById(string id)
         {
-            SetXCorrelationId();
-            var item = _configService.GetBrandById(id, XCorrelationID);
-            return item;
+            try
+            {
+                _logger.LogInformation("GetBrandById endpoint called with ID: {BrandId}", id);
+
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    _logger.LogWarning("GetBrandById called with null or empty ID");
+                    return CreateBadRequestResponse("Brand ID is required", GetCorrelationId());
+                }
+
+                var correlationId = GetCorrelationId();
+                var item = _configService.GetBrandById(id, correlationId);
+
+                if (item == null)
+                {
+                    _logger.LogWarning("Brand not found with ID: {BrandId}, correlation ID: {CorrelationId}", id, correlationId);
+                    return CreateNotFoundResponse("Brand not found", correlationId);
+                }
+
+                _logger.LogInformation("Successfully retrieved brand with ID: {BrandId}, correlation ID: {CorrelationId}", id, correlationId);
+                return Ok(item);
+            }
+            catch (Exception ex)
+            {
+                var correlationId = GetCorrelationId();
+                _logger.LogError(ex, "Error occurred while retrieving brand with ID: {BrandId}, correlation ID: {CorrelationId}", id, correlationId);
+                return HandleException(ex, "Failed to retrieve brand", correlationId);
+            }
         }
 
         // POST api/Brand
@@ -87,18 +112,6 @@ namespace Agronexis.Api.Controllers
                 response.Data = item;
             }
             return response;
-        }
-
-        private void SetXCorrelationId()
-        {
-            if (Request != null)
-            {
-                XCorrelationID = (!string.IsNullOrEmpty(Convert.ToString(Request.Headers["X-Correlation-ID"]))) ? Convert.ToString(Request.Headers["X-Correlation-ID"]) : Convert.ToString(Guid.NewGuid());
-            }
-            else
-            {
-                XCorrelationID = Convert.ToString(Guid.NewGuid());
-            }
         }
     }
 }

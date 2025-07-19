@@ -148,25 +148,5 @@ namespace Agronexis.Api.Controllers
             _logger.LogInformation("DeleteProduct successful for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
             return Ok(CreateSuccessResponse(item));
         }
-
-        private string GetCorrelationId()
-        {
-            return Request.Headers.TryGetValue("X-Correlation-ID", out var correlationId)
-                ? correlationId.ToString()
-                : Guid.NewGuid().ToString();
-        }
-
-        private ApiResponseModel CreateSuccessResponse(object data = null)
-        {
-            return new ApiResponseModel
-            {
-                Info = new ApiResponseInfoModel
-                {
-                    Code = ((int)ServerStatusCodes.Ok).ToString(),
-                    Message = ApiResponseMessage.SUCCESS
-                },
-                Data = data
-            };
-        }
     }
 }
