@@ -1,10 +1,7 @@
 ﻿using Agronexis.Business.Configurations;
-using Agronexis.Model;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using static Agronexis.Common.Constants;
 
 namespace Agronexis.Api.Controllers
@@ -14,50 +11,83 @@ namespace Agronexis.Api.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IConfigService _configService;
-        string XCorrelationID = string.Empty;
-        // private readonly IMemoryCache memoryCache;
+        private readonly ILogger<ProductController> _logger;
 
-        public ProductController(IConfigService configService)
+        public ProductController(IConfigService configService, ILogger<ProductController> logger)
         {
-            _configService = configService;
-            // this.memoryCache = memoryCache;
+            _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // GET api/product
         [HttpGet]
         public ActionResult<IEnumerable<ProductResponseModel>> GetProducts()
         {
-            SetXCorrelationId();
-            var itemList = _configService.GetProducts(XCorrelationID);
-            return itemList;
+            _logger.LogInformation("GetProducts endpoint called");
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing GetProducts for correlation ID: {CorrelationId}", correlationId);
+
+            var itemList = _configService.GetProducts(correlationId);
+            if (itemList == null)
+            {
+                _logger.LogWarning("No products found for correlation ID: {CorrelationId}", correlationId);
+                throw new KeyNotFoundException("No products found");
+            }
+
+            _logger.LogInformation("Successfully retrieved {Count} products for correlation ID: {CorrelationId}", itemList.Count(), correlationId);
+            return Ok(itemList);
         }
 
         // GET api/product/{id}
         [HttpGet("{id}")]
         public ActionResult<ProductResponseModel> GetProductById(string id)
         {
-            SetXCorrelationId();
-            var item = _configService.GetProductById(id, XCorrelationID);
-            return item;
+            _logger.LogInformation("GetProductById endpoint called with id: {Id}", id);
+
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                _logger.LogWarning("GetProductById called with null or empty id");
+                throw new ArgumentException("Product ID cannot be null or empty", nameof(id));
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing GetProductById for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
+
+            var item = _configService.GetProductById(id, correlationId);
+            if (item == null)
+            {
+                _logger.LogWarning("Product not found for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
+                throw new KeyNotFoundException($"Product with ID {id} not found");
+            }
+
+            _logger.LogInformation("Successfully retrieved product for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
+            return Ok(item);
         }
 
         // GET api/product/category/{categoryId}
         [HttpGet("category/{categoryId}")]
         public ActionResult<IEnumerable<ProductResponseModel>> GetProductsByCategory(string categoryId)
         {
-            SetXCorrelationId();
-            var items = _configService.GetProductsByCategory(categoryId, XCorrelationID);
+            _logger.LogInformation("GetProductsByCategory endpoint called with categoryId: {CategoryId}", categoryId);
+
+            if (string.IsNullOrWhiteSpace(categoryId))
+            {
+                _logger.LogWarning("GetProductsByCategory called with null or empty categoryId");
+                throw new ArgumentException("Category ID cannot be null or empty", nameof(categoryId));
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing GetProductsByCategory for categoryId: {CategoryId}, correlation ID: {CorrelationId}", categoryId, correlationId);
+
+            var items = _configService.GetProductsByCategory(categoryId, correlationId);
             if (items == null || !items.Any())
             {
-                return NotFound(new ApiResponseModel
-                {
-                    Info = new ApiResponseInfoModel
-                    {
-                        Code = ((int)ServerStatusCodes.NotFound).ToString(),
-                        Message = ApiResponseMessage.DATANOTFOUND
-                    }
-                });
+                _logger.LogWarning("No products found for categoryId: {CategoryId}, correlation ID: {CorrelationId}", categoryId, correlationId);
+                throw new KeyNotFoundException($"No products found for category {categoryId}");
             }
+
+            _logger.LogInformation("Successfully retrieved {Count} products for categoryId: {CategoryId}, correlation ID: {CorrelationId}", items.Count(), categoryId, correlationId);
             return Ok(items);
         }
 
@@ -65,62 +95,78 @@ namespace Agronexis.Api.Controllers
         [HttpPost]
         public ActionResult<ApiResponseModel> SaveOrUpdateProduct([FromBody] ProductRequestModel product)
         {
-            SetXCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
+            _logger.LogInformation("SaveOrUpdateProduct endpoint called");
 
-            var item = _configService.SaveOrUpdateProduct(product, XCorrelationID);
+            if (product == null)
+            {
+                _logger.LogWarning("SaveOrUpdateProduct called with null product");
+                throw new ArgumentNullException(nameof(product), "Product cannot be null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("SaveOrUpdateProduct called with invalid model state");
+                throw new ArgumentException("Invalid model state");
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing SaveOrUpdateProduct for correlation ID: {CorrelationId}", correlationId);
+
+            var item = _configService.SaveOrUpdateProduct(product, correlationId);
             if (item == null)
             {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                _logger.LogWarning("SaveOrUpdateProduct failed for correlation ID: {CorrelationId}", correlationId);
+                throw new InvalidOperationException("Failed to save or update product");
             }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
+
+            _logger.LogInformation("SaveOrUpdateProduct successful for correlation ID: {CorrelationId}", correlationId);
+            return Ok(CreateSuccessResponse(item));
         }
 
         // DELETE api/product/{id}
         [HttpDelete("{id}")]
         public ActionResult<ApiResponseModel> DeleteProduct(string id)
         {
-            SetXCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
+            _logger.LogInformation("DeleteProduct endpoint called with id: {Id}", id);
 
-            var item = _configService.DeleteProductById(id, XCorrelationID);
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                _logger.LogWarning("DeleteProduct called with null or empty id");
+                throw new ArgumentException("Product ID cannot be null or empty", nameof(id));
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing DeleteProduct for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
+
+            var item = _configService.DeleteProductById(id, correlationId);
             if (item == null)
             {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                _logger.LogWarning("DeleteProduct failed for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
+                throw new KeyNotFoundException($"Product with ID {id} not found or could not be deleted");
             }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
+
+            _logger.LogInformation("DeleteProduct successful for id: {Id}, correlation ID: {CorrelationId}", id, correlationId);
+            return Ok(CreateSuccessResponse(item));
         }
 
-        private void SetXCorrelationId()
+        private string GetCorrelationId()
         {
-            if (Request != null)
+            return Request.Headers.TryGetValue("X-Correlation-ID", out var correlationId)
+                ? correlationId.ToString()
+                : Guid.NewGuid().ToString();
+        }
+
+        private ApiResponseModel CreateSuccessResponse(object data = null)
+        {
+            return new ApiResponseModel
             {
-                XCorrelationID = (!string.IsNullOrEmpty(Convert.ToString(Request.Headers["X-Correlation-ID"]))) ? Convert.ToString(Request.Headers["X-Correlation-ID"]) : Convert.ToString(Guid.NewGuid());
-            }
-            else
-            {
-                XCorrelationID = Convert.ToString(Guid.NewGuid());
-            }
+                Info = new ApiResponseInfoModel
+                {
+                    Code = ((int)ServerStatusCodes.Ok).ToString(),
+                    Message = ApiResponseMessage.SUCCESS
+                },
+                Data = data
+            };
         }
     }
 }

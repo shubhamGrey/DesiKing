@@ -1,3 +1,4 @@
+using Agronexis.Api.Middleware;
 using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
@@ -26,6 +27,14 @@ Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionStr
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
 builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
+
+// Add logging
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+    logging.AddDebug();
+});
 
 var allowedOrigins = new[] { "http://localhost:3002", "https://agronexis.com", "https://www.agronexis.com" };
 
@@ -80,6 +89,9 @@ if (app.Environment.IsProduction())
 }
 
 app.UseHttpsRedirection();
+
+// Add Global Exception Handler Middleware (should be early in the pipeline)
+app.UseGlobalExceptionHandler();
 
 app.UseCors("CorsPolicy");
 

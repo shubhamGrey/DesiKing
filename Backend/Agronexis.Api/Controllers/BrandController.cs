@@ -1,33 +1,32 @@
 ﻿using Agronexis.Business.Configurations;
-using Agronexis.Model;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using static Agronexis.Common.Constants;
 
 namespace Agronexis.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BrandController : ControllerBase
+    public class BrandController : BaseController
     {
         private readonly IConfigService _configService;
-        string XCorrelationID = string.Empty;
+        private readonly ILogger<BrandController> _logger;
 
-        public BrandController(IConfigService configService)
+        public BrandController(IConfigService configService, ILogger<BrandController> logger)
         {
-            _configService = configService;
+            _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // GET api/Brand
         [HttpGet]
         public ActionResult<IEnumerable<BrandResponseModel>> GetBrands()
         {
-            SetXCorrelationId();
-            var itemList = _configService.GetBrands(XCorrelationID);
+            _logger.LogInformation("GetBrands endpoint called");
+
+            var correlationId = GetCorrelationId();
+            var itemList = _configService.GetBrands(correlationId);
             return itemList;
         }
 

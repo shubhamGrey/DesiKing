@@ -1,13 +1,7 @@
 ﻿using Agronexis.Business.Configurations;
-using Agronexis.Model;
-using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.Text;
 using static Agronexis.Common.Constants;
 
 namespace Agronexis.Api.Controllers
@@ -17,61 +11,94 @@ namespace Agronexis.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfigService _configService;
-        string XCorrelationID = string.Empty;
+        private readonly ILogger<AuthController> _logger;
 
-
-
-        public AuthController(IConfigService configService)
+        public AuthController(IConfigService configService, ILogger<AuthController> logger)
         {
-            
-            _configService = configService;
+            _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpPost("user-login")]
         public async Task<ActionResult<ApiResponseModel>> UserLogin([FromBody] LoginRequestModel model)
         {
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
+            _logger.LogInformation("UserLogin endpoint called");
 
-            var item = await _configService.UserLogin(model, XCorrelationID);
+            if (model == null)
+            {
+                _logger.LogWarning("UserLogin called with null model");
+                throw new ArgumentNullException(nameof(model), "Login model cannot be null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("UserLogin called with invalid model state");
+                throw new ArgumentException("Invalid model state");
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing login for correlation ID: {CorrelationId}", correlationId);
+
+            var item = await _configService.UserLogin(model, correlationId);
             if (item == null)
             {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                _logger.LogWarning("Login failed for correlation ID: {CorrelationId}", correlationId);
+                throw new UnauthorizedAccessException("Invalid credentials provided");
             }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
+
+            _logger.LogInformation("Login successful for correlation ID: {CorrelationId}", correlationId);
+            return Ok(CreateSuccessResponse(item));
         }
 
         [HttpPost("user-registration")]
         public async Task<ActionResult<ApiResponseModel>> UserRegistration([FromBody] RegistrationRequestModel model)
         {
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
+            _logger.LogInformation("UserRegistration endpoint called");
 
-            var item = await _configService.UserRegistration(model, XCorrelationID);
+            if (model == null)
+            {
+                _logger.LogWarning("UserRegistration called with null model");
+                throw new ArgumentNullException(nameof(model), "Registration model cannot be null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("UserRegistration called with invalid model state");
+                throw new ArgumentException("Invalid model state");
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing registration for correlation ID: {CorrelationId}", correlationId);
+
+            var item = await _configService.UserRegistration(model, correlationId);
             if (item == null)
             {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
+                _logger.LogWarning("Registration failed for correlation ID: {CorrelationId}", correlationId);
+                throw new InvalidOperationException("Registration failed. User may already exist or invalid data provided");
             }
 
-            return response;
+            _logger.LogInformation("Registration successful for correlation ID: {CorrelationId}", correlationId);
+            return Ok(CreateSuccessResponse(item));
+        }
+
+        private string GetCorrelationId()
+        {
+            return Request.Headers.TryGetValue("X-Correlation-ID", out var correlationId)
+                ? correlationId.ToString()
+                : Guid.NewGuid().ToString();
+        }
+
+        private ApiResponseModel CreateSuccessResponse(object data = null)
+        {
+            return new ApiResponseModel
+            {
+                Info = new ApiResponseInfoModel
+                {
+                    Code = ((int)ServerStatusCodes.Ok).ToString(),
+                    Message = ApiResponseMessage.SUCCESS
+                },
+                Data = data
+            };
         }
     }
 }

@@ -11,48 +11,47 @@ namespace Agronexis.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CheckoutController : ControllerBase
+    public class CheckoutController : BaseController
     {
         private readonly IConfigService _configService;
-        string XCorrelationID = string.Empty;
-        public CheckoutController(IConfigService configService)
+        private readonly ILogger<CheckoutController> _logger;
+
+        public CheckoutController(IConfigService configService, ILogger<CheckoutController> logger)
         {
-            _configService = configService;
+            _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-        // POST api/Order
+        // POST api/Checkout
         [HttpPost]
         public ActionResult<ApiResponseModel> CreateOrder([FromBody] OrderRequestModel order)
         {
-            SetXCorrelationId();
-            ApiResponseModel response = new()
+            try
             {
-                Info = new ApiResponseInfoModel()
-            };
+                _logger.LogInformation("CreateOrder endpoint called");
 
-            var item = _configService.CreateOrder(order, XCorrelationID);
-            if (item == null)
-            {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
-        }
+                if (order == null)
+                {
+                    _logger.LogWarning("CreateOrder called with null order data");
+                    return CreateBadRequestResponse("Order data is required", GetCorrelationId());
+                }
 
-        private void SetXCorrelationId()
-        {
-            if (Request != null)
-            {
-                XCorrelationID = (!string.IsNullOrEmpty(Convert.ToString(Request.Headers["X-Correlation-ID"]))) ? Convert.ToString(Request.Headers["X-Correlation-ID"]) : Convert.ToString(Guid.NewGuid());
+                var correlationId = GetCorrelationId();
+                var item = _configService.CreateOrder(order, correlationId);
+
+                if (item == null)
+                {
+                    _logger.LogWarning("Failed to create order, correlation ID: {CorrelationId}", correlationId);
+                    return CreateNotFoundResponse("Failed to create order", correlationId);
+                }
+
+                _logger.LogInformation("Successfully created order with correlation ID: {CorrelationId}", correlationId);
+                return CreateSuccessResponse(item, "Order created successfully", correlationId);
             }
-            else
+            catch (Exception ex)
             {
-                XCorrelationID = Convert.ToString(Guid.NewGuid());
+                var correlationId = GetCorrelationId();
+                _logger.LogError(ex, "Error occurred while creating order with correlation ID: {CorrelationId}", correlationId);
+                return HandleException(ex, "Failed to create order", correlationId);
             }
         }
     }

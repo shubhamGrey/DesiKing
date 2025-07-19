@@ -1,28 +1,54 @@
 ﻿using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Agronexis.Business.Configurations
 {
     public class ConfigService : IConfigService
     {
         private readonly IConfigurationRepository _repository;
-        public ConfigService(IConfigurationRepository repository)
+        private readonly ILogger<ConfigService> _logger;
+
+        public ConfigService(IConfigurationRepository repository, ILogger<ConfigService> logger)
         {
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
-            return _repository.GetProducts(xCorrelationId);
+            try
+            {
+                _logger.LogInformation("Getting products for correlation ID: {CorrelationId}", xCorrelationId);
+                var result = _repository.GetProducts(xCorrelationId);
+                _logger.LogInformation("Successfully retrieved {Count} products for correlation ID: {CorrelationId}", result?.Count ?? 0, xCorrelationId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting products for correlation ID: {CorrelationId}", xCorrelationId);
+                throw;
+            }
         }
+
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            return _repository.GetProductById(id, xCorrelationId);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    throw new ArgumentException("Product ID cannot be null or empty", nameof(id));
+
+                _logger.LogInformation("Getting product by ID: {Id} for correlation ID: {CorrelationId}", id, xCorrelationId);
+                var result = _repository.GetProductById(id, xCorrelationId);
+                _logger.LogInformation("Successfully retrieved product by ID: {Id} for correlation ID: {CorrelationId}", id, xCorrelationId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting product by ID: {Id} for correlation ID: {CorrelationId}", id, xCorrelationId);
+                throw;
+            }
         }
 
         public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)

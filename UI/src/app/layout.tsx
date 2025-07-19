@@ -7,8 +7,12 @@ import { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material";
 import theme from "@/styles/theme";
 import { poppins } from "@/styles/fonts";
+import { NotificationProvider } from "@/components/NotificationProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
@@ -25,9 +29,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         style={{ backgroundColor: "#fffaf0", margin: "0px" }}
       >
         <ThemeProvider theme={theme}>
-          {!isAuthPage && <Header />}
-          <main>{children}</main>
-          {!isAuthPage && <Footer />}
+          <ErrorBoundary showDetails={process.env.NODE_ENV === "development"}>
+            <NotificationProvider>
+              {!isAuthPage && <Header />}
+              <main>{children}</main>
+              {!isAuthPage && <Footer />}
+            </NotificationProvider>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>
