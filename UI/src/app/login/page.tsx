@@ -64,7 +64,7 @@ export default function LoginPage() {
   const handleLogin = async (credentials: LoginCredentials): Promise<void> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/user-login`,
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-login`,
         {
           method: "POST",
           headers: {
@@ -113,7 +113,7 @@ export default function LoginPage() {
   ): Promise<void> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/user-registration`,
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-registration`,
         {
           method: "POST",
           headers: {

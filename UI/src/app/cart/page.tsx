@@ -38,24 +38,24 @@ const Cart = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
 
   const cartItems: CartItem[] = [
-    // {
-    //   name: "Portable Stereo Speaker",
-    //   price: 250.49,
-    //   quantity: 1,
-    //   image: "/images/speaker.png",
-    // },
-    // {
-    //   name: "i-Type Instant Camera",
-    //   price: 630.2,
-    //   quantity: 2,
-    //   image: "/images/camera.png",
-    // },
-    // {
-    //   name: "Positive Vibration ANC",
-    //   price: 320.0,
-    //   quantity: 1,
-    //   image: "/images/headphones.png",
-    // },
+    {
+      name: "Portable Stereo Speaker",
+      price: 250.49,
+      quantity: 1,
+      image: "/images/speaker.png",
+    },
+    {
+      name: "i-Type Instant Camera",
+      price: 630.2,
+      quantity: 2,
+      image: "/images/camera.png",
+    },
+    {
+      name: "Positive Vibration ANC",
+      price: 320.0,
+      quantity: 1,
+      image: "/images/headphones.png",
+    },
   ];
 
   const subtotal: number = cartItems.reduce(
