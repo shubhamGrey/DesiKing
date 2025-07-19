@@ -15,6 +15,7 @@ import { Edit, Delete } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import React from "react";
+import Cookies from "js-cookie";
 
 const michroma = Michroma({
   subsets: ["latin"],
@@ -108,60 +109,62 @@ const ProductSection = ({ item }: ProductDetails) => {
                 }}
                 elevation={0}
               >
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    display: "flex",
-                    gap: 2,
-                    zIndex: 1,
-                  }}
-                >
-                  <IconButton
-                    color="primary"
-                    size="small"
+                {Cookies.get("user_role") === "Admin" && (
+                  <Box
                     sx={{
-                      border: "2px solid",
-                      borderColor: "primary.main",
-                      borderRadius: "50%",
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        backgroundColor: "primary.main",
-                        color: "primary.contrastText",
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      display: "flex",
+                      gap: 2,
+                      zIndex: 1,
+                    }}
+                  >
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      sx={{
+                        border: "2px solid",
                         borderColor: "primary.main",
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sessionStorage.setItem("productId", product.id);
-                      router.push("/add-product");
-                    }}
-                  >
-                    <Edit fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    size="small"
-                    sx={{
-                      border: "2px solid",
-                      borderColor: "error.main",
-                      borderRadius: "50%",
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        backgroundColor: "error.main",
-                        color: "error.contrastText",
+                        borderRadius: "50%",
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          backgroundColor: "primary.main",
+                          color: "primary.contrastText",
+                          borderColor: "primary.main",
+                        },
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sessionStorage.setItem("productId", product.id);
+                        router.push("/add-product");
+                      }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      sx={{
+                        border: "2px solid",
                         borderColor: "error.main",
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log("Delete product:", product.id);
-                    }}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </Box>
+                        borderRadius: "50%",
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          backgroundColor: "error.main",
+                          color: "error.contrastText",
+                          borderColor: "error.main",
+                        },
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("Delete product:", product.id);
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
                 <CardActionArea
                   disableRipple
                   onClick={() => {

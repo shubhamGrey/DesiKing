@@ -90,7 +90,7 @@ export default function Header() {
     { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
-    ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
+    // ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   const rightNavLinks = [

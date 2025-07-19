@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 interface Category {
   id: string;
@@ -98,62 +99,64 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
             }}
           >
             {/* Edit and Delete Icon Buttons */}
-            <Box
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                display: "flex",
-                gap: 2,
-                zIndex: 1,
-              }}
-            >
-              <IconButton
-                color="primary"
-                size="small"
+            {Cookies.get("user_role") === "Admin" && (
+              <Box
                 sx={{
-                  border: "2px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "50%",
-                  transition: "all 0.3s ease-in-out",
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "primary.main",
-                    color: "primary.contrastText",
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  display: "flex",
+                  gap: 2,
+                  zIndex: 1,
+                }}
+              >
+                <IconButton
+                  color="primary"
+                  size="small"
+                  sx={{
+                    border: "2px solid",
                     borderColor: "primary.main",
-                  },
-                }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click
-                  sessionStorage.setItem("categoryId", category.id);
-                  router.push("/add-category");
-                }}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="error"
-                size="small"
-                sx={{
-                  border: "2px solid",
-                  borderColor: "error.main",
-                  borderRadius: "50%",
-                  transition: "all 0.3s ease-in-out",
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "error.main",
-                    color: "error.contrastText",
+                    borderRadius: "50%",
+                    transition: "all 0.3s ease-in-out",
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "primary.main",
+                      color: "primary.contrastText",
+                      borderColor: "primary.main",
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click
+                    sessionStorage.setItem("categoryId", category.id);
+                    router.push("/add-category");
+                  }}
+                >
+                  <Edit fontSize="small" />
+                </IconButton>
+                <IconButton
+                  color="error"
+                  size="small"
+                  sx={{
+                    border: "2px solid",
                     borderColor: "error.main",
-                  },
-                }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click
-                  if (onDelete) onDelete(category.id); // Call onDelete if provided
-                }}
-              >
-                <Delete fontSize="small" />
-              </IconButton>
-            </Box>
+                    borderRadius: "50%",
+                    transition: "all 0.3s ease-in-out",
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "error.main",
+                      color: "error.contrastText",
+                      borderColor: "error.main",
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click
+                    if (onDelete) onDelete(category.id); // Call onDelete if provided
+                  }}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
             <CardMedia
               component="img"
               height="184"

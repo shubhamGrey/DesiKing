@@ -69,6 +69,12 @@ const AddCategory: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // State to force re-render
 
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("categoryId"); // Clear categoryId on unmount
+    };
+  }, []);
+
   const {
     control,
     handleSubmit,

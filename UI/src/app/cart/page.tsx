@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -70,6 +70,7 @@ const Cart = () => {
   });
 
   const [formErrors, setFormErrors] = useState<Partial<PaymentFormData>>({});
+  const [userId, setUserId] = useState<string>("");
 
   // Validate form data
   const validateForm = (): boolean => {
@@ -97,6 +98,18 @@ const Cart = () => {
     }
   };
 
+  useEffect(() => {
+    const userProfileRaw = sessionStorage.getItem("user_profile");
+    if (userProfileRaw) {
+      try {
+        const userProfile = JSON.parse(userProfileRaw);
+        setUserId(userProfile?.id);
+      } catch {
+        setUserId("");
+      }
+    }
+  }, []);
+
   // Handle order confirmation
   const handleConfirmOrder = async () => {
     if (!validateForm()) {
@@ -110,11 +123,12 @@ const Cart = () => {
       // Handle Cash on Delivery
       try {
         setIsLoading(true);
+
         const orderData: OrderCreateRequest = {
-          userId: "user-123", // Replace with actual user ID
+          userId: userId, // Use safely parsed user ID
           totalAmount: subtotal,
           currency: "INR",
-          brandId: "brand-123", // Replace with actual brand ID
+          brandId: cartItems[0].brandId,
           status: "created",
           items: cartItems.map((item) => ({
             productId: item.productId,
@@ -151,10 +165,10 @@ const Cart = () => {
       try {
         setIsLoading(true);
         const orderData: OrderCreateRequest = {
-          userId: "user-123", // Replace with actual user ID
+          userId: userId, // Use safely parsed user ID`
           totalAmount: subtotal,
           currency: "INR",
-          brandId: "brand-123", // Replace with actual brand ID
+          brandId: cartItems[0].brandId,
           status: "created",
           items: cartItems.map((item) => ({
             productId: item.productId,

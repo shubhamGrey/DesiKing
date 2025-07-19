@@ -38,6 +38,7 @@ import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
 import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import Cookies from "js-cookie";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
@@ -465,23 +466,25 @@ const Home: React.FC = () => {
             >
               Product Categories
             </Typography>
-            <IconButton
-              color="primary"
-              onClick={() => router.push("/add-category")}
-              sx={{
-                border: "2px solid",
-                borderColor: "primary.main",
-                borderRadius: "50%",
-                transition: "all 0.3s ease-in-out",
-                "&:hover": {
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
+            {Cookies.get("user_role") === "Admin" && (
+              <IconButton
+                color="primary"
+                onClick={() => router.push("/add-category")}
+                sx={{
+                  border: "2px solid",
                   borderColor: "primary.main",
-                },
-              }}
-            >
-              <Add fontSize="small" />
-            </IconButton>
+                  borderRadius: "50%",
+                  transition: "all 0.3s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    borderColor: "primary.main",
+                  },
+                }}
+              >
+                <Add fontSize="small" />
+              </IconButton>
+            )}
           </Box>
           <Box
             sx={{
@@ -508,61 +511,62 @@ const Home: React.FC = () => {
                   router.push("/products");
                 }}
               >
-                {/* Edit and Delete Icon Buttons */}
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    display: "flex",
-                    gap: 2,
-                    zIndex: 1,
-                  }}
-                >
-                  <IconButton
-                    color="primary"
-                    size="small"
+                {Cookies.get("user_role") === "Admin" && (
+                  <Box
                     sx={{
-                      border: "2px solid",
-                      borderColor: "primary.main",
-                      borderRadius: "50%",
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        backgroundColor: "primary.main",
-                        color: "primary.contrastText",
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      display: "flex",
+                      gap: 2,
+                      zIndex: 1,
+                    }}
+                  >
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      sx={{
+                        border: "2px solid",
                         borderColor: "primary.main",
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
-                      sessionStorage.setItem("categoryId", category.id);
-                      router.push("/add-category");
-                    }}
-                  >
-                    <Edit fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    size="small"
-                    sx={{
-                      border: "2px solid",
-                      borderColor: "error.main",
-                      borderRadius: "50%",
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        backgroundColor: "error.main",
-                        color: "error.contrastText",
+                        borderRadius: "50%",
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          backgroundColor: "primary.main",
+                          color: "primary.contrastText",
+                          borderColor: "primary.main",
+                        },
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        sessionStorage.setItem("categoryId", category.id);
+                        router.push("/add-category");
+                      }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      sx={{
+                        border: "2px solid",
                         borderColor: "error.main",
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
-                      handleDeleteCategoryByType(category.id);
-                    }}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </Box>
+                        borderRadius: "50%",
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          backgroundColor: "error.main",
+                          color: "error.contrastText",
+                          borderColor: "error.main",
+                        },
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        handleDeleteCategoryByType(category.id);
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
                 <CardMedia
                   component="img"
                   height={isMobile ? 178 : 394}

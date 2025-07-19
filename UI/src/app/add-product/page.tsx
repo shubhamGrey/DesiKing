@@ -124,6 +124,12 @@ const AddProduct: React.FC = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("productId"); // Clear productId on unmount
+    };
+  }, []);
+
   const {
     control,
     handleSubmit,
