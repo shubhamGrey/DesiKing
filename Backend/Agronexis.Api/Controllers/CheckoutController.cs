@@ -45,7 +45,7 @@ namespace Agronexis.Api.Controllers
                 }
 
                 _logger.LogInformation("Successfully created order with correlation ID: {CorrelationId}", correlationId);
-                return CreateSuccessResponse(item, "Order created successfully", correlationId);
+                return CreateSuccessResponseAction(item, "Order created successfully", correlationId);
             }
             catch (Exception ex)
             {

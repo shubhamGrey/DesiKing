@@ -30,7 +30,7 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        protected ApiResponseModel CreateSuccessResponse(object data = null, string message = null, string correlationId = null)
+        protected ApiResponseModel CreateSuccessResponse(object data = null, string message = null)
         {
             return new ApiResponseModel
             {
@@ -43,7 +43,7 @@ namespace Agronexis.Api.Controllers
             };
         }
 
-        protected ActionResult CreateSuccessResponse(object data, string message, string correlationId)
+        protected ActionResult CreateSuccessResponseAction(object data, string message, string correlationId)
         {
             var response = new ApiResponseModel
             {

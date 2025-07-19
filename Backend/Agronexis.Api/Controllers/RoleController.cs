@@ -105,7 +105,7 @@ namespace Agronexis.Api.Controllers
                 }
 
                 _logger.LogInformation("Successfully saved or updated role with correlation ID: {CorrelationId}", correlationId);
-                return CreateSuccessResponse(item, "Role saved successfully", correlationId);
+                return CreateSuccessResponseAction(item, "Role saved successfully", correlationId);
             }
             catch (Exception ex)
             {
@@ -139,7 +139,7 @@ namespace Agronexis.Api.Controllers
                 }
 
                 _logger.LogInformation("Successfully deleted role with ID: {RoleId}, correlation ID: {CorrelationId}", id, correlationId);
-                return CreateSuccessResponse(item, "Role deleted successfully", correlationId);
+                return CreateSuccessResponseAction(item, "Role deleted successfully", correlationId);
             }
             catch (Exception ex)
             {
