@@ -90,10 +90,16 @@ export default function Header() {
     { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
+    ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   const rightNavLinks = [
-    { icon: <PermIdentityOutlined />, href: "/profile", key: "profile" },
+    {
+      icon: <PermIdentityOutlined />,
+      href: isLoggedIn() ? "/profile" : "/login",
+      key: "profile",
+      label: isLoggedIn() ? getUserFullName() || "Profile" : "Login",
+    },
     {
       icon: (
         <Badge badgeContent={itemCount} color="secondary">
@@ -102,6 +108,7 @@ export default function Header() {
       ),
       href: "/cart",
       key: "cart",
+      label: "Cart",
     },
   ];
 
