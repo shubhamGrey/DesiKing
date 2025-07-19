@@ -83,7 +83,7 @@ export default function Header() {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { itemCount } = useCart();
-  const { getUserFullName, isLoggedIn, isAdmin } = useUserSession();
+  const { getUserFullName, isLoggedIn } = useUserSession();
 
   const leftNavLinks = [
     { label: "Home", href: "/" },
