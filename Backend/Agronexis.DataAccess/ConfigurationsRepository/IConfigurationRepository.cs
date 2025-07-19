@@ -29,6 +29,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         string DeleteRoleById(string id, string xCorrelationId);
         Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId);
         Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId);
+        Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId);
         string CreateOrder(OrderRequestModel order, string xCorrelationId);
     }
 }

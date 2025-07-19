@@ -5,6 +5,9 @@ import { Box, Button, Grid, Rating, Stack, Typography } from "@mui/material";
 import { styled, useMediaQuery } from "@mui/system";
 import Image from "next/image";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import { useCart } from "@/contexts/CartContext";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 // Define the type for selectedProduct
 interface Product {
@@ -55,13 +58,56 @@ const StyledRating = styled(Rating)({
 
 const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
   const [selectedQuantity, setSelectedQuantity] = React.useState(1);
-  // const [selectedPacket, setSelectedPacket] = React.useState("100gm");
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
   const [currentImage, setCurrentImage] = React.useState(0);
+  const { addItem } = useCart();
+  const router = useRouter();
 
   const handleImageChange = (index: number) => {
     setCurrentImage(index);
+  };
+
+  const handleAddToCart = () => {
+    const isLoggedIn = Boolean(Cookies.get("access_token"));
+    if (!isLoggedIn) {
+      router.push("/login");
+      return;
+    }
+
+    // Add item to cart
+    addItem({
+      id: `${selectedProduct.id}-cart-item`,
+      name: selectedProduct.name,
+      price: 10.99, // Replace with actual price from selectedProduct
+      image: selectedProduct.imageUrls[0] || "",
+      productId: selectedProduct.id,
+      brandId: selectedProduct.brandId,
+      quantity: selectedQuantity,
+    });
+
+    // Show success message or redirect to cart
+    console.log("Product added to cart");
+  };
+
+  const handleBuyNow = () => {
+    const isLoggedIn = Boolean(Cookies.get("access_token"));
+    if (!isLoggedIn) {
+      router.push("/login");
+      return;
+    }
+
+    // Add to cart and redirect to cart page
+    addItem({
+      id: `${selectedProduct.id}-cart-item`,
+      name: selectedProduct.name,
+      price: 10.99, // Replace with actual price from selectedProduct
+      image: selectedProduct.imageUrls[0] || "",
+      productId: selectedProduct.id,
+      brandId: selectedProduct.brandId,
+      quantity: selectedQuantity,
+    });
+
+    router.push("/cart");
   };
 
   return (
@@ -317,17 +363,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                   backgroundColor: "secondary.main",
                 },
               }}
-              onClick={() => {
-                const isLoggedIn = Boolean(
-                  localStorage.getItem("access_Token")
-                ); // Example check for user login
-                if (!isLoggedIn) {
-                  window.location.href = "/login"; // Redirect to login page
-                } else {
-                  // Add to cart logic here
-                  console.log("Product added to cart");
-                }
-              }}
+              onClick={handleAddToCart}
             >
               <AddShoppingCartIcon />
             </Button>
@@ -343,17 +379,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                 borderRadius: 0,
               }}
               fullWidth
-              onClick={() => {
-                const isLoggedIn = Boolean(
-                  localStorage.getItem("access_Token")
-                ); // Example check for user login
-                if (!isLoggedIn) {
-                  window.location.href = "/login"; // Redirect to login page
-                } else {
-                  // Add to cart logic here
-                  console.log("Product added to cart");
-                }
-              }}
+              onClick={handleBuyNow}
             >
               Buy Now
             </Button>

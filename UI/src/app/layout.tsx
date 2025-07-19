@@ -9,6 +9,7 @@ import theme from "@/styles/theme";
 import { poppins } from "@/styles/fonts";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { CartProvider } from "@/contexts/CartContext";
 
 export default function RootLayout({
   children,
@@ -31,9 +32,11 @@ export default function RootLayout({
         <ThemeProvider theme={theme}>
           <ErrorBoundary showDetails={process.env.NODE_ENV === "development"}>
             <NotificationProvider>
-              {!isAuthPage && <Header />}
-              <main>{children}</main>
-              {!isAuthPage && <Footer />}
+              <CartProvider>
+                {!isAuthPage && <Header />}
+                <main>{children}</main>
+                {!isAuthPage && <Footer />}
+              </CartProvider>
             </NotificationProvider>
           </ErrorBoundary>
         </ThemeProvider>

@@ -2,6 +2,7 @@ using Agronexis.Api.Middleware;
 using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
+using Agronexis.ExternalApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -27,6 +28,7 @@ Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionStr
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
 builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
+builder.Services.AddTransient<ExternalUtility>();
 
 // Add logging
 builder.Services.AddLogging(logging =>

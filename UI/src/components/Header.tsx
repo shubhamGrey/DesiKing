@@ -18,6 +18,7 @@ import {
   InputBase,
   styled,
   alpha,
+  Badge,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -31,6 +32,8 @@ import { usePathname, useRouter } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
+import { useCart } from "@/contexts/CartContext";
+import { useUserSession } from "@/utils/userSession";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -79,6 +82,8 @@ export default function Header() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { itemCount } = useCart();
+  const { getUserFullName, isLoggedIn, isAdmin } = useUserSession();
 
   const leftNavLinks = [
     { label: "Home", href: "/" },
@@ -88,8 +93,16 @@ export default function Header() {
   ];
 
   const rightNavLinks = [
-    { icon: <PermIdentityOutlined />, href: "/profile" },
-    { icon: <ShoppingCartOutlined />, href: "/cart" },
+    { icon: <PermIdentityOutlined />, href: "/profile", key: "profile" },
+    {
+      icon: (
+        <Badge badgeContent={itemCount} color="secondary">
+          <ShoppingCartOutlined />
+        </Badge>
+      ),
+      href: "/cart",
+      key: "cart",
+    },
   ];
 
   const toggleDrawer = (open: boolean) => () => {
@@ -190,11 +203,11 @@ export default function Header() {
                         inputProps={{ "aria-label": "search" }}
                       />
                     </Search>
-                    {rightNavLinks.map(({ icon, href }, index) => {
+                    {rightNavLinks.map(({ icon, href, key }) => {
                       const isActive = pathname === href;
                       return (
                         <IconButton
-                          key={index}
+                          key={key}
                           sx={{
                             color: isActive
                               ? "secondary.main"
@@ -247,11 +260,11 @@ export default function Header() {
                 </Link>
               </Box>
               <Box>
-                {rightNavLinks.map(({ icon, href }, index) => {
+                {rightNavLinks.map(({ icon, href, key }) => {
                   const isActive = pathname === href;
                   return (
                     <IconButton
-                      key={index}
+                      key={key}
                       edge="end"
                       sx={{
                         color: isActive

@@ -49,6 +49,7 @@ namespace Agronexis.Api.Controllers
 
         // GET api/Role/{id}
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<RoleResponseModel> GetRoleById(string id)
         {
             try

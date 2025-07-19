@@ -15,53 +15,207 @@ import {
   Card,
   CardContent,
   useMediaQuery,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
+import EmptyCart from "@/components/EmptyCart";
+import RazorpayPayment from "@/components/RazorpayPayment";
+import {
+  PaymentFormData,
+  OrderCreateRequest,
+  RazorpayPaymentData,
+} from "@/types/razorpay";
+import { createOrder } from "@/utils/razorpayUtils";
+import { useCart } from "@/contexts/CartContext";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
   return imageSrc.includes("cloud.agronexis.com");
-}; // Import michroma font style
-import EmptyCart from "@/components/EmptyCart"; // Import EmptyCart component
-
-interface CartItem {
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+};
 
 const Cart = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
+  const {
+    items: cartItems,
+    total: subtotal,
+    removeItem,
+    updateQuantity,
+    clearCart,
+  } = useCart();
+
   const [paymentMethod, setPaymentMethod] = useState("cod");
-
-  const cartItems: CartItem[] = [
-    {
-      name: "Portable Stereo Speaker",
-      price: 250.49,
-      quantity: 1,
-      image: "/images/speaker.png",
-    },
-    {
-      name: "i-Type Instant Camera",
-      price: 630.2,
-      quantity: 2,
-      image: "/images/camera.png",
-    },
-    {
-      name: "Positive Vibration ANC",
-      price: 320.0,
-      quantity: 1,
-      image: "/images/headphones.png",
-    },
-  ];
-
-  const subtotal: number = cartItems.reduce(
-    (acc: number, item: CartItem) => acc + item.price * item.quantity,
-    0
+  const [isLoading, setIsLoading] = useState(false);
+  const [showRazorpay, setShowRazorpay] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
+    "success"
   );
+
+  // Form data state
+  const [formData, setFormData] = useState<PaymentFormData>({
+    name: "John Doe",
+    email: "john.doe@example.com",
+    mobile: "+91 9876543210",
+    address: "123 Main Street",
+    city: "Mumbai",
+    state: "Maharashtra",
+    zipCode: "400001",
+  });
+
+  const [formErrors, setFormErrors] = useState<Partial<PaymentFormData>>({});
+
+  // Validate form data
+  const validateForm = (): boolean => {
+    const errors: Partial<PaymentFormData> = {};
+
+    if (!formData.name.trim()) errors.name = "Name is required";
+    if (!formData.email.trim()) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      errors.email = "Email is invalid";
+    if (!formData.mobile.trim()) errors.mobile = "Mobile number is required";
+    if (!formData.address.trim()) errors.address = "Address is required";
+    if (!formData.city.trim()) errors.city = "City is required";
+    if (!formData.state.trim()) errors.state = "State is required";
+    if (!formData.zipCode.trim()) errors.zipCode = "ZIP code is required";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle form input changes
+  const handleInputChange = (field: keyof PaymentFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  // Handle order confirmation
+  const handleConfirmOrder = async () => {
+    if (!validateForm()) {
+      setAlertMessage("Please fill in all required fields correctly");
+      setAlertSeverity("error");
+      setShowAlert(true);
+      return;
+    }
+
+    if (paymentMethod === "cod") {
+      // Handle Cash on Delivery
+      try {
+        setIsLoading(true);
+        const orderData: OrderCreateRequest = {
+          userId: "user-123", // Replace with actual user ID
+          totalAmount: subtotal,
+          currency: "INR",
+          brandId: "brand-123", // Replace with actual brand ID
+          status: "created",
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        };
+
+        const result = await createOrder(orderData, "COD");
+
+        setAlertMessage("Order placed successfully! You will pay on delivery.");
+        setAlertSeverity("success");
+        setShowAlert(true);
+
+        // Clear cart after successful order
+        clearCart();
+
+        // Redirect to success page after delay
+        setTimeout(() => {
+          router.push(
+            `/payment-result?status=success&order_id=${result.orderId}&payment_method=cod`
+          );
+        }, 2000);
+      } catch (error: any) {
+        console.error("COD order error:", error);
+        setAlertMessage("Failed to place order. Please try again.");
+        setAlertSeverity("error");
+        setShowAlert(true);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Handle online payment with Razorpay
+      try {
+        setIsLoading(true);
+        const orderData: OrderCreateRequest = {
+          userId: "user-123", // Replace with actual user ID
+          totalAmount: subtotal,
+          currency: "INR",
+          brandId: "brand-123", // Replace with actual brand ID
+          status: "created",
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        };
+
+        const result = await createOrder(orderData, "RAZORPAY");
+        setOrderId(result.orderId ?? result.data?.id ?? "");
+        setShowRazorpay(true);
+      } catch (error: any) {
+        console.error("Razorpay order error:", error);
+        setAlertMessage("Failed to create order. Please try again.");
+        setAlertSeverity("error");
+        setShowAlert(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // Handle successful payment
+  const handlePaymentSuccess = (paymentData: RazorpayPaymentData) => {
+    setAlertMessage("Payment successful! Redirecting...");
+    setAlertSeverity("success");
+    setShowAlert(true);
+
+    // Clear cart after successful payment
+    clearCart();
+
+    setTimeout(() => {
+      router.push(
+        `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}`
+      );
+    }, 2000);
+  };
+
+  // Handle payment error
+  const handlePaymentError = (error: string) => {
+    setAlertMessage(`Payment failed: ${error}`);
+    setAlertSeverity("error");
+    setShowAlert(true);
+  };
+
+  // Get button text based on current state
+  const getButtonText = () => {
+    if (isLoading) return "Processing...";
+    if (paymentMethod === "cod") return "Place Order (COD)";
+    return "Pay Now";
+  };
+
+  // Handle quantity update
+  const handleQuantityUpdate = (itemId: string, newQuantity: number) => {
+    updateQuantity(itemId, newQuantity);
+  };
+
+  // Handle item removal
+  const handleItemRemove = (itemId: string) => {
+    removeItem(itemId);
+  };
 
   if (cartItems.length === 0) {
     return <EmptyCart />; // Render EmptyCart component if cart is empty
@@ -107,7 +261,10 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your name"
-                    defaultValue="Bryan Cranston"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    error={!!formErrors.name}
+                    helperText={formErrors.name}
                   />
                 </Grid>
                 <Grid size={6}>
@@ -116,7 +273,12 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your mobile number"
-                    defaultValue="+1 424-236-3574"
+                    value={formData.mobile}
+                    onChange={(e) =>
+                      handleInputChange("mobile", e.target.value)
+                    }
+                    error={!!formErrors.mobile}
+                    helperText={formErrors.mobile}
                   />
                 </Grid>
                 <Grid size={6}>
@@ -125,7 +287,10 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your email"
-                    defaultValue="thejon.l"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    error={!!formErrors.email}
+                    helperText={formErrors.email}
                   />
                 </Grid>
                 <Grid size={6}>
@@ -134,7 +299,10 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your city"
-                    defaultValue="Hawthorne"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange("city", e.target.value)}
+                    error={!!formErrors.city}
+                    helperText={formErrors.city}
                   />
                 </Grid>
                 <Grid size={4}>
@@ -143,7 +311,10 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your state"
-                    defaultValue="California"
+                    value={formData.state}
+                    onChange={(e) => handleInputChange("state", e.target.value)}
+                    error={!!formErrors.state}
+                    helperText={formErrors.state}
                   />
                 </Grid>
                 <Grid size={4}>
@@ -152,7 +323,12 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your ZIP code"
-                    defaultValue="90250"
+                    value={formData.zipCode}
+                    onChange={(e) =>
+                      handleInputChange("zipCode", e.target.value)
+                    }
+                    error={!!formErrors.zipCode}
+                    helperText={formErrors.zipCode}
                   />
                 </Grid>
                 <Grid size={4}>
@@ -161,11 +337,14 @@ const Cart = () => {
                     select
                     fullWidth
                     size="small"
-                    SelectProps={{ native: true }}
-                    defaultValue="CA"
+                    slotProps={{ select: { native: true } }}
+                    value={formData.state}
+                    onChange={(e) => handleInputChange("state", e.target.value)}
                   >
-                    <option value="CA">CA</option>
-                    <option value="TX">TX</option>
+                    <option value="Maharashtra">MH</option>
+                    <option value="Delhi">DL</option>
+                    <option value="Karnataka">KA</option>
+                    <option value="Tamil Nadu">TN</option>
                   </TextField>
                 </Grid>
                 <Grid size={12}>
@@ -174,7 +353,12 @@ const Cart = () => {
                     fullWidth
                     size="small"
                     placeholder="Enter your address"
-                    defaultValue="4796 Libby Street"
+                    value={formData.address}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
+                    error={!!formErrors.address}
+                    helperText={formErrors.address}
                   />
                 </Grid>
               </Grid>
@@ -206,20 +390,9 @@ const Cart = () => {
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
                 <FormControlLabel
-                  value="credit"
+                  value="razorpay"
                   control={<Radio />}
-                  label="Credit Card"
-                />
-                <FormControlLabel
-                  value="debit"
-                  control={<Radio />}
-                  label="Debit Card"
-                />
-                <FormControlLabel value="upi" control={<Radio />} label="UPI" />
-                <FormControlLabel
-                  value="netbanking"
-                  control={<Radio />}
-                  label="Internet Banking"
+                  label="Online Payment"
                 />
                 <FormControlLabel
                   value="cod"
@@ -228,100 +401,16 @@ const Cart = () => {
                 />
               </RadioGroup>
               <Box mt={2}>
-                {paymentMethod === "credit" && (
-                  <Grid container spacing={2}>
-                    <Grid size={12}>
-                      <TextField
-                        label="Card Number"
-                        fullWidth
-                        size="small"
-                        placeholder="Enter your card number"
-                      />
-                    </Grid>
-                    <Grid size={6}>
-                      <TextField
-                        label="Expiry Date (MM/YY)"
-                        fullWidth
-                        size="small"
-                        placeholder="MM/YY"
-                      />
-                    </Grid>
-                    <Grid size={6}>
-                      <TextField
-                        label="CVV"
-                        fullWidth
-                        size="small"
-                        placeholder="Enter CVV"
-                      />
-                    </Grid>
-                    <Grid size={12}>
-                      <TextField
-                        label="Name on Card"
-                        fullWidth
-                        size="small"
-                        placeholder="Enter name on card"
-                      />
-                    </Grid>
-                  </Grid>
+                {paymentMethod === "razorpay" && (
+                  <Typography variant="body2" color="text.secondary">
+                    Pay securely using Credit Card, Debit Card, UPI, Net
+                    Banking, or Wallet through Razorpay.
+                  </Typography>
                 )}
-                {paymentMethod === "debit" && (
-                  <Grid container spacing={2}>
-                    <Grid size={12}>
-                      <TextField
-                        label="Card Number"
-                        fullWidth
-                        size="small"
-                        placeholder="Enter your card number"
-                      />
-                    </Grid>
-                    <Grid size={6}>
-                      <TextField
-                        label="Expiry Date (MM/YY)"
-                        fullWidth
-                        size="small"
-                        placeholder="MM/YY"
-                      />
-                    </Grid>
-                    <Grid size={6}>
-                      <TextField
-                        label="CVV"
-                        fullWidth
-                        size="small"
-                        placeholder="Enter CVV"
-                      />
-                    </Grid>
-                    <Grid size={12}>
-                      <TextField
-                        label="Name on Card"
-                        fullWidth
-                        size="small"
-                        placeholder="Enter name on card"
-                      />
-                    </Grid>
-                  </Grid>
-                )}
-                {paymentMethod === "upi" && (
-                  <TextField
-                    label="UPI ID"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your UPI ID"
-                  />
-                )}
-                {paymentMethod === "netbanking" && (
-                  <TextField
-                    label="Bank Name"
-                    select
-                    fullWidth
-                    size="small"
-                    SelectProps={{ native: true }}
-                  >
-                    <option value="">Select Bank</option>
-                    <option value="SBI">State Bank of India</option>
-                    <option value="HDFC">HDFC Bank</option>
-                    <option value="ICICI">ICICI Bank</option>
-                    <option value="AXIS">Axis Bank</option>
-                  </TextField>
+                {paymentMethod === "cod" && (
+                  <Typography variant="body2" color="text.secondary">
+                    Pay with cash when your order is delivered to your doorstep.
+                  </Typography>
                 )}
               </Box>
             </CardContent>
@@ -350,9 +439,9 @@ const Cart = () => {
                 Order Summary
               </Typography>
               <Stack spacing={2}>
-                {cartItems.map((item, index) => (
+                {cartItems.map((item) => (
                   <Box
-                    key={index}
+                    key={`cart-item-${item.id}`}
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -371,11 +460,47 @@ const Cart = () => {
                       <Box>
                         <Typography fontWeight={500}>{item.name}</Typography>
                         <Typography variant="body2">
-                          ${item.price.toFixed(2)}
+                          ₹{item.price.toFixed(2)}
                         </Typography>
                       </Box>
                     </Box>
-                    <Typography>x{item.quantity}</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Button
+                        size="small"
+                        onClick={() =>
+                          handleQuantityUpdate(
+                            item.id,
+                            Math.max(1, item.quantity - 1)
+                          )
+                        }
+                        disabled={item.quantity <= 1}
+                        sx={{ minWidth: "32px", height: "32px", p: 0 }}
+                      >
+                        -
+                      </Button>
+                      <Typography
+                        sx={{ minWidth: "24px", textAlign: "center" }}
+                      >
+                        {item.quantity}
+                      </Typography>
+                      <Button
+                        size="small"
+                        onClick={() =>
+                          handleQuantityUpdate(item.id, item.quantity + 1)
+                        }
+                        sx={{ minWidth: "32px", height: "32px", p: 0 }}
+                      >
+                        +
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => handleItemRemove(item.id)}
+                        sx={{ ml: 1 }}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
                   </Box>
                 ))}
 
@@ -383,12 +508,12 @@ const Cart = () => {
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography>Subtotal</Typography>
-                  <Typography>${subtotal.toFixed(2)}</Typography>
+                  <Typography>₹{subtotal.toFixed(2)}</Typography>
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography>Shipping</Typography>
-                  <Typography>--</Typography>
+                  <Typography>Free</Typography>
                 </Box>
 
                 <Divider />
@@ -400,14 +525,16 @@ const Cart = () => {
                     fontWeight: 600,
                   }}
                 >
-                  <Typography>Total (USD)</Typography>
-                  <Typography>${subtotal.toFixed(2)}</Typography>
+                  <Typography>Total (INR)</Typography>
+                  <Typography>₹{subtotal.toFixed(2)}</Typography>
                 </Box>
 
                 <Button
                   variant="contained"
                   color="primary"
                   fullWidth
+                  onClick={handleConfirmOrder}
+                  disabled={isLoading}
                   sx={{
                     mt: 2,
                     py: 1.5,
@@ -415,13 +542,40 @@ const Cart = () => {
                     "&:hover": { backgroundColor: "secondary.main" },
                   }}
                 >
-                  Confirm Order
+                  {getButtonText()}
                 </Button>
               </Stack>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Razorpay Payment Modal */}
+      <RazorpayPayment
+        open={showRazorpay}
+        onClose={() => setShowRazorpay(false)}
+        orderAmount={subtotal}
+        orderId={orderId}
+        formData={formData}
+        onPaymentSuccess={handlePaymentSuccess}
+        onPaymentError={handlePaymentError}
+      />
+
+      {/* Alert Snackbar */}
+      <Snackbar
+        open={showAlert}
+        autoHideDuration={6000}
+        onClose={() => setShowAlert(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setShowAlert(false)}
+          severity={alertSeverity}
+          sx={{ width: "100%" }}
+        >
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

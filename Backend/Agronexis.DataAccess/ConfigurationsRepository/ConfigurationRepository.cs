@@ -617,5 +617,41 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             _dbContext.SaveChangesAsync();
             return order.Id.ToString();
         }
+
+        public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
+        {
+            try
+            {
+                var user = await _dbContext.Users
+                    .Include(u => u.Roles)
+                    .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive && !u.IsDeleted);
+
+                if (user == null)
+                {
+                    return null;
+                }
+
+                return new UserProfileResponseModel
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    MobileNumber = user.MobileNumber,
+                    RoleId = user.RoleId,
+                    RoleName = user.Roles?.Name,
+                    CreatedDate = user.CreatedDate,
+                    ModifiedDate = user.ModifiedDate,
+                    BrandId = user.BrandId,
+                    IsActive = user.IsActive
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetUserProfile: {ex.Message}");
+                throw;
+            }
+        }
     }
 }

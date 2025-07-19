@@ -2,6 +2,8 @@
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using static Agronexis.Common.Constants;
 
 namespace Agronexis.Api.Controllers
@@ -79,6 +81,33 @@ namespace Agronexis.Api.Controllers
 
             _logger.LogInformation("Registration successful for correlation ID: {CorrelationId}", correlationId);
             return Ok(CreateSuccessResponse(item));
+        }
+
+        [HttpGet("user-profile")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponseModel>> GetUserProfile()
+        {
+            _logger.LogInformation("GetUserProfile endpoint called");
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("GetUserProfile called without valid user ID");
+                return Unauthorized("Invalid user token");
+            }
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing user profile request for user ID: {UserId}, correlation ID: {CorrelationId}", userId, correlationId);
+
+            var userProfile = await _configService.GetUserProfile(Guid.Parse(userId), correlationId);
+            if (userProfile == null)
+            {
+                _logger.LogWarning("User profile not found for user ID: {UserId}, correlation ID: {CorrelationId}", userId, correlationId);
+                return NotFound("User profile not found");
+            }
+
+            _logger.LogInformation("User profile retrieved successfully for user ID: {UserId}, correlation ID: {CorrelationId}", userId, correlationId);
+            return Ok(CreateSuccessResponse(userProfile));
         }
     }
 }

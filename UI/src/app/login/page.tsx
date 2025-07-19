@@ -14,32 +14,25 @@ import LoginImg from "../../../public/Login.png";
 
 import LoginForm from "@/components/LoginForm";
 import SignUpForm from "@/components/SignUpForm";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
-import { apiClient } from "@/utils/apiClient";
+import { UserSessionManager, type UserProfile } from "@/utils/userSession";
 
 interface LoginCredentials {
   username: string;
   password: string;
 }
 
-interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-}
-
 interface SignUpCredentials {
   username: string;
   password: string;
   email: string;
-  full_name: string;
-  phone_number: string;
-}
-
-interface SignUpResponse {
-  message: string;
+  firstName: string;
+  lastName: string;
+  mobileNumber: string;
+  roleId: string;
 }
 
 export default function LoginPage() {
@@ -49,29 +42,83 @@ export default function LoginPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { showError, showSuccess } = useNotification();
 
-  const handleLogin = async (credentials: LoginCredentials): Promise<void> => {
+  const searchParams = useSearchParams();
+
+  // Function to fetch user profile after login
+  const fetchUserProfile = async (
+    accessToken: string
+  ): Promise<UserProfile | null> => {
     try {
-      const data = await apiClient.post<LoginResponse>(
-        "/Auth/user-login",
-        credentials
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-profile`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      // Store tokens in cookies
-      Cookies.set("access_token", data.access_token, {
-        secure: true,
-        sameSite: "strict",
-      });
-      Cookies.set("refresh_token", data.refresh_token, {
-        secure: true,
-        sameSite: "strict",
-      });
-
-      showSuccess("Login successful! Redirecting...");
-
-      // Redirect to the home page
-      router.push("/");
+      if (response.ok) {
+        const data = await response.json();
+        return data.data;
+      } else {
+        console.error("Failed to fetch user profile");
+        return null;
+      }
     } catch (error) {
-      showError(error as Error);
+      console.error("Error fetching user profile:", error);
+      return null;
+    }
+  };
+
+  const handleLogin = async (credentials: LoginCredentials): Promise<void> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const loginData = data.data;
+
+        // Store tokens in cookies
+        Cookies.set("access_token", loginData.accessToken, { expires: 7 });
+        Cookies.set("refresh_token", loginData.refreshToken, { expires: 7 });
+
+        // Fetch user profile
+        const userProfile = await fetchUserProfile(loginData.accessToken);
+
+        if (userProfile) {
+          // Store user profile using session manager
+          UserSessionManager.setUserProfile(userProfile);
+
+          // Store user role in cookies for middleware
+          Cookies.set("user_role", userProfile.roleName, { expires: 7 });
+
+          console.log("User profile stored:", userProfile);
+        }
+
+        showSuccess("Login successful! Redirecting...");
+
+        // Handle redirect
+        const redirectPath = searchParams?.get("redirect") ?? "/";
+        router.push(redirectPath);
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message ?? "Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      showError("Login failed");
     }
   };
 
@@ -79,17 +126,30 @@ export default function LoginPage() {
     credentials: SignUpCredentials
   ): Promise<void> => {
     try {
-      const data = await apiClient.post<SignUpResponse>(
-        "/Auth/user-registration",
-        credentials
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-registration`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        }
       );
 
-      showSuccess(data.message || "Sign-up successful! Please log in.");
+      if (response.ok) {
+        const data = await response.json();
+        showSuccess(data.data?.message ?? "Sign-up successful! Please log in.");
 
-      // Switch to login form after successful sign-up
-      setIsLogin(true);
+        // Switch to login form after successful sign-up
+        setIsLogin(true);
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message ?? "Sign Up failed");
+      }
     } catch (error) {
-      showError(error as Error);
+      console.error("Sign Up error:", error);
+      showError("Sign Up failed");
     }
   };
 
