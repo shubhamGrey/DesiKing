@@ -9,7 +9,7 @@ import {
   Button,
   Grid,
   InputLabel,
-  CircularProgress,
+  Skeleton,
   useMediaQuery,
   IconButton,
   Stack,
@@ -419,7 +419,13 @@ export default function Contact() {
               }}
               endIcon={
                 isSubmitting ? (
-                  <CircularProgress size={16} color="inherit" />
+                  <Skeleton
+                    variant="circular"
+                    width={16}
+                    height={16}
+                    animation="pulse"
+                    sx={{ bgcolor: "currentColor" }}
+                  />
                 ) : (
                   <ArrowForward />
                 )

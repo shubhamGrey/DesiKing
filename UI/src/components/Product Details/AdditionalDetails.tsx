@@ -1,5 +1,12 @@
 import theme from "@/styles/theme";
-import { ArrowRight } from "@mui/icons-material";
+import {
+  Star,
+  FeaturedPlayList,
+  LocalOffer,
+  ExpandMore,
+  CheckCircle,
+  Dining,
+} from "@mui/icons-material";
 import {
   Accordion,
   AccordionDetails,
@@ -8,8 +15,12 @@ import {
   Grid,
   Typography,
   useMediaQuery,
+  Paper,
+  Card,
+  Rating,
 } from "@mui/material";
 import React from "react";
+import { michroma } from "@/styles/fonts";
 
 // Define the type for selectedProduct
 interface Product {
@@ -51,17 +62,30 @@ const AdditionalDetails = ({
     {
       id: "keyFeatures",
       title: "Key Features",
-      expanded: false,
+      expanded: !isMobile, // Expand by default on desktop
+      icon: <FeaturedPlayList />,
+      description: "Discover what makes this product special",
     },
     {
       id: "uses",
       title: `${selectedProduct?.name} Uses`,
       expanded: false,
+      icon: <LocalOffer />,
+      description: "Learn how to use this product effectively",
+    },
+    {
+      id: "nutritionalInfo",
+      title: "Nutritional Information",
+      expanded: false,
+      icon: <Dining />,
+      description: "Complete nutritional details and health benefits",
     },
     {
       id: "customer_reviews",
       title: "Customer Reviews",
       expanded: false,
+      icon: <Star />,
+      description: "See what our customers are saying",
     },
   ]);
 
@@ -75,94 +99,304 @@ const AdditionalDetails = ({
     );
   };
 
-  const [selectedSection, setSelectedSection] = React.useState<
-    keyof Product | null
-  >("keyFeatures");
+  const renderCustomerReviews = () => (
+    <Box sx={{ p: 1.5 }}>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+        Customer reviews are coming soon. Be the first to review this product!
+      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1.5 }}>
+        <Rating value={0} readOnly />
+        <Typography variant="body2" color="text.secondary">
+          No reviews yet
+        </Typography>
+      </Box>
+    </Box>
+  );
 
-  return (
-    <>
-      {!isMobile ? (
-        <Grid container spacing={2} sx={{ mt: 15 }}>
-          <Grid
-            size={{ xs: 12, md: 4 }}
-            sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 3 }}
-          >
-            {sections.map((section) => (
+  const renderNutritionalInfo = () => (
+    <Box sx={{ p: isMobile ? 1 : 1.5 }}>
+      {selectedProduct.nutritionalInfo ? (
+        <Box>
+          {selectedProduct.nutritionalInfo.split(",").map((item, index) => {
+            const trimmedItem = item.trim();
+            if (!trimmedItem) return null;
+
+            return isMobile ? (
+              // Mobile: Simple list
               <Typography
-                key={section.id}
-                sx={{
-                  textDecoration:
-                    section.id === selectedSection ? "underline" : "none",
-                  cursor: "pointer",
-                }}
-                variant="body1"
-                color="text.primary"
-                onClick={() => setSelectedSection(section.id as keyof Product)}
+                key={`nutritional-mobile-${index}-${trimmedItem.slice(0, 10)}`}
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1.5, display: "flex", alignItems: "flex-start" }}
               >
-                {section.title}
+                <CheckCircle
+                  sx={{
+                    fontSize: 16,
+                    mr: 1,
+                    mt: 0.2,
+                    color: "primary.main",
+                  }}
+                />
+                {trimmedItem}
+              </Typography>
+            ) : (
+              // Desktop: Enhanced grid layout
+              <Grid
+                key={`nutritional-desktop-${index}-${trimmedItem.slice(0, 10)}`}
+                container
+                spacing={1.5}
+                sx={{ mb: 1.5 }}
+              >
+                <Grid size={{ xs: 12 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: "grey.50",
+                      borderLeft: "4px solid",
+                      borderLeftColor: "primary.main",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "grey.100",
+                        transform: "translateX(4px)",
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                      <CheckCircle
+                        sx={{
+                          color: "primary.main",
+                          mr: 1.2,
+                          mt: 0.1,
+                          fontSize: 18,
+                        }}
+                      />
+                      <Typography
+                        variant="body1"
+                        color="text.primary"
+                        sx={{ lineHeight: 1.5, fontSize: "0.9rem" }}
+                      >
+                        {trimmedItem}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Grid>
+              </Grid>
+            );
+          })}
+        </Box>
+      ) : (
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ fontStyle: "italic" }}
+        >
+          Nutritional information is being updated. Please contact us for
+          detailed information.
+        </Typography>
+      )}
+    </Box>
+  );
+
+  const renderFeaturesList = (items: string[], sectionId: string) => {
+    if (sectionId === "customer_reviews") {
+      return renderCustomerReviews();
+    }
+
+    if (sectionId === "nutritionalInfo") {
+      return renderNutritionalInfo();
+    }
+
+    return (
+      <Box sx={{ p: isMobile ? 1 : 1.5 }}>
+        {isMobile ? (
+          // Mobile: Simple list
+          <Box>
+            {items.map((item, index) => (
+              <Typography
+                key={`${sectionId}-mobile-${index}-${item.slice(0, 10)}`}
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1.5, display: "flex", alignItems: "flex-start" }}
+              >
+                <CheckCircle
+                  sx={{
+                    fontSize: 16,
+                    mr: 1,
+                    mt: 0.2,
+                    color: "primary.main",
+                  }}
+                />
+                {item}
               </Typography>
             ))}
-          </Grid>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Typography variant="h6" color="text.primary" sx={{ mb: 3 }}>
-              {sections.find((item) => item.id == selectedSection)?.title}
-            </Typography>
-            {selectedSection &&
-              selectedProduct &&
-              Array.isArray(selectedProduct[selectedSection]) &&
-              selectedProduct[selectedSection].map((item, index) => (
-                <Typography
-                  key={index}
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 1 }}
+          </Box>
+        ) : (
+          // Desktop: Enhanced grid layout
+          <Grid container spacing={1.5}>
+            {items.map((item, index) => (
+              <Grid
+                key={`${sectionId}-desktop-${index}-${item.slice(0, 10)}`}
+                size={{ xs: 12, md: 6 }}
+              >
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 1.5,
+                    backgroundColor: "grey.50",
+                    borderLeft: "4px solid",
+                    borderLeftColor: "primary.main",
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      backgroundColor: "grey.100",
+                      transform: "translateX(4px)",
+                    },
+                  }}
                 >
-                  <ArrowRight sx={{ fontSize: 16, verticalAlign: "middle" }} />{" "}
-                  {item}
-                </Typography>
-              ))}
-          </Grid>
-        </Grid>
-      ) : (
-        <Box sx={{ mt: 4 }}>
-          {sections.map((section) => (
-            <Accordion
-              key={section.id}
-              expanded={section.expanded}
-              sx={{ backgroundColor: "transparent" }}
-              elevation={0}
-              onClick={() => toggleSection(section.id)}
-            >
-              <AccordionSummary expandIcon={<ArrowRight />}>
-                <Typography variant="h6" color="text.primary">
-                  {section.title}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                {section.id &&
-                  selectedProduct &&
-                  Array.isArray(selectedProduct[section.id as keyof Product]) &&
-                  (
-                    selectedProduct[section.id as keyof Product] as string[]
-                  ).map((item, index) => (
+                  <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                    <CheckCircle
+                      sx={{
+                        color: "primary.main",
+                        mr: 1.2,
+                        mt: 0.1,
+                        fontSize: 18,
+                      }}
+                    />
                     <Typography
-                      key={index}
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
+                      variant="body1"
+                      color="text.primary"
+                      sx={{ lineHeight: 1.5, fontSize: "0.9rem" }}
                     >
-                      <ArrowRight
-                        sx={{ fontSize: 16, verticalAlign: "middle" }}
-                      />{" "}
                       {item}
                     </Typography>
-                  ))}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </Box>
-      )}
-    </>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Box>
+    );
+  };
+
+  return (
+    <Box sx={{ mt: 10 }}>
+      {/* Desktop: Enhanced header */}
+
+      {/* Sections */}
+      {sections.map((section) => (
+        <Card
+          key={section.id}
+          elevation={0}
+          sx={{
+            mb: 1.5,
+            border: "1px solid",
+            borderColor: "primary.main",
+            borderRadius: 2,
+            backgroundColor: "transparent",
+            overflow: "hidden",
+            transition: "all 0.3s ease-in-out",
+            "&:hover": !isMobile
+              ? {
+                  elevation: 4,
+                  transform: "translateY(-2px)",
+                }
+              : {},
+          }}
+        >
+          <Accordion
+            expanded={section.expanded}
+            sx={{
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              "&:before": { display: "none" },
+            }}
+            onChange={() => toggleSection(section.id)}
+          >
+            <AccordionSummary
+              expandIcon={
+                <ExpandMore
+                  sx={{
+                    color: "primary.main",
+                    fontSize: 20,
+                  }}
+                />
+              }
+              sx={{
+                backgroundColor: isMobile ? "transparent" : "primary.main",
+                color: isMobile ? "text.primary" : "primary.contrastText",
+                py: 1,
+                px: 2.5,
+                minHeight: 44,
+                "&:hover": !isMobile
+                  ? {
+                      backgroundColor: "secondary.main",
+                    }
+                  : {},
+                "& .MuiAccordionSummary-content": {
+                  alignItems: "center",
+                  margin: "6px 0",
+                },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+                {!isMobile && (
+                  <Box
+                    sx={{
+                      mr: 1.2,
+                      color: "inherit",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {React.cloneElement(section.icon, {
+                      sx: { fontSize: 18 },
+                    })}
+                  </Box>
+                )}
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontFamily: michroma.style.fontFamily,
+                      fontWeight: 600,
+                      mb: isMobile ? 0 : 0.15,
+                      fontSize: isMobile ? "0.95rem" : "1rem",
+                    }}
+                  >
+                    {section.title}
+                  </Typography>
+                  {!isMobile && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        opacity: 0.9,
+                        fontWeight: 400,
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      {section.description}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 0 }}>
+              {section.id === "customer_reviews" && renderCustomerReviews()}
+              {section.id === "nutritionalInfo" && renderNutritionalInfo()}
+              {section.id !== "customer_reviews" &&
+                section.id !== "nutritionalInfo" &&
+                selectedProduct &&
+                Array.isArray(selectedProduct[section.id as keyof Product]) &&
+                renderFeaturesList(
+                  selectedProduct[section.id as keyof Product] as string[],
+                  section.id
+                )}
+            </AccordionDetails>
+          </Accordion>
+        </Card>
+      ))}
+    </Box>
   );
 };
 

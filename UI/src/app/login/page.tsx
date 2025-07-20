@@ -7,7 +7,7 @@ import {
   Link,
   useMediaQuery,
   useTheme,
-  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import Image from "next/image";
 import BrandLogo from "../../../public/AgroNexisGreen.png";
@@ -41,12 +41,98 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          minHeight="100vh"
+          sx={{
+            minHeight: "100vh",
+            px: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+          }}
         >
-          <CircularProgress size={60} />
+          {/* Logo skeleton */}
+          <Skeleton
+            variant="rectangular"
+            width={100}
+            height={100}
+            sx={{
+              position: "absolute",
+              top: 20,
+              left: 25,
+              zIndex: 3,
+              borderRadius: 2,
+            }}
+          />
+
+          {/* Main content skeleton */}
+          <Grid
+            container
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+            sx={{
+              height: "100%",
+              width: "100%",
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
+            {/* Form section skeleton */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Box sx={{ ml: { xs: 0, sm: "100px" }, mt: { xs: 10, sm: 12 } }}>
+                {/* Form title */}
+                <Skeleton
+                  variant="text"
+                  width={200}
+                  height={40}
+                  sx={{ mb: 3 }}
+                />
+
+                {/* Form fields */}
+                <Skeleton
+                  variant="rectangular"
+                  width="100%"
+                  height={56}
+                  sx={{ mb: 2, borderRadius: 1 }}
+                />
+                <Skeleton
+                  variant="rectangular"
+                  width="100%"
+                  height={56}
+                  sx={{ mb: 3, borderRadius: 1 }}
+                />
+
+                {/* Submit button */}
+                <Skeleton
+                  variant="rectangular"
+                  width="100%"
+                  height={48}
+                  sx={{ mb: 2, borderRadius: 1 }}
+                />
+
+                {/* Link text */}
+                <Skeleton
+                  variant="text"
+                  width={250}
+                  height={20}
+                  sx={{ mx: "auto" }}
+                />
+              </Box>
+            </Grid>
+
+            {/* Image section skeleton (desktop only) */}
+            <Grid
+              size={{ xs: 12, sm: 6 }}
+              sx={{ display: { xs: "none", sm: "flex" } }}
+            >
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height={400}
+                sx={{ borderRadius: 2 }}
+              />
+            </Grid>
+          </Grid>
         </Box>
       }
     >
@@ -58,6 +144,7 @@ export default function LoginPage() {
 function LoginPageContent() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { showError, showSuccess } = useNotification();
@@ -93,7 +180,70 @@ function LoginPageContent() {
     }
   };
 
+  // Helper function to validate and get redirect path
+  const getValidRedirectPath = (
+    searchParams: URLSearchParams | null
+  ): string => {
+    const rawRedirectPath = searchParams?.get("redirect");
+
+    if (!rawRedirectPath) return "/";
+
+    try {
+      // Decode the URL in case it's encoded
+      const decodedPath = decodeURIComponent(rawRedirectPath);
+
+      // Validate redirect path - must start with / and not be external
+      if (decodedPath.startsWith("/") && !decodedPath.includes("://")) {
+        return decodedPath;
+      }
+    } catch {
+      console.warn("Invalid redirect path:", rawRedirectPath);
+    }
+
+    return "/";
+  };
+
+  // Helper function to handle successful login
+  const handleSuccessfulLogin = async (loginData: any) => {
+    // Store tokens in cookies
+    Cookies.set("access_token", loginData.accessToken, { expires: 7 });
+    Cookies.set("refresh_token", loginData.refreshToken, { expires: 7 });
+
+    // Fetch user profile (but don't block redirect if it fails)
+    try {
+      const userProfile = await fetchUserProfile(loginData.accessToken);
+
+      if (userProfile) {
+        // Store user profile using session manager
+        UserSessionManager.setUserProfile(userProfile);
+
+        // Store user role in cookies for middleware
+        Cookies.set("user_role", userProfile.roleName, { expires: 7 });
+
+        console.log("User profile stored:", userProfile);
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to fetch user profile, but login will continue:",
+        error
+      );
+    }
+
+    showSuccess("Login successful! Redirecting...");
+
+    // Handle redirect with proper validation and timing
+    const redirectPath = getValidRedirectPath(searchParams);
+
+    // Add a small delay to ensure all async operations complete
+    setTimeout(() => {
+      router.push(redirectPath);
+    }, 150); // Slightly increased delay for better reliability
+  };
+
   const handleLogin = async (credentials: LoginCredentials): Promise<void> => {
+    if (isLoading) return; // Prevent multiple simultaneous login attempts
+
+    setIsLoading(true);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-login`,
@@ -108,37 +258,20 @@ function LoginPageContent() {
 
       if (response.ok) {
         const data = await response.json();
-        const loginData = data.data;
-
-        // Store tokens in cookies
-        Cookies.set("access_token", loginData.accessToken, { expires: 7 });
-        Cookies.set("refresh_token", loginData.refreshToken, { expires: 7 });
-
-        // Fetch user profile
-        const userProfile = await fetchUserProfile(loginData.accessToken);
-
-        if (userProfile) {
-          // Store user profile using session manager
-          UserSessionManager.setUserProfile(userProfile);
-
-          // Store user role in cookies for middleware
-          Cookies.set("user_role", userProfile.roleName, { expires: 7 });
-
-          console.log("User profile stored:", userProfile);
-        }
-
-        showSuccess("Login successful! Redirecting...");
-
-        // Handle redirect
-        const redirectPath = searchParams?.get("redirect") ?? "/";
-        router.push(redirectPath);
+        await handleSuccessfulLogin(data.data);
       } else {
-        const errorData = await response.json();
-        showError(errorData.message ?? "Login failed");
+        try {
+          const errorData = await response.json();
+          showError(errorData.message ?? "Login failed");
+        } catch {
+          showError("Login failed - server error");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
       showError("Login failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 

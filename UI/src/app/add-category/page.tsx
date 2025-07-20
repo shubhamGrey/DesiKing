@@ -244,7 +244,7 @@ const AddCategory: React.FC = () => {
                 },
               }}
             >
-              Product Categories
+              Home
             </Link>
             <Typography variant="body1" color="text.primary">
               {isEditMode ? "Edit Category" : "Add Category"}

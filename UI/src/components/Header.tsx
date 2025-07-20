@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Box,
@@ -15,14 +15,10 @@ import {
   useMediaQuery,
   ListItemButton,
   Grid,
-  InputBase,
-  styled,
-  alpha,
   Badge,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
-  SearchOutlined,
   PermIdentityOutlined,
   ShoppingCartOutlined,
 } from "@mui/icons-material";
@@ -34,56 +30,21 @@ import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
 import { useCart } from "@/contexts/CartContext";
 import { useUserSession } from "@/utils/userSession";
-
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(1),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  width: "100%",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    [theme.breakpoints.up("sm")]: {
-      width: "12ch",
-      "&:focus": {
-        width: "20ch",
-      },
-    },
-  },
-}));
+import SearchAutocomplete from "./SearchAutocomplete";
 
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const { itemCount } = useCart();
   const { getUserFullName, isLoggedIn } = useUserSession();
+
+  // Only run after client-side hydration
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const leftNavLinks = [
     { label: "Home", href: "/" },
@@ -96,9 +57,10 @@ export default function Header() {
   const rightNavLinks = [
     {
       icon: <PermIdentityOutlined />,
-      href: isLoggedIn() ? "/profile" : "/login",
+      href: isClient && isLoggedIn() ? "/profile" : "/login",
       key: "profile",
-      label: isLoggedIn() ? getUserFullName() || "Profile" : "Login",
+      label:
+        isClient && isLoggedIn() ? getUserFullName() || "Profile" : "Login",
     },
     {
       icon: (
@@ -200,16 +162,10 @@ export default function Header() {
                     justifyContent: "right",
                   }}
                 >
-                  <Stack direction="row" spacing={1}>
-                    <Search>
-                      <SearchIconWrapper>
-                        <SearchOutlined />
-                      </SearchIconWrapper>
-                      <StyledInputBase
-                        placeholder="Search…"
-                        inputProps={{ "aria-label": "search" }}
-                      />
-                    </Search>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Box sx={{ minWidth: isMobile ? 200 : 250 }}>
+                      <SearchAutocomplete />
+                    </Box>
                     {rightNavLinks.map(({ icon, href, key }) => {
                       const isActive = pathname === href;
                       return (
@@ -321,6 +277,17 @@ export default function Header() {
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
+          {/* Mobile Search */}
+          <Box
+            sx={{
+              p: 2,
+              borderBottom: "1px solid rgba(255,255,255,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SearchAutocomplete isMobile={true} onClose={toggleDrawer(false)} />
+          </Box>
+
           <List>
             {leftNavLinks.map(({ label, href }) => {
               const isActive = pathname === href;

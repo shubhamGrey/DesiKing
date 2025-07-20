@@ -17,7 +17,19 @@ import {
   useMediaQuery,
   Alert,
   Snackbar,
+  Chip,
+  Avatar,
+  FormControl,
 } from "@mui/material";
+import {
+  CreditCard,
+  AccountBalance,
+  Payment,
+  PhoneAndroid,
+  LocalAtm,
+  Security,
+  Public,
+} from "@mui/icons-material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import theme from "@/styles/theme";
@@ -57,6 +69,109 @@ const Cart = () => {
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
     "success"
   );
+
+  // Comprehensive payment methods for Indian and International customers
+  const paymentMethods = {
+    indian: [
+      {
+        id: "upi",
+        name: "UPI",
+        description:
+          "Pay instantly using Google Pay, PhonePe, Paytm, or any UPI app",
+        icon: <PhoneAndroid />,
+        popular: true,
+        fees: "No extra charges",
+        supported: ["GPay", "PhonePe", "Paytm", "BHIM", "Amazon Pay"],
+      },
+      {
+        id: "cards",
+        name: "Credit/Debit Cards",
+        description: "Visa, Mastercard, RuPay, American Express",
+        icon: <CreditCard />,
+        popular: true,
+        fees: "No extra charges",
+        supported: ["Visa", "Mastercard", "RuPay", "Amex"],
+      },
+      {
+        id: "netbanking",
+        name: "Net Banking",
+        description: "All major Indian banks supported",
+        icon: <AccountBalance />,
+        popular: false,
+        fees: "No extra charges",
+        supported: ["SBI", "HDFC", "ICICI", "Axis", "PNB", "50+ more banks"],
+      },
+      {
+        id: "wallets",
+        name: "Digital Wallets",
+        description: "Paytm, PhonePe, Amazon Pay, and more",
+        icon: <Payment />,
+        popular: false,
+        fees: "No extra charges",
+        supported: ["Paytm", "PhonePe", "Amazon Pay", "MobiKwik", "Freecharge"],
+      },
+      {
+        id: "cod",
+        name: "Cash on Delivery",
+        description: "Pay when your order is delivered",
+        icon: <LocalAtm />,
+        popular: true,
+        fees: "₹40 handling charges for orders below ₹500",
+        supported: ["Cash", "Card on delivery (select areas)"],
+      },
+    ],
+    international: [
+      {
+        id: "paypal",
+        name: "PayPal",
+        description: "Pay securely with your PayPal account",
+        icon: <Security />,
+        popular: true,
+        fees: "Standard PayPal fees apply",
+        supported: ["PayPal Balance", "Linked Cards", "Bank Account"],
+      },
+      {
+        id: "stripe",
+        name: "Credit/Debit Cards",
+        description: "Visa, Mastercard, American Express worldwide",
+        icon: <CreditCard />,
+        popular: true,
+        fees: "Standard processing fees apply",
+        supported: ["Visa", "Mastercard", "Amex", "Discover"],
+      },
+      {
+        id: "applepay",
+        name: "Apple Pay",
+        description: "Quick and secure payment with Touch ID or Face ID",
+        icon: <PhoneAndroid />,
+        popular: false,
+        fees: "No extra charges",
+        supported: ["iPhone", "iPad", "Mac", "Apple Watch"],
+      },
+      {
+        id: "googlepay_intl",
+        name: "Google Pay",
+        description: "Pay with Google Pay (International)",
+        icon: <PhoneAndroid />,
+        popular: false,
+        fees: "No extra charges",
+        supported: ["Android", "Chrome", "Google Account"],
+      },
+      {
+        id: "crypto",
+        name: "Cryptocurrency",
+        description: "Bitcoin, Ethereum, and other cryptocurrencies",
+        icon: <Public />,
+        popular: false,
+        fees: "Network fees apply",
+        supported: ["Bitcoin", "Ethereum", "USDT", "USDC"],
+      },
+    ],
+  };
+
+  const [selectedRegion, setSelectedRegion] = useState<
+    "indian" | "international"
+  >("indian");
 
   // Form data state
   const [formData, setFormData] = useState<PaymentFormData>({
@@ -110,6 +225,86 @@ const Cart = () => {
     }
   }, []);
 
+  // Helper function to handle COD orders
+  const handleCODOrder = async () => {
+    try {
+      setIsLoading(true);
+
+      const orderData: OrderCreateRequest = {
+        userId: userId,
+        totalAmount: subtotal,
+        currency: "INR",
+        brandId: cartItems[0].brandId,
+        status: "created",
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+
+      const result = await createOrder(orderData, "COD");
+
+      setAlertMessage("Order placed successfully! You will pay on delivery.");
+      setAlertSeverity("success");
+      setShowAlert(true);
+
+      clearCart();
+
+      setTimeout(() => {
+        router.push(
+          `/payment-result?status=success&order_id=${result.orderId}&payment_method=cod`
+        );
+      }, 2000);
+    } catch (error: any) {
+      console.error("COD order error:", error);
+      setAlertMessage("Failed to place order. Please try again.");
+      setAlertSeverity("error");
+      setShowAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to handle Razorpay orders
+  const handleRazorpayOrder = async () => {
+    try {
+      setIsLoading(true);
+      const orderData: OrderCreateRequest = {
+        userId: userId,
+        totalAmount: subtotal,
+        currency: "INR",
+        brandId: cartItems[0].brandId,
+        status: "created",
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+
+      const result = await createOrder(orderData, "RAZORPAY");
+      setOrderId(result.orderId ?? result.data?.id ?? "");
+      setShowRazorpay(true);
+    } catch (error: any) {
+      console.error("Razorpay order error:", error);
+      setAlertMessage("Failed to create order. Please try again.");
+      setAlertSeverity("error");
+      setShowAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to show coming soon message
+  const showComingSoonMessage = (methodName: string) => {
+    setAlertMessage(
+      `${methodName} integration coming soon! Please select another payment method.`
+    );
+    setAlertSeverity("error");
+    setShowAlert(true);
+  };
+
   // Handle order confirmation
   const handleConfirmOrder = async () => {
     if (!validateForm()) {
@@ -119,76 +314,44 @@ const Cart = () => {
       return;
     }
 
+    // Handle Cash on Delivery
     if (paymentMethod === "cod") {
-      // Handle Cash on Delivery
-      try {
-        setIsLoading(true);
+      await handleCODOrder();
+      return;
+    }
 
-        const orderData: OrderCreateRequest = {
-          userId: userId, // Use safely parsed user ID
-          totalAmount: subtotal,
-          currency: "INR",
-          brandId: cartItems[0].brandId,
-          status: "created",
-          items: cartItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        };
+    // Handle International Payment Methods
+    if (selectedRegion === "international") {
+      const methodMessages: Record<string, string> = {
+        paypal: "PayPal",
+        stripe: "Stripe",
+        applepay: "Apple Pay",
+        googlepay_intl: "Google Pay International",
+        crypto: "Cryptocurrency payment",
+      };
 
-        const result = await createOrder(orderData, "COD");
-
-        setAlertMessage("Order placed successfully! You will pay on delivery.");
-        setAlertSeverity("success");
-        setShowAlert(true);
-
-        // Clear cart after successful order
-        clearCart();
-
-        // Redirect to success page after delay
-        setTimeout(() => {
-          router.push(
-            `/payment-result?status=success&order_id=${result.orderId}&payment_method=cod`
-          );
-        }, 2000);
-      } catch (error: any) {
-        console.error("COD order error:", error);
-        setAlertMessage("Failed to place order. Please try again.");
-        setAlertSeverity("error");
-        setShowAlert(true);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Handle online payment with Razorpay
-      try {
-        setIsLoading(true);
-        const orderData: OrderCreateRequest = {
-          userId: userId, // Use safely parsed user ID`
-          totalAmount: subtotal,
-          currency: "INR",
-          brandId: cartItems[0].brandId,
-          status: "created",
-          items: cartItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        };
-
-        const result = await createOrder(orderData, "RAZORPAY");
-        setOrderId(result.orderId ?? result.data?.id ?? "");
-        setShowRazorpay(true);
-      } catch (error: any) {
-        console.error("Razorpay order error:", error);
-        setAlertMessage("Failed to create order. Please try again.");
-        setAlertSeverity("error");
-        setShowAlert(true);
-      } finally {
-        setIsLoading(false);
+      const methodName = methodMessages[paymentMethod];
+      if (methodName) {
+        showComingSoonMessage(methodName);
+        return;
       }
     }
+
+    // Handle Indian Payment Methods via Razorpay
+    if (
+      selectedRegion === "indian" &&
+      ["upi", "cards", "netbanking", "wallets"].includes(paymentMethod)
+    ) {
+      await handleRazorpayOrder();
+      return;
+    }
+
+    // Fallback for unknown payment methods
+    setAlertMessage(
+      "Selected payment method is not supported yet. Please choose another option."
+    );
+    setAlertSeverity("error");
+    setShowAlert(true);
   };
 
   // Handle successful payment
@@ -217,8 +380,32 @@ const Cart = () => {
   // Get button text based on current state
   const getButtonText = () => {
     if (isLoading) return "Processing...";
-    if (paymentMethod === "cod") return "Place Order (COD)";
-    return "Pay Now";
+
+    // Handle specific payment methods with appropriate button text
+    switch (paymentMethod) {
+      case "cod":
+        return "Place Order (Cash on Delivery)";
+      case "upi":
+        return "Pay with UPI";
+      case "cards":
+        return "Pay with Card";
+      case "netbanking":
+        return "Pay with Net Banking";
+      case "wallets":
+        return "Pay with Wallet";
+      case "paypal":
+        return "Pay with PayPal";
+      case "stripe":
+        return "Pay with Credit/Debit Card";
+      case "applepay":
+        return "Pay with Apple Pay";
+      case "googlepay_intl":
+        return "Pay with Google Pay";
+      case "crypto":
+        return "Pay with Cryptocurrency";
+      default:
+        return "Pay Now";
+    }
   };
 
   // Handle quantity update
@@ -266,7 +453,7 @@ const Cart = () => {
                 color="primary.main"
                 sx={{ mb: 3 }}
               >
-                Delivery Information
+                Shipping Address
               </Typography>
               <Grid container spacing={2}>
                 <Grid size={6}>
@@ -309,18 +496,6 @@ const Cart = () => {
                 </Grid>
                 <Grid size={6}>
                   <TextField
-                    label="City"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    error={!!formErrors.city}
-                    helperText={formErrors.city}
-                  />
-                </Grid>
-                <Grid size={4}>
-                  <TextField
                     label="State"
                     fullWidth
                     size="small"
@@ -331,7 +506,19 @@ const Cart = () => {
                     helperText={formErrors.state}
                   />
                 </Grid>
-                <Grid size={4}>
+                <Grid size={6}>
+                  <TextField
+                    label="City"
+                    fullWidth
+                    size="small"
+                    placeholder="Enter your city"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange("city", e.target.value)}
+                    error={!!formErrors.city}
+                    helperText={formErrors.city}
+                  />
+                </Grid>
+                <Grid size={6}>
                   <TextField
                     label="ZIP"
                     fullWidth
@@ -344,22 +531,6 @@ const Cart = () => {
                     error={!!formErrors.zipCode}
                     helperText={formErrors.zipCode}
                   />
-                </Grid>
-                <Grid size={4}>
-                  <TextField
-                    label="State"
-                    select
-                    fullWidth
-                    size="small"
-                    slotProps={{ select: { native: true } }}
-                    value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
-                  >
-                    <option value="Maharashtra">MH</option>
-                    <option value="Delhi">DL</option>
-                    <option value="Karnataka">KA</option>
-                    <option value="Tamil Nadu">TN</option>
-                  </TextField>
                 </Grid>
                 <Grid size={12}>
                   <TextField
@@ -392,41 +563,231 @@ const Cart = () => {
             <CardContent>
               <Typography
                 variant="h6"
-                fontFamily={michroma.style.fontFamily} // Apply michroma font style
+                fontFamily={michroma.style.fontFamily}
                 color="primary.main"
                 sx={{ mb: 3 }}
               >
                 Payment Method
               </Typography>
-              <RadioGroup
-                row
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <FormControlLabel
-                  value="razorpay"
-                  control={<Radio />}
-                  label="Online Payment"
-                />
-                <FormControlLabel
-                  value="cod"
-                  control={<Radio />}
-                  label="Cash on Delivery"
-                />
-              </RadioGroup>
-              <Box mt={2}>
-                {paymentMethod === "razorpay" && (
-                  <Typography variant="body2" color="text.secondary">
-                    Pay securely using Credit Card, Debit Card, UPI, Net
-                    Banking, or Wallet through Razorpay.
-                  </Typography>
-                )}
-                {paymentMethod === "cod" && (
-                  <Typography variant="body2" color="text.secondary">
-                    Pay with cash when your order is delivered to your doorstep.
-                  </Typography>
-                )}
+
+              {/* Region Selection */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Select your region:
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Chip
+                    label="India"
+                    icon={<Public />}
+                    onClick={() => setSelectedRegion("indian")}
+                    color={selectedRegion === "indian" ? "primary" : "default"}
+                    variant={
+                      selectedRegion === "indian" ? "filled" : "outlined"
+                    }
+                    clickable
+                  />
+                  <Chip
+                    label="International"
+                    icon={<Public />}
+                    onClick={() => setSelectedRegion("international")}
+                    color={
+                      selectedRegion === "international" ? "primary" : "default"
+                    }
+                    variant={
+                      selectedRegion === "international" ? "filled" : "outlined"
+                    }
+                    clickable
+                  />
+                </Stack>
               </Box>
+
+              {/* Payment Methods */}
+              <FormControl component="fieldset" fullWidth>
+                <RadioGroup
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  {paymentMethods[selectedRegion].map((method) => (
+                    <Box key={method.id} sx={{ mb: 2 }}>
+                      <FormControlLabel
+                        value={method.id}
+                        control={<Radio />}
+                        label={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              width: "100%",
+                            }}
+                          >
+                            <Avatar
+                              sx={{
+                                bgcolor:
+                                  paymentMethod === method.id
+                                    ? "primary.main"
+                                    : "grey.200",
+                                color:
+                                  paymentMethod === method.id
+                                    ? "white"
+                                    : "grey.600",
+                                width: 32,
+                                height: 32,
+                              }}
+                            >
+                              {method.icon}
+                            </Avatar>
+                            <Box sx={{ flex: 1 }}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                <Typography variant="body1" fontWeight={500}>
+                                  {method.name}
+                                </Typography>
+                                {method.popular && (
+                                  <Chip
+                                    label="Popular"
+                                    size="small"
+                                    color="success"
+                                    variant="filled"
+                                    sx={{ height: 20, fontSize: "0.75rem" }}
+                                  />
+                                )}
+                              </Box>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {method.description}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="primary.main"
+                              >
+                                {method.fees}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        }
+                        sx={{
+                          width: "100%",
+                          margin: 0,
+                          padding: 2,
+                          border: "1px solid",
+                          borderColor:
+                            paymentMethod === method.id
+                              ? "primary.main"
+                              : "grey.300",
+                          borderRadius: 2,
+                          backgroundColor:
+                            paymentMethod === method.id
+                              ? "primary.50"
+                              : "transparent",
+                          "&:hover": {
+                            backgroundColor:
+                              paymentMethod === method.id
+                                ? "primary.100"
+                                : "grey.50",
+                          },
+                        }}
+                      />
+
+                      {/* Supported Methods */}
+                      {paymentMethod === method.id && (
+                        <Box
+                          sx={{
+                            mt: 1,
+                            ml: 4,
+                            p: 2,
+                            bgcolor: "grey.50",
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mb: 1, display: "block" }}
+                          >
+                            Supported options:
+                          </Typography>
+                          <Box
+                            sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
+                          >
+                            {method.supported.map((option) => (
+                              <Chip
+                                key={`${method.id}-${option}`}
+                                label={option}
+                                size="small"
+                                variant="outlined"
+                                sx={{ fontSize: "0.7rem", height: 24 }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+
+              {/* Additional Information */}
+              <Box sx={{ mt: 3, p: 2, bgcolor: "info.50", borderRadius: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="info.main"
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                >
+                  <Security fontSize="small" />
+                  All payments are secured with 256-bit SSL encryption
+                </Typography>
+              </Box>
+
+              {/* Special Offers */}
+              {selectedRegion === "indian" && (
+                <Box
+                  sx={{ mt: 2, p: 2, bgcolor: "success.50", borderRadius: 1 }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="success.main"
+                    fontWeight={500}
+                  >
+                    💳 Special Offers:
+                  </Typography>
+                  <Typography variant="caption" color="success.main">
+                    • Get 5% cashback on UPI payments above ₹1000
+                  </Typography>
+                  <br />
+                  <Typography variant="caption" color="success.main">
+                    • No convenience fee on net banking
+                  </Typography>
+                </Box>
+              )}
+
+              {selectedRegion === "international" && (
+                <Box
+                  sx={{ mt: 2, p: 2, bgcolor: "warning.50", borderRadius: 1 }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="warning.main"
+                    fontWeight={500}
+                  >
+                    🌍 International Payments:
+                  </Typography>
+                  <Typography variant="caption" color="warning.main">
+                    • Currency conversion rates applied at checkout
+                  </Typography>
+                  <br />
+                  <Typography variant="caption" color="warning.main">
+                    • Additional duties/taxes may apply based on destination
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>

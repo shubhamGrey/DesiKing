@@ -9,7 +9,7 @@ import {
   Button,
   Box,
   Typography,
-  CircularProgress,
+  Skeleton,
   Alert,
   Divider,
 } from "@mui/material";
@@ -168,7 +168,16 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
           onClick={handlePayment}
           variant="contained"
           disabled={isProcessing}
-          startIcon={isProcessing ? <CircularProgress size={16} /> : null}
+          startIcon={
+            isProcessing ? (
+              <Skeleton
+                variant="circular"
+                width={16}
+                height={16}
+                animation="pulse"
+              />
+            ) : null
+          }
           sx={{
             backgroundColor: "primary.main",
             "&:hover": { backgroundColor: "secondary.main" },

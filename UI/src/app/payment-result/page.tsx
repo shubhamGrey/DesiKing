@@ -8,7 +8,7 @@ import {
   Button,
   Container,
   Paper,
-  CircularProgress,
+  Skeleton,
   Alert,
 } from "@mui/material";
 import { CheckCircle, ErrorOutline, Home, Receipt } from "@mui/icons-material";
@@ -76,13 +76,25 @@ const PaymentResultContent: React.FC = () => {
         }}
       >
         <Box sx={{ textAlign: "center" }}>
-          <CircularProgress size={60} color="primary" />
-          <Typography variant="h6" sx={{ mt: 2 }} color="primary.main">
-            Verifying Payment...
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Please wait while we confirm your payment
-          </Typography>
+          <Skeleton
+            variant="circular"
+            width={60}
+            height={60}
+            animation="pulse"
+            sx={{ mx: "auto", mb: 2 }}
+          />
+          <Skeleton
+            variant="text"
+            width={200}
+            height={30}
+            sx={{ mx: "auto", mb: 1 }}
+          />
+          <Skeleton
+            variant="text"
+            width={300}
+            height={20}
+            sx={{ mx: "auto" }}
+          />
         </Box>
       </Container>
     );
@@ -222,11 +234,11 @@ const PaymentResult: React.FC = () => {
             alignItems="center"
             justifyContent="center"
             minHeight="60vh"
+            gap={3}
           >
-            <CircularProgress size={60} />
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Loading payment result...
-            </Typography>
+            <Skeleton variant="circular" width={60} height={60} />
+            <Skeleton variant="text" width={250} height={30} />
+            <Skeleton variant="rectangular" width="100%" height={200} />
           </Box>
         </Container>
       }

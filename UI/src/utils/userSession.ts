@@ -149,21 +149,34 @@ export class UserSessionManager {
   }
 }
 
+import { useCallback } from "react";
+
 //
 
 /**
  * Hook for using user session data in React components
  */
 export function useUserSession() {
-  const getUserProfile = () => UserSessionManager.getUserProfile();
-  const setUserProfile = (profile: UserProfile) =>
-    UserSessionManager.setUserProfile(profile);
-  const clearUserProfile = () => UserSessionManager.clearUserProfile();
-  const isLoggedIn = () => UserSessionManager.isLoggedIn();
-  const getUserRole = () => UserSessionManager.getUserRole();
-  const isAdmin = () => UserSessionManager.isAdmin();
-  const getUserFullName = () => UserSessionManager.getUserFullName();
-  const getUserEmail = () => UserSessionManager.getUserEmail();
+  const getUserProfile = useCallback(
+    () => UserSessionManager.getUserProfile(),
+    []
+  );
+  const setUserProfile = useCallback(
+    (profile: UserProfile) => UserSessionManager.setUserProfile(profile),
+    []
+  );
+  const clearUserProfile = useCallback(
+    () => UserSessionManager.clearUserProfile(),
+    []
+  );
+  const isLoggedIn = useCallback(() => UserSessionManager.isLoggedIn(), []);
+  const getUserRole = useCallback(() => UserSessionManager.getUserRole(), []);
+  const isAdmin = useCallback(() => UserSessionManager.isAdmin(), []);
+  const getUserFullName = useCallback(
+    () => UserSessionManager.getUserFullName(),
+    []
+  );
+  const getUserEmail = useCallback(() => UserSessionManager.getUserEmail(), []);
 
   return {
     getUserProfile,

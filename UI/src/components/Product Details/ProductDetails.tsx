@@ -1,7 +1,15 @@
 import React from "react";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { Box, Button, Grid, Rating, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Rating,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { styled, useMediaQuery } from "@mui/system";
 import Image from "next/image";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
@@ -140,7 +148,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                 borderRadius: 8,
                 objectFit: "cover",
                 position: "relative",
-                height: "100%",
+                height: "95%",
                 width: "100%",
               }}
             />
@@ -226,7 +234,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="h4" sx={{ color: "primary.main" }}>
-                  $10.99
+                  ₹100.99
                 </Typography>
                 <Typography
                   variant="body2"
@@ -352,21 +360,24 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
             </Stack>
           </Box>
           <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1 }}>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "primary.main",
-                color: "primary.contrastText",
-                fontWeight: 600,
-                borderRadius: 0,
-                "&:hover": {
-                  backgroundColor: "secondary.main",
-                },
-              }}
-              onClick={handleAddToCart}
-            >
-              <AddShoppingCartIcon />
-            </Button>
+            <Tooltip title="Add to Cart" arrow>
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                  fontWeight: 600,
+                  borderRadius: 0,
+                  "&:hover": {
+                    backgroundColor: "secondary.main",
+                  },
+                }}
+                onClick={handleAddToCart}
+                aria-label="Add to Cart"
+              >
+                <AddShoppingCartIcon />
+              </Button>
+            </Tooltip>
             <Button
               variant="contained"
               sx={{

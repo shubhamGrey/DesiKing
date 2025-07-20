@@ -10,8 +10,9 @@ import {
   Typography,
   useMediaQuery,
   IconButton,
+  Chip,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, WorkspacePremium } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -165,6 +166,35 @@ const ProductSection = ({ item }: ProductDetails) => {
                     </IconButton>
                   </Box>
                 )}
+
+                {/* Premium Badge */}
+                {product.isPremium && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      left: 8,
+                      zIndex: 1,
+                    }}
+                  >
+                    <Chip
+                      icon={<WorkspacePremium sx={{ fontSize: 16 }} />}
+                      label="Premium"
+                      size="small"
+                      sx={{
+                        backgroundColor: "secondary.main",
+                        color: "primary.contrastText",
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        "& .MuiChip-icon": {
+                          color: "primary.contrastText",
+                        },
+                        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)",
+                      }}
+                    />
+                  </Box>
+                )}
+
                 <CardActionArea
                   disableRipple
                   onClick={() => {

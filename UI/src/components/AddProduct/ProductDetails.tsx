@@ -116,7 +116,7 @@ const ProductDetails = ({
                 fullWidth
                 multiline
                 rows={3}
-                label="Nutritional Information"
+                label="Nutritional Information (100gm)"
                 placeholder="Enter nutritional information"
               />
             )}

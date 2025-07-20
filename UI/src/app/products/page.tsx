@@ -90,12 +90,14 @@ const Products = () => {
           return {
             ...category,
             products: category.products.sort((a, b) => {
-              // Sort by name in ascending order
-              return b.name.localeCompare(a.name);
+              // Premium products first, then by name ascending
+              if (a.isPremium === b.isPremium) {
+                return b.name.localeCompare(a.name);
+              }
+              return a.isPremium ? -1 : 1;
             }),
           };
         });
-        console.log("Sorted Products:", sortedArray);
         setProductsList(sortedArray);
       } catch (error) {
         console.error("Failed to fetch products:", error);
@@ -111,30 +113,115 @@ const Products = () => {
     return (
       <Box
         sx={{
-          px: 2,
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
+          minHeight: "100vh",
         }}
       >
+        {/* Hero section skeleton */}
+        <Box
+          sx={{
+            height: 400,
+            backgroundColor: "grey.100",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            px: 2,
+          }}
+        >
+          {/* Logo skeleton */}
+          <Skeleton
+            variant="rectangular"
+            width="30%"
+            height={120}
+            sx={{ borderRadius: 2 }}
+          />
+          {/* Tagline skeleton */}
+          <Skeleton variant="text" width="50%" height={24} />
+        </Box>
+
+        {/* Product sections skeleton */}
+        <Box sx={{ px: 2, py: 4 }}>
+          {[1, 2, 3].map((section) => (
+            <Box key={section} sx={{ mb: 6 }}>
+              {/* Section header */}
+              <Box
+                sx={{
+                  mb: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Skeleton variant="text" width={200} height={32} />
+                <Skeleton variant="text" width={100} height={24} />
+              </Box>
+
+              {/* Product cards grid */}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "repeat(2, 1fr)",
+                    sm: "repeat(3, 1fr)",
+                    md: "repeat(4, 1fr)",
+                    lg: "repeat(5, 1fr)",
+                  },
+                  gap: 2,
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((card) => (
+                  <Box
+                    key={card}
+                    sx={{ border: "1px solid #e0e0e0", borderRadius: 2, p: 2 }}
+                  >
+                    {/* Product image */}
+                    <Skeleton
+                      variant="rectangular"
+                      width="100%"
+                      height={120}
+                      sx={{ borderRadius: 1, mb: 2 }}
+                    />
+                    {/* Product name */}
+                    <Skeleton
+                      variant="text"
+                      width="80%"
+                      height={20}
+                      sx={{ mb: 1 }}
+                    />
+                    {/* Price */}
+                    <Skeleton
+                      variant="text"
+                      width="50%"
+                      height={24}
+                      sx={{ mb: 2 }}
+                    />
+                    {/* Button */}
+                    <Skeleton
+                      variant="rectangular"
+                      width="100%"
+                      height={36}
+                      sx={{ borderRadius: 1 }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+
+        {/* FAB skeleton */}
         <Skeleton
-          variant="rectangular"
-          width="30%"
-          height={200}
-          sx={{ marginTop: 4 }}
-        />
-        <Skeleton
-          variant="text"
-          width="60%"
-          height={40}
-          sx={{ marginTop: 2 }}
-        />
-        <Skeleton
-          variant="rectangular"
-          width="90%"
-          height={400}
-          sx={{ marginTop: 4 }}
+          variant="circular"
+          width={56}
+          height={56}
+          sx={{
+            position: "fixed",
+            bottom: 16,
+            right: 16,
+          }}
         />
       </Box>
     );
