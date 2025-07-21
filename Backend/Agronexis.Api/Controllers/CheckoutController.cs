@@ -93,5 +93,40 @@ namespace Agronexis.Api.Controllers
                 return HandleException(ex, "Failed to verify payment", correlationId);
             }
         }
+
+        [HttpPost("refund-payment")]
+        public ActionResult<ApiResponseModel> RefundPayment([FromBody] RefundPaymentRequestModel refund)
+        {
+            var correlationId = string.Empty;
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel()
+            };
+
+            try
+            {
+                correlationId = GetCorrelationId();
+
+                var item = _configService.RefundPayment(refund, XCorrelationID);
+                if (item == null)
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                }
+                else
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+                    response.Info.Message = ApiResponseMessage.SUCCESS;
+                    response.Data = item;
+                }
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during payment verification, correlation ID: {CorrelationId}", correlationId);
+                return HandleException(ex, "Failed to refund payment", correlationId);
+            }
+        }
     }
 }

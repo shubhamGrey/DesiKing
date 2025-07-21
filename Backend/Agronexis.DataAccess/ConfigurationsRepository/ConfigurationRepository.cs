@@ -693,5 +693,28 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw;
             }
         }
+
+        public RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
+        {
+            RefundPaymentResponseModel refundPaymentResponse = _externalUtility.RazorPayRefundPayment(refund.PaymentId, refund.AmountInPaise);
+            //insert into transaction table
+            var transaction = new Transaction
+            {
+                Id = Guid.NewGuid(),
+                UserId = refund.UserId,
+                RazorpayOrderId = refund.OrderId,
+                RazorpayPaymentId = refund.PaymentId,
+                Signature = refund.Signature,
+                TotalAmount = (refund.AmountInPaise / 100),
+                Currency = refund.Currency,
+                Status = "Paid",
+                PaymentMethod = refund.PaymentMethod,
+                CreatedDate = DateTime.UtcNow
+            };
+            _dbContext.Transactions.Add(transaction);
+            _dbContext.SaveChangesAsync();
+
+            return refundPaymentResponse;
+        }
     }
 }

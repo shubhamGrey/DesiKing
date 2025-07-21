@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Agronexis.Model.ResponseModel;
+using Microsoft.Extensions.Configuration;
 using Razorpay.Api;
 using System;
 using System.Collections.Generic;
@@ -62,5 +63,33 @@ namespace Agronexis.ExternalApi
             }
         }
 
+        public RefundPaymentResponseModel RazorPayRefundPayment(string paymentId, int amountInPaise = 0)
+        {
+            RefundPaymentResponseModel refundPaymentResponseModel = new();
+            try
+            {
+                var client = new RazorpayClient(_key, _secret);
+
+                Dictionary<string, object> options = [];
+
+                // Optional: specify refund amount (in paise). If omitted, full refund is issued.
+                if (amountInPaise > 0)
+                {
+                    options.Add("amount", amountInPaise);
+                }
+
+                Razorpay.Api.Refund refund = client.Payment.Fetch(paymentId).Refund(options);
+
+                // Save refund info to your database here
+                refundPaymentResponseModel.RefundId = refund["id"].ToString();
+                refundPaymentResponseModel.Status = refund["status"].ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Razorpay Error: " + ex.Message);
+            }
+
+            return refundPaymentResponseModel;
+        }
     }
 }

@@ -11,4 +11,8 @@
     <PackageReference Include="Razorpay" Version="3.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Agronexis.Model\Agronexis.Model.csproj" />
+  </ItemGroup>
+
 </Project>
