@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Agronexis.Model.ResponseModel
 {
-    public class RefundResponseModel
+    public class RefundPaymentResponseModel
     {
-
+        public string? RefundId { get; set; }
+        public string? Status { get; set; }
     }
 }

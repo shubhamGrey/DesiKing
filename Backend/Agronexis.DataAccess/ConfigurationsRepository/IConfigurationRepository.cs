@@ -32,5 +32,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<string> CreateOrder(OrderRequestModel order, string xCorrelationId);
         bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId);
         Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId);
+        RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId);
     }
 }

@@ -157,5 +157,10 @@ namespace Agronexis.Business.Configurations
                 throw;
             }
         }
+
+        public RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
+        {
+            return _repository.RefundPayment(refund, xCorrelationId);
+        }
     }
 }
