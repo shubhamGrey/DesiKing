@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Agronexis.ExternalApi\Agronexis.ExternalApi.csproj" />
     <ProjectReference Include="..\Agronexis.Model\Agronexis.Model.csproj" />
   </ItemGroup>
 

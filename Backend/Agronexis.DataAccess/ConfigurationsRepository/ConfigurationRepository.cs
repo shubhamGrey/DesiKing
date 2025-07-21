@@ -1,4 +1,5 @@
 ﻿using Agronexis.DataAccess.DbContexts;
+using Agronexis.ExternalApi;
 using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Asn1.X509;
+using Razorpay.Api;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,10 +26,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
     {
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        public ConfigurationRepository(AppDbContext dbContext, IConfiguration configuration)
+        private readonly ExternalUtility _externalUtility;
+        public ConfigurationRepository(AppDbContext dbContext, IConfiguration configuration, ExternalUtility externalUtility)
         {
             _dbContext = dbContext;
             _configuration = configuration;
+            _externalUtility = externalUtility;
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
@@ -580,41 +585,77 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return loginResponse;
         }
 
-        public string CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
+        public async Task<string> CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
         {
-            var order = new Order
+            try
             {
-                Id = Guid.NewGuid(),
-                UserId = orderRequest.UserId,
-                //RazorpayOrderId = orderRequest.RazorpayOrderId,
-                //ReceiptId = orderRequest.ReceiptId,
-                TotalAmount = orderRequest.TotalAmount,
-                Currency = orderRequest.Currency,
-                Status = orderRequest.Status,
-                BrandId = orderRequest.BrandId,
-                CreatedDate = DateTime.UtcNow
-            };
+                string razorpayOrderId = string.Empty;
 
-            foreach (var item in orderRequest.Items)
-            {
-                var orderItem = new OrderItem
+                if (orderRequest.PaymentMethod?.ToUpper() == "RAZORPAY")
+                {
+                    razorpayOrderId = _externalUtility.RazorPayCreateOrder(orderRequest.TotalAmount, orderRequest.Currency);
+                }
+
+                var order = new Model.EntityModel.Order
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Price,
-                    BrandId = orderRequest.BrandId,
-                    CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    UserId = orderRequest.UserId,
+                    RazorpayOrderId = razorpayOrderId,
+                    //ReceiptId = orderRequest.ReceiptId,
+                    TotalAmount = orderRequest.TotalAmount,
+                    Currency = orderRequest.Currency,
+                    Status = orderRequest.Status,
+                    CreatedDate = DateTime.UtcNow
                 };
 
-                order.OrderItems.Add(orderItem);
-            }
+                foreach (var item in orderRequest.Items)
+                {
+                    var orderItem = new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderId = order.Id,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        Price = item.Price,
+                        CreatedDate = DateTime.UtcNow
+                    };
 
-            _dbContext.Orders.Add(order);
-            _dbContext.SaveChangesAsync();
-            return order.Id.ToString();
+                    order.OrderItems.Add(orderItem);
+                }
+
+                _dbContext.Orders.Add(order);
+                await _dbContext.SaveChangesAsync();
+                return order.Id.ToString();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
+        {
+            bool isVerify = _externalUtility.RazorPayVerifyPayment(verify.OrderId, verify.PaymentId, verify.Signature);
+            if (isVerify)
+            {
+                //insert into transaction table
+                var transaction = new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = verify.UserId,
+                    RazorpayOrderId = verify.OrderId,
+                    RazorpayPaymentId = verify.PaymentId,
+                    Signature = verify.Signature,
+                    TotalAmount = verify.TotalAmount,
+                    Currency = verify.Currency,
+                    Status = "Paid",
+                    PaymentMethod = verify.PaymentMethod,
+                    CreatedDate = DateTime.UtcNow
+                };
+                _dbContext.Transactions.Add(transaction);
+                _dbContext.SaveChangesAsync();
+            }
+            return isVerify;
         }
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
