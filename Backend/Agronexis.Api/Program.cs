@@ -5,6 +5,7 @@ using Agronexis.DataAccess.DbContexts;
 using Agronexis.ExternalApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,45 @@ builder.Configuration
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Agronexis API",
+        Version = "v1",
+        Description = "API for Agronexis - Premium Spice Management System",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Agronexis Support",
+            Email = "support@agronexis.com"
+        }
+    });
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
 Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION"));
@@ -76,17 +115,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Enable Swagger in Production for API documentation
 if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "app/swagger/{documentName}/swagger.json"; // becomes /api/swagger/v1/swagger.json
+        c.RouteTemplate = "api/swagger/{documentName}/swagger.json";
     });
 
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/app/swagger/v1/swagger.json", "Agronexis API V1"); // use public path!
-        c.RoutePrefix = "app/swagger"; // internally under /api/swagger
+        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Agronexis API V1");
+        c.RoutePrefix = "api/swagger";
+        c.DocumentTitle = "Agronexis API Documentation";
+        c.DefaultModelsExpandDepth(-1); // Hide schemas section by default
+        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
     });
 }
 
