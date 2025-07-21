@@ -133,6 +133,14 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.UserRegistration(model, xCorrelationId);
         }
+        public async Task<string> CreateOrder(OrderRequestModel order, string xCorrelationId)
+        {
+            return await _repository.CreateOrder(order, xCorrelationId);
+        }
+        public bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
+        {
+            return _repository.VerifyPayment(verify, xCorrelationId);
+        }
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
         {
@@ -148,11 +156,6 @@ namespace Agronexis.Business.Configurations
                 _logger.LogError(ex, "Error getting user profile for user ID: {UserId}, correlation ID: {CorrelationId}", userId, xCorrelationId);
                 throw;
             }
-        }
-
-        public string CreateOrder(OrderRequestModel order, string xCorrelationId)
-        {
-            return _repository.CreateOrder(order, xCorrelationId);
         }
     }
 }
