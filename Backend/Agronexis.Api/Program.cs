@@ -18,6 +18,7 @@ builder.Configuration
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -28,7 +29,7 @@ Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionStr
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
 builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
-builder.Services.AddTransient<ExternalUtility>();
+builder.Services.AddScoped<ExternalUtility>();
 
 // Add logging
 builder.Services.AddLogging(logging =>

@@ -18,33 +18,40 @@ namespace Agronexis.ExternalApi
             _key = configuration["Razorpay:Key"];
             _secret = configuration["Razorpay:Secret"];
         }
-        public string CreateOrder(decimal amount)
+        public string RazorPayCreateOrder(decimal amount, string currency)
         {
-            RazorpayClient client = new RazorpayClient(_key, _secret);
+            try
+            {
+                RazorpayClient client = new RazorpayClient(_key, _secret);
 
-            var options = new Dictionary<string, object>
+                var options = new Dictionary<string, object>
         {
             { "amount", (int)(amount * 100) }, // amount in paise
-            { "currency", "INR" },
+            { "currency", (currency) },
             { "receipt", Guid.NewGuid().ToString() },
             { "payment_capture", 1 }
         };
 
-            Order order = client.Order.Create(options);
-            return order["id"].ToString(); // Return Razorpay Order ID
+                Order order = client.Order.Create(options);
+                return order["id"].ToString(); // Return Razorpay Order ID
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Razorpay Error: " + ex.Message);
+            }
+            return null;
         }
 
-        public bool VerifyPayment(string orderId, string paymentId, string signature)
+        public bool RazorPayVerifyPayment(string orderId, string paymentId, string signature)
         {
             string secret = _secret;
             string generatedSignature = GetSignature(orderId + "|" + paymentId, secret);
-
             return generatedSignature == signature;
         }
 
-        private string GetSignature(string text, string key)
+        private static string GetSignature(string text, string key)
         {
-            var encoding = new System.Text.UTF8Encoding();
+            var encoding = new UTF8Encoding();
             byte[] keyByte = encoding.GetBytes(key);
             byte[] messageBytes = encoding.GetBytes(text);
 
