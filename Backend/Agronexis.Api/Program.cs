@@ -121,13 +121,13 @@ if (app.Environment.IsProduction())
 {
     app.UseSwagger(c =>
     {
-        c.RouteTemplate = "api/swagger/{documentName}/swagger.json";
+        c.RouteTemplate = "swagger/{documentName}/swagger.json";
     });
 
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Agronexis API V1");
-        c.RoutePrefix = "api/swagger";
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Agronexis API V1");
+        c.RoutePrefix = "swagger";  // Changed from "api/swagger" to "swagger" to work with nginx proxy
         c.DocumentTitle = "Agronexis API Documentation";
         c.DefaultModelsExpandDepth(-1); // Hide schemas section by default
         c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
