@@ -274,8 +274,6 @@ export default function Header() {
               pathname != "/contact" ? "primary.contrastText" : "primary.main",
           }}
           role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
         >
           {/* Mobile Search */}
           <Box
@@ -284,11 +282,13 @@ export default function Header() {
               borderBottom: "1px solid rgba(255,255,255,0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <SearchAutocomplete isMobile={true} onClose={toggleDrawer(false)} />
           </Box>
 
-          <List>
+          <List onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
             {leftNavLinks.map(({ label, href }) => {
               const isActive = pathname === href;
               return (
