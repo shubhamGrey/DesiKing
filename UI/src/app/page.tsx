@@ -137,38 +137,45 @@ const chooseUs = [
 const featuredProducts = [
   {
     id: 1,
-    title: "Turmeric Powder",
-    image: "/1.png",
+    title: "Lakhadong Turmeric Powder",
+    image: "/Lokadong Turmeric powder feature.jpg",
     description: "Pure organic turmeric for health benefits.",
     link: "/products/organic-turmeric",
   },
   {
     id: 2,
+    title: "Turmeric Powder",
+    image: "/Turmeric powder feature.jpg",
+    description: "Pure organic turmeric for health benefits.",
+    link: "/products/organic-turmeric",
+  },
+  {
+    id: 3,
     title: "Red Chili Powder",
-    image: "/2.png",
+    image: "/Red chilli feature.jpg",
     description: "Spicy and flavorful red chili powder.",
     link: "/products/red-chili",
   },
   {
-    id: 3,
+    id: 4,
     title: "Garam Masala",
-    image: "/5.png",
+    image: "/Garam masala feature.jpg",
     description: "A blend of rich and aromatic spices.",
     link: "/products/garam-masala",
   },
   {
-    id: 4,
-    title: "Cumin Powder",
-    image: "/4.png",
+    id: 5,
+    title: "Cumin seeds",
+    image: "/Jeera feature.jpg",
     description: "Aromatic cumin for your dishes.",
     link: "/products/cumin",
   },
   {
-    id: 5,
-    title: "Coriander Powder",
-    image: "/3.png",
-    description: "Fresh and aromatic coriander powder.",
-    link: "/products/coriander",
+    id: 6,
+    title: "Black Pepper",
+    image: "/Kali mirch feature.jpg",
+    description: "Fresh and aromatic black pepper.",
+    link: "/products/black-pepper",
   },
 ];
 
@@ -289,7 +296,7 @@ const Home: React.FC = () => {
           >
             Featured Products
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container columnSpacing={3} rowSpacing={isMobile ? 4 : 8}>
             {!isMobile ? (
               featuredProducts.map((product) => (
                 <Grid
@@ -323,6 +330,7 @@ const Home: React.FC = () => {
                         height: "100%",
                         objectFit: "contain",
                         borderRadius: "8px",
+                        marginBottom: "8px",
                       }}
                     />
                     <Button
@@ -331,12 +339,8 @@ const Home: React.FC = () => {
                         color: "primary.main",
                         border: "2px solid",
                         borderColor: "primary.main",
-                        position: "relative",
-                        top: -53,
-                        left: "50%",
+                        width: "100%",
                         cursor: "pointer",
-                        mb: 2,
-                        mr: 1,
                         "&:hover": {
                           color: "primary.contrastText",
                           border: "2px solid",
