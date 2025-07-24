@@ -585,7 +585,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return loginResponse;
         }
 
-        public async Task<string> CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
+        public async Task<OrderResponseModel> CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
         {
             try
             {
@@ -625,7 +625,13 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 _dbContext.Orders.Add(order);
                 await _dbContext.SaveChangesAsync();
-                return order.Id.ToString();
+
+                OrderResponseModel orderResponse = new()
+                {
+                    OrderId = order.Id,
+                    RazorpayOrderId = razorpayOrderId
+                };
+                return orderResponse;
             }
             catch (Exception ex)
             {

@@ -133,7 +133,7 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.UserRegistration(model, xCorrelationId);
         }
-        public async Task<string> CreateOrder(OrderRequestModel order, string xCorrelationId)
+        public async Task<OrderResponseModel> CreateOrder(OrderRequestModel order, string xCorrelationId)
         {
             return await _repository.CreateOrder(order, xCorrelationId);
         }
