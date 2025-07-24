@@ -10,13 +10,13 @@ import {
   Typography,
   useMediaQuery,
   IconButton,
-  Chip,
 } from "@mui/material";
-import { Edit, Delete, WorkspacePremium } from "@mui/icons-material";
+import { Edit, Delete } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import React from "react";
 import Cookies from "js-cookie";
+import Image from "next/image";
 
 const michroma = Michroma({
   subsets: ["latin"],
@@ -159,7 +159,6 @@ const ProductSection = ({ item }: ProductDetails) => {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("Delete product:", product.id);
                       }}
                     >
                       <Delete fontSize="small" />
@@ -177,20 +176,11 @@ const ProductSection = ({ item }: ProductDetails) => {
                       zIndex: 1,
                     }}
                   >
-                    <Chip
-                      icon={<WorkspacePremium sx={{ fontSize: 16 }} />}
-                      label="Premium"
-                      size="small"
-                      sx={{
-                        backgroundColor: "secondary.main",
-                        color: "primary.contrastText",
-                        fontWeight: 600,
-                        fontSize: "0.75rem",
-                        "& .MuiChip-icon": {
-                          color: "primary.contrastText",
-                        },
-                        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)",
-                      }}
+                    <img
+                      src="/premium symbol.png"
+                      alt="Premium Quality"
+                      width={isMobile ? 50 : 75}
+                      height={isMobile ? 40 : 60}
                     />
                   </Box>
                 )}

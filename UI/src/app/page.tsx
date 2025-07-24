@@ -38,6 +38,8 @@ import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
 import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import { UserSessionManager } from "@/utils/userSession";
+import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 
 // Helper function to check if image needs to be unoptimized
@@ -141,6 +143,7 @@ const featuredProducts = [
     image: "/Lokadong Turmeric powder feature.jpg",
     description: "Pure organic turmeric for health benefits.",
     link: "/products/organic-turmeric",
+    basePrice: 149,
   },
   {
     id: 2,
@@ -148,6 +151,7 @@ const featuredProducts = [
     image: "/Turmeric powder feature.jpg",
     description: "Pure organic turmeric for health benefits.",
     link: "/products/organic-turmeric",
+    basePrice: 129,
   },
   {
     id: 3,
@@ -155,6 +159,7 @@ const featuredProducts = [
     image: "/Red chilli feature.jpg",
     description: "Spicy and flavorful red chili powder.",
     link: "/products/red-chili",
+    basePrice: 119,
   },
   {
     id: 4,
@@ -162,6 +167,7 @@ const featuredProducts = [
     image: "/Garam masala feature.jpg",
     description: "A blend of rich and aromatic spices.",
     link: "/products/garam-masala",
+    basePrice: 179,
   },
   {
     id: 5,
@@ -169,6 +175,7 @@ const featuredProducts = [
     image: "/Jeera feature.jpg",
     description: "Aromatic cumin for your dishes.",
     link: "/products/cumin",
+    basePrice: 159,
   },
   {
     id: 6,
@@ -176,12 +183,14 @@ const featuredProducts = [
     image: "/Kali mirch feature.jpg",
     description: "Fresh and aromatic black pepper.",
     link: "/products/black-pepper",
+    basePrice: 299,
   },
 ];
 
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
+  const { addItem } = useCart();
 
   const [productCategories, setProductCategories] = React.useState<
     FormattedCategory[]
@@ -199,6 +208,38 @@ const Home: React.FC = () => {
     setSelectedCategoryId(categoryId);
     setIsModalOpen(true);
   }, []);
+
+  const handleOrderNow = React.useCallback(
+    (product: any) => {
+      // Check if user is logged in
+      const userProfile = UserSessionManager.getUserProfile();
+
+      if (!userProfile) {
+        // Redirect to login page with return URL
+        router.push(
+          `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+        );
+        return;
+      }
+
+      // Add item to cart
+      const cartItem = {
+        id: `${product.id}-250g`, // Unique ID with default weight
+        name: `${product.title} - 250g`,
+        price: product.basePrice ?? 149,
+        productId: product.id.toString(),
+        brandId: "default-brand-id",
+        image: product.image,
+        quantity: 1,
+      };
+
+      addItem(cartItem);
+
+      // Redirect to cart page
+      router.push("/cart");
+    },
+    [router, addItem]
+  );
 
   const confirmDelete = React.useCallback(() => {
     if (selectedCategoryId) {
@@ -349,7 +390,7 @@ const Home: React.FC = () => {
                         },
                       }}
                       onClick={() => {
-                        router.push(product.link);
+                        handleOrderNow(product);
                       }}
                     >
                       <Typography variant="body2" fontWeight={600}>
@@ -432,7 +473,7 @@ const Home: React.FC = () => {
                                 boxShadow: "none",
                               }}
                               onClick={() => {
-                                router.push("/products");
+                                handleOrderNow(product);
                               }}
                             >
                               Order Now

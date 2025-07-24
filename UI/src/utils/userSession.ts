@@ -45,7 +45,6 @@ export class UserSessionManager {
         this.USER_PROFILE_KEY,
         JSON.stringify(userProfile)
       );
-      console.log("User profile stored in session:", userProfile);
     } catch (error) {
       console.error("Error storing user profile:", error);
     }
@@ -89,7 +88,6 @@ export class UserSessionManager {
       }
 
       sessionStorage.removeItem(this.USER_PROFILE_KEY);
-      console.log("User profile cleared from session");
     } catch (error) {
       console.error("Error clearing user profile:", error);
     }

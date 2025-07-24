@@ -10,10 +10,24 @@ import {
   Paper,
   Skeleton,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { CheckCircle, ErrorOutline, Home, Receipt } from "@mui/icons-material";
 import { michroma } from "@/styles/fonts";
 import { verifyPayment } from "@/utils/razorpayUtils";
+
+interface PaymentResultData {
+  status: "success" | "failed";
+  orderId: string;
+  paymentId?: string;
+  signature?: string;
+  userId?: string;
+  totalAmount?: number;
+  currency?: string;
+  timestamp?: string;
+  errorMessage?: string;
+  paymentMethod?: string;
+}
 
 const PaymentResultContent: React.FC = () => {
   const router = useRouter();
@@ -23,35 +37,76 @@ const PaymentResultContent: React.FC = () => {
     "success" | "failed" | "verifying"
   >("verifying");
   const [errorMessage, setErrorMessage] = useState("");
+  const [paymentData, setPaymentData] = useState<PaymentResultData | null>(
+    null
+  );
 
-  const orderId = searchParams?.get("order_id");
-  const paymentId = searchParams?.get("payment_id");
-  const signature = searchParams?.get("signature");
+  const status = searchParams?.get("status");
+  const orderIdFromUrl = searchParams?.get("order_id");
 
   useEffect(() => {
     const verifyPaymentStatus = async () => {
-      if (!orderId || !paymentId || !signature) {
-        setPaymentStatus("failed");
-        setErrorMessage("Invalid payment parameters");
-        setIsVerifying(false);
-        return;
-      }
-
       try {
-        const isValid = await verifyPayment(
-          {
-            razorpay_order_id: orderId,
-            razorpay_payment_id: paymentId,
-            razorpay_signature: signature,
-          },
-          orderId
-        );
+        // Helper function to handle Razorpay payment verification
+        const handleRazorpayVerification = async (
+          paymentResult: PaymentResultData
+        ) => {
+          if (paymentResult.status === "success" && paymentResult.paymentId) {
+            const isValid = await verifyPayment(
+              {
+                razorpay_order_id: paymentResult.orderId,
+                razorpay_payment_id: paymentResult.paymentId,
+                razorpay_signature: paymentResult.signature ?? "",
+              },
+              paymentResult.userId ?? "",
+              paymentResult.totalAmount ?? 0,
+              paymentResult.currency ?? "INR"
+            );
 
-        setPaymentStatus(isValid ? "success" : "failed");
-        if (!isValid) {
-          setErrorMessage("Payment verification failed");
+            setPaymentStatus(isValid ? "success" : "failed");
+            if (!isValid) {
+              setErrorMessage("Payment verification failed");
+            }
+          } else if (paymentResult.status === "success") {
+            // For COD orders, no payment verification needed
+            setPaymentStatus("success");
+          } else {
+            setPaymentStatus("failed");
+            setErrorMessage(paymentResult.errorMessage ?? "Payment failed");
+          }
+        };
+
+        // Helper function to handle fallback URL parameters
+        const handleFallbackData = () => {
+          if (status === "success" && orderIdFromUrl) {
+            setPaymentStatus("success");
+            setPaymentData({
+              status: "success",
+              orderId: orderIdFromUrl,
+              paymentMethod: "Unknown",
+            });
+          } else {
+            setPaymentStatus("failed");
+            setErrorMessage("No payment data found. Please try again.");
+          }
+        };
+
+        // Try to get payment data from session storage first
+        const storedPaymentResult = sessionStorage.getItem("payment_result");
+
+        if (storedPaymentResult) {
+          const paymentResult = JSON.parse(storedPaymentResult);
+          setPaymentData(paymentResult);
+
+          await handleRazorpayVerification(paymentResult);
+
+          // Clear the session storage after reading
+          sessionStorage.removeItem("payment_result");
+        } else {
+          handleFallbackData();
         }
       } catch (error: any) {
+        console.error("Payment verification error:", error);
         setPaymentStatus("failed");
         setErrorMessage(error?.message ?? "Payment verification failed");
       } finally {
@@ -60,7 +115,7 @@ const PaymentResultContent: React.FC = () => {
     };
 
     verifyPaymentStatus();
-  }, [orderId, paymentId, signature]);
+  }, [status, orderIdFromUrl]);
 
   if (isVerifying) {
     return (
@@ -72,30 +127,61 @@ const PaymentResultContent: React.FC = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: "50vh",
+          minHeight: "60vh",
         }}
       >
-        <Box sx={{ textAlign: "center" }}>
-          <Skeleton
-            variant="circular"
-            width={60}
-            height={60}
-            animation="pulse"
-            sx={{ mx: "auto", mb: 2 }}
-          />
-          <Skeleton
-            variant="text"
-            width={200}
-            height={30}
-            sx={{ mx: "auto", mb: 1 }}
-          />
-          <Skeleton
-            variant="text"
-            width={300}
-            height={20}
-            sx={{ mx: "auto" }}
-          />
-        </Box>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 6,
+            textAlign: "center",
+            backgroundColor: "transparent",
+            boxShadow: "none",
+            border: "1px solid",
+            borderColor: "primary.main",
+            borderRadius: "8px",
+            minWidth: 400,
+          }}
+        >
+          <Box sx={{ mb: 3 }}>
+            <CircularProgress
+              size={60}
+              thickness={4}
+              sx={{
+                color: "primary.main",
+                mb: 3,
+              }}
+            />
+          </Box>
+
+          <Typography
+            variant="h5"
+            fontFamily={michroma.style.fontFamily}
+            fontWeight={600}
+            color="primary.main"
+            sx={{ mb: 2 }}
+          >
+            Verifying Payment
+          </Typography>
+
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Please wait while we verify your payment details...
+          </Typography>
+
+          <Box
+            sx={{
+              p: 2,
+              backgroundColor: "info.50",
+              borderRadius: "8px",
+              border: "1px solid",
+              borderColor: "info.200",
+            }}
+          >
+            <Typography variant="body2" color="info.main">
+              🔄 This usually takes a few seconds
+            </Typography>
+          </Box>
+        </Paper>
       </Container>
     );
   }
@@ -107,10 +193,12 @@ const PaymentResultContent: React.FC = () => {
         sx={{
           p: 6,
           textAlign: "center",
+          backgroundColor: "transparent",
+          boxShadow: "none",
           border: "1px solid",
           borderColor:
             paymentStatus === "success" ? "success.main" : "error.main",
-          borderRadius: 2,
+          borderRadius: "8px",
         }}
       >
         {paymentStatus === "success" ? (
@@ -137,12 +225,63 @@ const PaymentResultContent: React.FC = () => {
             </Typography>
 
             <Box sx={{ mb: 4 }}>
-              <Typography variant="body2" color="text.secondary">
-                Order ID: <strong>{orderId}</strong>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Order Details:
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Payment ID: <strong>{paymentId}</strong>
-              </Typography>
+              <Box
+                sx={{
+                  p: 3,
+                  backgroundColor: "success.50",
+                  borderRadius: "8px",
+                  border: "1px solid",
+                  borderColor: "success.200",
+                  textAlign: "left",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
+                  Order ID: <strong>{paymentData?.orderId ?? "N/A"}</strong>
+                </Typography>
+                {paymentData?.paymentId && (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    Payment ID: <strong>{paymentData.paymentId}</strong>
+                  </Typography>
+                )}
+                {paymentData?.totalAmount && (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    Amount:{" "}
+                    <strong>₹{paymentData.totalAmount.toFixed(2)}</strong>
+                  </Typography>
+                )}
+                {paymentData?.paymentMethod && (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    Payment Method: <strong>{paymentData.paymentMethod}</strong>
+                  </Typography>
+                )}
+                {paymentData?.timestamp && (
+                  <Typography variant="body2" color="text.secondary">
+                    Date:{" "}
+                    <strong>
+                      {new Date(paymentData.timestamp).toLocaleString()}
+                    </strong>
+                  </Typography>
+                )}
+              </Box>
             </Box>
           </>
         ) : (
@@ -188,6 +327,7 @@ const PaymentResultContent: React.FC = () => {
                 borderColor: "secondary.main",
                 color: "secondary.main",
               },
+              minWidth: 140,
             }}
           >
             Go to Home
@@ -201,6 +341,8 @@ const PaymentResultContent: React.FC = () => {
               sx={{
                 backgroundColor: "primary.main",
                 "&:hover": { backgroundColor: "secondary.main" },
+                fontWeight: 600,
+                minWidth: 140,
               }}
             >
               View Orders
@@ -212,6 +354,8 @@ const PaymentResultContent: React.FC = () => {
               sx={{
                 backgroundColor: "primary.main",
                 "&:hover": { backgroundColor: "secondary.main" },
+                fontWeight: 600,
+                minWidth: 140,
               }}
             >
               Try Again

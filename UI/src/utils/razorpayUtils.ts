@@ -24,7 +24,7 @@ export const createOrder = async (
 ): Promise<any> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/Checkout`,
+      `${process.env.NEXT_PUBLIC_API_URL}/Checkout/create-order`,
       {
         method: "POST",
         headers: {
@@ -73,7 +73,6 @@ export const initializeRazorpayPayment = async (
     description: "Purchase from AgroNexis",
     order_id: orderData.id,
     handler: (response: RazorpayPaymentData) => {
-      console.log("Payment successful:", response);
       onSuccess(response);
     },
     prefill: {
@@ -92,7 +91,6 @@ export const initializeRazorpayPayment = async (
     },
     modal: {
       ondismiss: () => {
-        console.log("Payment modal dismissed");
         onError(new Error("Payment cancelled by user"));
       },
     },
@@ -110,7 +108,9 @@ export const initializeRazorpayPayment = async (
 // Verify payment on backend
 export const verifyPayment = async (
   paymentData: RazorpayPaymentData,
-  orderId: string
+  userId: string,
+  totalAmount: number,
+  currency: string = "INR"
 ): Promise<boolean> => {
   try {
     const response = await fetch(
@@ -122,10 +122,13 @@ export const verifyPayment = async (
           "X-Correlation-ID": crypto.randomUUID(),
         },
         body: JSON.stringify({
-          razorpayOrderId: paymentData.razorpay_order_id,
-          razorpayPaymentId: paymentData.razorpay_payment_id,
-          razorpaySignature: paymentData.razorpay_signature,
-          orderId: orderId,
+          orderId: paymentData.razorpay_order_id,
+          paymentId: paymentData.razorpay_payment_id,
+          signature: paymentData.razorpay_signature,
+          userId: userId,
+          totalAmount: totalAmount,
+          currency: currency,
+          paymentMethod: "RAZORPAY",
         }),
       }
     );
@@ -135,7 +138,7 @@ export const verifyPayment = async (
     }
 
     const result = await response.json();
-    return result.success ?? false;
+    return result.data ?? false;
   } catch (error) {
     console.error("Error verifying payment:", error);
     return false;

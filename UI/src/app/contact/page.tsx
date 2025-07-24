@@ -80,8 +80,7 @@ export default function Contact() {
         throw new Error("Failed to send email");
       }
 
-      const result = await response.json();
-      console.log("Email sent successfully:", result);
+      await response.json();
     } catch (error) {
       console.error("Error sending email:", error);
     }

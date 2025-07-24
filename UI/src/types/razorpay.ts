@@ -46,7 +46,6 @@ export interface OrderCreateRequest {
   userId: string;
   totalAmount: number;
   currency: string;
-  brandId: string;
   status: string;
   items: OrderItem[];
 }

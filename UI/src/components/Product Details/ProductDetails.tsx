@@ -92,9 +92,6 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
       brandId: selectedProduct.brandId,
       quantity: selectedQuantity,
     });
-
-    // Show success message or redirect to cart
-    console.log("Product added to cart");
   };
 
   const handleBuyNow = () => {

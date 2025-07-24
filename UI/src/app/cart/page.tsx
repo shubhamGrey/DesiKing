@@ -20,16 +20,10 @@ import {
   Chip,
   Avatar,
   FormControl,
+  CircularProgress,
+  Backdrop,
 } from "@mui/material";
-import {
-  CreditCard,
-  AccountBalance,
-  Payment,
-  PhoneAndroid,
-  LocalAtm,
-  Security,
-  Public,
-} from "@mui/icons-material";
+import { Payment, LocalAtm, Security } from "@mui/icons-material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import theme from "@/styles/theme";
@@ -60,7 +54,7 @@ const Cart = () => {
     clearCart,
   } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isLoading, setIsLoading] = useState(false);
   const [showRazorpay, setShowRazorpay] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -69,109 +63,27 @@ const Cart = () => {
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
     "success"
   );
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // Comprehensive payment methods for Indian and International customers
-  const paymentMethods = {
-    indian: [
-      {
-        id: "upi",
-        name: "UPI",
-        description:
-          "Pay instantly using Google Pay, PhonePe, Paytm, or any UPI app",
-        icon: <PhoneAndroid />,
-        popular: true,
-        fees: "No extra charges",
-        supported: ["GPay", "PhonePe", "Paytm", "BHIM", "Amazon Pay"],
-      },
-      {
-        id: "cards",
-        name: "Credit/Debit Cards",
-        description: "Visa, Mastercard, RuPay, American Express",
-        icon: <CreditCard />,
-        popular: true,
-        fees: "No extra charges",
-        supported: ["Visa", "Mastercard", "RuPay", "Amex"],
-      },
-      {
-        id: "netbanking",
-        name: "Net Banking",
-        description: "All major Indian banks supported",
-        icon: <AccountBalance />,
-        popular: false,
-        fees: "No extra charges",
-        supported: ["SBI", "HDFC", "ICICI", "Axis", "PNB", "50+ more banks"],
-      },
-      {
-        id: "wallets",
-        name: "Digital Wallets",
-        description: "Paytm, PhonePe, Amazon Pay, and more",
-        icon: <Payment />,
-        popular: false,
-        fees: "No extra charges",
-        supported: ["Paytm", "PhonePe", "Amazon Pay", "MobiKwik", "Freecharge"],
-      },
-      {
-        id: "cod",
-        name: "Cash on Delivery",
-        description: "Pay when your order is delivered",
-        icon: <LocalAtm />,
-        popular: true,
-        fees: "₹40 handling charges for orders below ₹500",
-        supported: ["Cash", "Card on delivery (select areas)"],
-      },
-    ],
-    international: [
-      {
-        id: "paypal",
-        name: "PayPal",
-        description: "Pay securely with your PayPal account",
-        icon: <Security />,
-        popular: true,
-        fees: "Standard PayPal fees apply",
-        supported: ["PayPal Balance", "Linked Cards", "Bank Account"],
-      },
-      {
-        id: "stripe",
-        name: "Credit/Debit Cards",
-        description: "Visa, Mastercard, American Express worldwide",
-        icon: <CreditCard />,
-        popular: true,
-        fees: "Standard processing fees apply",
-        supported: ["Visa", "Mastercard", "Amex", "Discover"],
-      },
-      {
-        id: "applepay",
-        name: "Apple Pay",
-        description: "Quick and secure payment with Touch ID or Face ID",
-        icon: <PhoneAndroid />,
-        popular: false,
-        fees: "No extra charges",
-        supported: ["iPhone", "iPad", "Mac", "Apple Watch"],
-      },
-      {
-        id: "googlepay_intl",
-        name: "Google Pay",
-        description: "Pay with Google Pay (International)",
-        icon: <PhoneAndroid />,
-        popular: false,
-        fees: "No extra charges",
-        supported: ["Android", "Chrome", "Google Account"],
-      },
-      {
-        id: "crypto",
-        name: "Cryptocurrency",
-        description: "Bitcoin, Ethereum, and other cryptocurrencies",
-        icon: <Public />,
-        popular: false,
-        fees: "Network fees apply",
-        supported: ["Bitcoin", "Ethereum", "USDT", "USDC"],
-      },
-    ],
-  };
-
-  const [selectedRegion, setSelectedRegion] = useState<
-    "indian" | "international"
-  >("indian");
+  // Payment methods - Only Razorpay and Cash on Delivery supported
+  const paymentMethods = [
+    {
+      id: "razorpay",
+      name: "Razorpay",
+      description: "UPI, Cards, Net Banking, Wallets - All payment methods",
+      icon: <Payment />,
+      popular: true,
+      fees: "No extra charges",
+    },
+    {
+      id: "cod",
+      name: "Cash on Delivery",
+      description: "Pay when your order is delivered",
+      icon: <LocalAtm />,
+      popular: true,
+      fees: "₹40 handling charges for orders below ₹500",
+    },
+  ];
 
   // Form data state
   const [formData, setFormData] = useState<PaymentFormData>({
@@ -221,9 +133,14 @@ const Cart = () => {
         setUserId(userProfile?.id);
       } catch {
         setUserId("");
+        // Redirect to login if user profile is invalid
+        router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
       }
+    } else {
+      // Redirect to login if no user profile exists
+      router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
     }
-  }, []);
+  }, [router]);
 
   // Helper function to handle COD orders
   const handleCODOrder = async () => {
@@ -234,7 +151,6 @@ const Cart = () => {
         userId: userId,
         totalAmount: subtotal,
         currency: "INR",
-        brandId: cartItems[0].brandId,
         status: "created",
         items: cartItems.map((item) => ({
           productId: item.productId,
@@ -245,17 +161,34 @@ const Cart = () => {
 
       const result = await createOrder(orderData, "COD");
 
-      setAlertMessage("Order placed successfully! You will pay on delivery.");
+      // Store COD order data in session storage
+      const paymentResult = {
+        status: "success",
+        orderId: result.data?.orderId || result.data || "COD_ORDER",
+        userId: userId,
+        totalAmount: subtotal,
+        currency: "INR",
+        timestamp: new Date().toISOString(),
+        paymentMethod: "Cash on Delivery",
+      };
+
+      sessionStorage.setItem("payment_result", JSON.stringify(paymentResult));
+
+      setIsRedirecting(true);
+      setAlertMessage("Order placed successfully! Redirecting...");
       setAlertSeverity("success");
       setShowAlert(true);
 
-      clearCart();
+      // Small delay to show loading overlay before clearing cart
+      setTimeout(() => {
+        clearCart();
+      }, 100);
 
       setTimeout(() => {
         router.push(
-          `/payment-result?status=success&order_id=${result.orderId}&payment_method=cod`
+          `/payment-result?status=success&order_id=${paymentResult.orderId}`
         );
-      }, 2000);
+      }, 1500);
     } catch (error: any) {
       console.error("COD order error:", error);
       setAlertMessage("Failed to place order. Please try again.");
@@ -274,7 +207,6 @@ const Cart = () => {
         userId: userId,
         totalAmount: subtotal,
         currency: "INR",
-        brandId: cartItems[0].brandId,
         status: "created",
         items: cartItems.map((item) => ({
           productId: item.productId,
@@ -284,11 +216,21 @@ const Cart = () => {
       };
 
       const result = await createOrder(orderData, "RAZORPAY");
-      setOrderId(result.orderId ?? result.data?.id ?? "");
+
+      // The backend now returns the Razorpay order ID for Razorpay payments
+      const razorpayOrderId = result.data.razorpayOrderId || "";
+
+      if (!razorpayOrderId) {
+        throw new Error("No Razorpay order ID received from server");
+      }
+
+      setOrderId(razorpayOrderId);
       setShowRazorpay(true);
     } catch (error: any) {
       console.error("Razorpay order error:", error);
-      setAlertMessage("Failed to create order. Please try again.");
+      setAlertMessage(
+        `Failed to create order: ${error.message || "Please try again."}`
+      );
       setAlertSeverity("error");
       setShowAlert(true);
     } finally {
@@ -297,14 +239,6 @@ const Cart = () => {
   };
 
   // Helper function to show coming soon message
-  const showComingSoonMessage = (methodName: string) => {
-    setAlertMessage(
-      `${methodName} integration coming soon! Please select another payment method.`
-    );
-    setAlertSeverity("error");
-    setShowAlert(true);
-  };
-
   // Handle order confirmation
   const handleConfirmOrder = async () => {
     if (!validateForm()) {
@@ -320,35 +254,15 @@ const Cart = () => {
       return;
     }
 
-    // Handle International Payment Methods
-    if (selectedRegion === "international") {
-      const methodMessages: Record<string, string> = {
-        paypal: "PayPal",
-        stripe: "Stripe",
-        applepay: "Apple Pay",
-        googlepay_intl: "Google Pay International",
-        crypto: "Cryptocurrency payment",
-      };
-
-      const methodName = methodMessages[paymentMethod];
-      if (methodName) {
-        showComingSoonMessage(methodName);
-        return;
-      }
-    }
-
-    // Handle Indian Payment Methods via Razorpay
-    if (
-      selectedRegion === "indian" &&
-      ["upi", "cards", "netbanking", "wallets"].includes(paymentMethod)
-    ) {
+    // Handle Razorpay payment (all online payment methods)
+    if (paymentMethod === "razorpay") {
       await handleRazorpayOrder();
       return;
     }
 
     // Fallback for unknown payment methods
     setAlertMessage(
-      "Selected payment method is not supported yet. Please choose another option."
+      "Selected payment method is not supported. Please choose Razorpay or Cash on Delivery."
     );
     setAlertSeverity("error");
     setShowAlert(true);
@@ -356,18 +270,39 @@ const Cart = () => {
 
   // Handle successful payment
   const handlePaymentSuccess = (paymentData: RazorpayPaymentData) => {
-    setAlertMessage("Payment successful! Redirecting...");
+    setIsRedirecting(true);
+    setAlertMessage("Payment successful! Verifying and redirecting...");
     setAlertSeverity("success");
     setShowAlert(true);
 
-    // Clear cart after successful payment
-    clearCart();
+    // Store payment data in session storage
+    const paymentResult = {
+      status: "success",
+      orderId: paymentData.razorpay_order_id,
+      paymentId: paymentData.razorpay_payment_id,
+      signature: paymentData.razorpay_signature,
+      userId: userId,
+      totalAmount: subtotal,
+      currency: "INR",
+      timestamp: new Date().toISOString(),
+    };
+
+    sessionStorage.setItem("payment_result", JSON.stringify(paymentResult));
+
+    // Show loading overlay immediately, then clear cart
+    setIsRedirecting(true);
+
+    // Small delay to show loading overlay before clearing cart
+    setTimeout(() => {
+      clearCart();
+    }, 100);
 
     setTimeout(() => {
+      // Pass only essential info in URL
       router.push(
-        `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}`
+        `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}`
       );
-    }, 2000);
+    }, 1500);
   };
 
   // Handle payment error
@@ -379,30 +314,15 @@ const Cart = () => {
 
   // Get button text based on current state
   const getButtonText = () => {
+    if (isRedirecting) return "Redirecting...";
     if (isLoading) return "Processing...";
 
     // Handle specific payment methods with appropriate button text
     switch (paymentMethod) {
       case "cod":
         return "Place Order (Cash on Delivery)";
-      case "upi":
-        return "Pay with UPI";
-      case "cards":
-        return "Pay with Card";
-      case "netbanking":
-        return "Pay with Net Banking";
-      case "wallets":
-        return "Pay with Wallet";
-      case "paypal":
-        return "Pay with PayPal";
-      case "stripe":
-        return "Pay with Credit/Debit Card";
-      case "applepay":
-        return "Pay with Apple Pay";
-      case "googlepay_intl":
-        return "Pay with Google Pay";
-      case "crypto":
-        return "Pay with Cryptocurrency";
+      case "razorpay":
+        return "Pay with Razorpay";
       default:
         return "Pay Now";
     }
@@ -417,6 +337,49 @@ const Cart = () => {
   const handleItemRemove = (itemId: string) => {
     removeItem(itemId);
   };
+
+  // Show loading overlay if redirecting after payment success
+  if (isRedirecting) {
+    return (
+      <Box sx={{ position: "relative", minHeight: "100vh" }}>
+        {/* Payment Success Loading Overlay */}
+        <Backdrop
+          sx={{
+            color: "#fff",
+            zIndex: 9999,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+          open={true}
+        >
+          <Box sx={{ textAlign: "center" }}>
+            <CircularProgress
+              size={60}
+              thickness={4}
+              sx={{ color: "primary.main", mb: 2 }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                color: "white",
+                fontFamily: michroma.style.fontFamily,
+                mb: 1,
+              }}
+            >
+              Payment Successful!
+            </Typography>
+            <Typography variant="body1" sx={{ color: "grey.300" }}>
+              Verifying payment and redirecting...
+            </Typography>
+          </Box>
+        </Backdrop>
+      </Box>
+    );
+  }
 
   if (cartItems.length === 0) {
     return <EmptyCart />; // Render EmptyCart component if cart is empty
@@ -570,167 +533,104 @@ const Cart = () => {
                 Payment Method
               </Typography>
 
-              {/* Region Selection */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Select your region:
-                </Typography>
-                <Stack direction="row" spacing={1}>
-                  <Chip
-                    label="India"
-                    icon={<Public />}
-                    onClick={() => setSelectedRegion("indian")}
-                    color={selectedRegion === "indian" ? "primary" : "default"}
-                    variant={
-                      selectedRegion === "indian" ? "filled" : "outlined"
-                    }
-                    clickable
-                  />
-                  <Chip
-                    label="International"
-                    icon={<Public />}
-                    onClick={() => setSelectedRegion("international")}
-                    color={
-                      selectedRegion === "international" ? "primary" : "default"
-                    }
-                    variant={
-                      selectedRegion === "international" ? "filled" : "outlined"
-                    }
-                    clickable
-                  />
-                </Stack>
-              </Box>
-
               {/* Payment Methods */}
               <FormControl component="fieldset" fullWidth>
                 <RadioGroup
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 >
-                  {paymentMethods[selectedRegion].map((method) => (
-                    <Box key={method.id} sx={{ mb: 2 }}>
-                      <FormControlLabel
-                        value={method.id}
-                        control={<Radio />}
-                        label={
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              width: "100%",
-                            }}
-                          >
-                            <Avatar
+                  <Grid container spacing={2}>
+                    {paymentMethods.map((method) => (
+                      <Grid size={12} key={method.id}>
+                        <FormControlLabel
+                          value={method.id}
+                          control={<Radio />}
+                          label={
+                            <Box
                               sx={{
-                                bgcolor:
-                                  paymentMethod === method.id
-                                    ? "primary.main"
-                                    : "grey.200",
-                                color:
-                                  paymentMethod === method.id
-                                    ? "white"
-                                    : "grey.600",
-                                width: 32,
-                                height: 32,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                width: "100%",
                               }}
                             >
-                              {method.icon}
-                            </Avatar>
-                            <Box sx={{ flex: 1 }}>
-                              <Box
+                              <Avatar
                                 sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1,
+                                  bgcolor:
+                                    paymentMethod === method.id
+                                      ? "primary.main"
+                                      : "grey.200",
+                                  color:
+                                    paymentMethod === method.id
+                                      ? "white"
+                                      : "grey.600",
+                                  width: 32,
+                                  height: 32,
                                 }}
                               >
-                                <Typography variant="body1" fontWeight={500}>
-                                  {method.name}
+                                {method.icon}
+                              </Avatar>
+                              <Box sx={{ flex: 1 }}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <Typography variant="body1" fontWeight={500}>
+                                    {method.name}
+                                  </Typography>
+                                  {method.popular && (
+                                    <Chip
+                                      label="Popular"
+                                      size="small"
+                                      color="success"
+                                      variant="filled"
+                                      sx={{ height: 20, fontSize: "0.75rem" }}
+                                    />
+                                  )}
+                                </Box>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {method.description}
                                 </Typography>
-                                {method.popular && (
-                                  <Chip
-                                    label="Popular"
-                                    size="small"
-                                    color="success"
-                                    variant="filled"
-                                    sx={{ height: 20, fontSize: "0.75rem" }}
-                                  />
-                                )}
+                                <Typography
+                                  variant="caption"
+                                  color="primary.main"
+                                >
+                                  {method.fees}
+                                </Typography>
                               </Box>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {method.description}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                color="primary.main"
-                              >
-                                {method.fees}
-                              </Typography>
                             </Box>
-                          </Box>
-                        }
-                        sx={{
-                          width: "100%",
-                          margin: 0,
-                          padding: 2,
-                          border: "1px solid",
-                          borderColor:
-                            paymentMethod === method.id
-                              ? "primary.main"
-                              : "grey.300",
-                          borderRadius: 2,
-                          backgroundColor:
-                            paymentMethod === method.id
-                              ? "primary.50"
-                              : "transparent",
-                          "&:hover": {
+                          }
+                          sx={{
+                            width: isMobile ? "90%" : "97%",
+                            margin: 0,
+                            padding: 2,
+                            border: "1px solid",
+                            borderColor:
+                              paymentMethod === method.id
+                                ? "primary.main"
+                                : "grey.300",
+                            borderRadius: 2,
                             backgroundColor:
                               paymentMethod === method.id
-                                ? "primary.100"
-                                : "grey.50",
-                          },
-                        }}
-                      />
-
-                      {/* Supported Methods */}
-                      {paymentMethod === method.id && (
-                        <Box
-                          sx={{
-                            mt: 1,
-                            ml: 4,
-                            p: 2,
-                            bgcolor: "grey.50",
-                            borderRadius: 1,
+                                ? "primary.50"
+                                : "transparent",
+                            "&:hover": {
+                              backgroundColor:
+                                paymentMethod === method.id
+                                  ? "primary.100"
+                                  : "grey.50",
+                            },
                           }}
-                        >
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ mb: 1, display: "block" }}
-                          >
-                            Supported options:
-                          </Typography>
-                          <Box
-                            sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
-                          >
-                            {method.supported.map((option) => (
-                              <Chip
-                                key={`${method.id}-${option}`}
-                                label={option}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: "0.7rem", height: 24 }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
-                    </Box>
-                  ))}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
                 </RadioGroup>
               </FormControl>
 
@@ -747,47 +647,22 @@ const Cart = () => {
               </Box>
 
               {/* Special Offers */}
-              {selectedRegion === "indian" && (
-                <Box
-                  sx={{ mt: 2, p: 2, bgcolor: "success.50", borderRadius: 1 }}
+              <Box sx={{ mt: 2, p: 2, bgcolor: "success.50", borderRadius: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="success.main"
+                  fontWeight={500}
                 >
-                  <Typography
-                    variant="body2"
-                    color="success.main"
-                    fontWeight={500}
-                  >
-                    💳 Special Offers:
-                  </Typography>
-                  <Typography variant="caption" color="success.main">
-                    • Get 5% cashback on UPI payments above ₹1000
-                  </Typography>
-                  <br />
-                  <Typography variant="caption" color="success.main">
-                    • No convenience fee on net banking
-                  </Typography>
-                </Box>
-              )}
-
-              {selectedRegion === "international" && (
-                <Box
-                  sx={{ mt: 2, p: 2, bgcolor: "warning.50", borderRadius: 1 }}
-                >
-                  <Typography
-                    variant="body2"
-                    color="warning.main"
-                    fontWeight={500}
-                  >
-                    🌍 International Payments:
-                  </Typography>
-                  <Typography variant="caption" color="warning.main">
-                    • Currency conversion rates applied at checkout
-                  </Typography>
-                  <br />
-                  <Typography variant="caption" color="warning.main">
-                    • Additional duties/taxes may apply based on destination
-                  </Typography>
-                </Box>
-              )}
+                  💳 Special Offers:
+                </Typography>
+                <Typography variant="caption" color="success.main">
+                  • Get 5% cashback on UPI payments above ₹1000
+                </Typography>
+                <br />
+                <Typography variant="caption" color="success.main">
+                  • No convenience fee on online payments
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -909,7 +784,7 @@ const Cart = () => {
                   color="primary"
                   fullWidth
                   onClick={handleConfirmOrder}
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                   sx={{
                     mt: 2,
                     py: 1.5,

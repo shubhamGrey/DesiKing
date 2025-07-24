@@ -219,8 +219,6 @@ function LoginPageContent() {
 
         // Store user role in cookies for middleware
         Cookies.set("user_role", userProfile.roleName, { expires: 7 });
-
-        console.log("User profile stored:", userProfile);
       }
     } catch (error) {
       console.warn(

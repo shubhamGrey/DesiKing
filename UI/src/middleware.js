@@ -17,10 +17,6 @@ export function middleware(request) {
   const accessToken = request.cookies.get("access_token");
   const isLoggedIn = !!accessToken?.value;
 
-  console.log(
-    `Middleware: Checking route ${pathname}, isLoggedIn: ${isLoggedIn}`
-  );
-
   // Public routes that don't require authentication
   const publicRoutes = [
     "/login",
@@ -113,11 +109,8 @@ function checkAdminAccess(request, accessToken) {
     }
   }
 
-  console.log(`Admin route check: userRole = ${userRole}`);
-
   if (userRole !== "Admin") {
     // Redirect non-admin users to unauthorized page or home
-    console.log(`Access denied to admin route for role: ${userRole}`);
     const unauthorizedUrl = new URL("/", request.url);
     return NextResponse.redirect(unauthorizedUrl);
   }
