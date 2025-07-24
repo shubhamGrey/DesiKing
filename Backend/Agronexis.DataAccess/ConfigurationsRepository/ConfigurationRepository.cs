@@ -722,5 +722,63 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return refundPaymentResponse;
         }
+
+        public CartResponseModel GetCartById(string id, string xCorrelationId)
+        {
+            CartResponseModel cartDetail = _dbContext.Carts.Where(x => x.Id == new Guid(id)).Select(x => new CartResponseModel
+            {
+                Id = x.Id,
+                UserId = x.UserId,
+                ProductId = x.ProductId,
+                BrandId = x.BrandId,
+                Quantity = x.Quantity,
+                CreatedDate = x.CreatedDate,
+                ModifiedDate = x.ModifiedDate
+            }).FirstOrDefault();
+
+            return cartDetail;
+        }
+
+        public string DeleteCartById(string id, string xCorrelationId)
+        {
+            var cartItem = _dbContext.Carts.FirstOrDefault(x => x.Id == new Guid(id));
+            if (cartItem == null)
+            {
+                return "Cart item not found or already inactive.";
+            }
+
+            _dbContext.Carts.Remove(cartItem);
+            _dbContext.SaveChanges();
+
+            return "Record deleted successfully.";
+        }
+
+        public string SaveOrUpdateCart(CartRequestModel cartRequest, string xCorrelationId)
+        {
+            var cartDetail = _dbContext.Carts.FirstOrDefault(x => x.Id == cartRequest.Id);
+
+            if (cartDetail == null)
+            {
+                cartDetail = new()
+                {
+                    UserId = cartRequest.UserId,
+                    ProductId = cartRequest.ProductId,
+                    Quantity = cartRequest.Quantity,
+                    BrandId = cartRequest.BrandId,
+                    CreatedDate = DateTime.UtcNow
+                };
+
+                _dbContext.Carts.Add(cartDetail);
+            }
+            else if (cartDetail != null && cartDetail.Id == cartRequest.Id)
+            {
+                cartDetail.Quantity = cartRequest.Quantity;
+                cartDetail.ModifiedDate = DateTime.UtcNow;
+
+                _dbContext.Carts.Update(cartDetail);
+            }
+            _dbContext.SaveChanges();
+            return cartDetail.Id.ToString();
+        }
     }
 }
