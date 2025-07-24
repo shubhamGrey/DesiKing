@@ -8,6 +8,7 @@ namespace Agronexis.Model.ResponseModel
 {
     public class OrderResponseModel
     {
-
+        public Guid OrderId { get; set; }
+        public string? RazorpayOrderId { get; set; }
     }
 }

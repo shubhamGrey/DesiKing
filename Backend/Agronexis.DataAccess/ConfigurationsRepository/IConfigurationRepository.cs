@@ -29,9 +29,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         string DeleteRoleById(string id, string xCorrelationId);
         Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId);
         Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId);
-        Task<string> CreateOrder(OrderRequestModel order, string xCorrelationId);
+        Task<OrderResponseModel> CreateOrder(OrderRequestModel order, string xCorrelationId);
         bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId);
         Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId);
         RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId);
+        CartResponseModel GetCartById(string id, string xCorrelationId);
+        string DeleteCartById(string id, string xCorrelationId);
+        string SaveOrUpdateCart(CartRequestModel role, string xCorrelationId);
     }
 }
