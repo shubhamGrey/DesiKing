@@ -725,7 +725,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public CartResponseModel GetCartById(string id, string xCorrelationId)
         {
-            CartResponseModel cartDetail = _dbContext.Carts.Where(x => x.Id == new Guid(id)).Select(x => new CartResponseModel
+            CartResponseModel cartDetail = _dbContext.Carts.Where(x => x.UserId == new Guid(id)).Select(x => new CartResponseModel
             {
                 Id = x.Id,
                 UserId = x.UserId,
