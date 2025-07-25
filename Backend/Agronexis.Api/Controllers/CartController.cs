@@ -46,7 +46,7 @@ namespace Agronexis.Api.Controllers
             return response;
         }
 
-        // POST api/Brand
+        // POST api/Cart
         [HttpPost]
         public ActionResult<ApiResponseModel> SaveOrUpdateCart([FromBody] CartRequestModel cart)
         {
@@ -71,7 +71,7 @@ namespace Agronexis.Api.Controllers
             return response;
         }
 
-        // DELETE api/Brand/{id}
+        // DELETE api/Cart/{id}
         [HttpDelete("{id}")]
         public ActionResult<ApiResponseModel> DeleteBrand(string id)
         {
