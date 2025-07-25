@@ -23,7 +23,7 @@ namespace Agronexis.Api.Controllers
 
         // GET api/Cart/{id}
         [HttpGet("{id}")]
-        public ActionResult<ApiResponseModel> GetCartById(string id)
+        public ActionResult<ApiResponseModel> GetCartItemsByUserId(string id)
         {
             SetXCorrelationId();
             ApiResponseModel response = new()
@@ -31,7 +31,7 @@ namespace Agronexis.Api.Controllers
                 Info = new ApiResponseInfoModel()
             };
 
-            var item = _configService.GetCartById(id, XCorrelationID);
+            var item = _configService.GetCartItemsByUserId(id, XCorrelationID);
             if (item == null)
             {
                 response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();

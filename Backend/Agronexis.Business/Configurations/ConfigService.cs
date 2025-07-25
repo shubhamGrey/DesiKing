@@ -162,9 +162,9 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.RefundPayment(refund, xCorrelationId);
         }
-        public CartResponseModel GetCartById(string id, string xCorrelationId)
+        public CartResponseModel GetCartItemsByUserId(string id, string xCorrelationId)
         {
-            return _repository.GetCartById(id, xCorrelationId);
+            return _repository.GetCartItemsByUserId(id, xCorrelationId);
         }
         public string DeleteCartById(string id, string xCorrelationId)
         {
