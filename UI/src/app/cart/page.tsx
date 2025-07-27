@@ -20,8 +20,6 @@ import {
   Chip,
   Avatar,
   FormControl,
-  CircularProgress,
-  Backdrop,
 } from "@mui/material";
 import { Payment, LocalAtm, Security } from "@mui/icons-material";
 import Image from "next/image";
@@ -63,7 +61,6 @@ const Cart = () => {
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
     "success"
   );
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Payment methods - Only Razorpay and Cash on Delivery supported
   const paymentMethods = [
@@ -159,36 +156,19 @@ const Cart = () => {
         })),
       };
 
-      const result = await createOrder(orderData, "COD");
+      await createOrder(orderData, "COD");
 
-      // Store COD order data in session storage
-      const paymentResult = {
-        status: "success",
-        orderId: result.data?.orderId || result.data || "COD_ORDER",
-        userId: userId,
-        totalAmount: subtotal,
-        currency: "INR",
-        timestamp: new Date().toISOString(),
-        paymentMethod: "Cash on Delivery",
-      };
-
-      sessionStorage.setItem("payment_result", JSON.stringify(paymentResult));
-
-      setIsRedirecting(true);
-      setAlertMessage("Order placed successfully! Redirecting...");
+      setAlertMessage("Order placed successfully! You will pay on delivery.");
       setAlertSeverity("success");
       setShowAlert(true);
 
-      // Small delay to show loading overlay before clearing cart
-      setTimeout(() => {
-        clearCart();
-      }, 100);
+      clearCart();
 
-      setTimeout(() => {
-        router.push(
-          `/payment-result?status=success&order_id=${paymentResult.orderId}`
-        );
-      }, 1500);
+      // setTimeout(() => {
+      //   router.push(
+      //     `/payment-result?status=success&order_id=${result.data}&payment_method=cod`
+      //   );
+      // }, 2000);
     } catch (error: any) {
       console.error("COD order error:", error);
       setAlertMessage("Failed to place order. Please try again.");
@@ -270,39 +250,18 @@ const Cart = () => {
 
   // Handle successful payment
   const handlePaymentSuccess = (paymentData: RazorpayPaymentData) => {
-    setIsRedirecting(true);
-    setAlertMessage("Payment successful! Verifying and redirecting...");
+    setAlertMessage("Payment successful! Redirecting...");
     setAlertSeverity("success");
     setShowAlert(true);
 
-    // Store payment data in session storage
-    const paymentResult = {
-      status: "success",
-      orderId: paymentData.razorpay_order_id,
-      paymentId: paymentData.razorpay_payment_id,
-      signature: paymentData.razorpay_signature,
-      userId: userId,
-      totalAmount: subtotal,
-      currency: "INR",
-      timestamp: new Date().toISOString(),
-    };
-
-    sessionStorage.setItem("payment_result", JSON.stringify(paymentResult));
-
-    // Show loading overlay immediately, then clear cart
-    setIsRedirecting(true);
-
-    // Small delay to show loading overlay before clearing cart
-    setTimeout(() => {
-      clearCart();
-    }, 100);
+    // Clear cart after successful payment
+    clearCart();
 
     setTimeout(() => {
-      // Pass only essential info in URL
       router.push(
-        `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}`
+        `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${subtotal}&currency=INR`
       );
-    }, 1500);
+    }, 2000);
   };
 
   // Handle payment error
@@ -314,7 +273,6 @@ const Cart = () => {
 
   // Get button text based on current state
   const getButtonText = () => {
-    if (isRedirecting) return "Redirecting...";
     if (isLoading) return "Processing...";
 
     // Handle specific payment methods with appropriate button text
@@ -337,49 +295,6 @@ const Cart = () => {
   const handleItemRemove = (itemId: string) => {
     removeItem(itemId);
   };
-
-  // Show loading overlay if redirecting after payment success
-  if (isRedirecting) {
-    return (
-      <Box sx={{ position: "relative", minHeight: "100vh" }}>
-        {/* Payment Success Loading Overlay */}
-        <Backdrop
-          sx={{
-            color: "#fff",
-            zIndex: 9999,
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-          open={true}
-        >
-          <Box sx={{ textAlign: "center" }}>
-            <CircularProgress
-              size={60}
-              thickness={4}
-              sx={{ color: "primary.main", mb: 2 }}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                color: "white",
-                fontFamily: michroma.style.fontFamily,
-                mb: 1,
-              }}
-            >
-              Payment Successful!
-            </Typography>
-            <Typography variant="body1" sx={{ color: "grey.300" }}>
-              Verifying payment and redirecting...
-            </Typography>
-          </Box>
-        </Backdrop>
-      </Box>
-    );
-  }
 
   if (cartItems.length === 0) {
     return <EmptyCart />; // Render EmptyCart component if cart is empty
@@ -784,7 +699,7 @@ const Cart = () => {
                   color="primary"
                   fullWidth
                   onClick={handleConfirmOrder}
-                  disabled={isLoading || isRedirecting}
+                  disabled={isLoading}
                   sx={{
                     mt: 2,
                     py: 1.5,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
   Typography,
   useMediaQuery,
   IconButton,
+  Skeleton,
 } from "@mui/material";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
@@ -203,6 +204,7 @@ const Home: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
     string | null
   >(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   const handleDeleteCategoryByType = React.useCallback((categoryId: string) => {
     setSelectedCategoryId(categoryId);
@@ -301,6 +303,9 @@ const Home: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error fetching categories:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
 
     return () => {
@@ -309,6 +314,176 @@ const Home: React.FC = () => {
       setUpcomingpProductCategories([]);
     };
   }, []);
+
+  // Skeleton Loading Component
+  const SkeletonLoader = () => (
+    <Container
+      sx={{
+        mt: 3,
+        mx: 6,
+        mb: 6,
+        px: isMobile ? 3 : 2,
+        justifySelf: "center",
+        maxWidth: "1500px !important",
+      }}
+    >
+      {/* Featured Products Skeleton */}
+      <Box sx={{ mt: isMobile ? 8 : 15 }}>
+        <Skeleton
+          variant="text"
+          width={isMobile ? 200 : 300}
+          height={isMobile ? 32 : 40}
+          sx={{ mb: isMobile ? 3 : 8, mx: "auto" }}
+        />
+        <Grid
+          container
+          columnSpacing={4}
+          rowSpacing={isMobile ? 4 : 8}
+          sx={{
+            width: "70%",
+            display: "flex",
+            mx: "auto",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Grid
+              key={index}
+              size={{ xs: 12, md: 4 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Box sx={{ width: "100%" }}>
+                <Skeleton
+                  variant="rectangular"
+                  width="100%"
+                  height={200}
+                  sx={{ borderRadius: "8px", mb: 1 }}
+                />
+                <Skeleton
+                  variant="rectangular"
+                  width="100%"
+                  height={40}
+                  sx={{ borderRadius: "4px" }}
+                />
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+
+      {/* Product Categories Skeleton */}
+      <Box sx={{ mt: isMobile ? 8 : 15 }}>
+        <Skeleton
+          variant="text"
+          width={isMobile ? 200 : 300}
+          height={isMobile ? 32 : 40}
+          sx={{ mb: isMobile ? 3 : 8, mx: "auto" }}
+        />
+        <Box sx={{ display: "flex", width: "100%", pb: 1, gap: 2 }}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Box key={index} sx={{ width: "100%" }}>
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height={isMobile ? 178 : 394}
+                sx={{ borderRadius: "8px", mb: 1 }}
+              />
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height={52}
+                sx={{ borderRadius: "0 0 8px 8px" }}
+              />
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      {/* Upcoming Categories Skeleton */}
+      <Box sx={{ mt: isMobile ? 8 : 15 }}>
+        <Skeleton
+          variant="text"
+          width={isMobile ? 200 : 300}
+          height={isMobile ? 32 : 40}
+          sx={{ mb: isMobile ? 3 : 8, mx: "auto" }}
+        />
+        <Grid container spacing={2}>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Grid key={index} size={{ xs: 6, sm: 4, md: 2 }}>
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height={120}
+                sx={{ borderRadius: "8px", mb: 1 }}
+              />
+              <Skeleton variant="text" width="80%" height={20} />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+
+      {/* Achievements Skeleton */}
+      <Box sx={{ mt: isMobile ? 8 : 15 }}>
+        <Grid container spacing={8}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Skeleton
+              variant="text"
+              width={isMobile ? 200 : 300}
+              height={isMobile ? 32 : 40}
+              sx={{ mb: 4, mx: "auto" }}
+            />
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Box key={index} sx={{ mb: 4 }}>
+                <Skeleton
+                  variant="rectangular"
+                  width="100%"
+                  height={100}
+                  sx={{ borderRadius: "8px" }}
+                />
+              </Box>
+            ))}
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Skeleton
+              variant="circular"
+              width="100%"
+              height={isMobile ? 380 : 500}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Video Skeleton */}
+      <Box sx={{ mt: isMobile ? 8 : 15 }}>
+        <Skeleton
+          variant="text"
+          width={isMobile ? 150 : 200}
+          height={isMobile ? 32 : 40}
+          sx={{ mb: 4, mx: "auto" }}
+        />
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={isMobile ? 200 : 400}
+          sx={{ borderRadius: "8px" }}
+        />
+      </Box>
+    </Container>
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <HomeGrid />
+        <SkeletonLoader />
+      </>
+    );
+  }
 
   return (
     <>
@@ -337,12 +512,23 @@ const Home: React.FC = () => {
           >
             Featured Products
           </Typography>
-          <Grid container columnSpacing={3} rowSpacing={isMobile ? 4 : 8}>
+          <Grid
+            container
+            columnSpacing={4}
+            rowSpacing={isMobile ? 4 : 8}
+            sx={{
+              width: "70%",
+              display: "flex",
+              mx: "auto",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             {!isMobile ? (
               featuredProducts.map((product) => (
                 <Grid
                   key={product.id}
-                  size={{ xs: 12, md: 2.4 }}
+                  size={{ xs: 12, md: 4 }}
                   sx={{
                     display: "flex",
                     alignItems: "center",

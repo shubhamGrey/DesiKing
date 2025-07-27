@@ -93,7 +93,7 @@ const ProductSection = ({ item }: ProductDetails) => {
       >
         <Grid container spacing={4}>
           {item.products.map((product) => (
-            <Grid size={{ xs: 6, md: 3 }} key={product.id}>
+            <Grid size={{ xs: 12, md: 4 }} key={product.id}>
               <Card
                 sx={{
                   backgroundColor: "transparent",

@@ -3,7 +3,6 @@ import {
   Star,
   FeaturedPlayList,
   LocalOffer,
-  ExpandMore,
   CheckCircle,
   Dining,
 } from "@mui/icons-material";
@@ -58,49 +57,59 @@ const AdditionalDetails = ({
 }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [sections, setSections] = React.useState([
+  const sections = [
     {
       id: "keyFeatures",
       title: "Key Features",
-      expanded: !isMobile, // Expand by default on desktop
+      expanded: true, // Always expanded
       icon: <FeaturedPlayList />,
       description: "Discover what makes this product special",
     },
     {
       id: "uses",
       title: `${selectedProduct?.name} Uses`,
-      expanded: false,
+      expanded: true, // Always expanded
       icon: <LocalOffer />,
       description: "Learn how to use this product effectively",
     },
     {
       id: "nutritionalInfo",
       title: "Nutritional Information",
-      expanded: false,
+      expanded: true, // Always expanded
       icon: <Dining />,
       description: "Complete nutritional details and health benefits",
     },
     {
       id: "customer_reviews",
       title: "Customer Reviews",
-      expanded: false,
+      expanded: true, // Always expanded
       icon: <Star />,
       description: "See what our customers are saying",
     },
-  ]);
-
-  const toggleSection = (id: string) => {
-    setSections((prevSections) =>
-      prevSections.map((section) =>
-        section.id === id
-          ? { ...section, expanded: !section.expanded }
-          : section
-      )
-    );
-  };
+  ];
 
   const renderCustomerReviews = () => (
-    <Box sx={{ p: 1.5 }}>
+    <Box
+      sx={{
+        p: 1.5,
+        maxHeight: "400px", // Limit height to approximately 3 rows
+        overflowY: "auto", // Add vertical scroll
+        "&::-webkit-scrollbar": {
+          width: "4px",
+        },
+        "&::-webkit-scrollbar-track": {
+          backgroundColor: "grey.100",
+          borderRadius: "2px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "primary.main",
+          borderRadius: "2px",
+          "&:hover": {
+            backgroundColor: "primary.dark",
+          },
+        },
+      }}
+    >
       <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
         Customer reviews are coming soon. Be the first to review this product!
       </Typography>
@@ -114,7 +123,27 @@ const AdditionalDetails = ({
   );
 
   const renderNutritionalInfo = () => (
-    <Box sx={{ p: isMobile ? 1 : 1.5 }}>
+    <Box
+      sx={{
+        p: isMobile ? 1 : 1.5,
+        maxHeight: "400px", // Limit height to approximately 3 rows
+        overflowY: "auto", // Add vertical scroll
+        "&::-webkit-scrollbar": {
+          width: "4px",
+        },
+        "&::-webkit-scrollbar-track": {
+          backgroundColor: "grey.100",
+          borderRadius: "2px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "primary.main",
+          borderRadius: "2px",
+          "&:hover": {
+            backgroundColor: "primary.dark",
+          },
+        },
+      }}
+    >
       {selectedProduct.nutritionalInfo ? (
         <Box>
           {selectedProduct.nutritionalInfo.split(",").map((item, index) => {
@@ -208,7 +237,27 @@ const AdditionalDetails = ({
     }
 
     return (
-      <Box sx={{ p: isMobile ? 1 : 1.5 }}>
+      <Box
+        sx={{
+          p: isMobile ? 1 : 1.5,
+          maxHeight: "400px", // Limit height to approximately 3 rows
+          overflowY: "auto", // Add vertical scroll
+          "&::-webkit-scrollbar": {
+            width: "4px",
+          },
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "grey.100",
+            borderRadius: "2px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "primary.main",
+            borderRadius: "2px",
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
+          },
+        }}
+      >
         {isMobile ? (
           // Mobile: Simple list
           <Box>
@@ -237,7 +286,7 @@ const AdditionalDetails = ({
             {items.map((item, index) => (
               <Grid
                 key={`${sectionId}-desktop-${index}-${item.slice(0, 10)}`}
-                size={{ xs: 12, md: 6 }}
+                size={12}
               >
                 <Paper
                   elevation={0}
@@ -283,119 +332,105 @@ const AdditionalDetails = ({
     <Box sx={{ mt: 10 }}>
       {/* Desktop: Enhanced header */}
 
-      {/* Sections */}
-      {sections.map((section) => (
-        <Card
-          key={section.id}
-          elevation={0}
-          sx={{
-            mb: 1.5,
-            border: "1px solid",
-            borderColor: "primary.main",
-            borderRadius: 2,
-            backgroundColor: "transparent",
-            overflow: "hidden",
-            transition: "all 0.3s ease-in-out",
-            "&:hover": !isMobile
-              ? {
-                  elevation: 4,
-                  transform: "translateY(-2px)",
-                }
-              : {},
-          }}
-        >
-          <Accordion
-            expanded={section.expanded}
-            sx={{
-              backgroundColor: "transparent",
-              boxShadow: "none",
-              "&:before": { display: "none" },
-            }}
-            onChange={() => toggleSection(section.id)}
-          >
-            <AccordionSummary
-              expandIcon={
-                <ExpandMore
-                  sx={{
-                    color: "primary.main",
-                    fontSize: 20,
-                  }}
-                />
-              }
+      {/* Sections in Grid Layout */}
+      <Grid container spacing={2}>
+        {sections.map((section) => (
+          <Grid key={section.id} size={{ xs: 12, md: 6 }}>
+            <Card
+              elevation={0}
               sx={{
-                backgroundColor: isMobile ? "transparent" : "primary.main",
-                color: isMobile ? "text.primary" : "primary.contrastText",
-                py: 1,
-                px: 2.5,
-                minHeight: 44,
+                mb: 1.5,
+                border: "1px solid",
+                borderColor: "primary.main",
+                borderRadius: 2,
+                backgroundColor: "transparent",
+                overflow: "hidden",
+                transition: "all 0.3s ease-in-out",
+                height: "400px", // Fixed height for all sections
+                display: "flex",
+                flexDirection: "column",
                 "&:hover": !isMobile
                   ? {
-                      backgroundColor: "secondary.main",
+                      elevation: 4,
+                      transform: "translateY(-2px)",
                     }
                   : {},
-                "& .MuiAccordionSummary-content": {
-                  alignItems: "center",
-                  margin: "6px 0",
-                },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
-                {!isMobile && (
-                  <Box
-                    sx={{
-                      mr: 1.2,
-                      color: "inherit",
-                      display: "flex",
+              <Accordion
+                expanded={true} // Always expanded
+                sx={{
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                  "&:before": { display: "none" },
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+                // Remove onChange to prevent toggle
+              >
+                <AccordionSummary
+                  expandIcon={null} // Remove expand icon since it's always open
+                  sx={{
+                    backgroundColor: isMobile ? "transparent" : "primary.main",
+                    color: isMobile ? "text.primary" : "primary.contrastText",
+                    py: 1,
+                    px: 2.5,
+                    minHeight: 44,
+                    flexShrink: 0, // Prevent header from shrinking
+                    "& .MuiAccordionSummary-content": {
                       alignItems: "center",
-                    }}
-                  >
-                    {React.cloneElement(section.icon, {
-                      sx: { fontSize: 18 },
-                    })}
+                      margin: "6px 0",
+                    },
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontFamily: michroma.style.fontFamily,
+                          fontWeight: 600,
+                          mb: isMobile ? 0 : 0.15,
+                          fontSize: isMobile ? "0.95rem" : "1rem",
+                        }}
+                      >
+                        {section.title}
+                      </Typography>
+                      {!isMobile && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            opacity: 0.9,
+                            fontWeight: 400,
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          {section.description}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                )}
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontFamily: michroma.style.fontFamily,
-                      fontWeight: 600,
-                      mb: isMobile ? 0 : 0.15,
-                      fontSize: isMobile ? "0.95rem" : "1rem",
-                    }}
-                  >
-                    {section.title}
-                  </Typography>
-                  {!isMobile && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        opacity: 0.9,
-                        fontWeight: 400,
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {section.description}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails sx={{ p: 0 }}>
-              {section.id === "customer_reviews" && renderCustomerReviews()}
-              {section.id === "nutritionalInfo" && renderNutritionalInfo()}
-              {section.id !== "customer_reviews" &&
-                section.id !== "nutritionalInfo" &&
-                selectedProduct &&
-                Array.isArray(selectedProduct[section.id as keyof Product]) &&
-                renderFeaturesList(
-                  selectedProduct[section.id as keyof Product] as string[],
-                  section.id
-                )}
-            </AccordionDetails>
-          </Accordion>
-        </Card>
-      ))}
+                </AccordionSummary>
+                <AccordionDetails sx={{ p: 0, flex: 1, overflow: "hidden" }}>
+                  {section.id === "customer_reviews" && renderCustomerReviews()}
+                  {section.id === "nutritionalInfo" && renderNutritionalInfo()}
+                  {section.id !== "customer_reviews" &&
+                    section.id !== "nutritionalInfo" &&
+                    selectedProduct &&
+                    Array.isArray(
+                      selectedProduct[section.id as keyof Product]
+                    ) &&
+                    renderFeaturesList(
+                      selectedProduct[section.id as keyof Product] as string[],
+                      section.id
+                    )}
+                </AccordionDetails>
+              </Accordion>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 };
