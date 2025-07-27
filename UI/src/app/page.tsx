@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, Suspense } from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
