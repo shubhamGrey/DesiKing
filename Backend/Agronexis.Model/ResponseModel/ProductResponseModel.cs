@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Agronexis.Model.EntityModel;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Agronexis.Model.ResponseModel
         public string? Description { get; set; }
         public Guid BrandId { get; set; }
         public Guid CategoryId { get; set; }
-        public string CategoryName { get; set; }
+        public string? CategoryName { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
@@ -34,5 +35,7 @@ namespace Agronexis.Model.ResponseModel
         public string? Ingredients { get; set; }
         public string? NutritionalInfo { get; set; }
         public string? ThumbnailUrl { get; set; }
+        public List<PriceResponseModel> Prices { get; set; } = [];
+        public List<SkuResponseModel> Skus { get; set; } = [];
     }
 }

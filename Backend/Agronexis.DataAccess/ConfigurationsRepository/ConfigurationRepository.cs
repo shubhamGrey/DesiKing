@@ -35,196 +35,388 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
-            List<ProductResponseModel> productList = _dbContext.Products
-                .Where(x => x.IsActive)
-                .Join(_dbContext.Categories,
-                      product => product.CategoryId,
-                      category => category.Id,
-                      (product, category) => new { product, category })
-                .AsEnumerable()
-                .Select(x => new ProductResponseModel
-                {
-                    Id = x.product.Id,
-                    Name = x.product.Name,
-                    Description = x.product.Description,
-                    ManufacturingDate = x.product.ManufacturingDate,
-                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.product.ImageUrls),
-                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.product.KeyFeatures),
-                    Uses = JsonSerializer.Deserialize<List<string>>(x.product.Uses),
-                    CategoryId = x.product.CategoryId,
-                    CategoryName = x.category.Name,
-                    BrandId = x.product.BrandId,
-                    MetaTitle = x.product.MetaTitle,
-                    MetaDescription = x.product.MetaDescription,
-                    CreatedDate = DateTime.UtcNow,
-                    Origin = x.product.Origin,
-                    ShelfLife = x.product.ShelfLife,
-                    StorageInstructions = x.product.StorageInstructions,
-                    Certifications = JsonSerializer.Deserialize<List<string>>(x.product.Certifications),
-                    IsActive = x.product.IsActive,
-                    IsPremium = x.product.IsPremium,
-                    IsFeatured = x.product.IsFeatured,
-                    Ingredients = x.product.Ingredients,
-                    NutritionalInfo = x.product.NutritionalInfo,
-                    ThumbnailUrl = x.product.ThumbnailUrl
-                }).ToList();
+            var productList = (
+                                from P in _dbContext.Products
+                                    .Include(p => p.ProductPrices)
+                                    .Include(p => p.Skus)
+                                join C in _dbContext.Categories
+                                    on P.CategoryId equals C.Id
+                                where P.IsActive && C.IsActive // Optional: if category has IsActive
+                                select new { P, C }
+                            )
+                            .AsEnumerable()
+                            .Select(x => new ProductResponseModel
+                            {
+                                Id = x.P.Id,
+                                Name = x.P.Name,
+                                Description = x.P.Description,
+                                ManufacturingDate = x.P.ManufacturingDate,
+                                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls),
+                                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures),
+                                Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses),
+                                CategoryId = x.P.CategoryId,
+                                CategoryName = x.C.Name,
+                                BrandId = x.P.BrandId,
+                                MetaTitle = x.P.MetaTitle,
+                                MetaDescription = x.P.MetaDescription,
+                                CreatedDate = DateTime.UtcNow,
+                                Origin = x.P.Origin,
+                                ShelfLife = x.P.ShelfLife,
+                                StorageInstructions = x.P.StorageInstructions,
+                                Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications),
+                                IsActive = x.P.IsActive,
+                                IsPremium = x.P.IsPremium,
+                                IsFeatured = x.P.IsFeatured,
+                                Ingredients = x.P.Ingredients,
+                                NutritionalInfo = x.P.NutritionalInfo,
+                                ThumbnailUrl = x.P.ThumbnailUrl,
+
+                                Prices = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                                {
+                                    Id = pp.Id,
+                                    Price = pp.Price,
+                                    CreatedDate = pp.CreatedDate,
+                                    ModifiedDate = pp.ModifiedDate,
+                                    IsDiscounted = pp.IsDiscounted,
+                                    DiscountPercentage = pp.DiscountPercentage,
+                                    DiscountedAmount = pp.DiscountedAmount,
+                                    IsActive = pp.IsActive,
+                                    IsDeleted = pp.IsDeleted
+                                }).ToList(),
+
+                                Skus = x.P.Skus.Select(s => new SkuResponseModel
+                                {
+                                    Id = s.Id,
+                                    SkuNumber = s.SkuNumber,
+                                    Weight = s.Weight,
+                                    Barcode = s.Barcode,
+                                    CreatedDate = s.CreatedDate,
+                                    ModifiedDate = s.ModifiedDate,
+                                    IsActive = s.IsActive,
+                                    IsDeleted = s.IsDeleted
+                                }).ToList()
+                            }).ToList();
+
 
             return productList;
         }
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            ProductResponseModel product = _dbContext.Products.Where(x => x.Id == new Guid(id)).Join(_dbContext.Categories,
-                      product => product.CategoryId,
-                      category => category.Id,
-                      (product, category) => new { product, category }).AsEnumerable().Select(x => new ProductResponseModel
-                      {
-                          Id = x.product.Id,
-                          Name = x.product.Name,
-                          Description = x.product.Description,
-                          ManufacturingDate = x.product.ManufacturingDate,
-                          ImageUrls = JsonSerializer.Deserialize<List<string>>(x.product.ImageUrls),
-                          KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.product.KeyFeatures),
-                          Uses = JsonSerializer.Deserialize<List<string>>(x.product.Uses),
-                          CategoryId = x.product.CategoryId,
-                          CategoryName = x.category.Name,
-                          BrandId = x.product.BrandId,
-                          MetaTitle = x.product.MetaTitle,
-                          MetaDescription = x.product.MetaDescription,
-                          CreatedDate = DateTime.UtcNow,
-                          Origin = x.product.Origin,
-                          ShelfLife = x.product.ShelfLife,
-                          StorageInstructions = x.product.StorageInstructions,
-                          Certifications = JsonSerializer.Deserialize<List<string>>(x.product.Certifications),
-                          IsActive = x.product.IsActive,
-                          IsPremium = x.product.IsPremium,
-                          IsFeatured = x.product.IsFeatured,
-                          Ingredients = x.product.Ingredients,
-                          NutritionalInfo = x.product.NutritionalInfo,
-                          ThumbnailUrl = x.product.ThumbnailUrl
-                      }).FirstOrDefault();
+            Guid productId = Guid.Parse(id);
 
-            return product;
+            var result = (
+                from P in _dbContext.Products
+                    .Include(p => p.ProductPrices)
+                    .Include(p => p.Skus)
+                join C in _dbContext.Categories on P.CategoryId equals C.Id
+                where P.Id == productId
+                select new { P, C }
+            )
+            .AsEnumerable()
+            .Select(x => new ProductResponseModel
+            {
+                Id = x.P.Id,
+                Name = x.P.Name,
+                Description = x.P.Description,
+                ManufacturingDate = x.P.ManufacturingDate,
+                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
+                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
+                Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
+                CategoryId = x.P.CategoryId,
+                CategoryName = x.C.Name,
+                BrandId = x.P.BrandId,
+                MetaTitle = x.P.MetaTitle,
+                MetaDescription = x.P.MetaDescription,
+                CreatedDate = DateTime.UtcNow,
+                Origin = x.P.Origin,
+                ShelfLife = x.P.ShelfLife,
+                StorageInstructions = x.P.StorageInstructions,
+                Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
+                IsActive = x.P.IsActive,
+                IsPremium = x.P.IsPremium,
+                IsFeatured = x.P.IsFeatured,
+                Ingredients = x.P.Ingredients,
+                NutritionalInfo = x.P.NutritionalInfo,
+                ThumbnailUrl = x.P.ThumbnailUrl,
+
+                Prices = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                {
+                    Id = pp.Id,
+                    Price = pp.Price,
+                    CreatedDate = pp.CreatedDate,
+                    ModifiedDate = pp.ModifiedDate,
+                    IsDiscounted = pp.IsDiscounted,
+                    DiscountPercentage = pp.DiscountPercentage,
+                    DiscountedAmount = pp.DiscountedAmount,
+                    IsActive = pp.IsActive,
+                    IsDeleted = pp.IsDeleted
+                }).ToList(),
+
+                Skus = x.P.Skus.Select(s => new SkuResponseModel
+                {
+                    Id = s.Id,
+                    SkuNumber = s.SkuNumber,
+                    Weight = s.Weight,
+                    Barcode = s.Barcode,
+                    CreatedDate = s.CreatedDate,
+                    ModifiedDate = s.ModifiedDate,
+                    IsActive = s.IsActive,
+                    IsDeleted = s.IsDeleted
+                }).ToList()
+            })
+            .FirstOrDefault();
+
+            return result;
         }
+
 
         public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
         {
-            List<ProductResponseModel> productList = _dbContext.Products
-                .Where(x => x.IsActive && x.CategoryId == new Guid(categoryId))
-                .Join(_dbContext.Categories,
-                      product => product.CategoryId,
-                      category => category.Id,
-                      (product, category) => new { product, category })
-                .AsEnumerable()
-                .Select(x => new ProductResponseModel
+            Guid catId = Guid.Parse(categoryId);
+
+            var productList = (
+                from P in _dbContext.Products
+                    .Include(p => p.ProductPrices)
+                    .Include(p => p.Skus)
+                join C in _dbContext.Categories on P.CategoryId equals C.Id
+                where P.IsActive && P.CategoryId == catId
+                select new { P, C }
+            )
+            .AsEnumerable() // Ensure everything after this is in-memory
+            .Select(x => new ProductResponseModel
+            {
+                Id = x.P.Id,
+                Name = x.P.Name,
+                Description = x.P.Description,
+                ManufacturingDate = x.P.ManufacturingDate,
+
+                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
+                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
+                Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
+                Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
+
+                CategoryId = x.P.CategoryId,
+                CategoryName = x.C.Name,
+                BrandId = x.P.BrandId,
+                MetaTitle = x.P.MetaTitle,
+                MetaDescription = x.P.MetaDescription,
+                CreatedDate = DateTime.UtcNow,
+                Origin = x.P.Origin,
+                ShelfLife = x.P.ShelfLife,
+                StorageInstructions = x.P.StorageInstructions,
+                IsActive = x.P.IsActive,
+                IsPremium = x.P.IsPremium,
+                IsFeatured = x.P.IsFeatured,
+                Ingredients = x.P.Ingredients,
+                NutritionalInfo = x.P.NutritionalInfo,
+                ThumbnailUrl = x.P.ThumbnailUrl,
+
+                Prices = x.P.ProductPrices.Select(pp => new PriceResponseModel
                 {
-                    Id = x.product.Id,
-                    Name = x.product.Name,
-                    Description = x.product.Description,
-                    ManufacturingDate = x.product.ManufacturingDate,
-                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.product.ImageUrls),
-                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.product.KeyFeatures),
-                    Uses = JsonSerializer.Deserialize<List<string>>(x.product.Uses),
-                    CategoryId = x.product.CategoryId,
-                    CategoryName = x.category.Name,
-                    BrandId = x.product.BrandId,
-                    MetaTitle = x.product.MetaTitle,
-                    MetaDescription = x.product.MetaDescription,
-                    CreatedDate = DateTime.UtcNow,
-                    Origin = x.product.Origin,
-                    ShelfLife = x.product.ShelfLife,
-                    StorageInstructions = x.product.StorageInstructions,
-                    Certifications = JsonSerializer.Deserialize<List<string>>(x.product.Certifications),
-                    IsActive = x.product.IsActive,
-                    IsPremium = x.product.IsPremium,
-                    IsFeatured = x.product.IsFeatured,
-                    Ingredients = x.product.Ingredients,
-                    NutritionalInfo = x.product.NutritionalInfo
-                }).ToList();
+                    Id = pp.Id,
+                    Price = pp.Price,
+                    CreatedDate = pp.CreatedDate,
+                    ModifiedDate = pp.ModifiedDate,
+                    IsDiscounted = pp.IsDiscounted,
+                    DiscountPercentage = pp.DiscountPercentage,
+                    DiscountedAmount = pp.DiscountedAmount,
+                    IsActive = pp.IsActive,
+                    IsDeleted = pp.IsDeleted
+                }).ToList(),
+
+                Skus = x.P.Skus.Select(s => new SkuResponseModel
+                {
+                    Id = s.Id,
+                    SkuNumber = s.SkuNumber,
+                    Weight = s.Weight,
+                    Barcode = s.Barcode,
+                    CreatedDate = s.CreatedDate,
+                    ModifiedDate = s.ModifiedDate,
+                    IsActive = s.IsActive,
+                    IsDeleted = s.IsDeleted
+                }).ToList()
+            }).ToList();
 
             return productList;
         }
 
+
         public string SaveOrUpdateProduct(ProductRequestModel productReq, string xCorrelationId)
         {
-            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == productReq.Id);
+            var productDetail = _dbContext.Products
+                .Include(p => p.ProductPrices)
+                .Include(p => p.Skus)
+                .FirstOrDefault(x => x.Id == productReq.Id);
+
+            bool isNew = false;
 
             if (productDetail == null)
             {
-                productDetail = new()
+                productDetail = new Model.EntityModel.Product
                 {
-                    Name = productReq.Name,
-                    Description = productReq.Description,
-                    ManufacturingDate = productReq.ManufacturingDate,
-                    ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls),
-                    KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures),
-                    Uses = JsonSerializer.Serialize(productReq.Uses),
-                    CategoryId = productReq.CategoryId,
-                    BrandId = productReq.BrandId,
-                    MetaTitle = productReq.MetaTitle,
-                    MetaDescription = productReq.MetaDescription,
-                    CreatedDate = DateTime.UtcNow,
-                    Origin = productReq.Origin,
-                    ShelfLife = productReq.ShelfLife,
-                    StorageInstructions = productReq.StorageInstructions,
-                    Certifications = JsonSerializer.Serialize(productReq.Certifications),
-                    IsActive = productReq.IsActive,
-                    IsPremium = productReq.IsPremium,
-                    IsFeatured = productReq.IsFeatured,
-                    Ingredients = productReq.Ingredients,
-                    NutritionalInfo = productReq.NutritionalInfo,
-                    ThumbnailUrl = productReq.ThumbnailUrl
+                    Id = Guid.NewGuid(),
+                    CreatedDate = DateTime.UtcNow
                 };
+                isNew = true;
+            }
 
+            // Update main product fields
+            productDetail.Name = productReq.Name;
+            productDetail.Description = productReq.Description;
+            productDetail.ManufacturingDate = productReq.ManufacturingDate;
+            productDetail.ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls);
+            productDetail.KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures);
+            productDetail.Uses = JsonSerializer.Serialize(productReq.Uses);
+            productDetail.CategoryId = productReq.CategoryId;
+            productDetail.BrandId = productReq.BrandId;
+            productDetail.MetaTitle = productReq.MetaTitle;
+            productDetail.MetaDescription = productReq.MetaDescription;
+            productDetail.Origin = productReq.Origin;
+            productDetail.ShelfLife = productReq.ShelfLife;
+            productDetail.StorageInstructions = productReq.StorageInstructions;
+            productDetail.Certifications = JsonSerializer.Serialize(productReq.Certifications);
+            productDetail.IsActive = productReq.IsActive;
+            productDetail.IsPremium = productReq.IsPremium;
+            productDetail.IsFeatured = productReq.IsFeatured;
+            productDetail.Ingredients = productReq.Ingredients;
+            productDetail.NutritionalInfo = productReq.NutritionalInfo;
+            productDetail.ThumbnailUrl = productReq.ThumbnailUrl;
+            productDetail.ModifiedDate = DateTime.UtcNow;
+
+            if (isNew)
+            {
                 _dbContext.Products.Add(productDetail);
             }
-            else if (productDetail != null && productDetail.Id == productReq.Id)
+            else
             {
-                productDetail.Name = productReq.Name;
-                productDetail.Description = productReq.Description;
-                productDetail.ManufacturingDate = productReq.ManufacturingDate;
-                productDetail.ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls);
-                productDetail.KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures);
-                productDetail.Uses = JsonSerializer.Serialize(productReq.Uses);
-                productDetail.CategoryId = productReq.CategoryId;
-                productDetail.BrandId = productReq.BrandId;
-                productDetail.MetaTitle = productReq.MetaTitle;
-                productDetail.MetaDescription = productReq.MetaDescription;
-                productDetail.CreatedDate = DateTime.UtcNow;
-                productDetail.Origin = productReq.Origin;
-                productDetail.ShelfLife = productReq.ShelfLife;
-                productDetail.StorageInstructions = productReq.StorageInstructions;
-                productDetail.Certifications = JsonSerializer.Serialize(productReq.Certifications);
-                productDetail.IsActive = productReq.IsActive;
-                productDetail.IsPremium = productReq.IsPremium;
-                productDetail.IsFeatured = productReq.IsFeatured;
-                productDetail.Ingredients = productReq.Ingredients;
-                productDetail.NutritionalInfo = productReq.NutritionalInfo;
-                productDetail.ThumbnailUrl = productReq.ThumbnailUrl;
+                // Handle Price Updates
+                if (productReq.Prices != null)
+                {
+                    // Remove prices not in request
+                    var incomingPriceIds = productReq.Prices.Select(p => p.Id).Where(id => id != Guid.Empty).ToList();
+                    var pricesToRemove = productDetail.ProductPrices
+                        .Where(p => !incomingPriceIds.Contains(p.Id))
+                        .ToList();
+                    _dbContext.ProductPrices.RemoveRange(pricesToRemove);
 
-                _dbContext.Products.Update(productDetail);
+                    foreach (var price in productReq.Prices)
+                    {
+                        var existingPrice = productDetail.ProductPrices.FirstOrDefault(p => p.Id == price.Id && price.Id != Guid.Empty);
+                        if (existingPrice != null)
+                        {
+                            existingPrice.Price = price.Price;
+                            existingPrice.CurrencyId = price.CurrencyId;
+                            existingPrice.IsDiscounted = price.IsDiscounted;
+                            existingPrice.DiscountPercentage = price.DiscountPercentage;
+                            existingPrice.DiscountedAmount = price.DiscountedAmount;
+                            existingPrice.IsActive = price.IsActive;
+                            existingPrice.IsDeleted = price.IsDeleted;
+                        }
+                        else
+                        {
+                            _dbContext.ProductPrices.Add(new ProductPrice
+                            {
+                                Id = Guid.NewGuid(),
+                                ProductId = productDetail.Id,
+                                Price = price.Price,
+                                CreatedDate = DateTime.UtcNow,
+                                CurrencyId = price.CurrencyId,
+                                IsDiscounted = price.IsDiscounted,
+                                DiscountPercentage = price.DiscountPercentage,
+                                DiscountedAmount = price.DiscountedAmount,
+                                IsActive = price.IsActive,
+                                IsDeleted = price.IsDeleted
+                            });
+                        }
+                    }
+                }
+
+                // Handle SKU Updates
+                if (productReq.Skus != null)
+                {
+                    var incomingSkuIds = productReq.Skus.Select(s => s.Id).Where(id => id != Guid.Empty).ToList();
+                    var skusToRemove = productDetail.Skus
+                        .Where(s => !incomingSkuIds.Contains(s.Id))
+                        .ToList();
+                    _dbContext.Skus.RemoveRange(skusToRemove);
+
+                    foreach (var sku in productReq.Skus)
+                    {
+                        var existingSku = productDetail.Skus.FirstOrDefault(s => s.Id == sku.Id && sku.Id != Guid.Empty);
+                        if (existingSku != null)
+                        {
+                            existingSku.SkuNumber = sku.SkuNumber;
+                            existingSku.Weight = sku.Weight;
+                            existingSku.Barcode = sku.Barcode;
+                            existingSku.IsActive = sku.IsActive;
+                            existingSku.IsDeleted = sku.IsDeleted;
+                        }
+                        else
+                        {
+                            _dbContext.Skus.Add(new Sku
+                            {
+                                Id = Guid.NewGuid(),
+                                ProductId = productDetail.Id,
+                                SkuNumber = sku.SkuNumber,
+                                Weight = sku.Weight,
+                                Barcode = sku.Barcode,
+                                CreatedDate = DateTime.UtcNow,
+                                IsActive = sku.IsActive,
+                                IsDeleted = sku.IsDeleted
+                            });
+                        }
+                    }
+                }
             }
+
             _dbContext.SaveChanges();
             return productDetail.Id.ToString();
         }
 
+
+
         public string DeleteProductById(string id, string xCorrelationId)
         {
-            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+            Guid productId = Guid.Parse(id);
+
+            var productDetail = _dbContext.Products
+                .Include(p => p.ProductPrices)
+                .Include(p => p.Skus)
+                .FirstOrDefault(x => x.Id == productId && x.IsActive);
 
             if (productDetail != null)
             {
+                // Soft-delete product
                 productDetail.IsActive = false;
                 productDetail.IsDeleted = true;
+                productDetail.ModifiedDate = DateTime.UtcNow;
+
+                // Soft-delete product prices
+                foreach (var price in productDetail.ProductPrices)
+                {
+                    price.IsActive = false;
+                    price.IsDeleted = true;
+                    price.ModifiedDate = DateTime.UtcNow;
+                }
+
+                // Soft-delete skus
+                foreach (var sku in productDetail.Skus)
+                {
+                    sku.IsActive = false;
+                    sku.IsDeleted = true;
+                    sku.ModifiedDate = DateTime.UtcNow;
+                }
+
                 _dbContext.Products.Update(productDetail);
                 _dbContext.SaveChanges();
+
                 return "Record deleted successfully.";
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
+
 
         public List<CategoryResponseModel> GetCategories(string xCorrelationId)
         {
@@ -779,6 +971,30 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
             _dbContext.SaveChanges();
             return cartDetail.Id.ToString();
+        }
+
+        public List<CurrencyResponseModel> GetCurrencies(string xCorrelationId)
+        {
+            try
+            {
+                List<CurrencyResponseModel> CurrencyList = _dbContext.Currencies.Where(x => x.IsActive).Select(x => new CurrencyResponseModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Code = x.Code,
+                    IsDefault = x.IsDefault,
+                    IsActive = x.IsActive,
+                    IsDeleted = x.IsDeleted,
+                    CreatedDate = x.CreatedDate,
+                    ModifiedDate = x.ModifiedDate
+                }).ToList();
+
+                return CurrencyList;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

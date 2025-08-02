@@ -8,15 +8,18 @@ using System.Threading.Tasks;
 
 namespace Agronexis.Model.EntityModel
 {
-    [Table("Currency", Schema = "dbo")]
-    public class Currency
+    [Table("Sku", Schema = "dbo")]
+    public class Sku
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-        public string? Code { get; set; }
-        public string? Name { get; set; }
-        public bool IsDefault { get; set; }
+        [ForeignKey("Product")]
+        public Guid ProductId { get; set; }
+        public Product Product { get; set; }
+        public string? SkuNumber { get; set; }
+        public string? Weight { get; set; }
+        public string? Barcode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public bool IsActive { get; set; }

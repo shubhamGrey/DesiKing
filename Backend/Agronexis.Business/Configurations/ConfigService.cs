@@ -174,5 +174,9 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.SaveOrUpdateCart(role, xCorrelationId);
         }
+        public List<CurrencyResponseModel> GetCurrencies(string xCorrelationId)
+        {
+            return _repository.GetCurrencies(xCorrelationId);
+        }
     }
 }

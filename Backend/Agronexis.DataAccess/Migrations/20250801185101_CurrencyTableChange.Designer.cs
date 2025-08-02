@@ -3,6 +3,7 @@ using System;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250801185101_CurrencyTableChange")]
+    partial class CurrencyTableChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -374,19 +377,10 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<Guid>("CurrencyId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("DiscountPercentage")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DiscountedAmount")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDiscounted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -519,43 +513,6 @@ namespace Agronexis.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ShippingAddress", "dbo");
-                });
-
-            modelBuilder.Entity("Agronexis.Model.EntityModel.Sku", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Barcode")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SkuNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Weight")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Sku", "dbo");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Transaction", b =>
@@ -693,23 +650,12 @@ namespace Agronexis.DataAccess.Migrations
                         .IsRequired();
 
                     b.HasOne("Agronexis.Model.EntityModel.Product", "Product")
-                        .WithMany("ProductPrices")
+                        .WithMany("Prices")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Currency");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Agronexis.Model.EntityModel.Sku", b =>
-                {
-                    b.HasOne("Agronexis.Model.EntityModel.Product", "Product")
-                        .WithMany("Skus")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Product");
                 });
@@ -739,9 +685,7 @@ namespace Agronexis.DataAccess.Migrations
                 {
                     b.Navigation("Inventories");
 
-                    b.Navigation("ProductPrices");
-
-                    b.Navigation("Skus");
+                    b.Navigation("Prices");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Role", b =>
