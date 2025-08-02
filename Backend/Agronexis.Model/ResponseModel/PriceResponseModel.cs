@@ -1,25 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Agronexis.Model.EntityModel
+namespace Agronexis.Model.ResponseModel
 {
-    [Table("ProductPrice", Schema = "dbo")]
-    public class ProductPrice
+    public class PriceResponseModel
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-        [ForeignKey("Product")]
-        public Guid ProductId { get; set; }
-        public Product Product { get; set; }
-        [ForeignKey("Currency")]
-        public Guid CurrencyId { get; set; }
-        public Currency Currency { get; set; }
         public decimal Price { get; set; }
         public bool IsDiscounted { get; set; }
         public int DiscountPercentage { get; set; }

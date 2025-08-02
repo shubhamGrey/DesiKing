@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Agronexis.Model.EntityModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,8 @@ namespace Agronexis.Model.RequestModel
         public Guid Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public List<Price> Prices { get; set; } = [];
-        public List<Sku> SkuList { get; set; } = [];
+        public List<PriceRequestModel> Prices { get; set; } = [];
+        public List<SkuRequestModel> Skus { get; set; } = [];
         public List<string> ImageUrls { get; set; } = [];
         public List<string> KeyFeatures { get; set; } = [];
         public List<string> Uses { get; set; } = [];
@@ -31,22 +32,5 @@ namespace Agronexis.Model.RequestModel
         public string? Ingredients { get; set; }
         public string? NutritionalInfo { get; set; }
         public string? ThumbnailUrl { get; set; }
-    }
-
-    public class Price
-    {
-        public int Amount { get; set; }
-        public string? Currency { get; set; }
-        public bool IsDiscounted { get; set; }
-        public int DiscountPercentage { get; set; }
-        public int DiscountedAmount { get; set; }
-        public string? Weight { get; set; }
-    }
-
-    public class Sku
-    {
-        public string? SkuNumber { get; set; }
-        public string? Weight { get; set; }
-        public string? Barcode { get; set; }
     }
 }

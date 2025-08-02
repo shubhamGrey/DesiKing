@@ -28,5 +28,8 @@ namespace Agronexis.DataAccess.DbContexts
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
+        public DbSet<ProductPrice> ProductPrices { get; set; }
+        public DbSet<Sku> Skus { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250801200218_SkuTableChange")]
+    partial class SkuTableChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -530,18 +533,6 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<string>("Barcode")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
@@ -693,7 +684,7 @@ namespace Agronexis.DataAccess.Migrations
                         .IsRequired();
 
                     b.HasOne("Agronexis.Model.EntityModel.Product", "Product")
-                        .WithMany("ProductPrices")
+                        .WithMany("Prices")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -739,7 +730,7 @@ namespace Agronexis.DataAccess.Migrations
                 {
                     b.Navigation("Inventories");
 
-                    b.Navigation("ProductPrices");
+                    b.Navigation("Prices");
 
                     b.Navigation("Skus");
                 });

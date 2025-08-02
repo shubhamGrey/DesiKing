@@ -36,5 +36,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId);
         string DeleteCartById(string id, string xCorrelationId);
         string SaveOrUpdateCart(CartRequestModel role, string xCorrelationId);
+        List<CurrencyResponseModel> GetCurrencies(string xCorrelationId);
     }
 }
