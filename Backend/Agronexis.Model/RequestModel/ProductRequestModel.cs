@@ -12,8 +12,7 @@ namespace Agronexis.Model.RequestModel
         public Guid Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public List<PriceRequestModel> Prices { get; set; } = [];
-        public List<SkuRequestModel> Skus { get; set; } = [];
+        public List<PriceRequestModel> PricesAndSkus { get; set; } = [];
         public List<string> ImageUrls { get; set; } = [];
         public List<string> KeyFeatures { get; set; } = [];
         public List<string> Uses { get; set; } = [];
