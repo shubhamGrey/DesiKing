@@ -38,7 +38,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var productList = (
                                 from P in _dbContext.Products
                                     .Include(p => p.ProductPrices)
-                                    .Include(p => p.Skus)
                                 join C in _dbContext.Categories
                                     on P.CategoryId equals C.Id
                                 where P.IsActive && C.IsActive // Optional: if category has IsActive
@@ -71,7 +70,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 NutritionalInfo = x.P.NutritionalInfo,
                                 ThumbnailUrl = x.P.ThumbnailUrl,
 
-                                Prices = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                                PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                                 {
                                     Id = pp.Id,
                                     Price = pp.Price,
@@ -80,21 +79,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                     IsDiscounted = pp.IsDiscounted,
                                     DiscountPercentage = pp.DiscountPercentage,
                                     DiscountedAmount = pp.DiscountedAmount,
+                                    WeightId = pp.WeightId,
+                                    SkuNumber = pp.SkuNumber,
+                                    Barcode = pp.Barcode,
                                     IsActive = pp.IsActive,
                                     IsDeleted = pp.IsDeleted
                                 }).ToList(),
-
-                                Skus = x.P.Skus.Select(s => new SkuResponseModel
-                                {
-                                    Id = s.Id,
-                                    SkuNumber = s.SkuNumber,
-                                    Weight = s.Weight,
-                                    Barcode = s.Barcode,
-                                    CreatedDate = s.CreatedDate,
-                                    ModifiedDate = s.ModifiedDate,
-                                    IsActive = s.IsActive,
-                                    IsDeleted = s.IsDeleted
-                                }).ToList()
                             }).ToList();
 
 
@@ -108,7 +98,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var result = (
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
-                    .Include(p => p.Skus)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.Id == productId
                 select new { P, C }
@@ -140,7 +129,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 NutritionalInfo = x.P.NutritionalInfo,
                 ThumbnailUrl = x.P.ThumbnailUrl,
 
-                Prices = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                 {
                     Id = pp.Id,
                     Price = pp.Price,
@@ -149,20 +138,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     IsDiscounted = pp.IsDiscounted,
                     DiscountPercentage = pp.DiscountPercentage,
                     DiscountedAmount = pp.DiscountedAmount,
+                    SkuNumber = pp.SkuNumber,
+                    WeightId = pp.WeightId,
+                    Barcode = pp.Barcode,
                     IsActive = pp.IsActive,
                     IsDeleted = pp.IsDeleted
-                }).ToList(),
-
-                Skus = x.P.Skus.Select(s => new SkuResponseModel
-                {
-                    Id = s.Id,
-                    SkuNumber = s.SkuNumber,
-                    Weight = s.Weight,
-                    Barcode = s.Barcode,
-                    CreatedDate = s.CreatedDate,
-                    ModifiedDate = s.ModifiedDate,
-                    IsActive = s.IsActive,
-                    IsDeleted = s.IsDeleted
                 }).ToList()
             })
             .FirstOrDefault();
@@ -178,7 +158,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var productList = (
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
-                    .Include(p => p.Skus)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.IsActive && P.CategoryId == catId
                 select new { P, C }
@@ -212,7 +191,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 NutritionalInfo = x.P.NutritionalInfo,
                 ThumbnailUrl = x.P.ThumbnailUrl,
 
-                Prices = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                 {
                     Id = pp.Id,
                     Price = pp.Price,
@@ -221,20 +200,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     IsDiscounted = pp.IsDiscounted,
                     DiscountPercentage = pp.DiscountPercentage,
                     DiscountedAmount = pp.DiscountedAmount,
+                    SkuNumber = pp.SkuNumber,
+                    WeightId = pp.WeightId,
+                    Barcode = pp.Barcode,
                     IsActive = pp.IsActive,
                     IsDeleted = pp.IsDeleted
-                }).ToList(),
-
-                Skus = x.P.Skus.Select(s => new SkuResponseModel
-                {
-                    Id = s.Id,
-                    SkuNumber = s.SkuNumber,
-                    Weight = s.Weight,
-                    Barcode = s.Barcode,
-                    CreatedDate = s.CreatedDate,
-                    ModifiedDate = s.ModifiedDate,
-                    IsActive = s.IsActive,
-                    IsDeleted = s.IsDeleted
                 }).ToList()
             }).ToList();
 
@@ -246,7 +216,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             var productDetail = _dbContext.Products
                 .Include(p => p.ProductPrices)
-                .Include(p => p.Skus)
                 .FirstOrDefault(x => x.Id == productReq.Id);
 
             bool isNew = false;
@@ -291,16 +260,16 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             else
             {
                 // Handle Price Updates
-                if (productReq.Prices != null)
+                if (productReq.PricesAndSkus != null)
                 {
                     // Remove prices not in request
-                    var incomingPriceIds = productReq.Prices.Select(p => p.Id).Where(id => id != Guid.Empty).ToList();
+                    var incomingPriceIds = productReq.PricesAndSkus.Select(p => p.Id).Where(id => id != Guid.Empty).ToList();
                     var pricesToRemove = productDetail.ProductPrices
                         .Where(p => !incomingPriceIds.Contains(p.Id))
                         .ToList();
                     _dbContext.ProductPrices.RemoveRange(pricesToRemove);
 
-                    foreach (var price in productReq.Prices)
+                    foreach (var price in productReq.PricesAndSkus)
                     {
                         var existingPrice = productDetail.ProductPrices.FirstOrDefault(p => p.Id == price.Id && price.Id != Guid.Empty);
                         if (existingPrice != null)
@@ -310,8 +279,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             existingPrice.IsDiscounted = price.IsDiscounted;
                             existingPrice.DiscountPercentage = price.DiscountPercentage;
                             existingPrice.DiscountedAmount = price.DiscountedAmount;
+                            existingPrice.SkuNumber = price.SkuNumber;
+                            existingPrice.WeightId = price.WeightId;
+                            existingPrice.Barcode = price.Barcode;
                             existingPrice.IsActive = price.IsActive;
                             existingPrice.IsDeleted = price.IsDeleted;
+                            existingPrice.ModifiedDate = DateTime.UtcNow;
                         }
                         else
                         {
@@ -325,45 +298,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 IsDiscounted = price.IsDiscounted,
                                 DiscountPercentage = price.DiscountPercentage,
                                 DiscountedAmount = price.DiscountedAmount,
+                                SkuNumber = price.SkuNumber,
+                                WeightId = price.WeightId,
+                                Barcode = price.Barcode,
                                 IsActive = price.IsActive,
                                 IsDeleted = price.IsDeleted
-                            });
-                        }
-                    }
-                }
-
-                // Handle SKU Updates
-                if (productReq.Skus != null)
-                {
-                    var incomingSkuIds = productReq.Skus.Select(s => s.Id).Where(id => id != Guid.Empty).ToList();
-                    var skusToRemove = productDetail.Skus
-                        .Where(s => !incomingSkuIds.Contains(s.Id))
-                        .ToList();
-                    _dbContext.Skus.RemoveRange(skusToRemove);
-
-                    foreach (var sku in productReq.Skus)
-                    {
-                        var existingSku = productDetail.Skus.FirstOrDefault(s => s.Id == sku.Id && sku.Id != Guid.Empty);
-                        if (existingSku != null)
-                        {
-                            existingSku.SkuNumber = sku.SkuNumber;
-                            existingSku.Weight = sku.Weight;
-                            existingSku.Barcode = sku.Barcode;
-                            existingSku.IsActive = sku.IsActive;
-                            existingSku.IsDeleted = sku.IsDeleted;
-                        }
-                        else
-                        {
-                            _dbContext.Skus.Add(new Sku
-                            {
-                                Id = Guid.NewGuid(),
-                                ProductId = productDetail.Id,
-                                SkuNumber = sku.SkuNumber,
-                                Weight = sku.Weight,
-                                Barcode = sku.Barcode,
-                                CreatedDate = DateTime.UtcNow,
-                                IsActive = sku.IsActive,
-                                IsDeleted = sku.IsDeleted
                             });
                         }
                     }
@@ -382,7 +321,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             var productDetail = _dbContext.Products
                 .Include(p => p.ProductPrices)
-                .Include(p => p.Skus)
                 .FirstOrDefault(x => x.Id == productId && x.IsActive);
 
             if (productDetail != null)
@@ -398,14 +336,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     price.IsActive = false;
                     price.IsDeleted = true;
                     price.ModifiedDate = DateTime.UtcNow;
-                }
-
-                // Soft-delete skus
-                foreach (var sku in productDetail.Skus)
-                {
-                    sku.IsActive = false;
-                    sku.IsDeleted = true;
-                    sku.ModifiedDate = DateTime.UtcNow;
                 }
 
                 _dbContext.Products.Update(productDetail);
@@ -990,6 +920,25 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 }).ToList();
 
                 return CurrencyList;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public List<WeightResponseModel> GetWeights(string xCorrelationId)
+        {
+            try
+            {
+                List<WeightResponseModel> weightList = _dbContext.Weights.Select(x => new WeightResponseModel
+                {
+                    Id = x.Id,
+                    Value = x.Value,
+                    Unit = x.Unit
+                }).ToList();
+
+                return weightList;
             }
             catch (Exception ex)
             {

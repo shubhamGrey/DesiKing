@@ -178,5 +178,9 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.GetCurrencies(xCorrelationId);
         }
+        public List<WeightResponseModel> GetWeights(string xCorrelationId)
+        {
+            return _repository.GetWeights(xCorrelationId);
+        }
     }
 }

@@ -17,6 +17,9 @@ namespace Agronexis.Model.RequestModel
         public bool IsDiscounted { get; set; }
         public int DiscountPercentage { get; set; }
         public int DiscountedAmount { get; set; }
+        public string? SkuNumber { get; set; }
+        public Guid WeightId { get; set; }
+        public string? Barcode { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
     }

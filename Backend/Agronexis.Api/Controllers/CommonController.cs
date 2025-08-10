@@ -1,7 +1,5 @@
 ﻿using Agronexis.Business.Configurations;
-using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Agronexis.Api.Controllers
@@ -25,6 +23,15 @@ namespace Agronexis.Api.Controllers
         {
             var correlationId = GetCorrelationId();
             var itemList = _configService.GetCurrencies(correlationId);
+            return itemList;
+        }
+
+        // GET api/Weights
+        [HttpGet("GetWeights")]
+        public ActionResult<IEnumerable<WeightResponseModel>> GetWeights()
+        {
+            var correlationId = GetCorrelationId();
+            var itemList = _configService.GetWeights(correlationId);
             return itemList;
         }
     }

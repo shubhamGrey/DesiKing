@@ -24,6 +24,9 @@ namespace Agronexis.Model.EntityModel
         public bool IsDiscounted { get; set; }
         public int DiscountPercentage { get; set; }
         public int DiscountedAmount { get; set; }
+        public string? SkuNumber { get; set; }
+        public Guid WeightId { get; set; }
+        public string? Barcode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public bool IsActive { get; set; }
