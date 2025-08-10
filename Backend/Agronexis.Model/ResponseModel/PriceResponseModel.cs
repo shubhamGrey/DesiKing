@@ -9,6 +9,8 @@ namespace Agronexis.Model.ResponseModel
     public class PriceResponseModel
     {
         public Guid Id { get; set; }
+        public Guid CurrencyId { get; set; }
+        public string CurrencyCode { get; set; }
         public decimal Price { get; set; }
         public bool IsDiscounted { get; set; }
         public int DiscountPercentage { get; set; }

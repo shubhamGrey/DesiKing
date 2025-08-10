@@ -39,6 +39,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 from P in _dbContext.Products
                                     .Include(p => p.ProductPrices)
                                     .ThenInclude(pp => pp.Weight)
+                                    .Include(p => p.ProductPrices)
+                                    .ThenInclude(pp => pp.Currency)
                                 join C in _dbContext.Categories
                                     on P.CategoryId equals C.Id
                                 where P.IsActive && C.IsActive // Optional: if category has IsActive
@@ -74,6 +76,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                                 {
                                     Id = pp.Id,
+                                    CurrencyId = pp.Currency.Id,
+                                    CurrencyCode = pp.Currency.Code,
                                     Price = pp.Price,
                                     CreatedDate = pp.CreatedDate,
                                     ModifiedDate = pp.ModifiedDate,
@@ -102,6 +106,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
                     .ThenInclude(pp => pp.Weight)
+                    .Include(p => p.ProductPrices)
+                    .ThenInclude(pp => pp.Currency)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.Id == productId
                 select new { P, C }
@@ -136,6 +142,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                 {
                     Id = pp.Id,
+                    CurrencyId = pp.Currency.Id,
+                    CurrencyCode = pp.Currency.Code,
                     Price = pp.Price,
                     CreatedDate = pp.CreatedDate,
                     ModifiedDate = pp.ModifiedDate,
@@ -165,6 +173,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
                     .ThenInclude(pp => pp.Weight)
+                    .Include(p => p.ProductPrices)
+                    .ThenInclude(pp => pp.Currency)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.IsActive && P.CategoryId == catId
                 select new { P, C }
@@ -201,6 +211,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                 {
                     Id = pp.Id,
+                    CurrencyId = pp.Currency.Id,
+                    CurrencyCode = pp.Currency.Code,
                     Price = pp.Price,
                     CreatedDate = pp.CreatedDate,
                     ModifiedDate = pp.ModifiedDate,
