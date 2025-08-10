@@ -102,66 +102,70 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             Guid productId = Guid.Parse(id);
 
-            var result = (
+            // Fetch raw data from the database (without JSON deserialization)
+            var rawResult = (
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
-                    .ThenInclude(pp => pp.Weight)
+                        .ThenInclude(pp => pp.Weight)
                     .Include(p => p.ProductPrices)
-                    .ThenInclude(pp => pp.Currency)
+                        .ThenInclude(pp => pp.Currency)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.Id == productId
                 select new { P, C }
-            )
-            .AsEnumerable()
-            .Select(x => new ProductResponseModel
+            ).FirstOrDefault();
+
+            if (rawResult == null) return null;
+
+            var product = rawResult.P;
+
+            return new ProductResponseModel
             {
-                Id = x.P.Id,
-                Name = x.P.Name,
-                Description = x.P.Description,
-                ManufacturingDate = x.P.ManufacturingDate,
-                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
-                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
-                Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
-                CategoryId = x.P.CategoryId,
-                CategoryName = x.C.Name,
-                BrandId = x.P.BrandId,
-                MetaTitle = x.P.MetaTitle,
-                MetaDescription = x.P.MetaDescription,
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                ManufacturingDate = product.ManufacturingDate,
+                ImageUrls = JsonSerializer.Deserialize<List<string>>(product.ImageUrls ?? "[]"),
+                KeyFeatures = JsonSerializer.Deserialize<List<string>>(product.KeyFeatures ?? "[]"),
+                Uses = JsonSerializer.Deserialize<List<string>>(product.Uses ?? "[]"),
+                CategoryId = product.CategoryId,
+                CategoryName = rawResult.C.Name,
+                BrandId = product.BrandId,
+                MetaTitle = product.MetaTitle,
+                MetaDescription = product.MetaDescription,
                 CreatedDate = DateTime.UtcNow,
-                Origin = x.P.Origin,
-                ShelfLife = x.P.ShelfLife,
-                StorageInstructions = x.P.StorageInstructions,
-                Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
-                IsActive = x.P.IsActive,
-                IsPremium = x.P.IsPremium,
-                IsFeatured = x.P.IsFeatured,
-                Ingredients = x.P.Ingredients,
-                NutritionalInfo = x.P.NutritionalInfo,
-                ThumbnailUrl = x.P.ThumbnailUrl,
+                Origin = product.Origin,
+                ShelfLife = product.ShelfLife,
+                StorageInstructions = product.StorageInstructions,
+                Certifications = JsonSerializer.Deserialize<List<string>>(product.Certifications ?? "[]"),
+                IsActive = product.IsActive,
+                IsPremium = product.IsPremium,
+                IsFeatured = product.IsFeatured,
+                Ingredients = product.Ingredients,
+                NutritionalInfo = product.NutritionalInfo,
+                ThumbnailUrl = product.ThumbnailUrl,
 
-                PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
-                {
-                    Id = pp.Id,
-                    CurrencyId = pp.Currency.Id,
-                    CurrencyCode = pp.Currency.Code,
-                    Price = pp.Price,
-                    CreatedDate = pp.CreatedDate,
-                    ModifiedDate = pp.ModifiedDate,
-                    IsDiscounted = pp.IsDiscounted,
-                    DiscountPercentage = pp.DiscountPercentage,
-                    DiscountedAmount = pp.DiscountedAmount,
-                    WeightId = pp.WeightId,
-                    WeightValue = pp.Weight?.Value,
-                    WeightUnit = pp.Weight?.Unit,
-                    SkuNumber = pp.SkuNumber,
-                    Barcode = pp.Barcode,
-                    IsActive = pp.IsActive,
-                    IsDeleted = pp.IsDeleted
-                }).ToList()
-            })
-            .FirstOrDefault();
-
-            return result;
+                PricesAndSkus = product.ProductPrices
+                    .Where(pp => !pp.IsDeleted)
+                    .Select(pp => new PriceResponseModel
+                    {
+                        Id = pp.Id,
+                        CurrencyId = pp.Currency.Id,
+                        CurrencyCode = pp.Currency.Code,
+                        Price = pp.Price,
+                        CreatedDate = pp.CreatedDate,
+                        ModifiedDate = pp.ModifiedDate,
+                        IsDiscounted = pp.IsDiscounted,
+                        DiscountPercentage = pp.DiscountPercentage,
+                        DiscountedAmount = pp.DiscountedAmount,
+                        WeightId = pp.WeightId,
+                        WeightValue = pp.Weight?.Value,
+                        WeightUnit = pp.Weight?.Unit,
+                        SkuNumber = pp.SkuNumber,
+                        Barcode = pp.Barcode,
+                        IsActive = pp.IsActive,
+                        IsDeleted = pp.IsDeleted
+                    }).ToList()
+            };
         }
 
 
