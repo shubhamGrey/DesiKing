@@ -25,7 +25,9 @@ namespace Agronexis.Model.EntityModel
         public int DiscountPercentage { get; set; }
         public int DiscountedAmount { get; set; }
         public string? SkuNumber { get; set; }
+        [ForeignKey("Weight")]
         public Guid WeightId { get; set; }
+        public Weight Weight { get; set; }
         public string? Barcode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
