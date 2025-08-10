@@ -38,6 +38,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var productList = (
                                 from P in _dbContext.Products
                                     .Include(p => p.ProductPrices)
+                                    .ThenInclude(pp => pp.Weight)
                                 join C in _dbContext.Categories
                                     on P.CategoryId equals C.Id
                                 where P.IsActive && C.IsActive // Optional: if category has IsActive
@@ -80,6 +81,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                     DiscountPercentage = pp.DiscountPercentage,
                                     DiscountedAmount = pp.DiscountedAmount,
                                     WeightId = pp.WeightId,
+                                    WeightValue = pp.Weight?.Value,
+                                    WeightUnit = pp.Weight?.Unit,
                                     SkuNumber = pp.SkuNumber,
                                     Barcode = pp.Barcode,
                                     IsActive = pp.IsActive,
@@ -98,6 +101,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var result = (
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
+                    .ThenInclude(pp => pp.Weight)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.Id == productId
                 select new { P, C }
@@ -138,8 +142,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     IsDiscounted = pp.IsDiscounted,
                     DiscountPercentage = pp.DiscountPercentage,
                     DiscountedAmount = pp.DiscountedAmount,
-                    SkuNumber = pp.SkuNumber,
                     WeightId = pp.WeightId,
+                    WeightValue = pp.Weight?.Value,
+                    WeightUnit = pp.Weight?.Unit,
+                    SkuNumber = pp.SkuNumber,
                     Barcode = pp.Barcode,
                     IsActive = pp.IsActive,
                     IsDeleted = pp.IsDeleted
@@ -158,6 +164,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var productList = (
                 from P in _dbContext.Products
                     .Include(p => p.ProductPrices)
+                    .ThenInclude(pp => pp.Weight)
                 join C in _dbContext.Categories on P.CategoryId equals C.Id
                 where P.IsActive && P.CategoryId == catId
                 select new { P, C }
@@ -200,8 +207,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     IsDiscounted = pp.IsDiscounted,
                     DiscountPercentage = pp.DiscountPercentage,
                     DiscountedAmount = pp.DiscountedAmount,
-                    SkuNumber = pp.SkuNumber,
                     WeightId = pp.WeightId,
+                    WeightValue = pp.Weight?.Value,
+                    WeightUnit = pp.Weight?.Unit,
+                    SkuNumber = pp.SkuNumber,
                     Barcode = pp.Barcode,
                     IsActive = pp.IsActive,
                     IsDeleted = pp.IsDeleted

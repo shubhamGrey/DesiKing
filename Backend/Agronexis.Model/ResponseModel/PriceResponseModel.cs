@@ -15,6 +15,8 @@ namespace Agronexis.Model.ResponseModel
         public int DiscountedAmount { get; set; }
         public string SkuNumber { get; set; }
         public Guid WeightId { get; set; }
+        public decimal? WeightValue { get; set; }
+        public string WeightUnit { get; set; }
         public string Barcode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
