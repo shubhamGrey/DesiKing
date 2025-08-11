@@ -4,6 +4,7 @@ import theme from "@/styles/theme";
 import {
   Box,
   Button,
+  ButtonGroup,
   Grid,
   Rating,
   Stack,
@@ -16,35 +17,9 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { useCart } from "@/contexts/CartContext";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { getCurrencySymbol } from "@/utils/getCurrencySymbol";
 
-// Define the type for selectedProduct
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  brandId: string;
-  categoryId: string;
-  categoryName: string;
-  manufacturingDate: string;
-  createdDate: string;
-  modifiedDate: string | null;
-  isActive: boolean;
-  isDeleted: boolean;
-  metaTitle: string;
-  metaDescription: string;
-  imageUrls: string[];
-  keyFeatures: string[];
-  uses: string[];
-  origin: string;
-  shelfLife: string;
-  storageInstructions: string;
-  certifications: string[];
-  isPremium: boolean;
-  isFeatured: boolean;
-  ingredients: string;
-  nutritionalInfo: string;
-  thumbnailUrl?: string;
-}
+import { ProductFormData } from "@/types/product";
 
 // Styled components for consistent theme
 const ProductImageContainer = styled(Box)(({ theme }) => ({
@@ -64,8 +39,9 @@ const StyledRating = styled(Rating)({
   },
 });
 
-const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
+const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData }) => {
   const [selectedQuantity, setSelectedQuantity] = React.useState(1);
+  const [selectedPacket, setSelectedPacket] = React.useState("100gm");
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [currentImage, setCurrentImage] = React.useState(0);
   const { addItem } = useCart();
@@ -87,7 +63,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
       id: `${selectedProduct.id}-cart-item`,
       name: selectedProduct.name,
       price: 10.99, // Replace with actual price from selectedProduct
-      image: selectedProduct.imageUrls[0] || "",
+      image: typeof selectedProduct.imageUrls?.[0] === "string" ? selectedProduct.imageUrls[0] : "",
       productId: selectedProduct.id,
       brandId: selectedProduct.brandId,
       quantity: selectedQuantity,
@@ -231,14 +207,13 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="h4" sx={{ color: "primary.main" }}>
-                  ₹100.99
+                  {getCurrencySymbol(selectedProduct?.pricesAndSkus.find((sku) => sku.weightValue + sku.weightUnit === selectedPacket)?.currencyCode || "")}{selectedProduct?.pricesAndSkus.find((sku) => sku.weightValue + sku.weightUnit === selectedPacket)?.price}
                 </Typography>
                 <Typography
                   variant="body2"
                   sx={{ color: "text.secondary", my: "8px !important" }}
                 >
-                  {/* ({selectedPacket}) */}
-                  (100 gm)
+                  ({selectedPacket})
                 </Typography>
               </Stack>
             </Stack>
@@ -247,7 +222,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
         <Box>
           <Box>
             {/* Packets section */}
-            {/* <Typography
+            <Typography
               variant="body2"
               sx={{ color: "primary.main", mb: 1, mr: 16.4 }}
               textAlign={"right"}
@@ -289,7 +264,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: Product }) => {
                   {size}
                 </Button>
               ))}
-            </ButtonGroup> */}
+            </ButtonGroup>
 
             {/* Quantity section */}
             <Typography

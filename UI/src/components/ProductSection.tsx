@@ -10,11 +10,19 @@ import {
   Typography,
   useMediaQuery,
   IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import Cookies from "js-cookie";
 
 const michroma = Michroma({
@@ -55,11 +63,78 @@ interface ProductDetails {
       thumbnailUrl?: string;
     }[];
   };
+  onProductDeleted?: () => void; // Callback to refresh the product list
 }
 
-const ProductSection = ({ item }: ProductDetails) => {
+const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  
+  // State for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [productNameToDelete, setProductNameToDelete] = useState<string>("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // State for success/error messages
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+  // Function to handle delete confirmation
+  const handleDeleteClick = (productId: string, productName: string) => {
+    setProductToDelete(productId);
+    setProductNameToDelete(productName);
+    setDeleteDialogOpen(true);
+  };
+
+  // Function to handle actual deletion
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+
+    setIsDeleting(true);
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Product/${productToDelete}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      // Show success message
+      setSnackbarMessage("Product deleted successfully!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      // Call the callback to refresh the product list
+      if (onProductDeleted) {
+        onProductDeleted();
+      }
+
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      setSnackbarMessage("Failed to delete product. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
+      setProductNameToDelete("");
+    }
+  };
+
+  // Function to handle dialog close
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setProductToDelete(null);
+    setProductNameToDelete("");
+  };
 
   return (
     <Box sx={{ mx: 3, my: 10 }}>
@@ -158,6 +233,7 @@ const ProductSection = ({ item }: ProductDetails) => {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        handleDeleteClick(product.id, product.name);
                       }}
                     >
                       <Delete fontSize="small" />
@@ -220,6 +296,52 @@ const ProductSection = ({ item }: ProductDetails) => {
           ))}
         </Grid>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Confirm Product Deletion
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete &quot;{productNameToDelete}&quot;? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm} 
+            color="error" 
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

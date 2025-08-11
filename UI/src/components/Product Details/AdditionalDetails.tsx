@@ -20,40 +20,12 @@ import {
 } from "@mui/material";
 import React from "react";
 import { michroma } from "@/styles/fonts";
-
-// Define the type for selectedProduct
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  brandId: string;
-  categoryId: string;
-  categoryName: string;
-  manufacturingDate: string;
-  createdDate: string;
-  modifiedDate: string | null;
-  isActive: boolean;
-  isDeleted: boolean;
-  metaTitle: string;
-  metaDescription: string;
-  imageUrls: string[];
-  keyFeatures: string[];
-  uses: string[];
-  origin: string;
-  shelfLife: string;
-  storageInstructions: string;
-  certifications: string[];
-  isPremium: boolean;
-  isFeatured: boolean;
-  ingredients: string;
-  nutritionalInfo: string;
-  thumbnailUrl?: string;
-}
+import { ProductFormData } from "@/types/product";
 
 const AdditionalDetails = ({
   selectedProduct,
 }: {
-  selectedProduct: Product;
+  selectedProduct: ProductFormData;
 }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -351,9 +323,9 @@ const AdditionalDetails = ({
                 flexDirection: "column",
                 "&:hover": !isMobile
                   ? {
-                      elevation: 4,
-                      transform: "translateY(-2px)",
-                    }
+                    elevation: 4,
+                    transform: "translateY(-2px)",
+                  }
                   : {},
               }}
             >
@@ -367,7 +339,7 @@ const AdditionalDetails = ({
                   display: "flex",
                   flexDirection: "column",
                 }}
-                // Remove onChange to prevent toggle
+              // Remove onChange to prevent toggle
               >
                 <AccordionSummary
                   expandIcon={null} // Remove expand icon since it's always open

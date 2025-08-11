@@ -7,9 +7,6 @@ import {
   TextField,
   Typography,
   Button,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
   Stack,
   Divider,
   Card,
@@ -17,11 +14,9 @@ import {
   useMediaQuery,
   Alert,
   Snackbar,
-  Chip,
-  Avatar,
-  FormControl,
+  Container,
 } from "@mui/material";
-import { Payment, LocalAtm, Security } from "@mui/icons-material";
+import { Security } from "@mui/icons-material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import theme from "@/styles/theme";
@@ -51,8 +46,6 @@ const Cart = () => {
     updateQuantity,
     clearCart,
   } = useCart();
-
-  const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isLoading, setIsLoading] = useState(false);
   const [showRazorpay, setShowRazorpay] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -62,25 +55,6 @@ const Cart = () => {
     "success"
   );
 
-  // Payment methods - Only Razorpay and Cash on Delivery supported
-  const paymentMethods = [
-    {
-      id: "razorpay",
-      name: "Razorpay",
-      description: "UPI, Cards, Net Banking, Wallets - All payment methods",
-      icon: <Payment />,
-      popular: true,
-      fees: "No extra charges",
-    },
-    {
-      id: "cod",
-      name: "Cash on Delivery",
-      description: "Pay when your order is delivered",
-      icon: <LocalAtm />,
-      popular: true,
-      fees: "₹40 handling charges for orders below ₹500",
-    },
-  ];
 
   // Form data state
   const [formData, setFormData] = useState<PaymentFormData>({
@@ -139,45 +113,6 @@ const Cart = () => {
     }
   }, [router]);
 
-  // Helper function to handle COD orders
-  const handleCODOrder = async () => {
-    try {
-      setIsLoading(true);
-
-      const orderData: OrderCreateRequest = {
-        userId: userId,
-        totalAmount: subtotal,
-        currency: "INR",
-        status: "created",
-        items: cartItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-      };
-
-      await createOrder(orderData, "COD");
-
-      setAlertMessage("Order placed successfully! You will pay on delivery.");
-      setAlertSeverity("success");
-      setShowAlert(true);
-
-      clearCart();
-
-      // setTimeout(() => {
-      //   router.push(
-      //     `/payment-result?status=success&order_id=${result.data}&payment_method=cod`
-      //   );
-      // }, 2000);
-    } catch (error: any) {
-      console.error("COD order error:", error);
-      setAlertMessage("Failed to place order. Please try again.");
-      setAlertSeverity("error");
-      setShowAlert(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Helper function to handle Razorpay orders
   const handleRazorpayOrder = async () => {
@@ -218,7 +153,6 @@ const Cart = () => {
     }
   };
 
-  // Helper function to show coming soon message
   // Handle order confirmation
   const handleConfirmOrder = async () => {
     if (!validateForm()) {
@@ -228,24 +162,8 @@ const Cart = () => {
       return;
     }
 
-    // Handle Cash on Delivery
-    if (paymentMethod === "cod") {
-      await handleCODOrder();
-      return;
-    }
-
-    // Handle Razorpay payment (all online payment methods)
-    if (paymentMethod === "razorpay") {
-      await handleRazorpayOrder();
-      return;
-    }
-
-    // Fallback for unknown payment methods
-    setAlertMessage(
-      "Selected payment method is not supported. Please choose Razorpay or Cash on Delivery."
-    );
-    setAlertSeverity("error");
-    setShowAlert(true);
+    // Handle Razorpay payment
+    await handleRazorpayOrder();
   };
 
   // Handle successful payment
@@ -274,16 +192,7 @@ const Cart = () => {
   // Get button text based on current state
   const getButtonText = () => {
     if (isLoading) return "Processing...";
-
-    // Handle specific payment methods with appropriate button text
-    switch (paymentMethod) {
-      case "cod":
-        return "Place Order (Cash on Delivery)";
-      case "razorpay":
-        return "Pay with Razorpay";
-      default:
-        return "Pay Now";
-    }
+    return "Pay with Razorpay";
   };
 
   // Handle quantity update
@@ -301,447 +210,308 @@ const Cart = () => {
   }
 
   return (
-    <Box sx={{ mt: isMobile ? 8 : 12, mb: 6, px: isMobile ? 2 : 4 }}>
-      <Typography
-        variant={isMobile ? "h5" : "h4"}
-        fontFamily={michroma.style.fontFamily} // Apply michroma font style
-        fontWeight={600}
-        color="primary.main"
-        sx={{ mb: 4 }}
-      >
-        Cart
-      </Typography>
-      <Grid container spacing={4}>
-        {/* Left Column: Delivery Info and Payment Method */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card
-            sx={{
-              mb: 4,
-              backgroundColor: "transparent",
-              boxShadow: "none",
-              border: "1px solid",
-              borderColor: "primary.main",
-              borderRadius: "8px",
-            }}
-          >
-            <CardContent>
-              <Typography
-                variant="h6"
-                fontFamily={michroma.style.fontFamily} // Apply michroma font style
-                color="primary.main"
-                sx={{ mb: 3 }}
-              >
-                Shipping Address
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid size={6}>
-                  <TextField
-                    label="Name"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    error={!!formErrors.name}
-                    helperText={formErrors.name}
-                  />
-                </Grid>
-                <Grid size={6}>
-                  <TextField
-                    label="Mobile Number"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your mobile number"
-                    value={formData.mobile}
-                    onChange={(e) =>
-                      handleInputChange("mobile", e.target.value)
-                    }
-                    error={!!formErrors.mobile}
-                    helperText={formErrors.mobile}
-                  />
-                </Grid>
-                <Grid size={6}>
-                  <TextField
-                    label="Email"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    error={!!formErrors.email}
-                    helperText={formErrors.email}
-                  />
-                </Grid>
-                <Grid size={6}>
-                  <TextField
-                    label="State"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your state"
-                    value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
-                    error={!!formErrors.state}
-                    helperText={formErrors.state}
-                  />
-                </Grid>
-                <Grid size={6}>
-                  <TextField
-                    label="City"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    error={!!formErrors.city}
-                    helperText={formErrors.city}
-                  />
-                </Grid>
-                <Grid size={6}>
-                  <TextField
-                    label="ZIP"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your ZIP code"
-                    value={formData.zipCode}
-                    onChange={(e) =>
-                      handleInputChange("zipCode", e.target.value)
-                    }
-                    error={!!formErrors.zipCode}
-                    helperText={formErrors.zipCode}
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextField
-                    label="Address"
-                    fullWidth
-                    size="small"
-                    placeholder="Enter your address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      handleInputChange("address", e.target.value)
-                    }
-                    error={!!formErrors.address}
-                    helperText={formErrors.address}
-                  />
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-
-          <Card
-            sx={{
-              mb: 4,
-              backgroundColor: "transparent",
-              boxShadow: "none",
-              border: "1px solid",
-              borderColor: "primary.main",
-              borderRadius: "8px",
-            }}
-          >
-            <CardContent>
-              <Typography
-                variant="h6"
-                fontFamily={michroma.style.fontFamily}
-                color="primary.main"
-                sx={{ mb: 3 }}
-              >
-                Payment Method
-              </Typography>
-
-              {/* Payment Methods */}
-              <FormControl component="fieldset" fullWidth>
-                <RadioGroup
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
+    <Container sx={{ mt: 3, mx: 6, mb: 6, justifySelf: "center" }}>
+      <Box>
+        <Typography
+          variant={isMobile ? "h5" : "h4"}
+          fontFamily={michroma.style.fontFamily} // Apply michroma font style
+          fontWeight={600}
+          color="primary.main"
+          sx={{ mb: 4 }}
+        >
+          Cart
+        </Typography>
+        <Grid container spacing={4}>
+          {/* Left Column: Delivery Info and Payment Method */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card
+              sx={{
+                mb: 4,
+                backgroundColor: "transparent",
+                boxShadow: "none",
+                border: "1px solid",
+                borderColor: "primary.main",
+                borderRadius: "8px",
+              }}
+            >
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  fontFamily={michroma.style.fontFamily} // Apply michroma font style
+                  color="primary.main"
+                  sx={{ mb: 3 }}
                 >
-                  <Grid container spacing={2}>
-                    {paymentMethods.map((method) => (
-                      <Grid size={12} key={method.id}>
-                        <FormControlLabel
-                          value={method.id}
-                          control={<Radio />}
-                          label={
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                width: "100%",
-                              }}
-                            >
-                              <Avatar
-                                sx={{
-                                  bgcolor:
-                                    paymentMethod === method.id
-                                      ? "primary.main"
-                                      : "grey.200",
-                                  color:
-                                    paymentMethod === method.id
-                                      ? "white"
-                                      : "grey.600",
-                                  width: 32,
-                                  height: 32,
-                                }}
-                              >
-                                {method.icon}
-                              </Avatar>
-                              <Box sx={{ flex: 1 }}>
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                  }}
-                                >
-                                  <Typography variant="body1" fontWeight={500}>
-                                    {method.name}
-                                  </Typography>
-                                  {method.popular && (
-                                    <Chip
-                                      label="Popular"
-                                      size="small"
-                                      color="success"
-                                      variant="filled"
-                                      sx={{ height: 20, fontSize: "0.75rem" }}
-                                    />
-                                  )}
-                                </Box>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  {method.description}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="primary.main"
-                                >
-                                  {method.fees}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          }
-                          sx={{
-                            width: isMobile ? "90%" : "97%",
-                            margin: 0,
-                            padding: 2,
-                            border: "1px solid",
-                            borderColor:
-                              paymentMethod === method.id
-                                ? "primary.main"
-                                : "grey.300",
-                            borderRadius: 2,
-                            backgroundColor:
-                              paymentMethod === method.id
-                                ? "primary.50"
-                                : "transparent",
-                            "&:hover": {
-                              backgroundColor:
-                                paymentMethod === method.id
-                                  ? "primary.100"
-                                  : "grey.50",
-                            },
-                          }}
-                        />
-                      </Grid>
-                    ))}
+                  Shipping Address
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={6}>
+                    <TextField
+                      label="Name"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      error={!!formErrors.name}
+                      helperText={formErrors.name}
+                    />
                   </Grid>
-                </RadioGroup>
-              </FormControl>
+                  <Grid size={6}>
+                    <TextField
+                      label="Mobile Number"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your mobile number"
+                      value={formData.mobile}
+                      onChange={(e) =>
+                        handleInputChange("mobile", e.target.value)
+                      }
+                      error={!!formErrors.mobile}
+                      helperText={formErrors.mobile}
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField
+                      label="Email"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      error={!!formErrors.email}
+                      helperText={formErrors.email}
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField
+                      label="State"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your state"
+                      value={formData.state}
+                      onChange={(e) => handleInputChange("state", e.target.value)}
+                      error={!!formErrors.state}
+                      helperText={formErrors.state}
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField
+                      label="City"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your city"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      error={!!formErrors.city}
+                      helperText={formErrors.city}
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField
+                      label="ZIP"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your ZIP code"
+                      value={formData.zipCode}
+                      onChange={(e) =>
+                        handleInputChange("zipCode", e.target.value)
+                      }
+                      error={!!formErrors.zipCode}
+                      helperText={formErrors.zipCode}
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <TextField
+                      label="Address"
+                      fullWidth
+                      size="small"
+                      placeholder="Enter your address"
+                      value={formData.address}
+                      onChange={(e) =>
+                        handleInputChange("address", e.target.value)
+                      }
+                      error={!!formErrors.address}
+                      helperText={formErrors.address}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
 
-              {/* Additional Information */}
-              <Box sx={{ mt: 3, p: 2, bgcolor: "info.50", borderRadius: 1 }}>
+          {/* Right Column: Order Summary */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card
+              sx={{
+                mb: 4,
+                backgroundColor: "transparent",
+                boxShadow: "none",
+                border: "1px solid",
+                borderColor: "primary.main",
+                borderRadius: "8px",
+              }}
+            >
+              <CardContent>
                 <Typography
-                  variant="body2"
-                  color="info.main"
-                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  variant="h6"
+                  fontFamily={michroma.style.fontFamily} // Apply michroma font style
+                  color="primary.main"
+                  sx={{ mb: 3 }}
                 >
-                  <Security fontSize="small" />
-                  All payments are secured with 256-bit SSL encryption
+                  Order Summary
                 </Typography>
-              </Box>
+                <Stack spacing={2}>
+                  {cartItems.map((item) => (
+                    <Box
+                      key={`cart-item-${item.id}`}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          width={48}
+                          height={48}
+                          unoptimized={shouldUnoptimizeImage(item.image)}
+                          style={{ borderRadius: "6px" }}
+                        />
+                        <Box>
+                          <Typography fontWeight={500}>{item.name}</Typography>
+                          <Typography variant="body2">
+                            ₹{item.price.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Button
+                          size="small"
+                          onClick={() =>
+                            handleQuantityUpdate(
+                              item.id,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
+                          disabled={item.quantity <= 1}
+                          sx={{ minWidth: "32px", height: "32px", p: 0 }}
+                        >
+                          -
+                        </Button>
+                        <Typography
+                          sx={{ minWidth: "24px", textAlign: "center" }}
+                        >
+                          {item.quantity}
+                        </Typography>
+                        <Button
+                          size="small"
+                          onClick={() =>
+                            handleQuantityUpdate(item.id, item.quantity + 1)
+                          }
+                          sx={{ minWidth: "32px", height: "32px", p: 0 }}
+                        >
+                          +
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() => handleItemRemove(item.id)}
+                          sx={{ ml: 1 }}
+                        >
+                          Remove
+                        </Button>
+                      </Box>
+                    </Box>
+                  ))}
 
-              {/* Special Offers */}
-              <Box sx={{ mt: 2, p: 2, bgcolor: "success.50", borderRadius: 1 }}>
-                <Typography
-                  variant="body2"
-                  color="success.main"
-                  fontWeight={500}
-                >
-                  💳 Special Offers:
-                </Typography>
-                <Typography variant="caption" color="success.main">
-                  • Get 5% cashback on UPI payments above ₹1000
-                </Typography>
-                <br />
-                <Typography variant="caption" color="success.main">
-                  • No convenience fee on online payments
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+                  <Divider />
 
-        {/* Right Column: Order Summary */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card
-            sx={{
-              mb: 4,
-              backgroundColor: "transparent",
-              boxShadow: "none",
-              border: "1px solid",
-              borderColor: "primary.main",
-              borderRadius: "8px",
-            }}
-          >
-            <CardContent>
-              <Typography
-                variant="h6"
-                fontFamily={michroma.style.fontFamily} // Apply michroma font style
-                color="primary.main"
-                sx={{ mb: 3 }}
-              >
-                Order Summary
-              </Typography>
-              <Stack spacing={2}>
-                {cartItems.map((item) => (
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography>Subtotal</Typography>
+                    <Typography>₹{subtotal.toFixed(2)}</Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography>Shipping</Typography>
+                    <Typography>Free</Typography>
+                  </Box>
+
+                  <Divider />
+
                   <Box
-                    key={`cart-item-${item.id}`}
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
-                      alignItems: "center",
+                      fontWeight: 600,
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        width={48}
-                        height={48}
-                        unoptimized={shouldUnoptimizeImage(item.image)}
-                        style={{ borderRadius: "6px" }}
-                      />
-                      <Box>
-                        <Typography fontWeight={500}>{item.name}</Typography>
-                        <Typography variant="body2">
-                          ₹{item.price.toFixed(2)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Button
-                        size="small"
-                        onClick={() =>
-                          handleQuantityUpdate(
-                            item.id,
-                            Math.max(1, item.quantity - 1)
-                          )
-                        }
-                        disabled={item.quantity <= 1}
-                        sx={{ minWidth: "32px", height: "32px", p: 0 }}
-                      >
-                        -
-                      </Button>
-                      <Typography
-                        sx={{ minWidth: "24px", textAlign: "center" }}
-                      >
-                        {item.quantity}
-                      </Typography>
-                      <Button
-                        size="small"
-                        onClick={() =>
-                          handleQuantityUpdate(item.id, item.quantity + 1)
-                        }
-                        sx={{ minWidth: "32px", height: "32px", p: 0 }}
-                      >
-                        +
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() => handleItemRemove(item.id)}
-                        sx={{ ml: 1 }}
-                      >
-                        Remove
-                      </Button>
-                    </Box>
+                    <Typography>Total (INR)</Typography>
+                    <Typography>₹{subtotal.toFixed(2)}</Typography>
                   </Box>
-                ))}
 
-                <Divider />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={handleConfirmOrder}
+                    disabled={isLoading}
+                    sx={{
+                      mt: 2,
+                      py: 1.5,
+                      fontWeight: 600,
+                      "&:hover": { backgroundColor: "secondary.main" },
+                    }}
+                  >
+                    {getButtonText()}
+                  </Button>
+                </Stack>
 
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography>Subtotal</Typography>
-                  <Typography>₹{subtotal.toFixed(2)}</Typography>
+                {/* Additional Information */}
+                <Box sx={{ mt: 3, p: 2, bgcolor: "info.50", borderRadius: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="info.main"
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    <Security fontSize="small" />
+                    All payments are secured with 256-bit SSL encryption
+                  </Typography>
                 </Box>
-
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography>Shipping</Typography>
-                  <Typography>Free</Typography>
-                </Box>
-
-                <Divider />
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontWeight: 600,
-                  }}
-                >
-                  <Typography>Total (INR)</Typography>
-                  <Typography>₹{subtotal.toFixed(2)}</Typography>
-                </Box>
-
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={handleConfirmOrder}
-                  disabled={isLoading}
-                  sx={{
-                    mt: 2,
-                    py: 1.5,
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "secondary.main" },
-                  }}
-                >
-                  {getButtonText()}
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
 
-      {/* Razorpay Payment Modal */}
-      <RazorpayPayment
-        open={showRazorpay}
-        onClose={() => setShowRazorpay(false)}
-        orderAmount={subtotal}
-        orderId={orderId}
-        formData={formData}
-        onPaymentSuccess={handlePaymentSuccess}
-        onPaymentError={handlePaymentError}
-      />
+        {/* Razorpay Payment Modal */}
+        <RazorpayPayment
+          open={showRazorpay}
+          onClose={() => setShowRazorpay(false)}
+          orderAmount={subtotal}
+          orderId={orderId}
+          formData={formData}
+          onPaymentSuccess={handlePaymentSuccess}
+          onPaymentError={handlePaymentError}
+        />
 
-      {/* Alert Snackbar */}
-      <Snackbar
-        open={showAlert}
-        autoHideDuration={6000}
-        onClose={() => setShowAlert(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
+        {/* Alert Snackbar */}
+        <Snackbar
+          open={showAlert}
+          autoHideDuration={6000}
           onClose={() => setShowAlert(false)}
-          severity={alertSeverity}
-          sx={{ width: "100%" }}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
-          {alertMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert
+            onClose={() => setShowAlert(false)}
+            severity={alertSeverity}
+            sx={{ width: "100%" }}
+          >
+            {alertMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Container>
   );
 };
 

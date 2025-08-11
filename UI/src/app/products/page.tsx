@@ -8,40 +8,13 @@ import AddIcon from "@mui/icons-material/Add";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  brandId: string;
-  categoryId: string;
-  categoryName: string;
-  manufacturingDate: string;
-  createdDate: string;
-  modifiedDate: string | null;
-  isActive: boolean;
-  isDeleted: boolean;
-  metaTitle: string;
-  metaDescription: string;
-  imageUrls: string[];
-  keyFeatures: string[];
-  uses: string[];
-  origin: string;
-  shelfLife: string;
-  storageInstructions: string;
-  certifications: string[];
-  isPremium: boolean;
-  isFeatured: boolean;
-  ingredients: string;
-  nutritionalInfo: string;
-  thumbnailUrl?: string;
-}
+import { ProductFormData } from "@/types/product";
 
 interface CategorizedProducts {
   [key: string]: {
     categoryId: string;
     categoryName: string;
-    products: Product[];
+    products: ProductFormData[];
   };
 }
 
@@ -54,58 +27,64 @@ const Products = () => {
   >([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/product`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        const categorizedProducts: CategorizedProducts = data.reduce(
-          (acc: CategorizedProducts, product: Product) => {
-            const { categoryId, categoryName } = product;
-            acc[categoryId] ??= {
-              categoryId,
-              categoryName,
-              products: [],
-            };
-            acc[categoryId].products.push(product);
-            return acc;
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/product`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           },
-          {}
-        );
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      const categorizedProducts: CategorizedProducts = data.reduce(
+        (acc: CategorizedProducts, product: Product) => {
+          const { categoryId, categoryName } = product;
+          acc[categoryId] ??= {
+            categoryId,
+            categoryName,
+            products: [],
+          };
+          acc[categoryId].products.push(product);
+          return acc;
+        },
+        {}
+      );
 
-        const categorizedProductsArray = Object.values(categorizedProducts);
+      const categorizedProductsArray = Object.values(categorizedProducts);
 
-        const sortedArray = categorizedProductsArray.map((category) => {
-          return {
-            ...category,
-            products: category.products.sort((a, b) => {
+      const sortedArray = categorizedProductsArray.map((category) => {
+        return {
+          ...category,
+          products: category.products
+            .filter((product) => typeof product.id === "string" && product.id !== undefined)
+            .map((product) => ({
+              ...product,
+              id: product.id as string, // Ensure id is string
+            }))
+            .sort((a, b) => {
               // Premium products first, then by name ascending
               if (a.isPremium === b.isPremium) {
                 return b.name.localeCompare(a.name);
               }
               return a.isPremium ? -1 : 1;
             }),
-          };
-        });
-        setProductsList(sortedArray);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        };
+      });
+      setProductsList(sortedArray);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
 
@@ -257,7 +236,7 @@ const Products = () => {
         </Typography>
       </Box>
       {productsList?.map((category) => (
-        <ProductSection key={category.categoryId} item={category} />
+        <ProductSection key={category.categoryId} item={category} onProductDeleted={fetchProducts} />
       ))}
       {Cookies.get("user_role") === "Admin" && (
         <Fab

@@ -12,12 +12,7 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-
-interface Category {
-  id: string;
-  title: string;
-  image: string;
-}
+import { Category } from "@/types/product";
 
 interface AllProductsProps {
   items: Category[];
@@ -84,8 +79,8 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
       >
         {items.map((category) => (
           <Card
-            key={category.title}
-            aria-label={`${category.title} category`}
+            key={category.id}
+            aria-label={`${category.name} category`}
             sx={{
               minWidth: `${100 / cardsPerView - (1 / cardsPerView) * 4}%`,
               flexShrink: 0,
@@ -160,8 +155,8 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
             <CardMedia
               component="img"
               height="184"
-              image={category.image}
-              alt={category.title}
+              image={category.imageUrl}
+              alt={category.name}
             />
             <CardContent
               sx={{
@@ -179,7 +174,7 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
                 sx={{ mb: 0 }}
                 color="text.primary"
               >
-                {category.title}
+                {category.name}
               </Typography>
             </CardContent>
           </Card>

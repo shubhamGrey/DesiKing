@@ -30,33 +30,7 @@ import Image from "next/image";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  brandId: string;
-  categoryId: string;
-  categoryName: string;
-  manufacturingDate: string;
-  createdDate: string;
-  modifiedDate: string | null;
-  isActive: boolean;
-  isDeleted: boolean;
-  metaTitle: string;
-  metaDescription: string;
-  imageUrls: string[];
-  keyFeatures: string[];
-  uses: string[];
-  origin: string;
-  shelfLife: string;
-  storageInstructions: string;
-  certifications: string[];
-  isPremium: boolean;
-  isFeatured: boolean;
-  ingredients: string;
-  nutritionalInfo: string;
-  thumbnailUrl?: string;
-}
+import { ProductFormData } from "@/types/product";
 
 interface SearchAutocompleteProps {
   isMobile?: boolean;
@@ -68,8 +42,8 @@ export default function SearchAutocomplete({
   onClose,
 }: SearchAutocompleteProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductFormData[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ProductFormData[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [allProductsLoaded, setAllProductsLoaded] = useState(false);
@@ -80,18 +54,6 @@ export default function SearchAutocomplete({
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  // Popular search terms for suggestions
-  const popularSearches = [
-    "Turmeric",
-    "Cumin",
-    "Coriander",
-    "Red Chili",
-    "Garam Masala",
-    "Premium Spices",
-    "Organic",
-    "Ground Spices",
-  ];
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -282,18 +244,6 @@ export default function SearchAutocomplete({
   const handleRecentSearchClick = (query: string) => {
     setSearchQuery(query);
     router.push(`/products?search=${encodeURIComponent(query)}`);
-    setShowDropdown(false);
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const handlePopularSearchClick = (query: string) => {
-    setSearchQuery(query);
-    // Add slight delay to show the query was set before navigating
-    setTimeout(() => {
-      router.push(`/products?search=${encodeURIComponent(query)}`);
-    }, 100);
     setShowDropdown(false);
     if (onClose) {
       onClose();
@@ -716,44 +666,6 @@ export default function SearchAutocomplete({
             </Box>
           </Box>
         )}
-
-        {/* Popular Searches */}
-        <Box sx={{ p: 2, pt: recentSearches.length > 0 ? 0 : 2 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              color: "text.secondary",
-              fontWeight: 600,
-              mb: 2,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <TrendingUpOutlined fontSize="small" />
-            Popular Searches
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {popularSearches.map((search) => (
-              <Chip
-                key={search}
-                label={search}
-                onClick={() => handlePopularSearchClick(search)}
-                size="small"
-                color="primary"
-                variant="outlined"
-                sx={{
-                  "&:hover": {
-                    backgroundColor: "primary.main",
-                    color: "white",
-                  },
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              />
-            ))}
-          </Box>
-        </Box>
       </Box>
     );
   }
@@ -780,39 +692,6 @@ export default function SearchAutocomplete({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Try searching with different keywords or browse our categories
           </Typography>
-
-          {/* Suggestions based on popular searches */}
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Try searching for:
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 1,
-                justifyContent: "center",
-              }}
-            >
-              {popularSearches.slice(0, 4).map((search) => (
-                <Chip
-                  key={search}
-                  label={search}
-                  onClick={() => handlePopularSearchClick(search)}
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    "&:hover": {
-                      backgroundColor: "primary.50",
-                      borderColor: "primary.main",
-                    },
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                />
-              ))}
-            </Box>
-          </Box>
         </Box>
       );
     } else if (searchQuery.trim().length > 0) {

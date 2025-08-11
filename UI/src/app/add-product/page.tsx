@@ -24,51 +24,17 @@ import { michroma } from "@/styles/fonts";
 import BasicInformation from "../../components/AddProduct/BasicInformation";
 import Certifications from "../../components/AddProduct/Certifications";
 import KeyFeatures from "../../components/AddProduct/KeyFeatures";
-import PricingDetails from "../../components/AddProduct/PricingDetails";
+import PricingAndSKUDetails from "../../components/AddProduct/PricingAndSKUDetails";
 import ProductDetails from "../../components/AddProduct/ProductDetails";
 import ProductImages from "../../components/AddProduct/ProductImages";
+
 import ProductSettings from "../../components/AddProduct/ProductSettings";
 import SEOInformation from "../../components/AddProduct/SEOInformation";
-import SKUDetails from "../../components/AddProduct/SKUDetails";
 import ThumbnailImage from "../../components/AddProduct/ThumbnailImage";
 import Uses from "../../components/AddProduct/Uses";
+import { FormattedBrand, FormattedCategory, FormattedCurrency, FormattedWeight, ProductFormData } from "@/types/product";
 
-interface ProductFormData {
-  name: string;
-  description: string;
-  category: string;
-  brand: string;
-  price: {
-    amount: string;
-    currency: string;
-    isDiscounted: boolean;
-    discountPercentage: number;
-    discountedAmount: string;
-    weight: string;
-  }[];
-  sku: {
-    sku: string;
-    weight: string;
-    barcode: string;
-  }[];
-  stock: number;
-  keyFeatures: string[];
-  uses: string[];
-  ingredients?: string;
-  origin: string;
-  shelfLife: string;
-  manufacturingDate?: string;
-  storageInstructions: string;
-  nutritionalInfo?: string;
-  certifications: string[];
-  isPremium: boolean;
-  isFeatured: boolean;
-  isActive?: boolean;
-  metaTitle?: string;
-  metaDescription?: string;
-  imageUrls?: File[];
-  thumbnailImage?: File | null;
-}
+// ...removed local ProductFormData, now using from @/types/product...
 
 const certificationOptions = [
   "Premium",
@@ -79,28 +45,6 @@ const certificationOptions = [
   "Gluten-Free",
   "Vegan",
 ];
-
-interface Brand {
-  name: string;
-  id: string;
-  isActive: boolean;
-}
-
-interface FormattedBrand {
-  label: string;
-  value: string;
-}
-
-interface Category {
-  name: string;
-  id: string;
-  isActive: boolean;
-}
-
-interface FormattedCategory {
-  label: string;
-  value: string;
-}
 
 const AddProduct: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -116,6 +60,8 @@ const AddProduct: React.FC = () => {
   const [toastOpen, setToastOpen] = useState(false);
   const [brands, setBrands] = useState<FormattedBrand[]>([]);
   const [categories, setCategories] = useState<FormattedCategory[]>([]);
+  const [weights, setWeights] = useState<FormattedWeight[]>([]);
+  const [currencies, setCurrencies] = useState<FormattedCurrency[]>([]);
   const [keyFeatures, setKeyFeatures] = useState<string[]>([""]);
   const [uses, setUses] = useState<string[]>([""]);
   const [manufacturingDate, setManufacturingDate] = useState<Date | null>(null);
@@ -125,9 +71,9 @@ const AddProduct: React.FC = () => {
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
-    return () => {
-      sessionStorage.removeItem("productId"); // Clear productId on unmount
-    };
+    // return () => {
+    //   sessionStorage.removeItem("productId"); // Clear productId on unmount
+    // };
   }, []);
 
   const {
@@ -141,21 +87,24 @@ const AddProduct: React.FC = () => {
       description: "",
       category: "",
       brand: "",
-      price: [
+      pricesAndSkus: [
         {
-          amount: "",
-          currency: "INR",
+          id: "",
+          price: 0,
           isDiscounted: false,
           discountPercentage: 0,
-          discountedAmount: "",
-          weight: "",
-        },
-      ],
-      sku: [
-        {
-          sku: "",
-          weight: "",
+          discountedAmount: 0,
+          skuNumber: "",
+          weightId: "",
+          weightValue: 0,
+          weightUnit: "",
+          currencyCode: "",
+          currencyId: "",
           barcode: "",
+          createdDate: "",
+          modifiedDate: null,
+          isActive: true,
+          isDeleted: false,
         },
       ],
       stock: 0,
@@ -192,8 +141,27 @@ const AddProduct: React.FC = () => {
           setValue("description", data.description);
           setValue("category", data.categoryId);
           setValue("brand", data.brandId);
-          setValue("price", data.price);
-          setValue("sku", data.sku);
+          // Combine price and SKU data into pricesAndSkus
+          const pricesAndSkus = data.price?.map((priceItem: any, index: number) => ({
+            ...priceItem,
+            skuNumber: data.sku?.[index]?.sku || "",
+            barcode: data.sku?.[index]?.barcode || "",
+            id: priceItem.id || "",
+            weightId: priceItem.weightId || "",
+            weightValue: priceItem.weightValue || 0,
+            weightUnit: priceItem.weightUnit || "",
+            currencyCode: priceItem.currencyCode || "",
+            currencyId: priceItem.currencyId || "",
+            createdDate: priceItem.createdDate || "",
+            modifiedDate: priceItem.modifiedDate || null,
+            isActive: priceItem.isActive ?? true,
+            isDeleted: priceItem.isDeleted ?? false,
+            price: priceItem.price || 0,
+            isDiscounted: priceItem.isDiscounted || false,
+            discountPercentage: priceItem.discountPercentage || 0,
+            discountedAmount: priceItem.discountedAmount || 0,
+          })) || [];
+          setValue("pricesAndSkus", pricesAndSkus);
           setValue("stock", data.stock);
           setKeyFeatures(data.keyFeatures || []);
           setUses(data.uses || []);
@@ -278,28 +246,58 @@ const AddProduct: React.FC = () => {
         console.error("Error fetching categories:", error);
       });
 
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/common/getweights`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res): Promise<Weight[]> => res.json())
+      .then((data: Weight[]) => {
+        const formattedWeights: FormattedWeight[] = data.map((weight) => ({
+          label: `${weight.value} ${weight.unit}`,
+          value: weight.id,
+        }));
+        setWeights(formattedWeights);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching weights:", error);
+      });
+
+    // Fetch currencies
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/common/getcurrencies`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res): Promise<Currency[]> => res.json())
+      .then((data: Currency[]) => {
+        const formattedCurrencies: FormattedCurrency[] = data.map((currency) => ({
+          label: currency.code,
+          value: currency.id,
+        }));
+        setCurrencies(formattedCurrencies);
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching currencies:", error);
+      });
+
     return () => {
       setBrands([]);
       setCategories([]);
+      setWeights([]);
+      setCurrencies([]);
     };
   }, [setValue]);
 
   const {
-    fields: priceFields,
-    append: appendPrice,
-    remove: removePrice,
+    fields: variantFields,
+    append: appendVariant,
+    remove: removeVariant,
   } = useFieldArray({
     control,
-    name: "price",
-  });
-
-  const {
-    fields: skuFields,
-    append: appendSku,
-    remove: removeSku,
-  } = useFieldArray({
-    control,
-    name: "sku",
+    name: "pricesAndSkus",
   });
 
   const handleAddKeyFeature = () => setKeyFeatures([...keyFeatures, ""]);
@@ -380,38 +378,33 @@ const AddProduct: React.FC = () => {
       ? await uploadViaApi(thumbnailImage)
       : null;
 
+    // Use pricesAndSkus directly from form data
     const finalData = {
-      ...data,
       id: isEditMode ? sessionStorage.getItem("productId") : undefined,
+      name: data.name,
+      description: data.description,
+      pricesAndSkus: data.pricesAndSkus,
+      imageUrls: imageUrls,
       keyFeatures,
       uses,
-      certifications: selectedCertifications,
-      imageUrls: imageUrls,
-      thumbnailUrl: thumbnailImageUrl,
-      brandId: data.brand,
-      categoryId: data.category,
       manufacturingDate: manufacturingDate
         ? new Date(manufacturingDate).toISOString()
-        : "",
+        : new Date().toISOString(),
+      categoryId: data.category,
+      brandId: data.brand,
+      metaTitle: data.metaTitle || "",
+      metaDescription: data.metaDescription || "",
+      origin: data.origin,
+      shelfLife: data.shelfLife,
+      storageInstructions: data.storageInstructions,
+      certifications: selectedCertifications,
+      isActive: isActive,
+      isPremium: isPremium,
+      isFeatured: isFeatured,
+      ingredients: data.ingredients || "",
+      nutritionalInfo: data.nutritionalInfo || "",
+      thumbnailUrl: thumbnailImageUrl || ""
     };
-
-    // Update discountedAmount based on discountPercentage
-    if (!isEditMode) {
-      finalData.price = finalData.price.map((price) => {
-        if (price.discountPercentage > 0) {
-          price.isDiscounted = true;
-          const discount =
-            (parseFloat(price.amount) * price.discountPercentage) / 100;
-          price.discountedAmount = (
-            parseFloat(price.amount) - discount
-          ).toFixed(2);
-        } else {
-          price.isDiscounted = false;
-          price.discountedAmount = price.amount;
-        }
-        return price;
-      });
-    }
 
     const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/Product`;
 
@@ -520,17 +513,13 @@ const AddProduct: React.FC = () => {
                 brands={brands}
                 categories={categories}
               />
-              <PricingDetails
+              <PricingAndSKUDetails
                 control={control}
-                priceFields={priceFields}
-                appendPrice={appendPrice}
-                removePrice={removePrice}
-              />
-              <SKUDetails
-                control={control}
-                skuFields={skuFields}
-                appendSku={appendSku}
-                removeSku={removeSku}
+                variantFields={variantFields}
+                weights={weights}
+                currencies={currencies}
+                appendVariant={appendVariant}
+                removeVariant={removeVariant}
               />
               <ProductDetails
                 control={control}

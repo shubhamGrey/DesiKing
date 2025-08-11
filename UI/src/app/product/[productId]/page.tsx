@@ -7,38 +7,11 @@ import { Box, Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  brandId: string;
-  categoryId: string;
-  categoryName: string;
-  manufacturingDate: string;
-  createdDate: string;
-  modifiedDate: string | null;
-  isActive: boolean;
-  isDeleted: boolean;
-  metaTitle: string;
-  metaDescription: string;
-  imageUrls: string[];
-  keyFeatures: string[];
-  uses: string[];
-  origin: string;
-  shelfLife: string;
-  storageInstructions: string;
-  certifications: string[];
-  isPremium: boolean;
-  isFeatured: boolean;
-  ingredients: string;
-  nutritionalInfo: string;
-  thumbnailUrl?: string;
-}
+import { ProductFormData } from "@/types/product";
 
 const ProductDetailsComponent = () => {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ProductFormData | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<ProductFormData[]>([]);
   const { productId } = useParams() as { productId: string };
 
   useEffect(() => {
@@ -76,7 +49,7 @@ const ProductDetailsComponent = () => {
             `Error fetching similar products: ${similarResponse.statusText}`
           );
         }
-        const similarData: Product[] = await similarResponse.json();
+        const similarData: ProductFormData[] = await similarResponse.json();
         setSimilarProducts(
           similarData.filter((product) => product.id !== productId)
         );
@@ -164,12 +137,14 @@ const ProductDetailsComponent = () => {
           </Typography>
         </Typography>
         <ProductShowcase
-          productSections={similarProducts.map((product) => ({
-            id: product.id,
-            title: product.name,
-            description: product.description,
-            image: product.imageUrls[0] || "",
-          }))}
+          productSections={similarProducts
+            .filter((product) => typeof product.id === "string" && !!product.id)
+            .map((product) => ({
+              id: product.id as string,
+              title: product.name,
+              description: product.description,
+              image: typeof product.imageUrls?.[0] === "string" ? product.imageUrls[0] : "",
+            }))}
         />
       </Box>
     </>
