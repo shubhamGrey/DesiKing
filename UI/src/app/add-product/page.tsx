@@ -32,7 +32,7 @@ import ProductSettings from "../../components/AddProduct/ProductSettings";
 import SEOInformation from "../../components/AddProduct/SEOInformation";
 import ThumbnailImage from "../../components/AddProduct/ThumbnailImage";
 import Uses from "../../components/AddProduct/Uses";
-import { FormattedBrand, FormattedCategory, FormattedCurrency, FormattedWeight, ProductFormData } from "@/types/product";
+import { Brand, Category, Currency, FormattedBrand, FormattedCategory, FormattedCurrency, FormattedWeight, ProductFormData, Weight } from "@/types/product";
 
 // ...removed local ProductFormData, now using from @/types/product...
 
@@ -237,8 +237,9 @@ const AddProduct: React.FC = () => {
         const formattedCategories: FormattedCategory[] = data
           .filter((cat) => cat.isActive)
           .map((cat) => ({
-            label: cat.name,
-            value: cat.id,
+            id: cat.id,
+            title: cat.name,
+            image: cat.imageUrl,
           }));
         setCategories(formattedCategories);
       })
@@ -515,11 +516,11 @@ const AddProduct: React.FC = () => {
               />
               <PricingAndSKUDetails
                 control={control}
-                variantFields={variantFields}
                 weights={weights}
                 currencies={currencies}
-                appendVariant={appendVariant}
-                removeVariant={removeVariant}
+                pricesAndSkuFields={variantFields}
+                appendPricesAndSku={appendVariant}
+                removePricesAndSku={removeVariant}
               />
               <ProductDetails
                 control={control}

@@ -116,9 +116,10 @@ export interface Category {
 }
 
 export interface FormattedCategory {
-  label: string;
-  value: string;
-}
+  id: string;
+  title: string;
+  image: string;
+};
 
 export interface Weight {
   id: string;

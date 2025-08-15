@@ -391,10 +391,12 @@ const AdditionalDetails = ({
                     section.id !== "nutritionalInfo" &&
                     selectedProduct &&
                     Array.isArray(
-                      selectedProduct[section.id as keyof Product]
+                      selectedProduct[section.id as "keyFeatures" | "uses"]
                     ) &&
                     renderFeaturesList(
-                      selectedProduct[section.id as keyof Product] as string[],
+                      selectedProduct[
+                      section.id as "keyFeatures" | "uses"
+                      ] as string[],
                       section.id
                     )}
                 </AccordionDetails>

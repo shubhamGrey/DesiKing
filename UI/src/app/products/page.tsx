@@ -8,7 +8,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { ProductFormData } from "@/types/product";
+import { Product, ProductFormData } from "@/types/product";
 
 interface CategorizedProducts {
   [key: string]: {

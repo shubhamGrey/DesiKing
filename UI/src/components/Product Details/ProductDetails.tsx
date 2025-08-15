@@ -64,8 +64,8 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
       name: selectedProduct.name,
       price: 10.99, // Replace with actual price from selectedProduct
       image: typeof selectedProduct.imageUrls?.[0] === "string" ? selectedProduct.imageUrls[0] : "",
-      productId: selectedProduct.id,
-      brandId: selectedProduct.brandId,
+      productId: selectedProduct.id ?? "",
+      brandId: selectedProduct.brandId ?? "",
       quantity: selectedQuantity,
     });
   };
@@ -82,9 +82,9 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
       id: `${selectedProduct.id}-cart-item`,
       name: selectedProduct.name,
       price: 10.99, // Replace with actual price from selectedProduct
-      image: selectedProduct.imageUrls[0] || "",
-      productId: selectedProduct.id,
-      brandId: selectedProduct.brandId,
+      image: typeof selectedProduct.imageUrls?.[0] === "string" ? selectedProduct.imageUrls?.[0] : "",
+      productId: selectedProduct.id ?? "",
+      brandId: selectedProduct.brandId ?? "",
       quantity: selectedQuantity,
     });
 
@@ -110,13 +110,14 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
         >
           <Box sx={{ height: "100%", width: "100%", mb: "80px !important" }}>
             <Image
-              src={selectedProduct?.imageUrls[currentImage] || ""}
+              src={typeof selectedProduct?.imageUrls?.[currentImage] === "string" ? selectedProduct?.imageUrls?.[currentImage] : ""}
               alt={`Product Image ${currentImage + 1}`}
               height={isMobile ? 300 : 500}
               width={isMobile ? 300 : 500}
-              unoptimized={selectedProduct?.imageUrls[currentImage]?.includes(
-                "cloud.agronexis.com"
-              )}
+              unoptimized={
+                typeof selectedProduct?.imageUrls?.[currentImage] === "string" &&
+                selectedProduct?.imageUrls?.[currentImage].includes("cloud.agronexis.com")
+              }
               style={{
                 borderRadius: 8,
                 objectFit: "cover",
@@ -132,7 +133,7 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
             gap={1}
             sx={{ position: "absolute", bottom: 0 }}
           >
-            {selectedProduct?.imageUrls.map((image, index) => (
+            {selectedProduct?.imageUrls?.map((image, index) => (
               <Box
                 key={`thumbnail-${image}-${index}`}
                 onClick={() => handleImageChange(index)}
@@ -144,11 +145,11 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
                 }}
               >
                 <Image
-                  src={image}
+                  src={typeof image === "string" ? image : ""}
                   alt={`Thumbnail ${index + 1}`}
                   width={60}
                   height={60}
-                  unoptimized={image?.includes("cloud.agronexis.com")}
+                  unoptimized={typeof image === "string" && image?.includes("cloud.agronexis.com")}
                   style={{ objectFit: "contain" }}
                 />
               </Box>

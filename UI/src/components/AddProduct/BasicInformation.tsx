@@ -9,13 +9,13 @@ import {
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
 import { michroma } from "@/styles/fonts";
-import { ProductFormData } from "@/types/product";
+import { FormattedBrand, FormattedCategory, ProductFormData } from "@/types/product";
 
 interface BasicInformationProps {
   control: Control<ProductFormData>;
   errors: Record<string, any>;
-  brands: { value: string; label: string }[];
-  categories: { value: string; label: string }[];
+  brands: FormattedBrand[];
+  categories: FormattedCategory[];
 }
 
 const BasicInformation: React.FC<BasicInformationProps> = ({
@@ -105,8 +105,8 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
                 placeholder="Select a category"
               >
                 {categories.map((category) => (
-                  <MenuItem key={category.value} value={category.value}>
-                    {category.label}
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.title}
                   </MenuItem>
                 ))}
               </TextField>

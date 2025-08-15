@@ -42,24 +42,11 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import { UserSessionManager } from "@/utils/userSession";
 import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
+import { Category, FormattedCategory } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
   return imageSrc.includes("cloud.agronexis.com");
-};
-
-// Define the Category type
-type Category = {
-  id: string;
-  name: string;
-  imageUrl: string;
-  isActive: boolean;
-};
-
-type FormattedCategory = {
-  id: string;
-  title: string;
-  image: string;
 };
 
 const achievements = [

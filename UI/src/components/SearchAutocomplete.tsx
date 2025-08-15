@@ -30,7 +30,7 @@ import Image from "next/image";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
 
-import { ProductFormData } from "@/types/product";
+import { Product, ProductFormData } from "@/types/product";
 
 interface SearchAutocompleteProps {
   isMobile?: boolean;
@@ -114,9 +114,9 @@ export default function SearchAutocomplete({
     const timeoutId = setTimeout(() => {
       if (searchQuery.trim().length >= 2) {
         const query = searchQuery.toLowerCase();
-        const filtered = products.filter((product) =>
-          searchMatchesProduct(product, query)
-        );
+        const filtered = products
+          .filter((product) => typeof product.id === "string" && !!product.id)
+          .filter((product) => searchMatchesProduct(product as Product, query));
         setFilteredProducts(filtered.slice(0, 8)); // Limit to 8 results
         setShowDropdown(true);
       } else if (searchQuery.trim().length > 0) {
@@ -220,7 +220,10 @@ export default function SearchAutocomplete({
       case "Enter":
         event.preventDefault();
         if (selectedIndex >= 0 && filteredProducts[selectedIndex]) {
-          handleProductClick(filteredProducts[selectedIndex].id);
+          const selectedProduct = filteredProducts[selectedIndex];
+          if (selectedProduct && selectedProduct.id) {
+            handleProductClick(selectedProduct.id);
+          }
         } else if (searchQuery.trim()) {
           handleSearch();
         }
@@ -418,7 +421,7 @@ export default function SearchAutocomplete({
             <ListItem
               key={product.id}
               component="div"
-              onClick={() => handleProductClick(product.id)}
+              onClick={() => product.id && handleProductClick(product.id)}
               sx={{
                 background:
                   selectedIndex === index
@@ -463,9 +466,9 @@ export default function SearchAutocomplete({
                     borderColor: "grey.100",
                   }}
                 >
-                  {product.thumbnailUrl ?? product.imageUrls[0] ? (
+                  {typeof (product.thumbnailUrl ?? (product.imageUrls && product.imageUrls[0])) === "string" ? (
                     <Image
-                      src={product.thumbnailUrl ?? product.imageUrls[0]}
+                      src={product.thumbnailUrl ?? (product.imageUrls && product.imageUrls[0]) as string}
                       alt={product.name}
                       width={56}
                       height={56}

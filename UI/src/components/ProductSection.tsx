@@ -31,51 +31,27 @@ const michroma = Michroma({
   display: "swap",
 });
 
-interface ProductDetails {
+import { ProductFormData } from "@/types/product";
+
+interface ProductSectionProps {
   item: {
     categoryName: string;
     categoryId: string;
-    products: {
-      id: string;
-      name: string;
-      description: string;
-      brandId: string;
-      categoryId: string;
-      categoryName: string;
-      manufacturingDate: string;
-      createdDate: string;
-      modifiedDate: string | null;
-      isActive: boolean;
-      isDeleted: boolean;
-      metaTitle: string;
-      metaDescription: string;
-      imageUrls: string[];
-      keyFeatures: string[];
-      uses: string[];
-      origin: string;
-      shelfLife: string;
-      storageInstructions: string;
-      certifications: string[];
-      isPremium: boolean;
-      isFeatured: boolean;
-      ingredients: string;
-      nutritionalInfo: string;
-      thumbnailUrl?: string;
-    }[];
+    products: ProductFormData[];
   };
-  onProductDeleted?: () => void; // Callback to refresh the product list
+  onProductDeleted?: () => void;
 }
 
-const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
+const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  
+
   // State for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [productNameToDelete, setProductNameToDelete] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // State for success/error messages
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -93,7 +69,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
     if (!productToDelete) return;
 
     setIsDeleting(true);
-    
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Product/${productToDelete}`, {
         method: "DELETE",
@@ -211,7 +187,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        sessionStorage.setItem("productId", product.id);
+                        if (product.id) {
+                          sessionStorage.setItem("productId", product.id);
+                        }
                         router.push("/add-product");
                       }}
                     >
@@ -233,7 +211,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteClick(product.id, product.name);
+                        if (product.id) {
+                          handleDeleteClick(product.id, product.name);
+                        }
                       }}
                     >
                       <Delete fontSize="small" />
@@ -316,9 +296,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
           <Button onClick={handleDeleteCancel} color="primary">
             Cancel
           </Button>
-          <Button 
-            onClick={handleDeleteConfirm} 
-            color="error" 
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
             variant="contained"
             disabled={isDeleting}
           >
@@ -334,8 +314,8 @@ const ProductSection = ({ item, onProductDeleted }: ProductDetails) => {
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={() => setSnackbarOpen(false)} 
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           sx={{ width: '100%' }}
         >

@@ -113,14 +113,14 @@ const PricingAndSKUDetails: React.FC<PricingAndSKUDetailsProps> = ({
               startIcon={<Add />}
               onClick={handleAddEntry}
               size="small"
-              disabled={pricesAndSkuFields.length >= 5}
+              disabled={(pricesAndSkuFields?.length ?? 0) >= 5}
             >
               Add Entry
             </Button>
           </Box>
 
           {/* Data Rows */}
-          {pricesAndSkuFields.map((field, index) => (
+          {(pricesAndSkuFields ?? []).map((field, index) => (
             <Box key={field.id} sx={{ mb: 3 }}>
               {/* First Row: Pricing Information */}
               <Grid container spacing={2} sx={{ mb: 1 }}>

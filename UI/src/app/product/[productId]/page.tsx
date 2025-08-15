@@ -7,7 +7,7 @@ import { Box, Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ProductFormData } from "@/types/product";
+import { Product, ProductFormData } from "@/types/product";
 
 const ProductDetailsComponent = () => {
   const [selectedProduct, setSelectedProduct] = useState<ProductFormData | null>(null);
