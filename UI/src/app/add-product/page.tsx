@@ -89,7 +89,6 @@ const AddProduct: React.FC = () => {
       brand: "",
       pricesAndSkus: [
         {
-          id: "",
           price: 0,
           isDiscounted: false,
           discountPercentage: 0,
@@ -146,7 +145,6 @@ const AddProduct: React.FC = () => {
             ...priceItem,
             skuNumber: data.sku?.[index]?.sku || "",
             barcode: data.sku?.[index]?.barcode || "",
-            id: priceItem.id || "",
             weightId: priceItem.weightId || "",
             weightValue: priceItem.weightValue || 0,
             weightUnit: priceItem.weightUnit || "",
