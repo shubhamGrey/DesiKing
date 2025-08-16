@@ -50,7 +50,6 @@ export const CartItem: React.FC<CartItemProps> = ({
   const handleRemove = () => {
     onRemove(id);
   };
-
   const totalPrice = (price * quantity).toFixed(2);
 
   return !isMobile ? (
