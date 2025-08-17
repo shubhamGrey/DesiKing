@@ -315,6 +315,11 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
 
     case "LOAD_CART": {
+      // Save loaded items to database if user is logged in
+      action.payload.forEach((item) => {
+        saveCartItemToDatabase(item);
+      });
+
       return {
         ...state,
         items: action.payload,
