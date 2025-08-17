@@ -34,8 +34,6 @@ import ThumbnailImage from "../../components/AddProduct/ThumbnailImage";
 import Uses from "../../components/AddProduct/Uses";
 import { Brand, Category, Currency, FormattedBrand, FormattedCategory, FormattedCurrency, FormattedWeight, ProductFormData, Weight } from "@/types/product";
 
-// ...removed local ProductFormData, now using from @/types/product...
-
 const certificationOptions = [
   "Premium",
   "FSSAI Certified",
