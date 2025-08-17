@@ -41,7 +41,7 @@ jobs:
             cd /var/www/agronexis
             docker compose down || true
             docker system prune -af
-            docker compose up -d --build --no-cache
+            docker compose up -d --build
             sudo systemctl daemon-reload
             sudo systemctl enable docker-compose-app
             sudo systemctl restart docker-compose-app
