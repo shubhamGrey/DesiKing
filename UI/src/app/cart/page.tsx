@@ -33,6 +33,9 @@ import { useCart } from "@/contexts/CartContext";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+  if (!imageSrc || typeof imageSrc !== 'string') {
+    return false;
+  }
   return imageSrc.includes("cloud.agronexis.com");
 };
 
@@ -124,9 +127,9 @@ const Cart = () => {
         currency: "INR",
         status: "created",
         items: cartItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
+          productId: item.productId || "",
+          quantity: item.quantity || 1,
+          price: item.price || 0,
         })),
       };
 
@@ -372,17 +375,17 @@ const Cart = () => {
                     >
                       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <Image
-                          src={item.image}
-                          alt={item.name}
+                          src={item.image || "/placeholder-product.png"}
+                          alt={item.name || "Product"}
                           width={48}
                           height={48}
                           unoptimized={shouldUnoptimizeImage(item.image)}
                           style={{ borderRadius: "6px" }}
                         />
                         <Box>
-                          <Typography fontWeight={500}>{item.name}</Typography>
+                          <Typography fontWeight={500}>{item.name || "Unknown Product"}</Typography>
                           <Typography variant="body2">
-                            ₹{item.price.toFixed(2)}
+                            ₹{(item.price || 0).toFixed(2)}
                           </Typography>
                         </Box>
                       </Box>
@@ -392,10 +395,10 @@ const Cart = () => {
                           onClick={() =>
                             handleQuantityUpdate(
                               item.id,
-                              Math.max(1, item.quantity - 1)
+                              Math.max(1, (item.quantity || 1) - 1)
                             )
                           }
-                          disabled={item.quantity <= 1}
+                          disabled={(item.quantity || 1) <= 1}
                           sx={{ minWidth: "32px", height: "32px", p: 0 }}
                         >
                           -
@@ -403,12 +406,12 @@ const Cart = () => {
                         <Typography
                           sx={{ minWidth: "24px", textAlign: "center" }}
                         >
-                          {item.quantity}
+                          {item.quantity || 1}
                         </Typography>
                         <Button
                           size="small"
                           onClick={() =>
-                            handleQuantityUpdate(item.id, item.quantity + 1)
+                            handleQuantityUpdate(item.id, (item.quantity || 1) + 1)
                           }
                           sx={{ minWidth: "32px", height: "32px", p: 0 }}
                         >

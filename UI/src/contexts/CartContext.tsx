@@ -30,9 +30,9 @@ interface CartState {
 
 type CartAction =
   | {
-      type: "ADD_ITEM";
-      payload: Omit<CartItem, "quantity"> & { quantity?: number };
-    }
+    type: "ADD_ITEM";
+    payload: Omit<CartItem, "quantity"> & { quantity?: number };
+  }
   | { type: "REMOVE_ITEM"; payload: string }
   | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
   | { type: "CLEAR_CART" }
@@ -252,7 +252,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
     case "REMOVE_ITEM": {
       const itemToRemove = state.items.find(item => item.id === action.payload);
-      
+
       // Delete item from database
       if (itemToRemove) {
         deleteCartItemFromDatabase(itemToRemove.id);
@@ -280,12 +280,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       const updatedItems = state.items.map((item) =>
         item.id === action.payload.id
           ? {
-              ...item,
-              quantity: Math.min(
-                action.payload.quantity,
-                item.maxQuantity ?? 99
-              ),
-            }
+            ...item,
+            quantity: Math.min(
+              action.payload.quantity,
+              item.maxQuantity ?? 99
+            ),
+          }
           : item
       );
 
@@ -306,7 +306,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     case "CLEAR_CART": {
       // Clear cart from database
       clearCartInDatabase();
-      
+
       return {
         items: [],
         total: 0,
@@ -364,7 +364,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // First try to load from database if user is logged in
         const dbCartItems = await loadCartItemsFromDatabase();
-        
+
         if (dbCartItems.length > 0) {
           dispatch({ type: "LOAD_CART", payload: dbCartItems });
           return;
@@ -441,16 +441,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       // Load cart items from database
       const dbCartItems = await loadCartItemsFromDatabase();
-      
+
       if (dbCartItems.length > 0) {
         // Merge local cart with database cart
         const mergedItems = [...state.items];
-        
+
         dbCartItems.forEach((dbItem) => {
           const existingLocalItem = mergedItems.find(
             (localItem) => localItem.productId === dbItem.productId
           );
-          
+
           if (existingLocalItem) {
             // Update quantity if item exists locally
             existingLocalItem.quantity = Math.max(existingLocalItem.quantity, dbItem.quantity);
@@ -462,7 +462,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Update state with merged items
         dispatch({ type: "LOAD_CART", payload: mergedItems });
-        
+
         // Save all local items to database to ensure sync
         for (const item of mergedItems) {
           await saveCartItemToDatabase(item);
