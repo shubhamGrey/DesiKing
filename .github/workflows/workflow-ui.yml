@@ -15,12 +15,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          clean: true
-
-      - name: Clean workspace (remove untracked/ignored)
-        run: git clean -xfd
 
       - name: Copy project files to VPS via SCP
         uses: appleboy/scp-action@v0.1.7
