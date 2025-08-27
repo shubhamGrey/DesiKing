@@ -1,5 +1,6 @@
 ﻿using Agronexis.DataAccess.DbContexts;
 using Agronexis.ExternalApi;
+using Agronexis.Model;
 using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
@@ -35,118 +36,196 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
-            var productList = (
-                                from P in _dbContext.Products
-                                    .Include(p => p.ProductPrices)
-                                    .ThenInclude(pp => pp.Weight)
-                                    .Include(p => p.ProductPrices)
-                                    .ThenInclude(pp => pp.Currency)
-                                join C in _dbContext.Categories
-                                    on P.CategoryId equals C.Id
-                                where P.IsActive && C.IsActive // Optional: if category has IsActive
-                                select new { P, C }
-                            )
-                            .AsEnumerable()
-                            .Select(x => new ProductResponseModel
-                            {
-                                Id = x.P.Id,
-                                Name = x.P.Name,
-                                Description = x.P.Description,
-                                ManufacturingDate = x.P.ManufacturingDate,
-                                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls),
-                                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures),
-                                Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses),
-                                CategoryId = x.P.CategoryId,
-                                CategoryName = x.C.Name,
-                                BrandId = x.P.BrandId,
-                                MetaTitle = x.P.MetaTitle,
-                                MetaDescription = x.P.MetaDescription,
-                                CreatedDate = DateTime.UtcNow,
-                                Origin = x.P.Origin,
-                                ShelfLife = x.P.ShelfLife,
-                                StorageInstructions = x.P.StorageInstructions,
-                                Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications),
-                                IsActive = x.P.IsActive,
-                                IsPremium = x.P.IsPremium,
-                                IsFeatured = x.P.IsFeatured,
-                                Ingredients = x.P.Ingredients,
-                                NutritionalInfo = x.P.NutritionalInfo,
-                                ThumbnailUrl = x.P.ThumbnailUrl,
+            try
+            {
+                var productList = (
+                    from P in _dbContext.Products
+                        .Include(p => p.ProductPrices)
+                            .ThenInclude(pp => pp.Weight)
+                        .Include(p => p.ProductPrices)
+                            .ThenInclude(pp => pp.Currency)
+                    join C in _dbContext.Categories
+                        on P.CategoryId equals C.Id
+                    where P.IsActive && C.IsActive
+                    select new { P, C }
+                )
+                .AsEnumerable()
+                .Select(x => new ProductResponseModel
+                {
+                    Id = x.P.Id,
+                    Name = x.P.Name,
+                    Description = x.P.Description,
+                    ManufacturingDate = x.P.ManufacturingDate,
+                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
+                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
+                    Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
+                    CategoryId = x.P.CategoryId,
+                    CategoryName = x.C.Name,
+                    BrandId = x.P.BrandId,
+                    MetaTitle = x.P.MetaTitle,
+                    MetaDescription = x.P.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = x.P.Origin,
+                    ShelfLife = x.P.ShelfLife,
+                    StorageInstructions = x.P.StorageInstructions,
+                    Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
+                    IsActive = x.P.IsActive,
+                    IsPremium = x.P.IsPremium,
+                    IsFeatured = x.P.IsFeatured,
+                    Ingredients = x.P.Ingredients,
+                    NutritionalInfo = x.P.NutritionalInfo,
+                    ThumbnailUrl = x.P.ThumbnailUrl,
 
-                                PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
-                                {
-                                    Id = pp.Id,
-                                    CurrencyId = pp.Currency.Id,
-                                    CurrencyCode = pp.Currency.Code,
-                                    Price = pp.Price,
-                                    CreatedDate = pp.CreatedDate,
-                                    ModifiedDate = pp.ModifiedDate,
-                                    IsDiscounted = pp.IsDiscounted,
-                                    DiscountPercentage = pp.DiscountPercentage,
-                                    DiscountedAmount = pp.DiscountedAmount,
-                                    WeightId = pp.WeightId,
-                                    WeightValue = pp.Weight?.Value,
-                                    WeightUnit = pp.Weight?.Unit,
-                                    SkuNumber = pp.SkuNumber,
-                                    Barcode = pp.Barcode,
-                                    IsActive = pp.IsActive,
-                                    IsDeleted = pp.IsDeleted
-                                }).ToList(),
-                            }).ToList();
+                    PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                    {
+                        Id = pp.Id,
+                        CurrencyId = pp.Currency.Id,
+                        CurrencyCode = pp.Currency.Code,
+                        Price = pp.Price,
+                        CreatedDate = pp.CreatedDate,
+                        ModifiedDate = pp.ModifiedDate,
+                        IsDiscounted = pp.IsDiscounted,
+                        DiscountPercentage = pp.DiscountPercentage,
+                        DiscountedAmount = pp.DiscountedAmount,
+                        WeightId = pp.WeightId,
+                        WeightValue = pp.Weight?.Value,
+                        WeightUnit = pp.Weight?.Unit,
+                        SkuNumber = pp.SkuNumber,
+                        Barcode = pp.Barcode,
+                        IsActive = pp.IsActive,
+                        IsDeleted = pp.IsDeleted
+                    }).ToList(),
+                }).ToList();
 
-
-            return productList;
+                return productList;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error in {nameof(GetProducts)}", xCorrelationId, ex);
+            }
         }
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            Guid productId = Guid.Parse(id);
-
-            // Fetch raw data from the database (without JSON deserialization)
-            var rawResult = (
-                from P in _dbContext.Products
-                    .Include(p => p.ProductPrices)
-                        .ThenInclude(pp => pp.Weight)
-                    .Include(p => p.ProductPrices)
-                        .ThenInclude(pp => pp.Currency)
-                join C in _dbContext.Categories on P.CategoryId equals C.Id
-                where P.Id == productId
-                select new { P, C }
-            ).FirstOrDefault();
-
-            if (rawResult == null) return null;
-
-            var product = rawResult.P;
-
-            return new ProductResponseModel
+            try
             {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                ManufacturingDate = product.ManufacturingDate,
-                ImageUrls = JsonSerializer.Deserialize<List<string>>(product.ImageUrls ?? "[]"),
-                KeyFeatures = JsonSerializer.Deserialize<List<string>>(product.KeyFeatures ?? "[]"),
-                Uses = JsonSerializer.Deserialize<List<string>>(product.Uses ?? "[]"),
-                CategoryId = product.CategoryId,
-                CategoryName = rawResult.C.Name,
-                BrandId = product.BrandId,
-                MetaTitle = product.MetaTitle,
-                MetaDescription = product.MetaDescription,
-                CreatedDate = DateTime.UtcNow,
-                Origin = product.Origin,
-                ShelfLife = product.ShelfLife,
-                StorageInstructions = product.StorageInstructions,
-                Certifications = JsonSerializer.Deserialize<List<string>>(product.Certifications ?? "[]"),
-                IsActive = product.IsActive,
-                IsPremium = product.IsPremium,
-                IsFeatured = product.IsFeatured,
-                Ingredients = product.Ingredients,
-                NutritionalInfo = product.NutritionalInfo,
-                ThumbnailUrl = product.ThumbnailUrl,
+                Guid productId = Guid.Parse(id);
 
-                PricesAndSkus = product.ProductPrices
-                    .Where(pp => !pp.IsDeleted)
-                    .Select(pp => new PriceResponseModel
+                var rawResult = (
+                    from P in _dbContext.Products
+                        .Include(p => p.ProductPrices)
+                            .ThenInclude(pp => pp.Weight)
+                        .Include(p => p.ProductPrices)
+                            .ThenInclude(pp => pp.Currency)
+                    join C in _dbContext.Categories on P.CategoryId equals C.Id
+                    where P.Id == productId
+                    select new { P, C }
+                ).FirstOrDefault();
+
+                if (rawResult == null) return null;
+
+                var product = rawResult.P;
+
+                return new ProductResponseModel
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    ManufacturingDate = product.ManufacturingDate,
+                    ImageUrls = JsonSerializer.Deserialize<List<string>>(product.ImageUrls ?? "[]"),
+                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(product.KeyFeatures ?? "[]"),
+                    Uses = JsonSerializer.Deserialize<List<string>>(product.Uses ?? "[]"),
+                    CategoryId = product.CategoryId,
+                    CategoryName = rawResult.C.Name,
+                    BrandId = product.BrandId,
+                    MetaTitle = product.MetaTitle,
+                    MetaDescription = product.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = product.Origin,
+                    ShelfLife = product.ShelfLife,
+                    StorageInstructions = product.StorageInstructions,
+                    Certifications = JsonSerializer.Deserialize<List<string>>(product.Certifications ?? "[]"),
+                    IsActive = product.IsActive,
+                    IsPremium = product.IsPremium,
+                    IsFeatured = product.IsFeatured,
+                    Ingredients = product.Ingredients,
+                    NutritionalInfo = product.NutritionalInfo,
+                    ThumbnailUrl = product.ThumbnailUrl,
+                    PricesAndSkus = product.ProductPrices
+                        .Where(pp => !pp.IsDeleted)
+                        .Select(pp => new PriceResponseModel
+                        {
+                            Id = pp.Id,
+                            CurrencyId = pp.Currency.Id,
+                            CurrencyCode = pp.Currency.Code,
+                            Price = pp.Price,
+                            CreatedDate = pp.CreatedDate,
+                            ModifiedDate = pp.ModifiedDate,
+                            IsDiscounted = pp.IsDiscounted,
+                            DiscountPercentage = pp.DiscountPercentage,
+                            DiscountedAmount = pp.DiscountedAmount,
+                            WeightId = pp.WeightId,
+                            WeightValue = pp.Weight?.Value,
+                            WeightUnit = pp.Weight?.Unit,
+                            SkuNumber = pp.SkuNumber,
+                            Barcode = pp.Barcode,
+                            IsActive = pp.IsActive,
+                            IsDeleted = pp.IsDeleted
+                        }).ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error in {nameof(GetProductById)}", xCorrelationId, ex);
+            }
+        }
+
+        public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
+        {
+            try
+            {
+                Guid catId = Guid.Parse(categoryId);
+
+                var productList = (
+                    from P in _dbContext.Products
+                        .Include(p => p.ProductPrices)
+                        .ThenInclude(pp => pp.Weight)
+                        .Include(p => p.ProductPrices)
+                        .ThenInclude(pp => pp.Currency)
+                    join C in _dbContext.Categories on P.CategoryId equals C.Id
+                    where P.IsActive && P.CategoryId == catId
+                    select new { P, C }
+                )
+                .AsEnumerable()
+                .Select(x => new ProductResponseModel
+                {
+                    Id = x.P.Id,
+                    Name = x.P.Name,
+                    Description = x.P.Description,
+                    ManufacturingDate = x.P.ManufacturingDate,
+
+                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
+                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
+                    Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
+                    Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
+
+                    CategoryId = x.P.CategoryId,
+                    CategoryName = x.C.Name,
+                    BrandId = x.P.BrandId,
+                    MetaTitle = x.P.MetaTitle,
+                    MetaDescription = x.P.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = x.P.Origin,
+                    ShelfLife = x.P.ShelfLife,
+                    StorageInstructions = x.P.StorageInstructions,
+                    IsActive = x.P.IsActive,
+                    IsPremium = x.P.IsPremium,
+                    IsFeatured = x.P.IsFeatured,
+                    Ingredients = x.P.Ingredients,
+                    NutritionalInfo = x.P.NutritionalInfo,
+                    ThumbnailUrl = x.P.ThumbnailUrl,
+
+                    PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                     {
                         Id = pp.Id,
                         CurrencyId = pp.Currency.Id,
@@ -165,138 +244,80 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         IsActive = pp.IsActive,
                         IsDeleted = pp.IsDeleted
                     }).ToList()
-            };
-        }
+                }).ToList();
 
-
-        public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
-        {
-            Guid catId = Guid.Parse(categoryId);
-
-            var productList = (
-                from P in _dbContext.Products
-                    .Include(p => p.ProductPrices)
-                    .ThenInclude(pp => pp.Weight)
-                    .Include(p => p.ProductPrices)
-                    .ThenInclude(pp => pp.Currency)
-                join C in _dbContext.Categories on P.CategoryId equals C.Id
-                where P.IsActive && P.CategoryId == catId
-                select new { P, C }
-            )
-            .AsEnumerable() // Ensure everything after this is in-memory
-            .Select(x => new ProductResponseModel
+                return productList;
+            }
+            catch (Exception ex)
             {
-                Id = x.P.Id,
-                Name = x.P.Name,
-                Description = x.P.Description,
-                ManufacturingDate = x.P.ManufacturingDate,
-
-                ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
-                KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
-                Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
-                Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
-
-                CategoryId = x.P.CategoryId,
-                CategoryName = x.C.Name,
-                BrandId = x.P.BrandId,
-                MetaTitle = x.P.MetaTitle,
-                MetaDescription = x.P.MetaDescription,
-                CreatedDate = DateTime.UtcNow,
-                Origin = x.P.Origin,
-                ShelfLife = x.P.ShelfLife,
-                StorageInstructions = x.P.StorageInstructions,
-                IsActive = x.P.IsActive,
-                IsPremium = x.P.IsPremium,
-                IsFeatured = x.P.IsFeatured,
-                Ingredients = x.P.Ingredients,
-                NutritionalInfo = x.P.NutritionalInfo,
-                ThumbnailUrl = x.P.ThumbnailUrl,
-
-                PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
-                {
-                    Id = pp.Id,
-                    CurrencyId = pp.Currency.Id,
-                    CurrencyCode = pp.Currency.Code,
-                    Price = pp.Price,
-                    CreatedDate = pp.CreatedDate,
-                    ModifiedDate = pp.ModifiedDate,
-                    IsDiscounted = pp.IsDiscounted,
-                    DiscountPercentage = pp.DiscountPercentage,
-                    DiscountedAmount = pp.DiscountedAmount,
-                    WeightId = pp.WeightId,
-                    WeightValue = pp.Weight?.Value,
-                    WeightUnit = pp.Weight?.Unit,
-                    SkuNumber = pp.SkuNumber,
-                    Barcode = pp.Barcode,
-                    IsActive = pp.IsActive,
-                    IsDeleted = pp.IsDeleted
-                }).ToList()
-            }).ToList();
-
-            return productList;
+                throw new RepositoryException("Error occurred while fetching products by category.", xCorrelationId, ex);
+            }
         }
-
 
         public string SaveOrUpdateProduct(ProductRequestModel productReq, string xCorrelationId)
         {
-            var productDetail = _dbContext.Products
-                .Include(p => p.ProductPrices)
-                .FirstOrDefault(x => x.Id == productReq.Id);
-
-            bool isNew = false;
-
-            if (productDetail == null)
+            try
             {
-                productDetail = new Model.EntityModel.Product
+                var productDetail = _dbContext.Products
+                    .Include(p => p.ProductPrices)
+                    .FirstOrDefault(x => x.Id == productReq.Id);
+
+                bool isNew = false;
+
+                if (productDetail == null)
                 {
-                    Id = Guid.NewGuid(),
-                    CreatedDate = DateTime.UtcNow
-                };
-                isNew = true;
-            }
+                    productDetail = new Model.EntityModel.Product
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedDate = DateTime.UtcNow
+                    };
+                    isNew = true;
+                }
 
-            // Update main product fields
-            productDetail.Name = productReq.Name;
-            productDetail.Description = productReq.Description;
-            productDetail.ManufacturingDate = productReq.ManufacturingDate;
-            productDetail.ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls);
-            productDetail.KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures);
-            productDetail.Uses = JsonSerializer.Serialize(productReq.Uses);
-            productDetail.CategoryId = productReq.CategoryId;
-            productDetail.BrandId = productReq.BrandId;
-            productDetail.MetaTitle = productReq.MetaTitle;
-            productDetail.MetaDescription = productReq.MetaDescription;
-            productDetail.Origin = productReq.Origin;
-            productDetail.ShelfLife = productReq.ShelfLife;
-            productDetail.StorageInstructions = productReq.StorageInstructions;
-            productDetail.Certifications = JsonSerializer.Serialize(productReq.Certifications);
-            productDetail.IsActive = productReq.IsActive;
-            productDetail.IsPremium = productReq.IsPremium;
-            productDetail.IsFeatured = productReq.IsFeatured;
-            productDetail.Ingredients = productReq.Ingredients;
-            productDetail.NutritionalInfo = productReq.NutritionalInfo;
-            productDetail.ThumbnailUrl = productReq.ThumbnailUrl;
-            productDetail.ModifiedDate = DateTime.UtcNow;
+                // Update main product fields
+                productDetail.Name = productReq.Name;
+                productDetail.Description = productReq.Description;
+                productDetail.ManufacturingDate = productReq.ManufacturingDate;
+                productDetail.ImageUrls = JsonSerializer.Serialize(productReq.ImageUrls);
+                productDetail.KeyFeatures = JsonSerializer.Serialize(productReq.KeyFeatures);
+                productDetail.Uses = JsonSerializer.Serialize(productReq.Uses);
+                productDetail.CategoryId = productReq.CategoryId;
+                productDetail.BrandId = productReq.BrandId;
+                productDetail.MetaTitle = productReq.MetaTitle;
+                productDetail.MetaDescription = productReq.MetaDescription;
+                productDetail.Origin = productReq.Origin;
+                productDetail.ShelfLife = productReq.ShelfLife;
+                productDetail.StorageInstructions = productReq.StorageInstructions;
+                productDetail.Certifications = JsonSerializer.Serialize(productReq.Certifications);
+                productDetail.IsActive = productReq.IsActive;
+                productDetail.IsPremium = productReq.IsPremium;
+                productDetail.IsFeatured = productReq.IsFeatured;
+                productDetail.Ingredients = productReq.Ingredients;
+                productDetail.NutritionalInfo = productReq.NutritionalInfo;
+                productDetail.ThumbnailUrl = productReq.ThumbnailUrl;
+                productDetail.ModifiedDate = DateTime.UtcNow;
 
-            if (isNew)
-            {
-                _dbContext.Products.Add(productDetail);
-            }
-            else
-            {
+                if (isNew)
+                {
+                    _dbContext.Products.Add(productDetail);
+                }
+
                 // Handle Price Updates
                 if (productReq.PricesAndSkus != null)
                 {
-                    // Remove prices not in request
                     var incomingPriceIds = productReq.PricesAndSkus.Select(p => p.Id).Where(id => id != Guid.Empty).ToList();
-                    var pricesToRemove = productDetail.ProductPrices
-                        .Where(p => !incomingPriceIds.Contains(p.Id))
-                        .ToList();
-                    _dbContext.ProductPrices.RemoveRange(pricesToRemove);
+                    var pricesToRemove = productDetail.ProductPrices != null 
+                        ? productDetail.ProductPrices.Where(p => !incomingPriceIds.Contains(p.Id)).ToList() : [];
+
+                    if (pricesToRemove.Count != 0)
+                    {
+                        _dbContext.ProductPrices.RemoveRange(pricesToRemove);
+                    }
 
                     foreach (var price in productReq.PricesAndSkus)
                     {
-                        var existingPrice = productDetail.ProductPrices.FirstOrDefault(p => p.Id == price.Id && price.Id != Guid.Empty);
+                        var existingPrice = productDetail.ProductPrices != null
+                            ? productDetail.ProductPrices.FirstOrDefault(p => p.Id == price.ProductId && price.ProductId != Guid.Empty) : null;
                         if (existingPrice != null)
                         {
                             existingPrice.Price = price.Price;
@@ -332,364 +353,500 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         }
                     }
                 }
+
+                _dbContext.SaveChanges();
+                return productDetail.Id.ToString();
             }
-
-            _dbContext.SaveChanges();
-            return productDetail.Id.ToString();
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while saving/updating product.", xCorrelationId, ex);
+            }
         }
-
-
 
         public string DeleteProductById(string id, string xCorrelationId)
         {
-            Guid productId = Guid.Parse(id);
-
-            var productDetail = _dbContext.Products
-                .Include(p => p.ProductPrices)
-                .FirstOrDefault(x => x.Id == productId && x.IsActive);
-
-            if (productDetail != null)
+            try
             {
-                // Soft-delete product
-                productDetail.IsActive = false;
-                productDetail.IsDeleted = true;
-                productDetail.ModifiedDate = DateTime.UtcNow;
+                Guid productId = Guid.Parse(id);
 
-                // Soft-delete product prices
-                foreach (var price in productDetail.ProductPrices)
+                var productDetail = _dbContext.Products
+                    .Include(p => p.ProductPrices)
+                    .FirstOrDefault(x => x.Id == productId && x.IsActive);
+
+                if (productDetail != null)
                 {
-                    price.IsActive = false;
-                    price.IsDeleted = true;
-                    price.ModifiedDate = DateTime.UtcNow;
+                    productDetail.IsActive = false;
+                    productDetail.IsDeleted = true;
+                    productDetail.ModifiedDate = DateTime.UtcNow;
+
+                    foreach (var price in productDetail.ProductPrices)
+                    {
+                        price.IsActive = false;
+                        price.IsDeleted = true;
+                        price.ModifiedDate = DateTime.UtcNow;
+                    }
+
+                    _dbContext.Products.Update(productDetail);
+                    _dbContext.SaveChanges();
+
+                    return "Record deleted successfully.";
                 }
 
-                _dbContext.Products.Update(productDetail);
-                _dbContext.SaveChanges();
-
-                return "Record deleted successfully.";
+                return null;
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while deleting product by Id.", xCorrelationId, ex);
+            }
         }
-
 
         public List<CategoryResponseModel> GetCategories(string xCorrelationId)
         {
-            List<CategoryResponseModel> categoryList = _dbContext.Categories.Select(x => new CategoryResponseModel
+            try
             {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                ImageUrl = x.ImageUrl,
-                BrandId = x.BrandId,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription
-            }).ToList();
+                List<CategoryResponseModel> categoryList = _dbContext.Categories.Select(x => new CategoryResponseModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Description = x.Description,
+                    ImageUrl = x.ImageUrl,
+                    BrandId = x.BrandId,
+                    IsActive = x.IsActive,
+                    IsDeleted = x.IsDeleted,
+                    CreatedDate = x.CreatedDate,
+                    ModifiedDate = x.ModifiedDate,
+                    MetaTitle = x.MetaTitle,
+                    MetaDescription = x.MetaDescription
+                }).ToList();
 
-            return categoryList;
+                return categoryList;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error while fetching categories", xCorrelationId, ex);
+            }
         }
 
         public CategoryResponseModel GetCategoryById(string id, string xCorrelationId)
         {
-            CategoryResponseModel category = _dbContext.Categories.Where(x => x.Id == new Guid(id)).Select(x => new CategoryResponseModel
+            try
             {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                ImageUrl = x.ImageUrl,
-                BrandId = x.BrandId,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription
-            }).FirstOrDefault();
+                CategoryResponseModel category = _dbContext.Categories
+                    .Where(x => x.Id == new Guid(id))
+                    .Select(x => new CategoryResponseModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Description = x.Description,
+                        ImageUrl = x.ImageUrl,
+                        BrandId = x.BrandId,
+                        IsActive = x.IsActive,
+                        IsDeleted = x.IsDeleted,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate,
+                        MetaTitle = x.MetaTitle,
+                        MetaDescription = x.MetaDescription
+                    }).FirstOrDefault();
 
-            return category;
+                return category;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error while fetching category with Id {id}", xCorrelationId, ex);
+            }
         }
 
         public string SaveOrUpdateCategory(CategoryRequestModel category, string xCorrelationId)
         {
-            var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
-
-            if (categoryDetail == null)
+            try
             {
-                categoryDetail = new()
+                var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
+
+                if (categoryDetail == null)
                 {
-                    Name = category.Name,
-                    Description = category.Description,
-                    ImageUrl = category.ImageUrl,
-                    BrandId = category.BrandId,
-                    CreatedDate = DateTime.UtcNow,
-                    IsActive = category.IsActive,
-                    MetaTitle = category.MetaTitle,
-                    MetaDescription = category.MetaDescription
-                };
+                    categoryDetail = new()
+                    {
+                        Name = category.Name,
+                        Description = category.Description,
+                        ImageUrl = category.ImageUrl,
+                        BrandId = category.BrandId,
+                        CreatedDate = DateTime.UtcNow,
+                        IsActive = category.IsActive,
+                        MetaTitle = category.MetaTitle,
+                        MetaDescription = category.MetaDescription
+                    };
 
-                _dbContext.Categories.Add(categoryDetail);
+                    _dbContext.Categories.Add(categoryDetail);
+                }
+                else if (categoryDetail.Id == category.Id)
+                {
+                    categoryDetail.Name = category.Name;
+                    categoryDetail.Description = category.Description;
+                    categoryDetail.ImageUrl = category.ImageUrl;
+                    categoryDetail.BrandId = category.BrandId;
+                    categoryDetail.ModifiedDate = DateTime.UtcNow;
+                    categoryDetail.IsActive = category.IsActive;
+                    categoryDetail.MetaTitle = category.MetaTitle;
+                    categoryDetail.MetaDescription = category.MetaDescription;
+
+                    _dbContext.Categories.Update(categoryDetail);
+                }
+
+                _dbContext.SaveChanges();
+                return categoryDetail.Id.ToString();
             }
-            else if (categoryDetail != null && categoryDetail.Id == category.Id)
+            catch (Exception ex)
             {
-                categoryDetail.Name = category.Name;
-                categoryDetail.Description = category.Description;
-                categoryDetail.ImageUrl = category.ImageUrl;
-                categoryDetail.BrandId = category.BrandId;
-                categoryDetail.ModifiedDate = DateTime.UtcNow;
-                categoryDetail.IsActive = category.IsActive;
-                categoryDetail.MetaTitle = category.MetaTitle;
-                categoryDetail.MetaDescription = category.MetaDescription;
-
-                _dbContext.Categories.Update(categoryDetail);
+                throw new RepositoryException("Error while saving or updating category", xCorrelationId, ex);
             }
-            _dbContext.SaveChanges();
-            return categoryDetail.Id.ToString();
         }
 
         public string DeleteCategoryById(string id, string xCorrelationId)
         {
-            var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == new Guid(id));
+            try
+            {
+                var categoryDetail = _dbContext.Categories.FirstOrDefault(x => x.Id == new Guid(id));
 
-            if (categoryDetail != null)
-            {
-                categoryDetail.IsActive = false;
-                categoryDetail.IsDeleted = true;
-                _dbContext.Categories.Update(categoryDetail);
-                _dbContext.SaveChanges();
-                return "Record deleted successfully.";
+                if (categoryDetail != null)
+                {
+                    categoryDetail.IsActive = false;
+                    categoryDetail.IsDeleted = true;
+                    categoryDetail.ModifiedDate = DateTime.UtcNow;
+
+                    _dbContext.Categories.Update(categoryDetail);
+                    _dbContext.SaveChanges();
+
+                    return "Record deleted successfully.";
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return null;
+                throw new RepositoryException($"Error while deleting category with Id {id}", xCorrelationId, ex);
             }
         }
 
         public List<BrandResponseModel> GetBrands(string xCorrelationId)
         {
-            List<BrandResponseModel> brandList = _dbContext.Brands.Where(x => x.IsActive).Select(x => new BrandResponseModel
+            try
             {
-                Id = x.Id,
-                Name = x.Name,
-                Code = x.Code,
-                Description = x.Description,
-                LogoUrl = x.LogoURL,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription
-            }).ToList();
+                List<BrandResponseModel> brandList = _dbContext.Brands
+                    .Where(x => x.IsActive)
+                    .Select(x => new BrandResponseModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Code = x.Code,
+                        Description = x.Description,
+                        LogoUrl = x.LogoURL,
+                        IsActive = x.IsActive,
+                        IsDeleted = x.IsDeleted,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate,
+                        MetaTitle = x.MetaTitle,
+                        MetaDescription = x.MetaDescription
+                    }).ToList();
 
-            return brandList;
+                return brandList;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error while fetching brands", xCorrelationId, ex);
+            }
         }
 
         public BrandResponseModel GetBrandById(string id, string xCorrelationId)
         {
-            BrandResponseModel brandDetail = _dbContext.Brands.Where(x => x.Id == new Guid(id)).Select(x => new BrandResponseModel
+            try
             {
-                Id = x.Id,
-                Name = x.Name,
-                Code = x.Code,
-                Description = x.Description,
-                LogoUrl = x.LogoURL,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate,
-                MetaTitle = x.MetaTitle,
-                MetaDescription = x.MetaDescription
-            }).FirstOrDefault();
+                BrandResponseModel brandDetail = _dbContext.Brands
+                    .Where(x => x.Id == new Guid(id))
+                    .Select(x => new BrandResponseModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Code = x.Code,
+                        Description = x.Description,
+                        LogoUrl = x.LogoURL,
+                        IsActive = x.IsActive,
+                        IsDeleted = x.IsDeleted,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate,
+                        MetaTitle = x.MetaTitle,
+                        MetaDescription = x.MetaDescription
+                    }).FirstOrDefault();
 
-            return brandDetail;
+                return brandDetail;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error while fetching brand with Id {id}", xCorrelationId, ex);
+            }
         }
 
         public string SaveOrUpdateBrand(BrandRequestModel brandReq, string xCorrelationId)
         {
-            var brandDetail = _dbContext.Brands.FirstOrDefault(x => x.Id == brandReq.Id);
-
-            if (brandDetail == null)
+            try
             {
-                brandDetail = new()
+                var brandDetail = _dbContext.Brands.FirstOrDefault(x => x.Id == brandReq.Id);
+
+                if (brandDetail == null)
                 {
-                    Name = brandReq.Name,
-                    Code = brandReq.Code,
-                    Description = brandReq.Description,
-                    LogoURL = brandReq.LogoUrl,
-                    CreatedDate = DateTime.UtcNow,
-                    IsActive = brandReq.IsActive,
-                    MetaTitle = brandReq.MetaTitle,
-                    MetaDescription = brandReq.MetaDescription
-                };
+                    brandDetail = new()
+                    {
+                        Name = brandReq.Name,
+                        Code = brandReq.Code,
+                        Description = brandReq.Description,
+                        LogoURL = brandReq.LogoUrl,
+                        CreatedDate = DateTime.UtcNow,
+                        IsActive = brandReq.IsActive,
+                        MetaTitle = brandReq.MetaTitle,
+                        MetaDescription = brandReq.MetaDescription
+                    };
 
-                _dbContext.Brands.Add(brandDetail);
+                    _dbContext.Brands.Add(brandDetail);
+                }
+                else if (brandDetail.Id == brandReq.Id)
+                {
+                    brandDetail.Name = brandReq.Name;
+                    brandDetail.Code = brandReq.Code;
+                    brandDetail.Description = brandReq.Description;
+                    brandDetail.LogoURL = brandReq.LogoUrl;
+                    brandDetail.ModifiedDate = DateTime.UtcNow;
+                    brandDetail.IsActive = brandReq.IsActive;
+                    brandDetail.MetaTitle = brandReq.MetaTitle;
+                    brandDetail.MetaDescription = brandReq.MetaDescription;
+
+                    _dbContext.Brands.Update(brandDetail);
+                }
+
+                _dbContext.SaveChanges();
+                return brandDetail.Id.ToString();
             }
-            else if (brandDetail != null && brandDetail.Id == brandReq.Id)
+            catch (Exception ex)
             {
-                brandDetail.Name = brandReq.Name;
-                brandDetail.Code = brandReq.Code;
-                brandDetail.Description = brandReq.Description;
-                brandDetail.LogoURL = brandReq.LogoUrl;
-                brandDetail.ModifiedDate = DateTime.UtcNow;
-                brandDetail.IsActive = brandReq.IsActive;
-                brandDetail.MetaTitle = brandReq.MetaTitle;
-                brandDetail.Description = brandReq.Description;
-
-                _dbContext.Brands.Update(brandDetail);
+                throw new RepositoryException("Error while saving or updating brand", xCorrelationId, ex);
             }
-            _dbContext.SaveChanges();
-            return brandDetail.Id.ToString();
         }
 
         public string DeleteBrandById(string id, string xCorrelationId)
         {
-            var brandDetail = _dbContext.Brands.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+            try
+            {
+                var brandDetail = _dbContext.Brands.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
 
-            if (brandDetail != null)
-            {
-                brandDetail.IsActive = false;
-                brandDetail.IsDeleted = true;
-                _dbContext.Brands.Update(brandDetail);
-                _dbContext.SaveChanges();
-                return "Record deleted successfully.";
+                if (brandDetail != null)
+                {
+                    brandDetail.IsActive = false;
+                    brandDetail.IsDeleted = true;
+                    brandDetail.ModifiedDate = DateTime.UtcNow;
+
+                    _dbContext.Brands.Update(brandDetail);
+                    _dbContext.SaveChanges();
+
+                    return "Record deleted successfully.";
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return null;
+                throw new RepositoryException($"Error while deleting brand with Id {id}", xCorrelationId, ex);
             }
         }
 
         public List<RoleResponseModel> GetRoles(string xCorrelationId)
         {
-            List<RoleResponseModel> roleList = _dbContext.Roles.Where(x => x.IsActive).Select(x => new RoleResponseModel
+            try
             {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
-            }).ToList();
+                List<RoleResponseModel> roleList = _dbContext.Roles
+                    .Where(x => x.IsActive)
+                    .Select(x => new RoleResponseModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Description = x.Description,
+                        IsActive = x.IsActive,
+                        IsDeleted = x.IsDeleted,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate
+                    }).ToList();
 
-            return roleList;
+                return roleList;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error while fetching roles", xCorrelationId, ex);
+            }
         }
 
         public RoleResponseModel GetRoleById(string id, string xCorrelationId)
         {
-            RoleResponseModel roleDetail = _dbContext.Roles.Where(x => x.Id == new Guid(id)).Select(x => new RoleResponseModel
+            try
             {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                IsActive = x.IsActive,
-                IsDeleted = x.IsDeleted,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
-            }).FirstOrDefault();
+                RoleResponseModel roleDetail = _dbContext.Roles
+                    .Where(x => x.Id == new Guid(id))
+                    .Select(x => new RoleResponseModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Description = x.Description,
+                        IsActive = x.IsActive,
+                        IsDeleted = x.IsDeleted,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate
+                    }).FirstOrDefault();
 
-            return roleDetail;
+                return roleDetail;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error while fetching role with Id {id}", xCorrelationId, ex);
+            }
         }
 
         public string SaveOrUpdateRole(RoleRequestModel roleRequest, string xCorrelationId)
         {
-            var roleDetail = _dbContext.Roles.FirstOrDefault(x => x.Id == roleRequest.Id);
-
-            if (roleDetail == null)
+            try
             {
-                roleDetail = new()
+                var roleDetail = _dbContext.Roles.FirstOrDefault(x => x.Id == roleRequest.Id);
+
+                if (roleDetail == null)
                 {
-                    Name = roleRequest.Name,
-                    Description = roleRequest.Description,
-                    CreatedDate = DateTime.UtcNow,
-                    IsActive = roleRequest.IsActive
-                };
+                    roleDetail = new()
+                    {
+                        Name = roleRequest.Name,
+                        Description = roleRequest.Description,
+                        CreatedDate = DateTime.UtcNow,
+                        IsActive = roleRequest.IsActive
+                    };
 
-                _dbContext.Roles.Add(roleDetail);
+                    _dbContext.Roles.Add(roleDetail);
+                }
+                else if (roleDetail.Id == roleRequest.Id)
+                {
+                    roleDetail.Name = roleRequest.Name;
+                    roleDetail.Description = roleRequest.Description;
+                    roleDetail.ModifiedDate = DateTime.UtcNow;
+                    roleDetail.IsActive = roleRequest.IsActive;
+
+                    _dbContext.Roles.Update(roleDetail);
+                }
+
+                _dbContext.SaveChanges();
+                return roleDetail.Id.ToString();
             }
-            else if (roleDetail != null && roleDetail.Id == roleRequest.Id)
+            catch (Exception ex)
             {
-                roleDetail.Name = roleRequest.Name;
-                roleDetail.Description = roleRequest.Description;
-                roleDetail.ModifiedDate = DateTime.UtcNow;
-                roleDetail.IsActive = roleRequest.IsActive;
-
-                _dbContext.Roles.Update(roleDetail);
+                throw new RepositoryException("Error while saving or updating role", xCorrelationId, ex);
             }
-            _dbContext.SaveChanges();
-            return roleDetail.Id.ToString();
         }
 
         public string DeleteRoleById(string id, string xCorrelationId)
         {
-            var roleDetail = _dbContext.Roles.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
+            try
+            {
+                var roleDetail = _dbContext.Roles.FirstOrDefault(x => x.Id == new Guid(id) && x.IsActive);
 
-            if (roleDetail != null)
-            {
-                roleDetail.IsActive = false;
-                roleDetail.IsDeleted = true;
-                _dbContext.Roles.Update(roleDetail);
-                _dbContext.SaveChanges();
-                return "Record deleted successfully.";
+                if (roleDetail != null)
+                {
+                    roleDetail.IsActive = false;
+                    roleDetail.IsDeleted = true;
+                    roleDetail.ModifiedDate = DateTime.UtcNow;
+
+                    _dbContext.Roles.Update(roleDetail);
+                    _dbContext.SaveChanges();
+
+                    return "Record deleted successfully.";
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return null;
+                throw new RepositoryException($"Error while deleting role with Id {id}", xCorrelationId, ex);
             }
         }
 
         public async Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId)
         {
-            var user = await Authenticate(model.Email, model.UserName, model.Password);
-            if (user != null)
+            try
             {
-                return GenerateJwtToken(user);
-            }
+                var user = await Authenticate(model.Email, model.UserName, model.Password);
+                if (user != null)
+                {
+                    return GenerateJwtToken(user);
+                }
 
-            return new LoginResponseModel();
+                return new LoginResponseModel
+                {
+                    AccessToken = string.Empty,
+                    RefreshToken = string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred during user login", xCorrelationId, ex);
+            }
         }
 
         public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
         {
-            RegistrationResponseModel signupResponse = new();
-            var userExists = await Authenticate(model.Email, model.UserName, model.Password);
-            if (userExists == null)
+            try
             {
-                var user = new User
+                RegistrationResponseModel signupResponse = new();
+
+                // Check if user already exists (without password validation, because new user shouldn't be verified by password)
+                var userExists = await _dbContext.Users
+                    .FirstOrDefaultAsync(u => (u.Email == model.Email || u.UserName == model.UserName) && u.IsActive);
+
+                if (userExists == null)
                 {
-                    Email = model.Email,
-                    UserName = model.UserName,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    MobileNumber = model.MobileNumber,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                    CreatedDate = DateTime.UtcNow,
-                    IsActive = true,
-                    RoleId = model.RoleId
-                };
+                    var user = new User
+                    {
+                        Email = model.Email,
+                        UserName = model.UserName,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        MobileNumber = model.MobileNumber,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                        CreatedDate = DateTime.UtcNow,
+                        IsActive = true,
+                        RoleId = model.RoleId
+                    };
 
-                _dbContext.Users.Add(user);
-                _dbContext.SaveChanges();
+                    _dbContext.Users.Add(user);
+                    await _dbContext.SaveChangesAsync();
 
-                signupResponse.RegisteredId = userExists?.Id.ToString();
-                signupResponse.Message = "User registered successfully";
+                    signupResponse.RegisteredId = user.Id.ToString();
+                    signupResponse.Message = "User registered successfully";
+                }
+                else
+                {
+                    signupResponse.RegisteredId = userExists.Id.ToString();
+                    signupResponse.Message = "User already exists";
+                }
+
+                return signupResponse;
             }
-            else if (userExists != null)
+            catch (Exception ex)
             {
-                signupResponse.RegisteredId = userExists?.Id.ToString();
-                signupResponse.Message = "User already exists";
+                throw new RepositoryException("Error occurred during user registration", xCorrelationId, ex);
             }
-
-            return signupResponse;
         }
 
         private async Task<User> Authenticate(string email, string username, string password)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => (u.Email == email || u.UserName == username) && u.IsActive);
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => (u.Email == email || u.UserName == username) && u.IsActive);
+
             if (user == null) return null;
 
             bool verified = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
@@ -703,10 +860,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
-            };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+        new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
+    };
 
             var accessToken = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
@@ -723,67 +880,60 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:RefreshTokenExpiresInMinutes"])),
                 signingCredentials: creds
             );
-            LoginResponseModel loginResponse = new()
+
+            return new LoginResponseModel
             {
                 AccessToken = new JwtSecurityTokenHandler().WriteToken(accessToken),
                 RefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken)
             };
-
-            return loginResponse;
         }
 
         public async Task<OrderResponseModel> CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
         {
-            try
+            string razorpayOrderId = string.Empty;
+
+            if (orderRequest.PaymentMethod?.ToUpper() == "RAZORPAY")
             {
-                string razorpayOrderId = string.Empty;
+                razorpayOrderId = _externalUtility.RazorPayCreateOrder(orderRequest.TotalAmount, orderRequest.Currency);
+            }
 
-                if (orderRequest.PaymentMethod?.ToUpper() == "RAZORPAY")
-                {
-                    razorpayOrderId = _externalUtility.RazorPayCreateOrder(orderRequest.TotalAmount, orderRequest.Currency);
-                }
+            var order = new Model.EntityModel.Order
+            {
+                Id = Guid.NewGuid(),
+                UserId = orderRequest.UserId,
+                RazorpayOrderId = razorpayOrderId,
+                TotalAmount = orderRequest.TotalAmount,
+                Currency = orderRequest.Currency,
+                Status = orderRequest.Status,
+                CreatedDate = DateTime.UtcNow
+            };
 
-                var order = new Model.EntityModel.Order
+            foreach (var item in orderRequest.Items)
+            {
+                var orderItem = new OrderItem
                 {
                     Id = Guid.NewGuid(),
-                    UserId = orderRequest.UserId,
-                    RazorpayOrderId = razorpayOrderId,
-                    //ReceiptId = orderRequest.ReceiptId,
-                    TotalAmount = orderRequest.TotalAmount,
-                    Currency = orderRequest.Currency,
-                    Status = orderRequest.Status,
+                    OrderId = order.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Price,
                     CreatedDate = DateTime.UtcNow
                 };
 
-                foreach (var item in orderRequest.Items)
-                {
-                    var orderItem = new OrderItem
-                    {
-                        Id = Guid.NewGuid(),
-                        OrderId = order.Id,
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity,
-                        Price = item.Price,
-                        CreatedDate = DateTime.UtcNow
-                    };
-
-                    order.OrderItems.Add(orderItem);
-                }
-
-                _dbContext.Orders.Add(order);
-                await _dbContext.SaveChangesAsync();
-
-                OrderResponseModel orderResponse = new()
-                {
-                    OrderId = order.Id,
-                    RazorpayOrderId = razorpayOrderId
-                };
-                return orderResponse;
+                order.OrderItems.Add(orderItem);
             }
-            catch (Exception ex)
+
+            //Send order placement email
+            string emailResponse = await SendOrderPlacementEmail(xCorrelationId);
+
+            _dbContext.Orders.Add(order);
+            await _dbContext.SaveChangesAsync();
+
+            return new OrderResponseModel
             {
-                return null;
-            }
+                OrderId = order.Id,
+                RazorpayOrderId = razorpayOrderId
+            };
         }
 
         public bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
@@ -813,44 +963,36 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
         {
-            try
-            {
-                var user = await _dbContext.Users
-                    .Include(u => u.Roles)
-                    .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive && !u.IsDeleted);
+            var user = await _dbContext.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive && !u.IsDeleted);
 
-                if (user == null)
-                {
-                    return null;
-                }
-
-                return new UserProfileResponseModel
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    UserName = user.UserName,
-                    Email = user.Email,
-                    MobileNumber = user.MobileNumber,
-                    RoleId = user.RoleId,
-                    RoleName = user.Roles?.Name,
-                    CreatedDate = user.CreatedDate,
-                    ModifiedDate = user.ModifiedDate,
-                    BrandId = user.BrandId,
-                    IsActive = user.IsActive
-                };
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                Console.WriteLine($"Error in GetUserProfile: {ex.Message}");
-                throw;
+                return null; // caller can handle 404
             }
+
+            return new UserProfileResponseModel
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                UserName = user.UserName,
+                Email = user.Email,
+                MobileNumber = user.MobileNumber,
+                RoleId = user.RoleId,
+                RoleName = user.Roles?.Name,
+                CreatedDate = user.CreatedDate,
+                ModifiedDate = user.ModifiedDate,
+                BrandId = user.BrandId,
+                IsActive = user.IsActive
+            };
         }
 
         public RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
         {
-            RefundPaymentResponseModel refundPaymentResponse = _externalUtility.RazorPayRefundPayment(refund.PaymentId, refund.AmountInPaise);
-            //insert into transaction table
+            var refundPaymentResponse = _externalUtility.RazorPayRefundPayment(refund.PaymentId, refund.AmountInPaise);
+
             var transaction = new Transaction
             {
                 Id = Guid.NewGuid(),
@@ -858,12 +1000,13 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 RazorpayOrderId = refund.OrderId,
                 RazorpayPaymentId = refund.PaymentId,
                 Signature = refund.Signature,
-                TotalAmount = (refund.AmountInPaise / 100),
+                TotalAmount = refund.AmountInPaise / 100,
                 Currency = refund.Currency,
                 Status = "Paid",
                 PaymentMethod = refund.PaymentMethod,
                 CreatedDate = DateTime.UtcNow
             };
+
             _dbContext.Transactions.Add(transaction);
             _dbContext.SaveChangesAsync();
 
@@ -872,32 +1015,51 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId)
         {
-            List<CartResponseModel> cartItemList = _dbContext.Carts.Where(x => x.UserId == new Guid(id)).Select(x => new CartResponseModel
+            try
             {
-                Id = x.Id,
-                UserId = x.UserId,
-                ProductId = x.ProductId,
-                BrandId = x.BrandId,
-                Quantity = x.Quantity,
-                CreatedDate = x.CreatedDate,
-                ModifiedDate = x.ModifiedDate
-            }).ToList();
+                List<CartResponseModel> cartItemList = _dbContext.Carts
+                    .Where(x => x.UserId == new Guid(id))
+                    .Select(x => new CartResponseModel
+                    {
+                        Id = x.Id,
+                        UserId = x.UserId,
+                        ProductId = x.ProductId,
+                        BrandId = x.BrandId,
+                        Quantity = x.Quantity,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate
+                    })
+                    .ToList();
 
-            return cartItemList;
+                return cartItemList;
+            }
+            catch (Exception ex)
+            {
+                // Wrap in RepositoryException with context
+                throw new RepositoryException("Error occurred while fetching cart items ", xCorrelationId, ex);
+            }
         }
 
         public string DeleteCartById(string id, string xCorrelationId)
         {
-            var cartItem = _dbContext.Carts.FirstOrDefault(x => x.Id == new Guid(id));
-            if (cartItem == null)
+            try
             {
-                return "Cart item not found or already inactive.";
+                var cartItem = _dbContext.Carts.FirstOrDefault(x => x.Id == new Guid(id));
+                if (cartItem == null)
+                {
+                    return "Cart item not found or already inactive.";
+                }
+
+                _dbContext.Carts.Remove(cartItem);
+                _dbContext.SaveChanges();
+
+                return "Record deleted successfully.";
             }
-
-            _dbContext.Carts.Remove(cartItem);
-            _dbContext.SaveChanges();
-
-            return "Record deleted successfully.";
+            catch (Exception ex)
+            {
+                // Wrap in RepositoryException with context
+                throw new RepositoryException("Error occurred while deleting cart item", xCorrelationId, ex);
+            }
         }
 
         public string SaveOrUpdateCart(CartRequestModel cartRequest, string xCorrelationId)
@@ -937,23 +1099,24 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             try
             {
-                List<CurrencyResponseModel> CurrencyList = _dbContext.Currencies.Where(x => x.IsActive).Select(x => new CurrencyResponseModel
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Code = x.Code,
-                    IsDefault = x.IsDefault,
-                    IsActive = x.IsActive,
-                    IsDeleted = x.IsDeleted,
-                    CreatedDate = x.CreatedDate,
-                    ModifiedDate = x.ModifiedDate
-                }).ToList();
-
-                return CurrencyList;
+                return _dbContext.Currencies
+                    .Where(x => x.IsActive)
+                    .Select(x => new CurrencyResponseModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Code = x.Code,
+                        IsDefault = x.IsDefault,
+                        IsActive = x.IsActive,
+                        IsDeleted = x.IsDeleted,
+                        CreatedDate = x.CreatedDate,
+                        ModifiedDate = x.ModifiedDate
+                    })
+                    .ToList();
             }
             catch (Exception ex)
             {
-                return null;
+                throw new RepositoryException("Error occurred while fetching active currencies.", xCorrelationId, ex);
             }
         }
 
@@ -961,19 +1124,37 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             try
             {
-                List<WeightResponseModel> weightList = _dbContext.Weights.Select(x => new WeightResponseModel
-                {
-                    Id = x.Id,
-                    Value = x.Value,
-                    Unit = x.Unit
-                }).ToList();
-
-                return weightList;
+                return _dbContext.Weights
+                    .Select(x => new WeightResponseModel
+                    {
+                        Id = x.Id,
+                        Value = x.Value,
+                        Unit = x.Unit
+                    })
+                    .ToList();
             }
             catch (Exception ex)
             {
-                return null;
+                throw new RepositoryException("Error occurred while fetching weights.", xCorrelationId, ex);
             }
         }
+
+        private async Task<string> SendOrderPlacementEmail(string xCorrelationId)
+        {
+            try
+            {
+                string to = "hkv1295@gmail.com";
+                string subject = "Your Order Has Shipped!";
+                string body = "Hi there, your order is on its way!";
+
+                await _externalUtility.SendEmailAsync(to, subject, body);
+                return "Email Sent";
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while sending order placement email.", xCorrelationId, ex);
+            }
+        }
+
     }
 }

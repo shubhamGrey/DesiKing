@@ -11,82 +11,91 @@ namespace Agronexis.Api.Controllers
     public class BrandController : BaseController
     {
         private readonly IConfigService _configService;
-        private readonly ILogger<BrandController> _logger;
 
-        public BrandController(IConfigService configService, ILogger<BrandController> logger)
+        public BrandController(IConfigService configService)
         {
             _configService = configService ?? throw new ArgumentNullException(nameof(configService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // GET api/Brand
         [HttpGet]
-        public ActionResult<IEnumerable<BrandResponseModel>> GetBrands()
+        public ActionResult<ApiResponseModel> GetBrands()
         {
-            _logger.LogInformation("GetBrands endpoint called");
+            SetXCorrelationId();
 
-            var correlationId = GetCorrelationId();
-            var itemList = _configService.GetBrands(correlationId);
-            return itemList;
+            var itemList = _configService.GetBrands(XCorrelationID);
+
+            return new ApiResponseModel
+            {
+                Info = new ApiResponseInfoModel
+                {
+                    Code = itemList == null || !itemList.Any()
+                        ? ((int)ServerStatusCodes.NotFound).ToString()
+                        : ((int)ServerStatusCodes.Ok).ToString(),
+                    Message = itemList == null || !itemList.Any()
+                        ? ApiResponseMessage.DATANOTFOUND
+                        : ApiResponseMessage.SUCCESS
+                },
+                Data = itemList
+            };
         }
 
         // GET api/Brand/{id}
         [HttpGet("{id}")]
-        public ActionResult<BrandResponseModel> GetBrandById(string id)
+        public ActionResult<ApiResponseModel> GetBrandById(string id)
         {
-            try
+            SetXCorrelationId();
+
+            if (string.IsNullOrWhiteSpace(id))
             {
-                _logger.LogInformation("GetBrandById endpoint called with ID: {BrandId}", id);
-
-                if (string.IsNullOrWhiteSpace(id))
+                return new ApiResponseModel
                 {
-                    _logger.LogWarning("GetBrandById called with null or empty ID");
-                    return CreateBadRequestResponse("Brand ID is required", GetCorrelationId());
-                }
-
-                var correlationId = GetCorrelationId();
-                var item = _configService.GetBrandById(id, correlationId);
-
-                if (item == null)
-                {
-                    _logger.LogWarning("Brand not found with ID: {BrandId}, correlation ID: {CorrelationId}", id, correlationId);
-                    return CreateNotFoundResponse("Brand not found", correlationId);
-                }
-
-                _logger.LogInformation("Successfully retrieved brand with ID: {BrandId}, correlation ID: {CorrelationId}", id, correlationId);
-                return Ok(item);
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = ((int)ServerStatusCodes.BadRequest).ToString(),
+                        Message = "Brand ID is required"
+                    }
+                };
             }
-            catch (Exception ex)
+
+            var item = _configService.GetBrandById(id, XCorrelationID);
+
+            return new ApiResponseModel
             {
-                var correlationId = GetCorrelationId();
-                _logger.LogError(ex, "Error occurred while retrieving brand with ID: {BrandId}, correlation ID: {CorrelationId}", id, correlationId);
-                return HandleException(ex, "Failed to retrieve brand", correlationId);
-            }
+                Info = new ApiResponseInfoModel
+                {
+                    Code = item == null
+                        ? ((int)ServerStatusCodes.NotFound).ToString()
+                        : ((int)ServerStatusCodes.Ok).ToString(),
+                    Message = item == null
+                        ? ApiResponseMessage.DATANOTFOUND
+                        : ApiResponseMessage.SUCCESS
+                },
+                Data = item
+            };
         }
 
         // POST api/Brand
         [HttpPost]
-        public ActionResult<ApiResponseModel> SaveOrUpdateBrand([FromBody] BrandRequestModel Brand)
+        public ActionResult<ApiResponseModel> SaveOrUpdateBrand([FromBody] BrandRequestModel brand)
         {
             SetXCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
 
-            var item = _configService.SaveOrUpdateBrand(Brand, XCorrelationID);
-            if (item == null)
+            var item = _configService.SaveOrUpdateBrand(brand, XCorrelationID);
+
+            return new ApiResponseModel
             {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
+                Info = new ApiResponseInfoModel
+                {
+                    Code = item == null
+                        ? ((int)ServerStatusCodes.NotFound).ToString()
+                        : ((int)ServerStatusCodes.Ok).ToString(),
+                    Message = item == null
+                        ? ApiResponseMessage.DATANOTFOUND
+                        : ApiResponseMessage.SUCCESS
+                },
+                Data = item
+            };
         }
 
         // DELETE api/Brand/{id}
@@ -94,24 +103,22 @@ namespace Agronexis.Api.Controllers
         public ActionResult<ApiResponseModel> DeleteBrand(string id)
         {
             SetXCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
 
             var item = _configService.DeleteBrandById(id, XCorrelationID);
-            if (item == null)
+
+            return new ApiResponseModel
             {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
+                Info = new ApiResponseInfoModel
+                {
+                    Code = item == null
+                        ? ((int)ServerStatusCodes.NotFound).ToString()
+                        : ((int)ServerStatusCodes.Ok).ToString(),
+                    Message = item == null
+                        ? ApiResponseMessage.DATANOTFOUND
+                        : ApiResponseMessage.SUCCESS
+                },
+                Data = item
+            };
         }
     }
 }

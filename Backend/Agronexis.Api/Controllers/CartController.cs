@@ -1,99 +1,78 @@
-﻿using Agronexis.Business.Configurations;
-using Agronexis.Model.EntityModel;
+﻿using Agronexis.Api.Controllers;
+using Agronexis.Business.Configurations;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using static Agronexis.Common.Constants;
 
-namespace Agronexis.Api.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class CartController : BaseController
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CartController : BaseController
+    private readonly IConfigService _configService;
+    private readonly ILogger<CartController> _logger;
+
+    public CartController(IConfigService configService, ILogger<CartController> logger)
     {
-        private readonly IConfigService _configService;
-        private readonly ILogger<CartController> _logger;
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
-        public CartController(IConfigService configService, ILogger<CartController> logger)
+    [HttpGet("{userId}")]
+    public ActionResult<ApiResponseModel> GetCartItemsByUserId(string userId)
+    {
+        SetXCorrelationId();
+        var item = _configService.GetCartItemsByUserId(userId, XCorrelationID);
+
+        return new ApiResponseModel
         {
-            _configService = configService ?? throw new ArgumentNullException(nameof(configService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+            Info = new ApiResponseInfoModel
+            {
+                IsSuccess = true,
+                Code = ((int)HttpStatusCode.OK).ToString(),
+                Message = ApiResponseMessage.SUCCESS
+            },
+            Data = item,
+            Id = XCorrelationID
+        };
+    }
 
-        // GET api/Cart/{id}
-        [HttpGet("{id}")]
-        public ActionResult<ApiResponseModel> GetCartItemsByUserId(string id)
+    [HttpPost]
+    public ActionResult<ApiResponseModel> SaveOrUpdateCart([FromBody] CartRequestModel cart)
+    {
+        SetXCorrelationId();
+        var item = _configService.SaveOrUpdateCart(cart, XCorrelationID);
+
+        return new ApiResponseModel
         {
-            SetXCorrelationId();
-            ApiResponseModel response = new()
+            Info = new ApiResponseInfoModel
             {
-                Info = new ApiResponseInfoModel()
-            };
+                IsSuccess = true,
+                Code = ((int)HttpStatusCode.OK).ToString(),
+                Message = ApiResponseMessage.SUCCESS
+            },
+            Data = item,
+            Id = XCorrelationID
+        };
+    }
 
-            var item = _configService.GetCartItemsByUserId(id, XCorrelationID);
-            if (item == null)
-            {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
-        }
+    [HttpDelete("{id}")]
+    public ActionResult<ApiResponseModel> DeleteCart(string id)
+    {
+        SetXCorrelationId();
+        var item = _configService.DeleteCartById(id, XCorrelationID);
 
-        // POST api/Cart
-        [HttpPost]
-        public ActionResult<ApiResponseModel> SaveOrUpdateCart([FromBody] CartRequestModel cart)
+        return new ApiResponseModel
         {
-            SetXCorrelationId();
-            ApiResponseModel response = new()
+            Info = new ApiResponseInfoModel
             {
-                Info = new ApiResponseInfoModel()
-            };
-
-            var item = _configService.SaveOrUpdateCart(cart, XCorrelationID);
-            if (item == null)
-            {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
-        }
-
-        // DELETE api/Cart/{id}
-        [HttpDelete("{id}")]
-        public ActionResult<ApiResponseModel> DeleteBrand(string id)
-        {
-            SetXCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel()
-            };
-
-            var item = _configService.DeleteCartById(id, XCorrelationID);
-            if (item == null)
-            {
-                response.Info.Code = ((int)ServerStatusCodes.NotFound).ToString();
-                response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-            }
-            else
-            {
-                response.Info.Code = ((int)ServerStatusCodes.Ok).ToString();
-                response.Info.Message = ApiResponseMessage.SUCCESS;
-                response.Data = item;
-            }
-            return response;
-        }
+                IsSuccess = true,
+                Code = ((int)HttpStatusCode.OK).ToString(),
+                Message = ApiResponseMessage.SUCCESS
+            },
+            Data = item,
+            Id = XCorrelationID
+        };
     }
 }

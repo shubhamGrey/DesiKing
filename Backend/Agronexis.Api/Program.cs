@@ -72,10 +72,10 @@ builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ExternalUtility>();
 
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
-builder.Services.AddTransient<EmailService>();
-builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
-builder.Services.AddTransient<SmsService>();
+//builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+//builder.Services.AddTransient<EmailService>();
+//builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
+//builder.Services.AddTransient<SmsService>();
 
 // Add logging
 builder.Services.AddLogging(logging =>
@@ -153,5 +153,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseMiddleware<RepositoryExceptionHandlerMiddleware>();
 
 app.Run();

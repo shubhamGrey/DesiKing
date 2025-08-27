@@ -4,6 +4,9 @@ using Razorpay.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,11 +16,13 @@ namespace Agronexis.ExternalApi
     {
         private readonly string _key;
         private readonly string _secret;
+        private readonly IConfiguration _configuration;
 
         public ExternalUtility(IConfiguration configuration)
         {
             _key = configuration["Razorpay:Key"];
             _secret = configuration["Razorpay:Secret"];
+            _configuration = configuration;
         }
         public string RazorPayCreateOrder(decimal amount, string currency)
         {
@@ -90,6 +95,44 @@ namespace Agronexis.ExternalApi
             }
 
             return refundPaymentResponseModel;
+        }
+
+        public async Task SendEmailAsync(string toEmail, string subject, string body, bool isHtml = true)
+        {
+            try
+            {
+                var smtpHost = _configuration["SmtpSettings:Server"];
+                var smtpPort = int.Parse(_configuration["SmtpSettings:Port"]);
+                var senderEmail = _configuration["SmtpSettings:SenderEmail"];
+                var senderName = _configuration["SmtpSettings:SenderName"];
+                var username = _configuration["SmtpSettings:Username"];
+                var password = _configuration["SmtpSettings:Password"];
+
+                var client = new SmtpClient(smtpHost, smtpPort)
+                {
+                    Credentials = new NetworkCredential(username, password),
+                    EnableSsl = true
+                };
+                // Force using IPv4
+                client.TargetName = "STARTTLS/smtp.hostinger.com";
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+
+                var message = new MailMessage
+                {
+                    From = new MailAddress(senderEmail, senderName),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = false
+                };
+
+                message.To.Add(toEmail);
+                await client.SendMailAsync(message);
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
     }
 }
