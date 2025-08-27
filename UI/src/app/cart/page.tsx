@@ -29,7 +29,8 @@ import {
   RazorpayPaymentData,
 } from "@/types/razorpay";
 import { createOrder, initializeRazorpayPayment } from "@/utils/razorpayUtils";
-import { useCart } from "@/contexts/CartContext";
+import { useEnhancedCart } from "@/hooks/useEnhancedCart";
+import type { EnhancedCartItem } from "@/contexts/CartContext";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
@@ -46,12 +47,12 @@ const Cart = () => {
   const router = useRouter();
   const {
     items: cartItems,
+    enhancedItems,
     total: subtotal,
     removeItem,
     updateQuantity,
     clearCart,
-    refreshCartFromDatabase,
-  } = useCart();
+  } = useEnhancedCart();
   const [isLoading, setIsLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -162,45 +163,28 @@ const Cart = () => {
   };
 
   useEffect(() => {
-    console.log("🛒 Cart page useEffect called");
-
     // Ensure we're on the client side
     if (typeof window === "undefined") {
-      console.log("⚠️ Cart page - running on server, skipping");
       return;
     }
 
     const userProfileRaw = sessionStorage.getItem("user_profile");
-    console.log("👤 Cart page - user profile:", userProfileRaw);
 
     if (userProfileRaw) {
       try {
         const userProfile = JSON.parse(userProfileRaw);
         const extractedUserId = userProfile?.id;
-        console.log("🆔 Cart page - extracted userId:", extractedUserId);
         setUserId(extractedUserId);
       } catch (error) {
-        console.error("❌ Cart page - error parsing user profile:", error);
         setUserId("");
         // Redirect to login if user profile is invalid
         router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
       }
     } else {
-      console.log("🚫 Cart page - no user profile, redirecting to login");
       // Redirect to login if no user profile exists
       router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
     }
   }, [router]);
-
-  // Separate useEffect for refreshing cart data
-  useEffect(() => {
-    console.log("🔄 Cart refresh useEffect called, userId:", userId);
-
-    if (userId && typeof window !== "undefined") {
-      console.log("✅ Conditions met, calling refreshCartFromDatabase");
-      refreshCartFromDatabase();
-    }
-  }, [userId, refreshCartFromDatabase]);
 
   // Helper function to handle Razorpay orders
   const handleRazorpayOrder = async () => {
@@ -247,10 +231,6 @@ const Cart = () => {
           price: item.price,
         })),
       };
-
-      console.log("Sending order data:", orderData);
-      console.log("User ID:", userId);
-      console.log("Cart items:", cartItems);
 
       const result = await createOrder(orderData, "RAZORPAY");
 
@@ -362,7 +342,7 @@ const Cart = () => {
 
         <Grid container spacing={4}>
           {/* Left Column: Order Details and Shipping */}
-          <Grid size={{ xs: 12, md: 7 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {/* Order Details Card */}
             <Paper
               elevation={0}
@@ -393,166 +373,209 @@ const Cart = () => {
               </Typography>
 
               <Stack spacing={3}>
-                {cartItems.map((item) => (
-                  <Box
-                    key={`cart-item-${item.id}`}
-                    sx={{
-                      display: "flex",
-                      flexDirection: { xs: "column", sm: "row" },
-                      justifyContent: "space-between",
-                      alignItems: { xs: "stretch", sm: "center" },
-                      p: { xs: 2, sm: 2 },
-                      backgroundColor: "white",
-                      borderRadius: 2,
-                      border: "1px solid",
-                      borderColor: "grey.200",
-                      gap: { xs: 2, sm: 0 },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: { xs: 1.5, sm: 2 },
-                        flex: 1,
-                      }}
-                    >
-                      <Image
-                        src={item.image || "/ProductBackground.png"}
-                        alt={item.name || "Product"}
-                        width={isMobile ? 50 : 60}
-                        height={isMobile ? 50 : 60}
-                        unoptimized={shouldUnoptimizeImage(item.image)}
-                        style={{
-                          borderRadius: "8px",
-                          objectFit: "cover",
-                        }}
-                      />
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          fontWeight={500}
-                          sx={{
-                            mb: 0.5,
-                            fontSize: { xs: "0.875rem", sm: "1rem" },
-                            lineHeight: { xs: 1.3, sm: 1.5 },
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {item.name || "Unknown Product"}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                        >
-                          ${item.price?.toFixed(2)} each
-                        </Typography>
-                        {/* Mobile-only total price */}
-                        {isMobile && (
-                          <Typography
-                            fontWeight={600}
-                            color="primary.main"
-                            sx={{ fontSize: "0.875rem", mt: 0.5 }}
-                          >
-                            Total: ${(item.price * item.quantity).toFixed(2)}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
+                {(enhancedItems.length > 0 ? enhancedItems : cartItems).map(
+                  (item) => {
+                    // Use enhanced product details if available
+                    const isEnhanced = "productDetails" in item;
+                    const enhancedItem = isEnhanced
+                      ? (item as EnhancedCartItem)
+                      : null;
+                    const productDetails = enhancedItem?.productDetails;
+                    const displayName =
+                      productDetails?.name || item.name || "Unknown Product";
+                    const displayImage =
+                      productDetails?.thumbnailUrl ||
+                      (productDetails?.imageUrls &&
+                      productDetails.imageUrls.length > 0
+                        ? productDetails.imageUrls[0]
+                        : null) ||
+                      item.image ||
+                      "/ProductBackground.png";
 
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: { xs: 1, sm: 2 },
-                        justifyContent: { xs: "space-between", sm: "flex-end" },
-                        flexWrap: { xs: "wrap", sm: "nowrap" },
-                      }}
-                    >
-                      {/* Quantity Controls */}
+                    // Get price from enhanced product details if available, fallback to cart item price
+                    const displayPrice =
+                      productDetails?.pricesAndSkus &&
+                      productDetails.pricesAndSkus.length > 0
+                        ? productDetails.pricesAndSkus[0].price
+                        : item.price;
+
+                    return (
                       <Box
+                        key={`cart-item-${item.id}`}
                         sx={{
                           display: "flex",
-                          alignItems: "center",
-                          gap: { xs: 0.5, sm: 1 },
+                          flexDirection: { xs: "column", sm: "row" },
+                          justifyContent: "space-between",
+                          alignItems: { xs: "stretch", sm: "center" },
+                          p: { xs: 2, sm: 2 },
+                          backgroundColor: "white",
+                          borderRadius: 2,
                           border: "1px solid",
-                          borderColor: "#84a897",
-                          borderRadius: 1,
-                          p: { xs: 0.25, sm: 0.5 },
-                          minWidth: { xs: "90px", sm: "100px" },
+                          borderColor: "grey.200",
+                          gap: { xs: 2, sm: 0 },
                         }}
                       >
-                        <Button
-                          size="small"
-                          onClick={() =>
-                            handleQuantityUpdate(
-                              item.id,
-                              Math.max(1, item.quantity - 1)
-                            )
-                          }
-                          disabled={item.quantity <= 1}
+                        <Box
                           sx={{
-                            minWidth: { xs: "28px", sm: "32px" },
-                            height: { xs: "28px", sm: "32px" },
-                            p: 0,
-                            color: "text.primary",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: { xs: 1.5, sm: 2 },
+                            flex: 1,
                           }}
                         >
-                          <Remove fontSize={isMobile ? "small" : "small"} />
-                        </Button>
-                        <Typography
-                          sx={{
-                            minWidth: { xs: "20px", sm: "24px" },
-                            textAlign: "center",
-                            fontWeight: 500,
-                            fontSize: { xs: "0.875rem", sm: "1rem" },
-                          }}
-                        >
-                          {item.quantity}
-                        </Typography>
-                        <Button
-                          size="small"
-                          onClick={() =>
-                            handleQuantityUpdate(item.id, item.quantity + 1)
-                          }
-                          sx={{
-                            minWidth: { xs: "28px", sm: "32px" },
-                            height: { xs: "28px", sm: "32px" },
-                            p: 0,
-                            color: "text.primary",
-                          }}
-                        >
-                          <Add fontSize={isMobile ? "small" : "small"} />
-                        </Button>
-                      </Box>
-
-                      {/* Item Total - Desktop only */}
-                      {!isMobile && (
-                        <Box sx={{ textAlign: "right", minWidth: "80px" }}>
-                          <Typography fontWeight={600}>
-                            ${(item.price * item.quantity).toFixed(2)}
-                          </Typography>
+                          <Image
+                            src={displayImage}
+                            alt={displayName}
+                            width={isMobile ? 50 : 60}
+                            height={isMobile ? 50 : 60}
+                            unoptimized={shouldUnoptimizeImage(displayImage)}
+                            style={{
+                              borderRadius: "8px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography
+                              fontWeight={500}
+                              sx={{
+                                mb: 0.5,
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                                lineHeight: { xs: 1.3, sm: 1.5 },
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {displayName}
+                            </Typography>
+                            {/* Show category if available from product details */}
+                            {productDetails?.categoryName && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                  display: "block",
+                                }}
+                              >
+                                {productDetails.categoryName}
+                              </Typography>
+                            )}
+                            {/* Mobile-only total price */}
+                            {isMobile && (
+                              <Typography
+                                fontWeight={600}
+                                color="primary.main"
+                                sx={{ fontSize: "0.875rem", mt: 0.5 }}
+                              >
+                                Total: $
+                                {((displayPrice || 0) * item.quantity).toFixed(
+                                  2
+                                )}
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
-                      )}
 
-                      {/* Remove Button */}
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() => handleItemRemove(item.id)}
-                        sx={{
-                          ml: { xs: 0, sm: 1 },
-                          fontSize: { xs: "0.75rem", sm: "0.75rem" },
-                          textTransform: "none",
-                          minHeight: { xs: "32px", sm: "auto" },
-                          px: { xs: 1.5, sm: 1 },
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </Box>
-                  </Box>
-                ))}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: { xs: 1, sm: 2 },
+                            justifyContent: {
+                              xs: "space-between",
+                              sm: "flex-end",
+                            },
+                            flexWrap: { xs: "wrap", sm: "nowrap" },
+                          }}
+                        >
+                          {/* Quantity Controls */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: { xs: 0.5, sm: 1 },
+                              border: "1px solid",
+                              borderColor: "#84a897",
+                              borderRadius: 1,
+                              p: { xs: 0.25, sm: 0.5 },
+                              minWidth: { xs: "90px", sm: "100px" },
+                            }}
+                          >
+                            <Button
+                              size="small"
+                              onClick={() =>
+                                handleQuantityUpdate(
+                                  item.id,
+                                  Math.max(1, item.quantity - 1)
+                                )
+                              }
+                              disabled={item.quantity <= 1}
+                              sx={{
+                                minWidth: { xs: "28px", sm: "32px" },
+                                height: { xs: "28px", sm: "32px" },
+                                p: 0,
+                                color: "text.primary",
+                              }}
+                            >
+                              <Remove fontSize={isMobile ? "small" : "small"} />
+                            </Button>
+                            <Typography
+                              sx={{
+                                minWidth: { xs: "20px", sm: "24px" },
+                                textAlign: "center",
+                                fontWeight: 500,
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                              }}
+                            >
+                              {item.quantity}
+                            </Typography>
+                            <Button
+                              size="small"
+                              onClick={() =>
+                                handleQuantityUpdate(item.id, item.quantity + 1)
+                              }
+                              sx={{
+                                minWidth: { xs: "28px", sm: "32px" },
+                                height: { xs: "28px", sm: "32px" },
+                                p: 0,
+                                color: "text.primary",
+                              }}
+                            >
+                              <Add fontSize={isMobile ? "small" : "small"} />
+                            </Button>
+                          </Box>
+
+                          {/* Item Total - Desktop only */}
+                          {!isMobile && (
+                            <Box sx={{ textAlign: "right", minWidth: "80px" }}>
+                              <Typography fontWeight={600}>
+                                $
+                                {((displayPrice || 0) * item.quantity).toFixed(
+                                  2
+                                )}
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {/* Remove Button */}
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => handleItemRemove(item.id)}
+                            sx={{
+                              ml: { xs: 0, sm: 1 },
+                              fontSize: { xs: "0.75rem", sm: "0.75rem" },
+                              textTransform: "none",
+                              minHeight: { xs: "32px", sm: "auto" },
+                              px: { xs: 1.5, sm: 1 },
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </Box>
+                      </Box>
+                    );
+                  }
+                )}
               </Stack>
             </Paper>
 
@@ -561,7 +584,6 @@ const Cart = () => {
               elevation={0}
               sx={{
                 p: 4,
-                mb: 4,
                 border: "2px solid",
                 borderColor: "primary.main",
                 borderRadius: 2,
@@ -992,13 +1014,13 @@ const Cart = () => {
           </Grid>
 
           {/* Right Column: Payment Summary */}
-          <Grid size={{ xs: 12, md: 5 }}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper
               elevation={0}
               sx={{
                 p: 4,
-                backgroundColor: "#1a3d2e",
-                color: "white",
+                backgroundColor: "primary.main",
+                color: "primary.contrastText",
                 borderRadius: 2,
                 position: "sticky",
                 top: 20,

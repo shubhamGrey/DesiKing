@@ -22,9 +22,7 @@ export const createOrder = async (
   orderData: OrderCreateRequest,
   paymentMethod: "COD" | "RAZORPAY" = "COD"
 ): Promise<any> => {
-  try {
-    console.log("Creating order with data:", { ...orderData, paymentMethod });
-    
+  try {    
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/Checkout/create-order`,
       {
@@ -39,12 +37,8 @@ export const createOrder = async (
         }),
       }
     );
-
-    console.log("Response status:", response.status);
-    console.log("Response headers:", response.headers);
     
     const result = await response.json();
-    console.log("Response body:", result);
 
     if (!response.ok) {
       console.error("Order creation failed:", result);

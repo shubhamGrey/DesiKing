@@ -55,68 +55,101 @@ const ProductDetails = ({
     setCurrentImage(index);
   };
 
-  const handleAddToCart = () => {
-    console.log("🛒 handleAddToCart called");
-    console.log("🛒 selectedProduct:", selectedProduct);
-    console.log("🛒 selectedQuantity:", selectedQuantity);
+  // Helper function to get selected SKU data
+  const getSelectedSkuData = () => {
+    const selectedSku = selectedProduct?.pricesAndSkus.find(
+      (sku) => sku.weightValue + sku.weightUnit === selectedPacket
+    );
+    return {
+      price: selectedSku?.price || 0,
+      sku: selectedSku?.skuNumber || "",
+      weightValue: selectedSku?.weightValue || "",
+      weightUnit: selectedSku?.weightUnit || "",
+      currencyCode: selectedSku?.currencyCode || "USD",
+    };
+  };
 
+  const handleAddToCart = () => {
     const isLoggedIn = Boolean(Cookies.get("access_token"));
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
 
+    const skuData = getSelectedSkuData();
+
+    // Validate required data
+    if (!selectedProduct.id) {
+      console.error("❌ Product ID is missing");
+      alert("Error: Product information is incomplete");
+      return;
+    }
+
+    if (skuData.price <= 0) {
+      console.error("❌ Product price is invalid:", skuData.price);
+      alert("Error: Product price information is missing");
+      return;
+    }
+
     const cartItemToAdd = {
       id: crypto.randomUUID(), // Generate a proper GUID
-      name: selectedProduct.name,
-      price: 10.99, // Replace with actual price from selectedProduct
+      name: selectedProduct.name || "Unknown Product",
+      price: skuData.price,
       image:
         typeof selectedProduct.imageUrls?.[0] === "string"
           ? selectedProduct.imageUrls[0]
           : "/ProductBackground.png", // Fallback to default product image
-      productId: selectedProduct.id ?? "",
+      productId: selectedProduct.id,
       brandId: selectedProduct.brandId ?? "",
       quantity: selectedQuantity,
+      sku: skuData.sku,
+      maxQuantity: 99, // You can adjust this based on inventory
     };
-
-    console.log("🛒 Cart item to add:", cartItemToAdd);
 
     // Add item to cart
     addItem(cartItemToAdd);
-
-    console.log("✅ addItem called successfully");
   };
 
   const handleBuyNow = () => {
-    console.log("🛒 handleBuyNow called");
-    console.log("🛒 selectedProduct:", selectedProduct);
-    console.log("🛒 selectedQuantity:", selectedQuantity);
-
     const isLoggedIn = Boolean(Cookies.get("access_token"));
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
 
+    const skuData = getSelectedSkuData();
+
+    // Validate required data
+    if (!selectedProduct.id) {
+      console.error("❌ Product ID is missing");
+      alert("Error: Product information is incomplete");
+      return;
+    }
+
+    if (skuData.price <= 0) {
+      console.error("❌ Product price is invalid:", skuData.price);
+      alert("Error: Product price information is missing");
+      return;
+    }
+
     const cartItemToAdd = {
       id: crypto.randomUUID(), // Generate a proper GUID
-      name: selectedProduct.name,
-      price: 10.99, // Replace with actual price from selectedProduct
+      name: selectedProduct.name || "Unknown Product",
+      price: skuData.price,
       image:
         typeof selectedProduct.imageUrls?.[0] === "string"
           ? selectedProduct.imageUrls?.[0]
           : "/ProductBackground.png", // Fallback to default product image
-      productId: selectedProduct.id ?? "",
+      productId: selectedProduct.id,
       brandId: selectedProduct.brandId ?? "",
       quantity: selectedQuantity,
+      sku: skuData.sku,
+      maxQuantity: 99, // You can adjust this based on inventory
     };
-
-    console.log("🛒 Cart item to add (Buy Now):", cartItemToAdd);
 
     // Add to cart and redirect to cart page
     addItem(cartItemToAdd);
 
-    console.log("✅ addItem called successfully, redirecting to cart");
     router.push("/cart");
   };
 
