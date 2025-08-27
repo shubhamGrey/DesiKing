@@ -30,9 +30,9 @@ interface CartState {
 
 type CartAction =
   | {
-    type: "ADD_ITEM";
-    payload: Omit<CartItem, "quantity"> & { quantity?: number };
-  }
+      type: "ADD_ITEM";
+      payload: Omit<CartItem, "quantity"> & { quantity?: number };
+    }
   | { type: "REMOVE_ITEM"; payload: string }
   | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
   | { type: "CLEAR_CART" }
@@ -46,6 +46,7 @@ interface CartContextType extends CartState {
   isInCart: (productId: string) => boolean;
   getItemQuantity: (productId: string) => number;
   syncCartWithDatabase: () => Promise<void>;
+  refreshCartFromDatabase: () => Promise<void>;
 }
 
 // Helper function to save cart item to database
@@ -65,32 +66,55 @@ const saveCartItemToDatabase = async (cartItem: CartItem): Promise<void> => {
       return;
     }
 
+    // Generate a GUID for the cart item if it doesn't have one
+    const cartItemId = cartItem.id || crypto.randomUUID();
+
     const cartRequest = {
-      id: cartItem.id,
+      id: cartItemId,
       userId: userId,
       productId: cartItem.productId,
       brandId: cartItem.brandId,
       quantity: cartItem.quantity,
     };
 
+    console.log("Saving cart item to database:", cartRequest);
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Cart`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Correlation-ID": crypto.randomUUID(),
       },
       body: JSON.stringify(cartRequest),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    console.log("Cart API response status:", response.status);
+    console.log(
+      "Cart API response headers:",
+      Object.fromEntries(response.headers.entries())
+    );
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Cart API error response:", errorText);
+      console.error("Request URL:", `${process.env.NEXT_PUBLIC_API_URL}/Cart`);
+      console.error("Request headers:", {
+        "Content-Type": "application/json",
+        "X-Correlation-ID": crypto.randomUUID(),
+      });
+      console.error("Request body:", JSON.stringify(cartRequest, null, 2));
+      throw new Error(
+        `HTTP error! status: ${response.status}, response: ${errorText}`
+      );
+    }
     const result = await response.json();
+    console.log("Cart API response:", result);
+
     if (result.info?.code !== "200") {
       throw new Error(result.info?.message || "Failed to save cart item");
     }
 
-    console.log("Cart item saved to database successfully");
+    console.log("Cart item saved to database successfully", result.data);
   } catch (error) {
     console.error("Error saving cart item to database:", error);
     // Continue with local storage as fallback
@@ -98,7 +122,9 @@ const saveCartItemToDatabase = async (cartItem: CartItem): Promise<void> => {
 };
 
 // Helper function to delete cart item from database
-const deleteCartItemFromDatabase = async (cartItemId: string): Promise<void> => {
+const deleteCartItemFromDatabase = async (
+  cartItemId: string
+): Promise<void> => {
   try {
     const userProfileRaw = sessionStorage.getItem("user_profile");
     if (!userProfileRaw) {
@@ -106,12 +132,15 @@ const deleteCartItemFromDatabase = async (cartItemId: string): Promise<void> => 
       return;
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Cart/${cartItemId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/Cart/${cartItemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -132,40 +161,73 @@ const deleteCartItemFromDatabase = async (cartItemId: string): Promise<void> => 
 // Helper function to load cart items from database
 const loadCartItemsFromDatabase = async (): Promise<CartItem[]> => {
   try {
+    console.log("🔍 loadCartItemsFromDatabase called");
+
+    // Ensure we're on the client side
+    if (typeof window === "undefined") {
+      console.log(
+        "⚠️ loadCartItemsFromDatabase - running on server, returning empty array"
+      );
+      return [];
+    }
+
     const userProfileRaw = sessionStorage.getItem("user_profile");
+    console.log("👤 User profile from sessionStorage:", userProfileRaw);
+
     if (!userProfileRaw) {
-      console.warn("User not logged in, loading from localStorage");
+      console.warn("⚠️ User not logged in, loading from localStorage");
       return [];
     }
 
     const userProfile = JSON.parse(userProfileRaw);
     const userId = userProfile?.id;
+    console.log("🆔 Extracted userId:", userId);
 
     if (!userId) {
-      console.warn("User ID not found, loading from localStorage");
+      console.warn("⚠️ User ID not found, loading from localStorage");
       return [];
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Cart/${userId}`, {
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/Cart/${userId}`;
+    console.log("🌐 Making API call to:", apiUrl);
+
+    const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
 
+    console.log("📡 API Response status:", response.status);
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error("❌ API Error response:", errorText);
+      throw new Error(
+        `HTTP error! status: ${response.status}, response: ${errorText}`
+      );
     }
 
     const result = await response.json();
+    console.log("📋 API Response result:", result);
+
     if (result.info?.code !== "200") {
       throw new Error(result.info?.message || "Failed to load cart items");
     }
 
-    console.log("Cart items loaded from database successfully");
-    return result.data || [];
+    console.log("✅ Cart items loaded from database successfully");
+
+    // Ensure all cart items have valid image URLs
+    const processedCartItems = (result.data || []).map((item: any) => ({
+      ...item,
+      image: item.image || "/ProductBackground.png", // Fallback for missing images
+      name: item.name || "Unknown Product", // Fallback for missing names
+    }));
+
+    console.log("🔧 Processed cart items:", processedCartItems);
+    return processedCartItems;
   } catch (error) {
-    console.error("Error loading cart items from database:", error);
+    console.error("❌ Error loading cart items from database:", error);
     // Fallback to localStorage
     return [];
   }
@@ -204,12 +266,20 @@ const clearCartInDatabase = async (): Promise<void> => {
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case "ADD_ITEM": {
+      console.log("🛒 ADD_ITEM action triggered");
+      console.log("📦 Action payload:", action.payload);
+      console.log("📋 Current cart state:", state.items);
+
       const existingItem = state.items.find(
         (item) => item.productId === action.payload.productId
       );
       const quantityToAdd = action.payload.quantity ?? 1;
 
+      console.log("🔍 Existing item found:", existingItem);
+      console.log("➕ Quantity to add:", quantityToAdd);
+
       if (existingItem) {
+        console.log("⚡ Updating existing item quantity");
         const newQuantity = existingItem.quantity + quantityToAdd;
         const maxQty = existingItem.maxQuantity ?? 99;
         const updatedQuantity = Math.min(newQuantity, maxQty);
@@ -219,8 +289,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
             : item
         );
 
+        console.log("🔄 Updated items array:", updatedItems);
+
         // Save updated item to database
-        const updatedItem = updatedItems.find(item => item.productId === action.payload.productId);
+        const updatedItem = updatedItems.find(
+          (item) => item.productId === action.payload.productId
+        );
         if (updatedItem) {
           saveCartItemToDatabase(updatedItem);
         }
@@ -232,11 +306,16 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           itemCount: calculateItemCount(updatedItems),
         };
       } else {
+        console.log("✨ Adding new item to cart");
         const newItem: CartItem = {
           ...action.payload,
+          id: action.payload.id || crypto.randomUUID(), // Ensure we have a proper GUID
           quantity: quantityToAdd,
         };
+        console.log("🆕 New item created:", newItem);
+
         const updatedItems = [...state.items, newItem];
+        console.log("📝 Updated items array:", updatedItems);
 
         // Save new item to database
         saveCartItemToDatabase(newItem);
@@ -251,7 +330,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
 
     case "REMOVE_ITEM": {
-      const itemToRemove = state.items.find(item => item.id === action.payload);
+      const itemToRemove = state.items.find(
+        (item) => item.id === action.payload
+      );
 
       // Delete item from database
       if (itemToRemove) {
@@ -280,17 +361,19 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       const updatedItems = state.items.map((item) =>
         item.id === action.payload.id
           ? {
-            ...item,
-            quantity: Math.min(
-              action.payload.quantity,
-              item.maxQuantity ?? 99
-            ),
-          }
+              ...item,
+              quantity: Math.min(
+                action.payload.quantity,
+                item.maxQuantity ?? 99
+              ),
+            }
           : item
       );
 
       // Save updated item to database
-      const updatedItem = updatedItems.find(item => item.id === action.payload.id);
+      const updatedItem = updatedItems.find(
+        (item) => item.id === action.payload.id
+      );
       if (updatedItem) {
         saveCartItemToDatabase(updatedItem);
       }
@@ -374,7 +457,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         const savedCart = localStorage.getItem("agronexis_cart");
         if (savedCart) {
           const cartItems: CartItem[] = JSON.parse(savedCart);
-          dispatch({ type: "LOAD_CART", payload: cartItems });
+          // Ensure all cart items have valid image URLs
+          const processedCartItems = cartItems.map((item) => ({
+            ...item,
+            image: item.image || "/ProductBackground.png", // Fallback for missing images
+            name: item.name || "Unknown Product", // Fallback for missing names
+          }));
+          dispatch({ type: "LOAD_CART", payload: processedCartItems });
         }
       } catch (error) {
         console.error("Error loading cart:", error);
@@ -397,9 +486,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem("agronexis_cart", JSON.stringify(state.items));
+      console.log("💾 Saving cart to localStorage:", state.items);
+      console.log("💾 Cart state.items length:", state.items.length);
+
+      const serializedCart = JSON.stringify(state.items);
+      console.log("💾 Serialized cart data:", serializedCart);
+
+      localStorage.setItem("agronexis_cart", serializedCart);
+
+      // Verify it was saved correctly
+      const savedVerification = localStorage.getItem("agronexis_cart");
+      console.log(
+        "✅ Verification - Cart saved to localStorage:",
+        savedVerification
+      );
     } catch (error) {
-      console.error("Error saving cart to localStorage:", error);
+      console.error("❌ Error saving cart to localStorage:", error);
     }
   }, [state.items]);
 
@@ -453,7 +555,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
           if (existingLocalItem) {
             // Update quantity if item exists locally
-            existingLocalItem.quantity = Math.max(existingLocalItem.quantity, dbItem.quantity);
+            existingLocalItem.quantity = Math.max(
+              existingLocalItem.quantity,
+              dbItem.quantity
+            );
           } else {
             // Add item if it doesn't exist locally
             mergedItems.push(dbItem);
@@ -478,6 +583,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [state.items]);
 
+  const refreshCartFromDatabase = useCallback(async (): Promise<void> => {
+    try {
+      console.log("🔄 refreshCartFromDatabase called");
+      console.log(
+        "📋 Current sessionStorage user_profile:",
+        sessionStorage.getItem("user_profile")
+      );
+
+      const dbCartItems = await loadCartItemsFromDatabase();
+
+      console.log("📦 Database cart items loaded:", dbCartItems);
+
+      if (dbCartItems.length > 0) {
+        console.log("✅ Loading cart items from database:", dbCartItems);
+        dispatch({ type: "LOAD_CART", payload: dbCartItems });
+      } else {
+        console.log("🗑️ No cart items found in database, clearing cart");
+        dispatch({ type: "CLEAR_CART" });
+      }
+    } catch (error) {
+      console.error("❌ Error refreshing cart from database:", error);
+      // On error, keep current cart state but log the issue
+    }
+  }, []);
+
   const contextValue: CartContextType = useMemo(
     () => ({
       ...state,
@@ -488,6 +618,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       isInCart,
       getItemQuantity,
       syncCartWithDatabase,
+      refreshCartFromDatabase,
     }),
     [
       state,
@@ -498,6 +629,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       isInCart,
       getItemQuantity,
       syncCartWithDatabase,
+      refreshCartFromDatabase,
     ]
   );
 

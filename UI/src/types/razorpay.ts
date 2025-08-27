@@ -47,6 +47,7 @@ export interface OrderCreateRequest {
   totalAmount: number;
   currency: string;
   status: string;
+  paymentMethod?: string;
   items: OrderItem[];
 }
 
@@ -61,6 +62,7 @@ export interface PaymentFormData {
   email: string;
   mobile: string;
   address: string;
+  landmark?: string;
   city: string;
   state: string;
   zipCode: string;

@@ -39,7 +39,11 @@ const StyledRating = styled(Rating)({
   },
 });
 
-const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData }) => {
+const ProductDetails = ({
+  selectedProduct,
+}: {
+  selectedProduct: ProductFormData;
+}) => {
   const [selectedQuantity, setSelectedQuantity] = React.useState(1);
   const [selectedPacket, setSelectedPacket] = React.useState("100gm");
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -52,42 +56,67 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
   };
 
   const handleAddToCart = () => {
+    console.log("🛒 handleAddToCart called");
+    console.log("🛒 selectedProduct:", selectedProduct);
+    console.log("🛒 selectedQuantity:", selectedQuantity);
+
     const isLoggedIn = Boolean(Cookies.get("access_token"));
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
 
-    // Add item to cart
-    addItem({
-      id: `${selectedProduct.id}-cart-item`,
+    const cartItemToAdd = {
+      id: crypto.randomUUID(), // Generate a proper GUID
       name: selectedProduct.name,
       price: 10.99, // Replace with actual price from selectedProduct
-      image: typeof selectedProduct.imageUrls?.[0] === "string" ? selectedProduct.imageUrls[0] : "",
+      image:
+        typeof selectedProduct.imageUrls?.[0] === "string"
+          ? selectedProduct.imageUrls[0]
+          : "/ProductBackground.png", // Fallback to default product image
       productId: selectedProduct.id ?? "",
       brandId: selectedProduct.brandId ?? "",
       quantity: selectedQuantity,
-    });
+    };
+
+    console.log("🛒 Cart item to add:", cartItemToAdd);
+
+    // Add item to cart
+    addItem(cartItemToAdd);
+
+    console.log("✅ addItem called successfully");
   };
 
   const handleBuyNow = () => {
+    console.log("🛒 handleBuyNow called");
+    console.log("🛒 selectedProduct:", selectedProduct);
+    console.log("🛒 selectedQuantity:", selectedQuantity);
+
     const isLoggedIn = Boolean(Cookies.get("access_token"));
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
 
-    // Add to cart and redirect to cart page
-    addItem({
-      id: `${selectedProduct.id}-cart-item`,
+    const cartItemToAdd = {
+      id: crypto.randomUUID(), // Generate a proper GUID
       name: selectedProduct.name,
       price: 10.99, // Replace with actual price from selectedProduct
-      image: typeof selectedProduct.imageUrls?.[0] === "string" ? selectedProduct.imageUrls?.[0] : "",
+      image:
+        typeof selectedProduct.imageUrls?.[0] === "string"
+          ? selectedProduct.imageUrls?.[0]
+          : "/ProductBackground.png", // Fallback to default product image
       productId: selectedProduct.id ?? "",
       brandId: selectedProduct.brandId ?? "",
       quantity: selectedQuantity,
-    });
+    };
 
+    console.log("🛒 Cart item to add (Buy Now):", cartItemToAdd);
+
+    // Add to cart and redirect to cart page
+    addItem(cartItemToAdd);
+
+    console.log("✅ addItem called successfully, redirecting to cart");
     router.push("/cart");
   };
 
@@ -110,13 +139,20 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
         >
           <Box sx={{ height: "100%", width: "100%", mb: "80px !important" }}>
             <Image
-              src={typeof selectedProduct?.imageUrls?.[currentImage] === "string" ? selectedProduct?.imageUrls?.[currentImage] : ""}
+              src={
+                typeof selectedProduct?.imageUrls?.[currentImage] === "string"
+                  ? selectedProduct?.imageUrls?.[currentImage]
+                  : ""
+              }
               alt={`Product Image ${currentImage + 1}`}
               height={isMobile ? 300 : 500}
               width={isMobile ? 300 : 500}
               unoptimized={
-                typeof selectedProduct?.imageUrls?.[currentImage] === "string" &&
-                selectedProduct?.imageUrls?.[currentImage].includes("cloud.agronexis.com")
+                typeof selectedProduct?.imageUrls?.[currentImage] ===
+                  "string" &&
+                selectedProduct?.imageUrls?.[currentImage].includes(
+                  "cloud.agronexis.com"
+                )
               }
               style={{
                 borderRadius: 8,
@@ -149,7 +185,10 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
                   alt={`Thumbnail ${index + 1}`}
                   width={60}
                   height={60}
-                  unoptimized={typeof image === "string" && image?.includes("cloud.agronexis.com")}
+                  unoptimized={
+                    typeof image === "string" &&
+                    image?.includes("cloud.agronexis.com")
+                  }
                   style={{ objectFit: "contain" }}
                 />
               </Box>
@@ -208,7 +247,18 @@ const ProductDetails = ({ selectedProduct }: { selectedProduct: ProductFormData 
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="h4" sx={{ color: "primary.main" }}>
-                  {getCurrencySymbol(selectedProduct?.pricesAndSkus.find((sku) => sku.weightValue + sku.weightUnit === selectedPacket)?.currencyCode || "")}{selectedProduct?.pricesAndSkus.find((sku) => sku.weightValue + sku.weightUnit === selectedPacket)?.price}
+                  {getCurrencySymbol(
+                    selectedProduct?.pricesAndSkus.find(
+                      (sku) =>
+                        sku.weightValue + sku.weightUnit === selectedPacket
+                    )?.currencyCode || ""
+                  )}
+                  {
+                    selectedProduct?.pricesAndSkus.find(
+                      (sku) =>
+                        sku.weightValue + sku.weightUnit === selectedPacket
+                    )?.price
+                  }
                 </Typography>
                 <Typography
                   variant="body2"

@@ -213,7 +213,7 @@ const Home: React.FC = () => {
 
       // Add item to cart
       const cartItem = {
-        id: `${product.id}-250g`, // Unique ID with default weight
+        id: crypto.randomUUID(), // Generate a proper GUID
         name: `${product.title} - 250g`,
         price: product.basePrice ?? 149,
         productId: product.id.toString(),
