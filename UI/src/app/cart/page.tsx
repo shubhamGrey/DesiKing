@@ -175,7 +175,7 @@ const Cart = () => {
         const userProfile = JSON.parse(userProfileRaw);
         const extractedUserId = userProfile?.id;
         setUserId(extractedUserId);
-      } catch (error) {
+      } catch {
         setUserId("");
         // Redirect to login if user profile is invalid
         router.push(`/login?redirect=${encodeURIComponent("/cart")}`);

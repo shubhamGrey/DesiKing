@@ -652,11 +652,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     try {
       const serializedCart = JSON.stringify(state.items);
-
       localStorage.setItem("agronexis_cart", serializedCart);
-
-      // Verify it was saved correctly
-      const savedVerification = localStorage.getItem("agronexis_cart");
     } catch (error) {
       console.error("❌ Error saving cart to localStorage:", error);
     }
