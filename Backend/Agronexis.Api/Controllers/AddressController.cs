@@ -8,22 +8,23 @@ using static Agronexis.Common.Constants;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CartController : BaseController
+public class AddressController : BaseController
 {
     private readonly IConfigService _configService;
-    private readonly ILogger<CartController> _logger;
+    private readonly ILogger<AddressController> _logger;
 
-    public CartController(IConfigService configService, ILogger<CartController> logger)
+    public AddressController(IConfigService configService, ILogger<AddressController> logger)
     {
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+
     [HttpGet("{userId}")]
-    public ActionResult<ApiResponseModel> GetCartItemsByUserId(string userId)
+    public ActionResult<ApiResponseModel> GetAddressesByUserId(string userId)
     {
         SetXCorrelationId();
-        var item = _configService.GetCartItemsByUserId(userId, XCorrelationID);
+        var addresses = _configService.GetAddressesByUserId(userId, XCorrelationID);
 
         return new ApiResponseModel
         {
@@ -33,16 +34,16 @@ public class CartController : BaseController
                 Code = ((int)HttpStatusCode.OK).ToString(),
                 Message = ApiResponseMessage.SUCCESS
             },
-            Data = item,
+            Data = addresses,
             Id = XCorrelationID
         };
     }
 
     [HttpPost]
-    public ActionResult<ApiResponseModel> SaveOrUpdateCart([FromBody] CartRequestModel cart)
+    public ActionResult<ApiResponseModel> SaveOrUpdateAddress([FromBody] AddressRequestModel address)
     {
         SetXCorrelationId();
-        var item = _configService.SaveOrUpdateCart(cart, XCorrelationID);
+        var result = _configService.SaveOrUpdateAddress(address, XCorrelationID);
 
         return new ApiResponseModel
         {
@@ -52,16 +53,16 @@ public class CartController : BaseController
                 Code = ((int)HttpStatusCode.OK).ToString(),
                 Message = ApiResponseMessage.SUCCESS
             },
-            Data = item,
+            Data = result,
             Id = XCorrelationID
         };
     }
 
     [HttpDelete("{id}")]
-    public ActionResult<ApiResponseModel> DeleteCart(string id)
+    public ActionResult<ApiResponseModel> DeleteAddressById(string id)
     {
         SetXCorrelationId();
-        var item = _configService.DeleteCartById(id, XCorrelationID);
+        var result = _configService.DeleteAddressById(id, XCorrelationID);
 
         return new ApiResponseModel
         {
@@ -71,7 +72,7 @@ public class CartController : BaseController
                 Code = ((int)HttpStatusCode.OK).ToString(),
                 Message = ApiResponseMessage.SUCCESS
             },
-            Data = item,
+            Data = result,
             Id = XCorrelationID
         };
     }

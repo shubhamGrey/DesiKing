@@ -19,13 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Agronexis.Business\Agronexis.Business.csproj" />
     <ProjectReference Include="..\Agronexis.Common\Agronexis.Common.csproj" />
-    <ProjectReference Include="..\Agronexis.DataAccess\Agronexis.DataAccess.csproj" />
     <ProjectReference Include="..\Agronexis.ExternalApi\Agronexis.ExternalApi.csproj" />
   </ItemGroup>
 

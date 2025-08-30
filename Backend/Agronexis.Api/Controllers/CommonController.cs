@@ -34,5 +34,23 @@ namespace Agronexis.Api.Controllers
             var itemList = _configService.GetWeights(correlationId);
             return itemList;
         }
+
+        // GET api/States
+        [HttpGet("GetStates/{countryCode}")]
+        public async Task<ActionResult<IEnumerable<StateResponseModel>>> GetStatesAsync(string countryCode)
+        {
+            var correlationId = GetCorrelationId();
+            var itemList = await _configService.GetStates(countryCode, correlationId);
+            return itemList;
+        }
+
+        // GET api/Countries
+        [HttpGet("GetCountries")]
+        public async Task<ActionResult<IEnumerable<CountryResponseModel>>> GetCountriesAsync()
+        {
+            var correlationId = GetCorrelationId();
+            var itemList = await _configService.GetCountries(correlationId);
+            return itemList;
+        }
     }
 }
