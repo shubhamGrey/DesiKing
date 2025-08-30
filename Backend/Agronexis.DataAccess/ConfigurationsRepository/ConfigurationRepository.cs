@@ -1226,6 +1226,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     existingAddress.FullName = request.FullName;
                     existingAddress.PhoneNumber = request.PhoneNumber;
                     existingAddress.AddressLine = request.AddressLine;
+                    existingAddress.LandMark = request.LandMark;
                     existingAddress.City = request.City;
                     existingAddress.PinCode = request.PinCode;
                     existingAddress.StateCode = request.StateCode;
