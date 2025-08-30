@@ -19,6 +19,7 @@ namespace Agronexis.Model.EntityModel
         public string? PhoneNumber { get; set; }
         public string? AddressLine { get; set; }
         public string? City { get; set; }
+        public string? LandMark { get; set; }
         public string? PinCode { get; set; }
         public string? StateCode { get; set; }
         public string? CountryCode { get; set; }
