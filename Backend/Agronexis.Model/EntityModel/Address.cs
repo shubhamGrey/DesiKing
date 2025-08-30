@@ -8,28 +8,25 @@ using System.Threading.Tasks;
 
 namespace Agronexis.Model.EntityModel
 {
-    [Table("ShippingAddress", Schema = "dbo")]
-    public class ShippingAddress
+    [Table("Address", Schema = "dbo")]
+    public class Address
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public string? FullName { get; set; } = "";
-        public string? PhoneNumber { get; set; } = "";
-        public string? AddressLine1 { get; set; } = "";
-        public string? AddressLine2 { get; set; } = "";
-        public string? City { get; set; } = "";
-        public string? ZipCode { get; set; } = "";
-        public Guid BrandId { get; set; }
+        public string? FullName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? AddressLine { get; set; }
+        public string? City { get; set; }
+        public string? PinCode { get; set; }
+        public string? StateCode { get; set; }
+        public string? CountryCode { get; set; }
+        public string? AddressType { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
-        [StringLength(10)]
-        public string? StateCode { get; set; }
-        [StringLength(5)]
-        public string? CountryCode { get; set; }
         [ForeignKey(nameof(StateCode))]
         public StateMaster? State { get; set; }
         [ForeignKey(nameof(CountryCode))]

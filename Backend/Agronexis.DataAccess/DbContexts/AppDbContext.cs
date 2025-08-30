@@ -21,7 +21,7 @@ namespace Agronexis.DataAccess.DbContexts
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
-        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
+        public DbSet<Address> Addresses { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Cart> Carts { get; set; }
@@ -31,5 +31,7 @@ namespace Agronexis.DataAccess.DbContexts
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<ProductPrice> ProductPrices { get; set; }
         public DbSet<Weight> Weights { get; set; }
+        public DbSet<StateMaster> StateMasters { get; set; }
+        public DbSet<CountryMaster> CountryMasters { get; set; }
     }
 }

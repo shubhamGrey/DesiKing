@@ -38,5 +38,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         string SaveOrUpdateCart(CartRequestModel role, string xCorrelationId);
         List<CurrencyResponseModel> GetCurrencies(string xCorrelationId);
         List<WeightResponseModel> GetWeights(string xCorrelationId);
+        Task<List<StateResponseModel>> GetStates(string countryCode, string xCorrelationId);
+        Task<List<CountryResponseModel>> GetCountries(string xCorrelationId);
+        List<AddressResponseModel> GetAddressesByUserId(string userId, string correlationId);
+        string SaveOrUpdateAddress(AddressRequestModel address, string correlationId);
+        string DeleteAddressById(string id, string correlationId);
     }
 }
