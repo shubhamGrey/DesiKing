@@ -15,6 +15,7 @@ import {
 import { CheckCircle, ErrorOutline, Home, Receipt } from "@mui/icons-material";
 import { michroma } from "@/styles/fonts";
 import { verifyPayment } from "@/utils/razorpayUtils";
+import { getCurrencySymbol } from "@/utils/currencyUtils";
 
 interface PaymentResultData {
   status: "success" | "failed";
@@ -261,7 +262,10 @@ const PaymentResultContent: React.FC = () => {
                     sx={{ mb: 1 }}
                   >
                     Amount:{" "}
-                    <strong>₹{paymentData.totalAmount.toFixed(2)}</strong>
+                    <strong>
+                      {getCurrencySymbol(paymentData.currency ?? "INR")}
+                      {paymentData.totalAmount.toFixed(2)}
+                    </strong>
                   </Typography>
                 )}
                 {paymentData?.paymentMethod && (

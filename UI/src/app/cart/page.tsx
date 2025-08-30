@@ -31,6 +31,7 @@ import {
 import { createOrder, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useEnhancedCart } from "@/hooks/useEnhancedCart";
 import type { EnhancedCartItem } from "@/contexts/CartContext";
+import { getCurrencySymbol } from "@/utils/currencyUtils";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
@@ -89,11 +90,11 @@ const Cart = () => {
   );
   const [userId, setUserId] = useState<string>("");
   const [useDifferentBilling, setUseDifferentBilling] = useState(false);
+  const [displayCurrency, setDisplayCurrency] = useState<string>("INR");
 
   // Calculate totals
-  const discountAmount = 56.85; // WelcomeHome20 discount
-  const taxes = 14.21;
-  const orderTotal = subtotal - discountAmount + taxes;
+  const taxes = subtotal * 0.05; // 5% of subtotal
+  const orderTotal = subtotal + taxes;
 
   // Validate form data
   const validateForm = (): boolean => {
@@ -102,9 +103,6 @@ const Cart = () => {
 
     // Validate shipping address
     if (!formData.name.trim()) errors.name = "Full name is required";
-    if (!formData.email.trim()) errors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      errors.email = "Email is invalid";
     if (!formData.mobile.trim()) errors.mobile = "Mobile number is required";
     else if (!/^[6-9]\d{9}$/.test(formData.mobile))
       errors.mobile = "Mobile number must be 10 digits starting with 6-9";
@@ -118,9 +116,6 @@ const Cart = () => {
     // Validate billing address if different billing is enabled
     if (useDifferentBilling) {
       if (!billingData.name.trim()) billingErrs.name = "Full name is required";
-      if (!billingData.email.trim()) billingErrs.email = "Email is required";
-      else if (!/\S+@\S+\.\S+/.test(billingData.email))
-        billingErrs.email = "Email is invalid";
       if (!billingData.mobile.trim())
         billingErrs.mobile = "Mobile number is required";
       else if (!/^[6-9]\d{9}$/.test(billingData.mobile))
@@ -185,6 +180,26 @@ const Cart = () => {
       router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
     }
   }, [router]);
+
+  // Update displayCurrency based on enhanced items
+  useEffect(() => {
+    if (enhancedItems.length > 0) {
+      const firstItemWithPricing = enhancedItems.find(
+        (item) =>
+          "productDetails" in item &&
+          item.productDetails?.pricesAndSkus &&
+          item.productDetails.pricesAndSkus.length > 0
+      );
+
+      if (firstItemWithPricing && "productDetails" in firstItemWithPricing) {
+        const currency =
+          firstItemWithPricing.productDetails?.pricesAndSkus?.[0]?.currencyCode;
+        if (currency && currency !== displayCurrency) {
+          setDisplayCurrency(currency);
+        }
+      }
+    }
+  }, [enhancedItems, displayCurrency]);
 
   // Helper function to handle Razorpay orders
   const handleRazorpayOrder = async () => {
@@ -326,7 +341,7 @@ const Cart = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ pb: 4, pt: 8 }}>
       <Box>
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
@@ -466,7 +481,7 @@ const Cart = () => {
                                 color="primary.main"
                                 sx={{ fontSize: "0.875rem", mt: 0.5 }}
                               >
-                                Total: $
+                                Total: {getCurrencySymbol(displayCurrency)}
                                 {((displayPrice || 0) * item.quantity).toFixed(
                                   2
                                 )}
@@ -548,7 +563,7 @@ const Cart = () => {
                           {!isMobile && (
                             <Box sx={{ textAlign: "right", minWidth: "80px" }}>
                               <Typography fontWeight={600}>
-                                $
+                                {getCurrencySymbol(displayCurrency)}
                                 {((displayPrice || 0) * item.quantity).toFixed(
                                   2
                                 )}
@@ -604,7 +619,7 @@ const Cart = () => {
                 sx={{ mb: 3 }}
                 fontFamily={michroma.style.fontFamily}
               >
-                Shipping details
+                Shipping Address
               </Typography>
 
               <Grid container spacing={2}>
@@ -644,24 +659,6 @@ const Cart = () => {
                       pattern: "[0-9]*",
                       inputMode: "numeric",
                     }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Email Address"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    error={!!formErrors.email}
-                    helperText={formErrors.email}
-                    type="email"
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         backgroundColor: "white",
@@ -812,28 +809,15 @@ const Cart = () => {
                     },
                   }}
                 >
-                  <Stack
-                    direction="row"
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    color="primary.main"
+                    fontFamily={michroma.style.fontFamily}
                     sx={{ mb: 3 }}
-                    justifyContent="space-between"
                   >
-                    <Typography
-                      variant="h6"
-                      fontWeight={600}
-                      color="primary.main"
-                      fontFamily={michroma.style.fontFamily}
-                    >
-                      Billing Address
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => setBillingData(formData)}
-                      sx={{ mb: 2 }}
-                    >
-                      Copy from shipping address
-                    </Button>
-                  </Stack>
+                    Billing Address
+                  </Typography>
 
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -876,26 +860,6 @@ const Cart = () => {
                           pattern: "[0-9]*",
                           inputMode: "numeric",
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Email Address"
-                        value={billingData.email}
-                        onChange={(e) =>
-                          handleBillingInputChange("email", e.target.value)
-                        }
-                        error={!!billingErrors.email}
-                        helperText={billingErrors.email}
-                        type="email"
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             backgroundColor: "white",
@@ -1045,25 +1009,17 @@ const Cart = () => {
                   color="white"
                   sx={{ mb: 1 }}
                 >
-                  ${orderTotal.toFixed(2)}
+                  {getCurrencySymbol(displayCurrency)}
+                  {orderTotal.toFixed(2)}
                 </Typography>
               </Box>
 
               <Stack spacing={2} sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography color="#84a897">Subtotal</Typography>
-                  <Typography>${subtotal.toFixed(2)}</Typography>
-                </Box>
-
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Box>
-                    <Typography color="#84a897">Discounts</Typography>
-                    <Typography variant="body2" color="grey.400">
-                      WelcomeHome20 applied!
-                    </Typography>
-                  </Box>
-                  <Typography color="#4caf50">
-                    -${discountAmount.toFixed(2)}
+                  <Typography>
+                    {getCurrencySymbol(displayCurrency)}
+                    {subtotal.toFixed(2)}
                   </Typography>
                 </Box>
 
@@ -1074,7 +1030,10 @@ const Cart = () => {
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography color="#84a897">Taxes</Typography>
-                  <Typography>${taxes.toFixed(2)}</Typography>
+                  <Typography>
+                    {getCurrencySymbol(displayCurrency)}
+                    {taxes.toFixed(2)}
+                  </Typography>
                 </Box>
 
                 <Divider sx={{ borderColor: "grey.600" }} />
@@ -1087,7 +1046,10 @@ const Cart = () => {
                   }}
                 >
                   <Typography>Order Total</Typography>
-                  <Typography>${orderTotal.toFixed(2)}</Typography>
+                  <Typography>
+                    {getCurrencySymbol(displayCurrency)}
+                    {orderTotal.toFixed(2)}
+                  </Typography>
                 </Box>
               </Stack>
 

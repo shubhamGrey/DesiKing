@@ -30,6 +30,7 @@ export interface EnhancedCartItem extends CartItem {
     thumbnailUrl?: string;
     pricesAndSkus: Array<{
       id: string;
+      currencyCode: string;
       price: number;
       isDiscounted: boolean;
       discountPercentage: number;

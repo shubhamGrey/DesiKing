@@ -17,7 +17,7 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { useCart } from "@/contexts/CartContext";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { getCurrencySymbol } from "@/utils/getCurrencySymbol";
+import { getCurrencySymbol } from "@/utils/currencyUtils";
 
 import { ProductFormData } from "@/types/product";
 
