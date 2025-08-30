@@ -18,37 +18,12 @@ namespace Agronexis.Business.Configurations
 
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
-            try
-            {
-                _logger.LogInformation("Getting products for correlation ID: {CorrelationId}", xCorrelationId);
-                var result = _repository.GetProducts(xCorrelationId);
-                _logger.LogInformation("Successfully retrieved {Count} products for correlation ID: {CorrelationId}", result?.Count ?? 0, xCorrelationId);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting products for correlation ID: {CorrelationId}", xCorrelationId);
-                throw;
-            }
+            return _repository.GetProducts(xCorrelationId);
         }
 
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(id))
-                    throw new ArgumentException("Product ID cannot be null or empty", nameof(id));
-
-                _logger.LogInformation("Getting product by ID: {Id} for correlation ID: {CorrelationId}", id, xCorrelationId);
-                var result = _repository.GetProductById(id, xCorrelationId);
-                _logger.LogInformation("Successfully retrieved product by ID: {Id} for correlation ID: {CorrelationId}", id, xCorrelationId);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting product by ID: {Id} for correlation ID: {CorrelationId}", id, xCorrelationId);
-                throw;
-            }
+            return _repository.GetProductById(id, xCorrelationId);
         }
 
         public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
@@ -144,18 +119,7 @@ namespace Agronexis.Business.Configurations
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
         {
-            try
-            {
-                _logger.LogInformation("Getting user profile for user ID: {UserId}, correlation ID: {CorrelationId}", userId, xCorrelationId);
-                var result = await _repository.GetUserProfile(userId, xCorrelationId);
-                _logger.LogInformation("Successfully retrieved user profile for user ID: {UserId}, correlation ID: {CorrelationId}", userId, xCorrelationId);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting user profile for user ID: {UserId}, correlation ID: {CorrelationId}", userId, xCorrelationId);
-                throw;
-            }
+            return await _repository.GetUserProfile(userId, xCorrelationId);
         }
 
         public RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
@@ -181,6 +145,28 @@ namespace Agronexis.Business.Configurations
         public List<WeightResponseModel> GetWeights(string xCorrelationId)
         {
             return _repository.GetWeights(xCorrelationId);
+        }
+        public Task<List<StateResponseModel>> GetStates(string countryCode, string xCorrelationId)
+        {
+            return _repository.GetStates(countryCode, xCorrelationId);
+        }
+        public Task<List<CountryResponseModel>> GetCountries(string xCorrelationId)
+        {
+            return _repository.GetCountries(xCorrelationId);
+        }
+        public List<AddressResponseModel> GetAddressesByUserId(string userId, string xCorrelationId)
+        {
+            return _repository.GetAddressesByUserId(userId, xCorrelationId);
+        }
+
+        public string SaveOrUpdateAddress(AddressRequestModel address, string xCorrelationId)
+        {
+            return _repository.SaveOrUpdateAddress(address, xCorrelationId);
+        }
+
+        public string DeleteAddressById(string id, string xCorrelationId)
+        {
+            return _repository.DeleteAddressById(id, xCorrelationId);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250830095131_ShippingChanges")]
+    partial class ShippingChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,60 +24,6 @@ namespace Agronexis.DataAccess.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Agronexis.Model.EntityModel.Address", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AddressLine")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AddressType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("City")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CountryCode")
-                        .HasColumnType("character varying(5)");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PinCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StateCode")
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountryCode");
-
-                    b.HasIndex("StateCode");
-
-                    b.ToTable("Address", "dbo");
-                });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Brand", b =>
                 {
@@ -552,6 +501,65 @@ namespace Agronexis.DataAccess.Migrations
                     b.ToTable("Role", "dbo");
                 });
 
+            modelBuilder.Entity("Agronexis.Model.EntityModel.ShippingAddress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressLine1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AddressLine2")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("BrandId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CountryCode")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StateCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ZipCode")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryCode");
+
+                    b.HasIndex("StateCode");
+
+                    b.ToTable("ShippingAddress", "dbo");
+                });
+
             modelBuilder.Entity("Agronexis.Model.EntityModel.StateMaster", b =>
                 {
                     b.Property<string>("StateCode")
@@ -685,21 +693,6 @@ namespace Agronexis.DataAccess.Migrations
                     b.ToTable("Weight", "dbo");
                 });
 
-            modelBuilder.Entity("Agronexis.Model.EntityModel.Address", b =>
-                {
-                    b.HasOne("Agronexis.Model.EntityModel.CountryMaster", "Country")
-                        .WithMany()
-                        .HasForeignKey("CountryCode");
-
-                    b.HasOne("Agronexis.Model.EntityModel.StateMaster", "State")
-                        .WithMany()
-                        .HasForeignKey("StateCode");
-
-                    b.Navigation("Country");
-
-                    b.Navigation("State");
-                });
-
             modelBuilder.Entity("Agronexis.Model.EntityModel.Inventory", b =>
                 {
                     b.HasOne("Agronexis.Model.EntityModel.Product", "Product")
@@ -758,6 +751,21 @@ namespace Agronexis.DataAccess.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Weight");
+                });
+
+            modelBuilder.Entity("Agronexis.Model.EntityModel.ShippingAddress", b =>
+                {
+                    b.HasOne("Agronexis.Model.EntityModel.CountryMaster", "Country")
+                        .WithMany()
+                        .HasForeignKey("CountryCode");
+
+                    b.HasOne("Agronexis.Model.EntityModel.StateMaster", "State")
+                        .WithMany()
+                        .HasForeignKey("StateCode");
+
+                    b.Navigation("Country");
+
+                    b.Navigation("State");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.StateMaster", b =>
