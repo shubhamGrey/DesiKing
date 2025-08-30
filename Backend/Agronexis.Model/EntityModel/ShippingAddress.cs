@@ -15,17 +15,24 @@ namespace Agronexis.Model.EntityModel
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public Guid OrderId { get; set; }
         public string? FullName { get; set; } = "";
         public string? PhoneNumber { get; set; } = "";
         public string? AddressLine1 { get; set; } = "";
         public string? AddressLine2 { get; set; } = "";
         public string? City { get; set; } = "";
-        public string? State { get; set; } = "";
         public string? ZipCode { get; set; } = "";
-        public string? Country { get; set; } = "";
         public Guid BrandId { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        [StringLength(10)]
+        public string? StateCode { get; set; }
+        [StringLength(5)]
+        public string? CountryCode { get; set; }
+        [ForeignKey(nameof(StateCode))]
+        public StateMaster? State { get; set; }
+        [ForeignKey(nameof(CountryCode))]
+        public CountryMaster? Country { get; set; }
     }
 }
