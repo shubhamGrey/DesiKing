@@ -43,7 +43,6 @@ import { useEnhancedCart } from "@/hooks/useEnhancedCart";
 import type { EnhancedCartItem } from "@/contexts/CartContext";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import AddressManager, { AddressResponse } from "@/components/AddressManager";
-import { Ribeye } from "next/font/google";
 
 // API response interfaces for dropdowns
 interface CountryResponse {
