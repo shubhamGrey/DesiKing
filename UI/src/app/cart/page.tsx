@@ -16,6 +16,16 @@ import {
   Paper,
   FormControlLabel,
   Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  CircularProgress,
 } from "@mui/material";
 import { Security, Add, Remove } from "@mui/icons-material";
 import Image from "next/image";
@@ -32,6 +42,33 @@ import { createOrder, initializeRazorpayPayment } from "@/utils/razorpayUtils";
 import { useEnhancedCart } from "@/hooks/useEnhancedCart";
 import type { EnhancedCartItem } from "@/contexts/CartContext";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
+import AddressManager, { AddressResponse } from "@/components/AddressManager";
+import { Ribeye } from "next/font/google";
+
+// API response interfaces for dropdowns
+interface CountryResponse {
+  countryName: string;
+  countryCode: string;
+}
+
+interface StateResponse {
+  stateName: string;
+  stateCode: string;
+  countryCode: string;
+}
+
+// Local AddressFormData interface (previously imported from AddressForm)
+interface AddressFormData {
+  fullName: string;
+  phoneNumber: string;
+  addressLine: string;
+  landMark?: string;
+  city: string;
+  pinCode: string;
+  stateCode: string;
+  countryCode: string;
+  addressType: "SHIPPING" | "BILLING";
+}
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
@@ -62,7 +99,9 @@ const Cart = () => {
   );
 
   // Form data state
-  const [formData, setFormData] = useState<PaymentFormData>({
+  const [formData, setFormData] = useState<
+    PaymentFormData & { country: string }
+  >({
     name: "",
     email: "",
     mobile: "",
@@ -71,9 +110,12 @@ const Cart = () => {
     city: "",
     state: "",
     zipCode: "",
+    country: "IN", // Default to India
   });
 
-  const [billingData, setBillingData] = useState<PaymentFormData>({
+  const [billingData, setBillingData] = useState<
+    PaymentFormData & { country: string }
+  >({
     name: "",
     email: "",
     mobile: "",
@@ -82,53 +124,278 @@ const Cart = () => {
     city: "",
     state: "",
     zipCode: "",
+    country: "IN", // Default to India
   });
 
-  const [formErrors, setFormErrors] = useState<Partial<PaymentFormData>>({});
-  const [billingErrors, setBillingErrors] = useState<Partial<PaymentFormData>>(
-    {}
-  );
+  const [formErrors, setFormErrors] = useState<
+    Partial<PaymentFormData & { country: string }>
+  >({});
+  const [billingErrors, setBillingErrors] = useState<
+    Partial<PaymentFormData & { country: string }>
+  >({});
   const [userId, setUserId] = useState<string>("");
   const [useDifferentBilling, setUseDifferentBilling] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState<string>("INR");
+
+  // Address management states for shipping
+  const [showAddressManager, setShowAddressManager] = useState(false);
+  const [selectedAddress, setSelectedAddress] =
+    useState<AddressResponse | null>(null);
+  const [useManualAddress, setUseManualAddress] = useState(true); // Default to manual
+
+  // Address management states for billing
+  const [showBillingAddressManager, setShowBillingAddressManager] =
+    useState(false);
+  const [selectedBillingAddress, setSelectedBillingAddress] =
+    useState<AddressResponse | null>(null);
+  const [useManualBillingAddress, setUseManualBillingAddress] = useState(true);
+
+  // Dropdown data states
+  const [countries, setCountries] = useState<CountryResponse[]>([]);
+  const [states, setStates] = useState<StateResponse[]>([]);
+  const [billingStates, setBillingStates] = useState<StateResponse[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingBillingStates, setLoadingBillingStates] = useState(false); // Default to manual
+  const [isProcessing, setIsProcessing] = useState(false); // For save address operations
 
   // Calculate totals
   const taxes = subtotal * 0.05; // 5% of subtotal
   const orderTotal = subtotal + taxes;
 
-  // Validate form data
-  const validateForm = (): boolean => {
-    const errors: Partial<PaymentFormData> = {};
-    const billingErrs: Partial<PaymentFormData> = {};
+  // Helper function to save address
+  const saveAddress = async (addressData: AddressFormData): Promise<string> => {
+    try {
+      const payload = {
+        id: "00000000-0000-0000-0000-000000000000",
+        userId: userId,
+        fullName: addressData.fullName,
+        phoneNumber: addressData.phoneNumber,
+        addressLine: addressData.addressLine,
+        landMark: addressData.landMark || "",
+        city: addressData.city,
+        pinCode: addressData.pinCode,
+        stateCode: addressData.stateCode,
+        countryCode: addressData.countryCode,
+        addressType: addressData.addressType,
+        isActive: true,
+        isDeleted: false,
+      };
 
-    // Validate shipping address
+      console.log("🚀 Saving address:", payload);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/address`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Address save API error:", errorText);
+        throw new Error(
+          `HTTP error! status: ${response.status}, response: ${errorText}`
+        );
+      }
+
+      const result: any = await response.json();
+
+      if (result.info?.code !== "200") {
+        throw new Error(result.info?.message || "Failed to save address");
+      }
+
+      console.log("✅ Address saved successfully:", result.data);
+      return result.data;
+    } catch (error) {
+      console.error("❌ Error saving address:", error);
+      throw error;
+    }
+  };
+
+  // Helper function to format form data to AddressFormData
+  const formatAddressData = (
+    formData: any,
+    addressType: "SHIPPING" | "BILLING"
+  ): AddressFormData => {
+    return {
+      fullName: formData.name || "",
+      phoneNumber: formData.mobile || "",
+      addressLine: formData.address || "",
+      landMark: formData.landmark || "",
+      city: formData.city || "",
+      pinCode: formData.zipCode || "",
+      stateCode: formData.state || "",
+      countryCode: formData.country || "IN",
+      addressType,
+    };
+  };
+
+  // Handle address selection from existing addresses
+  const handleAddressSelect = (address: AddressResponse) => {
+    setSelectedAddress(address);
+    setUseManualAddress(false);
+    setShowAddressManager(false);
+  };
+
+  // Handle billing address selection from existing addresses
+  const handleBillingAddressSelect = (address: AddressResponse) => {
+    setSelectedBillingAddress(address);
+    setUseManualBillingAddress(false);
+    setShowBillingAddressManager(false);
+  };
+
+  // Validate shipping address only
+  const validateShippingAddress = (): boolean => {
+    const errors: Partial<PaymentFormData & { country: string }> = {};
+
     if (!formData.name.trim()) errors.name = "Full name is required";
     if (!formData.mobile.trim()) errors.mobile = "Mobile number is required";
     else if (!/^[6-9]\d{9}$/.test(formData.mobile))
       errors.mobile = "Mobile number must be 10 digits starting with 6-9";
     if (!formData.address.trim()) errors.address = "Address is required";
     if (!formData.city.trim()) errors.city = "City is required";
+    if (!formData.country.trim()) errors.country = "Country is required";
     if (!formData.state.trim()) errors.state = "State is required";
     if (!formData.zipCode.trim()) errors.zipCode = "Pincode is required";
     else if (!/^\d{6}$/.test(formData.zipCode))
       errors.zipCode = "Pincode must be 6 digits";
 
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Validate billing address only
+  const validateBillingAddress = (): boolean => {
+    const billingErrs: Partial<PaymentFormData & { country: string }> = {};
+
+    if (!billingData.name.trim()) billingErrs.name = "Full name is required";
+    if (!billingData.mobile.trim())
+      billingErrs.mobile = "Mobile number is required";
+    else if (!/^[6-9]\d{9}$/.test(billingData.mobile))
+      billingErrs.mobile = "Mobile number must be 10 digits starting with 6-9";
+    if (!billingData.address.trim())
+      billingErrs.address = "Address is required";
+    if (!billingData.city.trim()) billingErrs.city = "City is required";
+    if (!billingData.country.trim())
+      billingErrs.country = "Country is required";
+    if (!billingData.state.trim()) billingErrs.state = "State is required";
+    if (!billingData.zipCode.trim())
+      billingErrs.zipCode = "Pincode is required";
+    else if (!/^\d{6}$/.test(billingData.zipCode))
+      billingErrs.zipCode = "Pincode must be 6 digits";
+
+    setBillingErrors(billingErrs);
+    return Object.keys(billingErrs).length === 0;
+  };
+
+  // Handle save shipping address
+  const handleSaveShippingAddress = async () => {
+    if (!validateShippingAddress()) {
+      setAlertMessage("Please fill in all required fields correctly.");
+      setAlertSeverity("error");
+      setShowAlert(true);
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const shippingAddress = formatAddressData(formData, "SHIPPING");
+      await saveAddress(shippingAddress);
+      setAlertMessage("Shipping address saved successfully!");
+      setAlertSeverity("success");
+      setShowAlert(true);
+    } catch (error: any) {
+      setAlertMessage(
+        `Failed to save shipping address: ${
+          error.message || "Please try again."
+        }`
+      );
+      setAlertSeverity("error");
+      setShowAlert(true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle save billing address
+  const handleSaveBillingAddress = async () => {
+    if (!validateBillingAddress()) {
+      setAlertMessage("Please fill in all required fields correctly.");
+      setAlertSeverity("error");
+      setShowAlert(true);
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const billingAddress = formatAddressData(billingData, "BILLING");
+      await saveAddress(billingAddress);
+      setAlertMessage("Billing address saved successfully!");
+      setAlertSeverity("success");
+      setShowAlert(true);
+    } catch (error: any) {
+      setAlertMessage(
+        `Failed to save billing address: ${
+          error.message || "Please try again."
+        }`
+      );
+      setAlertSeverity("error");
+      setShowAlert(true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Validate form data
+  const validateForm = (): boolean => {
+    const errors: Partial<PaymentFormData & { country: string }> = {};
+    const billingErrs: Partial<PaymentFormData & { country: string }> = {};
+
+    // Validate shipping address - either selected address or manual form
+    if (useManualAddress) {
+      if (!formData.name.trim()) errors.name = "Full name is required";
+      if (!formData.mobile.trim()) errors.mobile = "Mobile number is required";
+      else if (!/^[6-9]\d{9}$/.test(formData.mobile))
+        errors.mobile = "Mobile number must be 10 digits starting with 6-9";
+      if (!formData.address.trim()) errors.address = "Address is required";
+      if (!formData.city.trim()) errors.city = "City is required";
+      if (!formData.country.trim()) errors.country = "Country is required";
+      if (!formData.state.trim()) errors.state = "State is required";
+      if (!formData.zipCode.trim()) errors.zipCode = "Pincode is required";
+      else if (!/^\d{6}$/.test(formData.zipCode))
+        errors.zipCode = "Pincode must be 6 digits";
+    } else if (!selectedAddress) {
+      errors.name = "Please select a shipping address";
+    }
+
     // Validate billing address if different billing is enabled
     if (useDifferentBilling) {
-      if (!billingData.name.trim()) billingErrs.name = "Full name is required";
-      if (!billingData.mobile.trim())
-        billingErrs.mobile = "Mobile number is required";
-      else if (!/^[6-9]\d{9}$/.test(billingData.mobile))
-        billingErrs.mobile =
-          "Mobile number must be 10 digits starting with 6-9";
-      if (!billingData.address.trim())
-        billingErrs.address = "Address is required";
-      if (!billingData.city.trim()) billingErrs.city = "City is required";
-      if (!billingData.state.trim()) billingErrs.state = "State is required";
-      if (!billingData.zipCode.trim())
-        billingErrs.zipCode = "Pincode is required";
-      else if (!/^\d{6}$/.test(billingData.zipCode))
-        billingErrs.zipCode = "Pincode must be 6 digits";
+      if (useManualBillingAddress) {
+        if (!billingData.name.trim())
+          billingErrs.name = "Full name is required";
+        if (!billingData.mobile.trim())
+          billingErrs.mobile = "Mobile number is required";
+        else if (!/^[6-9]\d{9}$/.test(billingData.mobile))
+          billingErrs.mobile =
+            "Mobile number must be 10 digits starting with 6-9";
+        if (!billingData.address.trim())
+          billingErrs.address = "Address is required";
+        if (!billingData.city.trim()) billingErrs.city = "City is required";
+        if (!billingData.country.trim())
+          billingErrs.country = "Country is required";
+        if (!billingData.state.trim()) billingErrs.state = "State is required";
+        if (!billingData.zipCode.trim())
+          billingErrs.zipCode = "Pincode is required";
+        else if (!/^\d{6}$/.test(billingData.zipCode))
+          billingErrs.zipCode = "Pincode must be 6 digits";
+      } else if (!selectedBillingAddress) {
+        billingErrs.name = "Please select a billing address";
+      }
     }
 
     setFormErrors(errors);
@@ -154,6 +421,153 @@ const Cart = () => {
     setBillingData((prev) => ({ ...prev, [field]: value }));
     if (billingErrors[field]) {
       setBillingErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  // Fetch countries from API
+  const fetchCountries = async () => {
+    try {
+      setLoadingCountries(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Common/GetCountries`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Handle both direct array response and wrapped response
+      const countries = Array.isArray(result) ? result : result.data || [];
+      setCountries(countries);
+      console.log("✅ Countries loaded:", countries);
+    } catch (error) {
+      console.error("Failed to fetch countries:", error);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
+
+  // Fetch states based on selected country
+  const fetchStates = async (countryCode: string) => {
+    if (!countryCode) {
+      setStates([]);
+      return;
+    }
+
+    try {
+      setLoadingStates(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Common/GetStates/${countryCode}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Handle both direct array response and wrapped response
+      const states = Array.isArray(result) ? result : result.data || [];
+      setStates(states);
+      console.log("✅ States loaded:", states);
+    } catch (error) {
+      console.error("Failed to fetch states:", error);
+    } finally {
+      setLoadingStates(false);
+    }
+  };
+
+  // Fetch billing states based on selected billing country
+  const fetchBillingStates = async (countryCode: string) => {
+    if (!countryCode) {
+      setBillingStates([]);
+      return;
+    }
+
+    try {
+      setLoadingBillingStates(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Common/GetStates/${countryCode}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Handle both direct array response and wrapped response
+      const billingStates = Array.isArray(result) ? result : result.data || [];
+      setBillingStates(billingStates);
+      console.log("✅ Billing states loaded:", billingStates);
+    } catch (error) {
+      console.error("Failed to fetch billing states:", error);
+    } finally {
+      setLoadingBillingStates(false);
+    }
+  };
+
+  // Handle country change for shipping
+  const handleCountryChange = (event: SelectChangeEvent<string>) => {
+    const country = event.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      country,
+      state: "", // Reset state when country changes
+    }));
+    if (formErrors.state) {
+      setFormErrors((prev) => ({ ...prev, state: undefined }));
+    }
+  };
+
+  // Handle state change for shipping
+  const handleStateChange = (event: SelectChangeEvent<string>) => {
+    const state = event.target.value;
+    setFormData((prev) => ({ ...prev, state }));
+    if (formErrors.state) {
+      setFormErrors((prev) => ({ ...prev, state: undefined }));
+    }
+  };
+
+  // Handle country change for billing
+  const handleBillingCountryChange = (event: SelectChangeEvent<string>) => {
+    const country = event.target.value;
+    setBillingData((prev) => ({
+      ...prev,
+      country,
+      state: "", // Reset state when country changes
+    }));
+    if (billingErrors.state) {
+      setBillingErrors((prev) => ({ ...prev, state: undefined }));
+    }
+  };
+
+  // Handle state change for billing
+  const handleBillingStateChange = (event: SelectChangeEvent<string>) => {
+    const state = event.target.value;
+    setBillingData((prev) => ({ ...prev, state }));
+    if (billingErrors.state) {
+      setBillingErrors((prev) => ({ ...prev, state: undefined }));
     }
   };
 
@@ -200,6 +614,25 @@ const Cart = () => {
       }
     }
   }, [enhancedItems, displayCurrency]);
+
+  // Load countries when component mounts
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  // Load states when shipping country changes
+  useEffect(() => {
+    if (formData.country) {
+      fetchStates(formData.country);
+    }
+  }, [formData.country]);
+
+  // Load billing states when billing country changes
+  useEffect(() => {
+    if (billingData.country) {
+      fetchBillingStates(billingData.country);
+    }
+  }, [billingData.country]);
 
   // Helper function to handle Razorpay orders
   const handleRazorpayOrder = async () => {
@@ -298,19 +731,61 @@ const Cart = () => {
   };
 
   // Handle successful payment
-  const handlePaymentSuccess = (paymentData: RazorpayPaymentData) => {
-    setAlertMessage("Payment successful! Redirecting...");
-    setAlertSeverity("success");
-    setShowAlert(true);
+  const handlePaymentSuccess = async (paymentData: RazorpayPaymentData) => {
+    try {
+      setAlertMessage("Payment successful! Saving your details...");
+      setAlertSeverity("success");
+      setShowAlert(true);
 
-    // Clear cart after successful payment
-    clearCart();
+      // Save shipping address (only if manually entered, not selected)
+      if (userId && useManualAddress && formData.name) {
+        try {
+          const shippingAddress = formatAddressData(formData, "SHIPPING");
+          await saveAddress(shippingAddress);
+          console.log("✅ Shipping address saved successfully");
+        } catch (error) {
+          console.error("❌ Failed to save shipping address:", error);
+          // Don't block the flow for address saving failure
+        }
+      }
 
-    setTimeout(() => {
-      router.push(
-        `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
-      );
-    }, 2000);
+      // Save billing address if different from shipping (only if manually entered, not selected)
+      if (
+        userId &&
+        useDifferentBilling &&
+        useManualBillingAddress &&
+        billingData.name
+      ) {
+        try {
+          const billingAddress = formatAddressData(billingData, "BILLING");
+          await saveAddress(billingAddress);
+          console.log("✅ Billing address saved successfully");
+        } catch (error) {
+          console.error("❌ Failed to save billing address:", error);
+          // Don't block the flow for address saving failure
+        }
+      }
+
+      // Clear cart after successful payment and address saving
+      clearCart();
+
+      setAlertMessage("Payment successful! Redirecting...");
+      setTimeout(() => {
+        router.push(
+          `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
+        );
+      }, 2000);
+    } catch (error) {
+      console.error("Error in post-payment processing:", error);
+      // Still proceed with payment success flow
+      clearCart();
+      setAlertMessage("Payment successful! Redirecting...");
+      setTimeout(() => {
+        router.push(
+          `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
+        );
+      }, 2000);
+    }
   };
 
   // Handle payment error
@@ -622,151 +1097,298 @@ const Cart = () => {
                 Shipping Address
               </Typography>
 
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Full Name*"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    error={!!formErrors.name}
-                    helperText={formErrors.name}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Mobile Number*"
-                    value={formData.mobile}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, ""); // Only digits
-                      if (value.length <= 10) {
-                        handleInputChange("mobile", value);
-                      }
-                    }}
-                    error={!!formErrors.mobile}
-                    helperText={formErrors.mobile || "10-digit mobile number"}
-                    inputProps={{
-                      maxLength: 10,
-                      pattern: "[0-9]*",
-                      inputMode: "numeric",
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="House No., Building Name, Street, Area*"
-                    value={formData.address}
-                    onChange={(e) =>
-                      handleInputChange("address", e.target.value)
-                    }
-                    error={!!formErrors.address}
-                    helperText={formErrors.address}
-                    multiline
-                    rows={2}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Landmark (Optional)"
-                    value={formData.landmark || ""}
-                    onChange={(e) =>
-                      handleInputChange("landmark", e.target.value)
-                    }
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Pincode*"
-                    value={formData.zipCode}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, ""); // Only digits
-                      if (value.length <= 6) {
-                        handleInputChange("zipCode", value);
-                      }
-                    }}
-                    error={!!formErrors.zipCode}
-                    helperText={formErrors.zipCode || "6-digit pincode"}
-                    inputProps={{
-                      maxLength: 6,
-                      pattern: "[0-9]*",
-                      inputMode: "numeric",
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="City*"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    error={!!formErrors.city}
-                    helperText={formErrors.city}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="State*"
-                    value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
-                    error={!!formErrors.state}
-                    helperText={formErrors.state}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        borderRadius: 1,
-                      },
-                    }}
-                  />
-                </Grid>
-              </Grid>
+              {/* Address Selection Options */}
+              <Box sx={{ mb: 3 }}>
+                <Button
+                  variant={!useManualAddress ? "contained" : "outlined"}
+                  onClick={() => setShowAddressManager(true)}
+                  sx={{ mr: 2, mb: { xs: 1, sm: 0 } }}
+                >
+                  Select Existing Address
+                </Button>
+                <Button
+                  variant={useManualAddress ? "contained" : "outlined"}
+                  onClick={() => {
+                    setUseManualAddress(true);
+                    setSelectedAddress(null);
+                  }}
+                >
+                  Enter New Address
+                </Button>
+              </Box>
+
+              {/* Selected Address Display */}
+              {selectedAddress && !useManualAddress && (
+                <Box
+                  sx={{
+                    p: 2,
+                    border: "2px solid",
+                    borderColor: "primary.main",
+                    borderRadius: 1,
+                    backgroundColor: "primary.50",
+                    mb: 3,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    fontWeight={600}
+                    color="primary.main"
+                  >
+                    Shipping Address:
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    {selectedAddress.fullAddress}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Manual Address Form - Only show when useManualAddress is true */}
+              {useManualAddress && (
+                <Box>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Full Name*"
+                        value={formData.name}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
+                        error={!!formErrors.name}
+                        helperText={formErrors.name}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Mobile Number*"
+                        value={formData.mobile}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, ""); // Only digits
+                          if (value.length <= 10) {
+                            handleInputChange("mobile", value);
+                          }
+                        }}
+                        error={!!formErrors.mobile}
+                        helperText={
+                          formErrors.mobile || "10-digit mobile number"
+                        }
+                        inputProps={{
+                          maxLength: 10,
+                          pattern: "[0-9]*",
+                          inputMode: "numeric",
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="House No., Building Name, Street, Area*"
+                        value={formData.address}
+                        onChange={(e) =>
+                          handleInputChange("address", e.target.value)
+                        }
+                        error={!!formErrors.address}
+                        helperText={formErrors.address}
+                        multiline
+                        rows={2}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Landmark (Optional)"
+                        value={formData.landmark || ""}
+                        onChange={(e) =>
+                          handleInputChange("landmark", e.target.value)
+                        }
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="City*"
+                        value={formData.city}
+                        onChange={(e) =>
+                          handleInputChange("city", e.target.value)
+                        }
+                        error={!!formErrors.city}
+                        helperText={formErrors.city}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl
+                        fullWidth
+                        size="small"
+                        error={!!formErrors.state}
+                      >
+                        <InputLabel>State *</InputLabel>
+                        <Select
+                          value={formData.state}
+                          onChange={handleStateChange}
+                          label="State *"
+                          disabled={loadingStates || !formData.country}
+                          sx={{
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          }}
+                        >
+                          {!formData.country ? (
+                            <MenuItem disabled>
+                              Please select a country first
+                            </MenuItem>
+                          ) : loadingStates ? (
+                            <MenuItem disabled>
+                              <CircularProgress size={20} sx={{ mr: 1 }} />
+                              Loading states...
+                            </MenuItem>
+                          ) : states.length === 0 ? (
+                            <MenuItem disabled>No states available</MenuItem>
+                          ) : (
+                            states.map((state) => (
+                              <MenuItem
+                                key={state.stateCode}
+                                value={state.stateCode}
+                              >
+                                {state.stateName}
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                        {formErrors.state && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ mt: 0.5, ml: 1.5 }}
+                          >
+                            {formErrors.state}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <FormControl
+                        fullWidth
+                        size="small"
+                        error={!!formErrors.country}
+                      >
+                        <InputLabel>Country *</InputLabel>
+                        <Select
+                          value={formData.country}
+                          onChange={handleCountryChange}
+                          label="Country *"
+                          disabled={loadingCountries}
+                          sx={{
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          }}
+                        >
+                          {loadingCountries ? (
+                            <MenuItem disabled>
+                              <CircularProgress size={20} sx={{ mr: 1 }} />
+                              Loading countries...
+                            </MenuItem>
+                          ) : (
+                            countries.map((country) => (
+                              <MenuItem
+                                key={country.countryCode}
+                                value={country.countryCode}
+                              >
+                                {country.countryName}
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                        {formErrors.country && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ mt: 0.5, ml: 1.5 }}
+                          >
+                            {formErrors.country}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Pincode*"
+                        value={formData.zipCode}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, ""); // Only digits
+                          if (value.length <= 6) {
+                            handleInputChange("zipCode", value);
+                          }
+                        }}
+                        error={!!formErrors.zipCode}
+                        helperText={formErrors.zipCode || "6-digit pincode"}
+                        inputProps={{
+                          maxLength: 6,
+                          pattern: "[0-9]*",
+                          inputMode: "numeric",
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "white",
+                            borderRadius: 1,
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Save Shipping Address Button */}
+                    <Grid size={{ xs: 12 }}>
+                      <Box sx={{ textAlign: "right" }}>
+                        <Button
+                          variant="contained"
+                          onClick={handleSaveShippingAddress}
+                          sx={{ mt: 2 }}
+                          disabled={isProcessing}
+                        >
+                          Save Address
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              )}
 
               <FormControlLabel
                 control={
@@ -785,8 +1407,11 @@ const Cart = () => {
                           city: "",
                           state: "",
                           zipCode: "",
+                          country: "IN",
                         });
                         setBillingErrors({});
+                        setSelectedBillingAddress(null);
+                        setUseManualBillingAddress(true);
                       }
                     }}
                     size="small"
@@ -819,159 +1444,304 @@ const Cart = () => {
                     Billing Address
                   </Typography>
 
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Full Name*"
-                        value={billingData.name}
-                        onChange={(e) =>
-                          handleBillingInputChange("name", e.target.value)
-                        }
-                        error={!!billingErrors.name}
-                        helperText={billingErrors.name}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Mobile Number*"
-                        value={billingData.mobile}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, ""); // Only digits
-                          if (value.length <= 10) {
-                            handleBillingInputChange("mobile", value);
+                  {/* Address Selection Options */}
+                  <Box sx={{ mb: 3 }}>
+                    <Button
+                      variant={
+                        !useManualBillingAddress ? "contained" : "outlined"
+                      }
+                      onClick={() => setShowBillingAddressManager(true)}
+                      sx={{ mr: 2, mb: { xs: 1, sm: 0 } }}
+                    >
+                      Select Existing Address
+                    </Button>
+                    <Button
+                      variant={
+                        useManualBillingAddress ? "contained" : "outlined"
+                      }
+                      onClick={() => {
+                        setUseManualBillingAddress(true);
+                        setSelectedBillingAddress(null);
+                      }}
+                    >
+                      Enter New Address
+                    </Button>
+                  </Box>
+
+                  {/* Selected Address Display */}
+                  {!useManualBillingAddress && selectedBillingAddress && (
+                    <Box
+                      sx={{
+                        p: 2,
+                        border: "2px solid",
+                        borderColor: "primary.main",
+                        borderRadius: 1,
+                        backgroundColor: "primary.50",
+                        mb: 3,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        color="primary.main"
+                      >
+                        Billing Address:
+                      </Typography>
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {selectedBillingAddress.fullAddress}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Manual Address Form */}
+                  {useManualBillingAddress && (
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="Full Name*"
+                          value={billingData.name}
+                          onChange={(e) =>
+                            handleBillingInputChange("name", e.target.value)
                           }
-                        }}
-                        error={!!billingErrors.mobile}
-                        helperText={
-                          billingErrors.mobile || "10-digit mobile number"
-                        }
-                        inputProps={{
-                          maxLength: 10,
-                          pattern: "[0-9]*",
-                          inputMode: "numeric",
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="House No., Building Name, Street, Area*"
-                        value={billingData.address}
-                        onChange={(e) =>
-                          handleBillingInputChange("address", e.target.value)
-                        }
-                        error={!!billingErrors.address}
-                        helperText={billingErrors.address}
-                        multiline
-                        rows={2}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Landmark (Optional)"
-                        value={billingData.landmark || ""}
-                        onChange={(e) =>
-                          handleBillingInputChange("landmark", e.target.value)
-                        }
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Pincode*"
-                        value={billingData.zipCode}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, ""); // Only digits
-                          if (value.length <= 6) {
-                            handleBillingInputChange("zipCode", value);
+                          error={!!billingErrors.name}
+                          helperText={billingErrors.name}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            },
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="Mobile Number*"
+                          value={billingData.mobile}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, ""); // Only digits
+                            if (value.length <= 10) {
+                              handleBillingInputChange("mobile", value);
+                            }
+                          }}
+                          error={!!billingErrors.mobile}
+                          helperText={
+                            billingErrors.mobile || "10-digit mobile number"
                           }
-                        }}
-                        error={!!billingErrors.zipCode}
-                        helperText={billingErrors.zipCode || "6-digit pincode"}
-                        inputProps={{
-                          maxLength: 6,
-                          pattern: "[0-9]*",
-                          inputMode: "numeric",
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
+                          inputProps={{
+                            maxLength: 10,
+                            pattern: "[0-9]*",
+                            inputMode: "numeric",
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            },
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="House No., Building Name, Street, Area*"
+                          value={billingData.address}
+                          onChange={(e) =>
+                            handleBillingInputChange("address", e.target.value)
+                          }
+                          error={!!billingErrors.address}
+                          helperText={billingErrors.address}
+                          multiline
+                          rows={2}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            },
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="Landmark (Optional)"
+                          value={billingData.landmark || ""}
+                          onChange={(e) =>
+                            handleBillingInputChange("landmark", e.target.value)
+                          }
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            },
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="City*"
+                          value={billingData.city}
+                          onChange={(e) =>
+                            handleBillingInputChange("city", e.target.value)
+                          }
+                          error={!!billingErrors.city}
+                          helperText={billingErrors.city}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            },
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <FormControl
+                          fullWidth
+                          size="small"
+                          error={!!billingErrors.state}
+                        >
+                          <InputLabel>State *</InputLabel>
+                          <Select
+                            value={billingData.state}
+                            onChange={handleBillingStateChange}
+                            label="State *"
+                            disabled={
+                              loadingBillingStates || !billingData.country
+                            }
+                            sx={{
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {!billingData.country ? (
+                              <MenuItem disabled>
+                                Please select a country first
+                              </MenuItem>
+                            ) : loadingBillingStates ? (
+                              <MenuItem disabled>
+                                <CircularProgress size={20} sx={{ mr: 1 }} />
+                                Loading states...
+                              </MenuItem>
+                            ) : billingStates.length === 0 ? (
+                              <MenuItem disabled>No states available</MenuItem>
+                            ) : (
+                              billingStates.map((state) => (
+                                <MenuItem
+                                  key={state.stateCode}
+                                  value={state.stateCode}
+                                >
+                                  {state.stateName}
+                                </MenuItem>
+                              ))
+                            )}
+                          </Select>
+                          {billingErrors.state && (
+                            <Typography
+                              variant="caption"
+                              color="error"
+                              sx={{ mt: 0.5, ml: 1.5 }}
+                            >
+                              {billingErrors.state}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <FormControl
+                          fullWidth
+                          size="small"
+                          error={!!billingErrors.country}
+                        >
+                          <InputLabel>Country *</InputLabel>
+                          <Select
+                            value={billingData.country}
+                            onChange={handleBillingCountryChange}
+                            label="Country *"
+                            disabled={loadingCountries}
+                            sx={{
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            }}
+                          >
+                            {loadingCountries ? (
+                              <MenuItem disabled>
+                                <CircularProgress size={20} sx={{ mr: 1 }} />
+                                Loading countries...
+                              </MenuItem>
+                            ) : (
+                              countries.map((country) => (
+                                <MenuItem
+                                  key={country.countryCode}
+                                  value={country.countryCode}
+                                >
+                                  {country.countryName}
+                                </MenuItem>
+                              ))
+                            )}
+                          </Select>
+                          {billingErrors.country && (
+                            <Typography
+                              variant="caption"
+                              color="error"
+                              sx={{ mt: 0.5, ml: 1.5 }}
+                            >
+                              {billingErrors.country}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="Pincode*"
+                          value={billingData.zipCode}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, ""); // Only digits
+                            if (value.length <= 6) {
+                              handleBillingInputChange("zipCode", value);
+                            }
+                          }}
+                          error={!!billingErrors.zipCode}
+                          helperText={
+                            billingErrors.zipCode || "6-digit pincode"
+                          }
+                          inputProps={{
+                            maxLength: 6,
+                            pattern: "[0-9]*",
+                            inputMode: "numeric",
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "white",
+                              borderRadius: 1,
+                            },
+                          }}
+                        />
+                      </Grid>
+
+                      {/* Save Billing Address Button */}
+                      <Grid size={{ xs: 12 }}>
+                        <Box sx={{ textAlign: "right" }}>
+                          <Button
+                            variant="contained"
+                            onClick={handleSaveBillingAddress}
+                            sx={{ mt: 2 }}
+                            disabled={isProcessing}
+                          >
+                            Save Address
+                          </Button>
+                        </Box>
+                      </Grid>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="City*"
-                        value={billingData.city}
-                        onChange={(e) =>
-                          handleBillingInputChange("city", e.target.value)
-                        }
-                        error={!!billingErrors.city}
-                        helperText={billingErrors.city}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="State*"
-                        value={billingData.state}
-                        onChange={(e) =>
-                          handleBillingInputChange("state", e.target.value)
-                        }
-                        error={!!billingErrors.state}
-                        helperText={billingErrors.state}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "white",
-                            borderRadius: 1,
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
+                  )}
                 </Box>
               )}
             </Paper>
@@ -1127,6 +1897,52 @@ const Cart = () => {
             {alertMessage}
           </Alert>
         </Snackbar>
+
+        {/* Address Manager Dialog */}
+        <Dialog
+          open={showAddressManager}
+          onClose={() => setShowAddressManager(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>Select an Address</DialogTitle>
+          <DialogContent>
+            <AddressManager
+              userId={userId}
+              onAddressSelect={handleAddressSelect}
+              showSelectionMode={true}
+              selectedAddressId={selectedAddress?.id}
+              hideAddNewButton={true}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowAddressManager(false)}>Cancel</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Billing Address Manager Dialog */}
+        <Dialog
+          open={showBillingAddressManager}
+          onClose={() => setShowBillingAddressManager(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>Select a Billing Address</DialogTitle>
+          <DialogContent>
+            <AddressManager
+              userId={userId}
+              onAddressSelect={handleBillingAddressSelect}
+              showSelectionMode={true}
+              selectedAddressId={selectedBillingAddress?.id}
+              hideAddNewButton={true}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowBillingAddressManager(false)}>
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Container>
   );

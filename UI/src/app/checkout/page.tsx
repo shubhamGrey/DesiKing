@@ -59,6 +59,7 @@ const CheckoutContent: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string>("");
 
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
     firstName: "",
@@ -77,6 +78,91 @@ const CheckoutContent: React.FC = () => {
   const shippingCost = totalAmount > 500 ? 0 : 50;
   const finalAmount = totalAmount + shippingCost;
 
+  // Helper interfaces for address handling
+  interface AddressFormData {
+    fullName: string;
+    phoneNumber: string;
+    addressLine: string;
+    landMark?: string;
+    city: string;
+    pinCode: string;
+    stateCode: string;
+    countryCode: string;
+    addressType: "SHIPPING" | "BILLING";
+  }
+
+  // Helper function to save address
+  const saveAddress = async (addressData: AddressFormData): Promise<string> => {
+    try {
+      const payload = {
+        id: "00000000-0000-0000-0000-000000000000",
+        userId: userId,
+        fullName: addressData.fullName,
+        phoneNumber: addressData.phoneNumber,
+        addressLine: addressData.addressLine,
+        landMark: addressData.landMark || "",
+        city: addressData.city,
+        pinCode: addressData.pinCode,
+        stateCode: addressData.stateCode,
+        countryCode: addressData.countryCode,
+        addressType: addressData.addressType,
+        isActive: true,
+        isDeleted: false,
+      };
+
+      console.log("🚀 Saving address:", payload);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/address`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Address save API error:", errorText);
+        throw new Error(
+          `HTTP error! status: ${response.status}, response: ${errorText}`
+        );
+      }
+
+      const result: any = await response.json();
+
+      if (result.info?.code !== "200") {
+        throw new Error(result.info?.message || "Failed to save address");
+      }
+
+      console.log("✅ Address saved successfully:", result.data);
+      return result.data;
+    } catch (error) {
+      console.error("❌ Error saving address:", error);
+      throw error;
+    }
+  };
+
+  // Helper function to format form data to AddressFormData
+  const formatAddressData = (
+    formData: any,
+    addressType: "SHIPPING" | "BILLING"
+  ): AddressFormData => {
+    return {
+      fullName: `${formData.firstName || ""} ${formData.lastName || ""}`.trim(),
+      phoneNumber: formData.phone || "",
+      addressLine: formData.address || "",
+      landMark: "",
+      city: formData.city || "",
+      pinCode: formData.zipCode || "",
+      stateCode: formData.state || "",
+      countryCode: "IN",
+      addressType,
+    };
+  };
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.push("/login?redirect=/checkout");
@@ -91,6 +177,7 @@ const CheckoutContent: React.FC = () => {
     // Pre-fill form with user data if available
     const userProfile = getUserProfile();
     if (userProfile) {
+      setUserId(userProfile.id || "");
       setShippingDetails((prev) => ({
         ...prev,
         firstName: userProfile.firstName || "",
@@ -144,9 +231,13 @@ const CheckoutContent: React.FC = () => {
       try {
         setLoading(true);
 
+        if (!userId) {
+          throw new Error("User not authenticated. Please log in.");
+        }
+
         // Create order with COD
         const orderData = {
-          userId: getUserProfile()?.id ?? "",
+          userId: userId,
           items: items.map((item) => ({
             productId: item.id,
             quantity: item.quantity,
@@ -172,6 +263,19 @@ const CheckoutContent: React.FC = () => {
         );
 
         if (response.ok) {
+          // Save shipping address after successful order creation
+          try {
+            const shippingAddress = formatAddressData(
+              shippingDetails,
+              "SHIPPING"
+            );
+            await saveAddress(shippingAddress);
+            console.log("✅ Shipping address saved successfully");
+          } catch (error) {
+            console.error("❌ Failed to save shipping address:", error);
+            // Don't block the flow for address saving failure
+          }
+
           clearCart();
           router.push("/order-success?method=cod");
         } else {
@@ -187,6 +291,21 @@ const CheckoutContent: React.FC = () => {
       // Handle Online Payment (simplified for now)
       try {
         setLoading(true);
+
+        if (userId) {
+          // Save shipping address for online payment as well
+          try {
+            const shippingAddress = formatAddressData(
+              shippingDetails,
+              "SHIPPING"
+            );
+            await saveAddress(shippingAddress);
+            console.log("✅ Shipping address saved successfully");
+          } catch (error) {
+            console.error("❌ Failed to save shipping address:", error);
+            // Don't block the flow for address saving failure
+          }
+        }
 
         // Simulate online payment processing
         await new Promise((resolve) => setTimeout(resolve, 1000));
