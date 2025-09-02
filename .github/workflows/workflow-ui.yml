@@ -22,7 +22,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "docker-compose.yml,UI,ssl-manager.sh,fix-acme.sh,certbot-renew.sh,debug-acme.sh"
+          source: "docker-compose.yml,UI"
           target: "/var/www/agronexis"
 
       - name: Deploy with Docker Compose on VPS

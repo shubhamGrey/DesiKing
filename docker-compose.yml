@@ -25,7 +25,6 @@ services:
       - /etc/letsencrypt/live/agronexis.com/privkey.pem:/etc/nginx/certs/agronexis-privkey.pem:ro
       - /etc/letsencrypt/live/cloud.agronexis.com/fullchain.pem:/etc/nginx/certs/cloud-fullchain.pem:ro
       - /etc/letsencrypt/live/cloud.agronexis.com/privkey.pem:/etc/nginx/certs/cloud-privkey.pem:ro
-      - ./certbot-webroot:/var/www/certbot:ro
     depends_on:
       - nextjs
       - app
@@ -92,29 +91,6 @@ services:
       POSTGRES_PASSWORD: agronexis@123
     volumes:
       - backend-db-data:/var/lib/postgresql/data
-    networks:
-      - webnet
-
-  certbot:
-    image: certbot/certbot:latest
-    container_name: certbot
-    restart: unless-stopped
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:rw
-      - /var/lib/letsencrypt:/var/lib/letsencrypt:rw
-      - /var/log/letsencrypt:/var/log/letsencrypt:rw
-      - ./certbot-webroot:/var/www/certbot:rw
-      - ./certbot-renew.sh:/scripts/renew.sh:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    entrypoint: |
-      sh -c "
-        apk add --no-cache docker-cli &&
-        chmod +x /scripts/renew.sh &&
-        echo '0 3 * * * /scripts/renew.sh >> /var/log/letsencrypt/renewal.log 2>&1' | crontab - &&
-        crond -f
-      "
-    depends_on:
-      - nginx
     networks:
       - webnet
 
