@@ -105,6 +105,7 @@ services:
       - /var/log/letsencrypt:/var/log/letsencrypt:rw
       - ./certbot-webroot:/var/www/certbot:rw
       - ./certbot-renew.sh:/scripts/renew.sh:ro
+      - /var/www/certbot:/var/www/certbot:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     entrypoint: |
       sh -c "
