@@ -1,4 +1,5 @@
 ﻿using Agronexis.DataAccess.ConfigurationsRepository;
+using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
 using Microsoft.Extensions.Logging;
@@ -167,6 +168,10 @@ namespace Agronexis.Business.Configurations
         public string DeleteAddressById(string id, string xCorrelationId)
         {
             return _repository.DeleteAddressById(id, xCorrelationId);
+        }
+        public List<Model.EntityModel.Order> GetOrdersByUserId(string userId, string xCorrelationId)
+        {
+            return _repository.GetOrdersByUserId(userId, xCorrelationId);
         }
     }
 }

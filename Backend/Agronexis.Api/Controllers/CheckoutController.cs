@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Razorpay.Api;
+using System.Net;
 using static Agronexis.Common.Constants;
 
 namespace Agronexis.Api.Controllers
@@ -127,6 +128,25 @@ namespace Agronexis.Api.Controllers
                 _logger.LogError(ex, "Error occurred during payment verification, correlation ID: {CorrelationId}", correlationId);
                 return HandleException(ex, "Failed to refund payment", correlationId);
             }
+        }
+
+        [HttpGet("orders/{userId}")]
+        public ActionResult<ApiResponseModel> GetOrdersByUserId(string userId)
+        {
+            SetXCorrelationId();
+            var addresses = _configService.GetOrdersByUserId(userId, XCorrelationID);
+
+            return new ApiResponseModel
+            {
+                Info = new ApiResponseInfoModel
+                {
+                    IsSuccess = true,
+                    Code = ((int)HttpStatusCode.OK).ToString(),
+                    Message = ApiResponseMessage.SUCCESS
+                },
+                Data = addresses,
+                Id = XCorrelationID
+            };
         }
     }
 }

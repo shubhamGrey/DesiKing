@@ -1274,5 +1274,23 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while deleting address", xCorrelationId, ex);
             }
         }
+        public List<Model.EntityModel.Order> GetOrdersByUserId(string userId, string xCorrelationId)
+        {
+            try
+            {
+                Guid userGuid = Guid.Parse(userId);
+
+                var orders = _dbContext.Set<Model.EntityModel.Order>()
+                    .Include(o => o.OrderItems) // eager load order items
+                    .Where(o => o.UserId == userGuid)
+                    .ToList();
+
+                return orders;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while fetching orders by user id", xCorrelationId, ex);
+            }
+        }
     }
 }
