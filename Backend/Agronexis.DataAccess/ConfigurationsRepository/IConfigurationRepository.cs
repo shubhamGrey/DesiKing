@@ -1,5 +1,6 @@
 ﻿using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
+using Razorpay.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,5 +44,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         List<AddressResponseModel> GetAddressesByUserId(string userId, string correlationId);
         string SaveOrUpdateAddress(AddressRequestModel address, string correlationId);
         string DeleteAddressById(string id, string correlationId);
+        List<Model.EntityModel.Order> GetOrdersByUserId(string userId, string correlationId);
     }
 }
