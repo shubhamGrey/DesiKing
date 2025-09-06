@@ -1,4 +1,5 @@
-﻿using Agronexis.Model.RequestModel;
+﻿using Agronexis.Model.EntityModel;
+using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
 using System;
 using System.Collections.Generic;
@@ -43,5 +44,7 @@ namespace Agronexis.Business.Configurations
         List<AddressResponseModel> GetAddressesByUserId(string userId, string correlationId);
         string SaveOrUpdateAddress(AddressRequestModel address, string correlationId);
         string DeleteAddressById(string id, string correlationId);
+        List<Model.EntityModel.Order> GetOrdersByUserId(string userId, string correlationId);
+
     }
 }
