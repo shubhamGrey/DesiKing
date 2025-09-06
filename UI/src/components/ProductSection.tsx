@@ -142,8 +142,6 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
       <Box
         sx={{
           mt: 8,
-          display: "flex",
-          alignItems: "center",
         }}
       >
         <Grid container spacing={4}>
