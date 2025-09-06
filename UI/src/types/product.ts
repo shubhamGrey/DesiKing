@@ -97,10 +97,30 @@ export interface ProductFormData {
   }>;
 }
 
-export interface Brand {
-  name: string;
+export interface BrandInfo {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+}
+
+export interface BrandData {
   id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  logoUrl: string | null;
+  createdDate: string;
+  modifiedDate: string | null;
   isActive: boolean;
+  isDeleted: boolean;
+  metaTitle: string | null;
+  metaDescription: string | null;
+}
+
+export interface Brand {
+  info: BrandInfo;
+  id: string | null;
+  data: BrandData[];
 }
 
 export interface FormattedBrand {
@@ -119,7 +139,7 @@ export interface FormattedCategory {
   id: string;
   title: string;
   image: string;
-};
+}
 
 export interface Weight {
   id: string;

@@ -325,12 +325,13 @@ const ProductDetails = ({
                 width: "100%",
               }}
             >
-              {["100gm", "500gm", "1Kg"].map((size) => (
+              {["100gm", "500gm", "1Kg"].map((size, ind) => (
                 <Button
                   key={size}
                   onClick={() => {
                     setSelectedPacket(size);
                   }}
+                  disabled={ind > 0}
                   sx={{
                     width: 64,
                     borderColor:

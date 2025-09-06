@@ -55,7 +55,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   // State for success/error messages
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
   // Function to handle delete confirmation
   const handleDeleteClick = (productId: string, productName: string) => {
@@ -71,12 +73,15 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Product/${productToDelete}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Product/${productToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete product");
@@ -91,7 +96,6 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
       if (onProductDeleted) {
         onProductDeleted();
       }
-
     } catch (error) {
       console.error("Error deleting product:", error);
       setSnackbarMessage("Failed to delete product. Please try again.");
@@ -144,7 +148,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
       >
         <Grid container spacing={4}>
           {item.products.map((product) => (
-            <Grid size={{ xs: 12, md: 4 }} key={product.id}>
+            <Grid size={{ xs: 12, md: 3 }} key={product.id}>
               <Card
                 sx={{
                   backgroundColor: "transparent",
@@ -289,7 +293,8 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete &quot;{productNameToDelete}&quot;? This action cannot be undone.
+            Are you sure you want to delete &quot;{productNameToDelete}&quot;?
+            This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -312,12 +317,12 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>

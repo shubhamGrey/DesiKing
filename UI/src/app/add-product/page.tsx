@@ -32,7 +32,17 @@ import ProductSettings from "../../components/AddProduct/ProductSettings";
 import SEOInformation from "../../components/AddProduct/SEOInformation";
 import ThumbnailImage from "../../components/AddProduct/ThumbnailImage";
 import Uses from "../../components/AddProduct/Uses";
-import { Brand, Category, Currency, FormattedBrand, FormattedCategory, FormattedCurrency, FormattedWeight, ProductFormData, Weight } from "@/types/product";
+import {
+  Brand,
+  Category,
+  Currency,
+  FormattedBrand,
+  FormattedCategory,
+  FormattedCurrency,
+  FormattedWeight,
+  ProductFormData,
+  Weight,
+} from "@/types/product";
 
 const certificationOptions = [
   "Premium",
@@ -122,11 +132,21 @@ const AddProduct: React.FC = () => {
     },
   });
 
+  const {
+    fields: variantFields,
+    append: appendVariant,
+    remove: removeVariant,
+    replace: replaceVariants,
+  } = useFieldArray({
+    control,
+    name: "pricesAndSkus",
+  });
+
   useEffect(() => {
     const productId = sessionStorage.getItem("productId");
     if (productId) {
       setIsEditMode(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/Product/${productId}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${productId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -134,30 +154,67 @@ const AddProduct: React.FC = () => {
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log("=== PRODUCT DATA LOADING DEBUG ===");
+          console.log("Raw product data from API:", data);
+          console.log("Price data:", data.price);
+          console.log("SKU data:", data.sku);
+          console.log("PricesAndSkus data:", data.pricesAndSkus);
+
           setValue("name", data.name);
           setValue("description", data.description);
           setValue("category", data.categoryId);
           setValue("brand", data.brandId);
-          // Combine price and SKU data into pricesAndSkus
-          const pricesAndSkus = data.price?.map((priceItem: any, index: number) => ({
-            ...priceItem,
-            skuNumber: data.sku?.[index]?.sku || "",
-            barcode: data.sku?.[index]?.barcode || "",
-            weightId: priceItem.weightId || "",
-            weightValue: priceItem.weightValue || 0,
-            weightUnit: priceItem.weightUnit || "",
-            currencyCode: priceItem.currencyCode || "",
-            currencyId: priceItem.currencyId || "",
-            createdDate: priceItem.createdDate || "",
-            modifiedDate: priceItem.modifiedDate || null,
-            isActive: priceItem.isActive ?? true,
-            isDeleted: priceItem.isDeleted ?? false,
-            price: priceItem.price || 0,
-            isDiscounted: priceItem.isDiscounted || false,
-            discountPercentage: priceItem.discountPercentage || 0,
-            discountedAmount: priceItem.discountedAmount || 0,
-          })) || [];
-          setValue("pricesAndSkus", pricesAndSkus);
+
+          // Handle both old format (separate price/sku arrays) and new format (combined pricesAndSkus)
+          let pricesAndSkus: any[] = [];
+
+          if (data.pricesAndSkus && Array.isArray(data.pricesAndSkus)) {
+            // New format: combined pricesAndSkus array
+            pricesAndSkus = data.pricesAndSkus.map((item: any) => ({
+              id: item.id || "",
+              price: item.price || 0,
+              isDiscounted: item.isDiscounted || false,
+              discountPercentage: item.discountPercentage || 0,
+              discountedAmount: item.discountedAmount || 0,
+              skuNumber: item.skuNumber || item.sku || "",
+              barcode: item.barcode || "",
+              weightId: item.weightId || "",
+              weightValue: item.weightValue || 0,
+              weightUnit: item.weightUnit || "",
+              currencyCode: item.currencyCode || "",
+              currencyId: item.currencyId || "",
+              createdDate: item.createdDate || "",
+              modifiedDate: item.modifiedDate || null,
+              isActive: item.isActive ?? true,
+              isDeleted: item.isDeleted ?? false,
+            }));
+          } else if (data.price && Array.isArray(data.price)) {
+            // Old format: separate price and sku arrays
+            pricesAndSkus = data.price.map((priceItem: any, index: number) => ({
+              id: priceItem.id || "",
+              price: priceItem.price || 0,
+              isDiscounted: priceItem.isDiscounted || false,
+              discountPercentage: priceItem.discountPercentage || 0,
+              discountedAmount: priceItem.discountedAmount || 0,
+              skuNumber: data.sku?.[index]?.sku || "",
+              barcode: data.sku?.[index]?.barcode || "",
+              weightId: priceItem.weightId || "",
+              weightValue: priceItem.weightValue || 0,
+              weightUnit: priceItem.weightUnit || "",
+              currencyCode: priceItem.currencyCode || "",
+              currencyId: priceItem.currencyId || "",
+              createdDate: priceItem.createdDate || "",
+              modifiedDate: priceItem.modifiedDate || null,
+              isActive: priceItem.isActive ?? true,
+              isDeleted: priceItem.isDeleted ?? false,
+            }));
+          }
+
+          console.log("Final pricesAndSkus array:", pricesAndSkus);
+
+          // Use field array to properly populate data
+          replaceVariants(pricesAndSkus);
+
           setValue("stock", data.stock);
           setKeyFeatures(data.keyFeatures || []);
           setUses(data.uses || []);
@@ -208,9 +265,9 @@ const AddProduct: React.FC = () => {
         "Content-Type": "application/json",
       },
     })
-      .then((res): Promise<Brand[]> => res.json())
-      .then((data: Brand[]) => {
-        const formattedBrands: FormattedBrand[] = data
+      .then((res): Promise<Brand> => res.json())
+      .then((data: Brand) => {
+        const formattedBrands: FormattedBrand[] = data.data
           .filter((brand) => brand.isActive)
           .map((brand) => ({
             label: brand.name,
@@ -270,10 +327,12 @@ const AddProduct: React.FC = () => {
     })
       .then((res): Promise<Currency[]> => res.json())
       .then((data: Currency[]) => {
-        const formattedCurrencies: FormattedCurrency[] = data.map((currency) => ({
-          label: currency.code,
-          value: currency.id,
-        }));
+        const formattedCurrencies: FormattedCurrency[] = data.map(
+          (currency) => ({
+            label: currency.code,
+            value: currency.id,
+          })
+        );
         setCurrencies(formattedCurrencies);
       })
       .catch((error: unknown) => {
@@ -286,16 +345,11 @@ const AddProduct: React.FC = () => {
       setWeights([]);
       setCurrencies([]);
     };
-  }, [setValue]);
+  }, [setValue, replaceVariants]);
 
-  const {
-    fields: variantFields,
-    append: appendVariant,
-    remove: removeVariant,
-  } = useFieldArray({
-    control,
-    name: "pricesAndSkus",
-  });
+  const updatePricesAndSku = (index: number, field: string, value: any) => {
+    setValue(`pricesAndSkus.${index}.${field}` as any, value);
+  };
 
   const handleAddKeyFeature = () => setKeyFeatures([...keyFeatures, ""]);
   const handleRemoveKeyFeature = (index: number) =>
@@ -370,6 +424,22 @@ const AddProduct: React.FC = () => {
   };
 
   const onSubmit = async (data: ProductFormData) => {
+    console.log("=== FORM SUBMISSION DEBUG ===");
+    console.log("Form data received:", data);
+    console.log("PricesAndSkus from form:", data.pricesAndSkus);
+
+    // Log each price and SKU entry with its ID status
+    data.pricesAndSkus.forEach((item, index) => {
+      console.log(`PriceAndSku ${index}:`, {
+        id: item.id,
+        price: item.price,
+        skuNumber: item.skuNumber,
+        hasId: !!item.id,
+        isNewEntry: !item.id || item.id === "",
+        idValue: item.id || "NOT_SET",
+      });
+    });
+
     const imageUrls = await uploadAllImages(uploadedImages);
     const thumbnailImageUrl = thumbnailImage
       ? await uploadViaApi(thumbnailImage)
@@ -400,10 +470,10 @@ const AddProduct: React.FC = () => {
       isFeatured: isFeatured,
       ingredients: data.ingredients || "",
       nutritionalInfo: data.nutritionalInfo || "",
-      thumbnailUrl: thumbnailImageUrl || ""
+      thumbnailUrl: thumbnailImageUrl || "",
     };
 
-    const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/Product`;
+    const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/product`;
 
     try {
       const response = await fetch(endpoint, {
@@ -517,6 +587,7 @@ const AddProduct: React.FC = () => {
                 pricesAndSkuFields={variantFields}
                 appendPricesAndSku={appendVariant}
                 removePricesAndSku={removeVariant}
+                updatePricesAndSku={updatePricesAndSku}
               />
               <ProductDetails
                 control={control}
