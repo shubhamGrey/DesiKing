@@ -303,54 +303,36 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 }
 
                 // Handle Price Updates
-                if (productReq.PricesAndSkus != null)
+                if (productReq.PricesAndSkus != null && productReq.PricesAndSkus.Any())
                 {
-                    var incomingPriceIds = productReq.PricesAndSkus.Select(p => p.Id).Where(id => id != Guid.Empty).ToList();
-                    var pricesToRemove = productDetail.ProductPrices != null 
-                        ? productDetail.ProductPrices.Where(p => !incomingPriceIds.Contains(p.Id)).ToList() : [];
-
-                    if (pricesToRemove.Count != 0)
+                    // Remove existing prices for this product
+                    if (productDetail.ProductPrices != null && productDetail.ProductPrices.Any())
                     {
-                        _dbContext.ProductPrices.RemoveRange(pricesToRemove);
+                        _dbContext.ProductPrices.RemoveRange(productDetail.ProductPrices);
                     }
 
+                    // Add new prices from request
                     foreach (var price in productReq.PricesAndSkus)
                     {
-                        var existingPrice = productDetail.ProductPrices != null
-                            ? productDetail.ProductPrices.FirstOrDefault(p => p.Id == price.ProductId && price.ProductId != Guid.Empty) : null;
-                        if (existingPrice != null)
+                        var newPrice = new ProductPrice
                         {
-                            existingPrice.Price = price.Price;
-                            existingPrice.CurrencyId = price.CurrencyId;
-                            existingPrice.IsDiscounted = price.IsDiscounted;
-                            existingPrice.DiscountPercentage = price.DiscountPercentage;
-                            existingPrice.DiscountedAmount = price.DiscountedAmount;
-                            existingPrice.SkuNumber = price.SkuNumber;
-                            existingPrice.WeightId = price.WeightId;
-                            existingPrice.Barcode = price.Barcode;
-                            existingPrice.IsActive = price.IsActive;
-                            existingPrice.IsDeleted = price.IsDeleted;
-                            existingPrice.ModifiedDate = DateTime.UtcNow;
-                        }
-                        else
-                        {
-                            _dbContext.ProductPrices.Add(new ProductPrice
-                            {
-                                Id = Guid.NewGuid(),
-                                ProductId = productDetail.Id,
-                                Price = price.Price,
-                                CreatedDate = DateTime.UtcNow,
-                                CurrencyId = price.CurrencyId,
-                                IsDiscounted = price.IsDiscounted,
-                                DiscountPercentage = price.DiscountPercentage,
-                                DiscountedAmount = price.DiscountedAmount,
-                                SkuNumber = price.SkuNumber,
-                                WeightId = price.WeightId,
-                                Barcode = price.Barcode,
-                                IsActive = price.IsActive,
-                                IsDeleted = price.IsDeleted
-                            });
-                        }
+                            Id = Guid.NewGuid(),
+                            ProductId = productDetail.Id,
+                            Price = price.Price,
+                            CurrencyId = price.CurrencyId,
+                            IsDiscounted = price.IsDiscounted,
+                            DiscountPercentage = price.DiscountPercentage,
+                            DiscountedAmount = price.DiscountedAmount,
+                            SkuNumber = price.SkuNumber,
+                            WeightId = price.WeightId,
+                            Barcode = price.Barcode,
+                            IsActive = price.IsActive,
+                            IsDeleted = price.IsDeleted,
+                            CreatedDate = DateTime.UtcNow,
+                            ModifiedDate = DateTime.UtcNow
+                        };
+
+                        _dbContext.ProductPrices.Add(newPrice);
                     }
                 }
 
