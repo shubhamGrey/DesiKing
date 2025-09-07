@@ -169,7 +169,7 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.DeleteAddressById(id, xCorrelationId);
         }
-        public List<Model.EntityModel.Order> GetOrdersByUserId(string userId, string xCorrelationId)
+        public List<OrderByUserResponseModel> GetOrdersByUserId(string userId, string xCorrelationId)
         {
             return _repository.GetOrdersByUserId(userId, xCorrelationId);
         }
