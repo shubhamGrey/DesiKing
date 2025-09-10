@@ -21,6 +21,17 @@ import {
   Link,
   Stack,
   useMediaQuery,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  Card,
+  CardContent,
+  CircularProgress,
 } from "@mui/material";
 import {
   Person,
@@ -38,6 +49,7 @@ import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
+import { Order, OrdersApiResponse } from "@/types/order";
 
 const ProfileContent: React.FC = () => {
   const router = useRouter();
@@ -49,6 +61,8 @@ const ProfileContent: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [editForm, setEditForm] = useState({
     firstName: "",
     lastName: "",
@@ -74,6 +88,48 @@ const ProfileContent: React.FC = () => {
     }
     setLoading(false);
   }, [isLoggedIn, getUserProfile, router]);
+
+  const fetchOrders = async () => {
+    if (!userProfile?.id) return;
+
+    setOrdersLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userProfile.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const data: OrdersApiResponse = await response.json();
+      if (data.info.isSuccess && data.data) {
+        setOrders(data.data);
+      } else {
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      showError("Failed to load orders");
+      setOrders([]);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  // Fetch orders when tab changes to orders or when userProfile is loaded
+  useEffect(() => {
+    if (selectedTab === "orders" && userProfile?.id) {
+      fetchOrders();
+    }
+  }, [selectedTab, userProfile?.id]);
 
   const handleLogout = () => {
     clearUserProfile();
@@ -376,22 +432,199 @@ const ProfileContent: React.FC = () => {
         borderColor: "primary.main",
       }}
     >
-      <Typography
-        variant="h6"
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
         mb={2}
-        color="primary.main"
-        fontFamily={michroma.style.fontFamily}
       >
-        Order History
-      </Typography>
-      <Alert severity="info">
-        No orders found. Start shopping to see your order history here!
-      </Alert>
-      <Box mt={2}>
-        <Button variant="contained" onClick={() => router.push("/products")}>
-          Browse Products
+        <Typography
+          variant="h6"
+          color="primary.main"
+          fontFamily={michroma.style.fontFamily}
+        >
+          Order History
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={fetchOrders}
+          disabled={ordersLoading}
+          startIcon={ordersLoading ? <CircularProgress size={16} /> : null}
+        >
+          {ordersLoading ? "Loading..." : "Refresh"}
         </Button>
       </Box>
+
+      {ordersLoading ? (
+        <Box display="flex" justifyContent="center" p={4}>
+          <CircularProgress />
+        </Box>
+      ) : orders.length === 0 ? (
+        <>
+          <Alert severity="info">
+            No orders found. Start shopping to see your order history here!
+          </Alert>
+          <Box mt={2}>
+            <Button
+              variant="contained"
+              onClick={() => router.push("/products")}
+            >
+              Browse Products
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{ border: "1px solid", borderColor: "primary.main" }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "primary.main" }}>
+                <TableCell
+                  sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+                >
+                  Order ID
+                </TableCell>
+                <TableCell
+                  sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+                >
+                  Date
+                </TableCell>
+                <TableCell
+                  sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+                >
+                  Status
+                </TableCell>
+                <TableCell
+                  sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+                >
+                  Total Amount
+                </TableCell>
+                <TableCell
+                  sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+                >
+                  Items
+                </TableCell>
+                <TableCell
+                  sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+                >
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.id} hover>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="bold">
+                      {order.receiptId || order.id.slice(0, 8)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {new Date(order.createdDate).toLocaleDateString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={order.status.toUpperCase()}
+                      color={
+                        order.status === "paid"
+                          ? "success"
+                          : order.status === "failed"
+                          ? "error"
+                          : "warning"
+                      }
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="bold">
+                      {order.currency || "₹"} {order.totalAmount.toFixed(2)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {order.orderItems.length} item
+                      {order.orderItems.length !== 1 ? "s" : ""}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => {
+                        // You can implement order details view here
+                        showSuccess(
+                          `Order details for ${
+                            order.receiptId || order.id.slice(0, 8)
+                          }`
+                        );
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {orders.length > 0 && (
+        <Box mt={3}>
+          <Card sx={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Order Summary
+              </Typography>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2">Total Orders:</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {orders.length}
+                </Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2">Successful Orders:</Typography>
+                <Typography
+                  variant="body2"
+                  fontWeight="bold"
+                  color="success.main"
+                >
+                  {orders.filter((order) => order.status === "paid").length}
+                </Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2">Pending Orders:</Typography>
+                <Typography
+                  variant="body2"
+                  fontWeight="bold"
+                  color="warning.main"
+                >
+                  {orders.filter((order) => order.status === "created").length}
+                </Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2">Total Amount Spent:</Typography>
+                <Typography
+                  variant="body2"
+                  fontWeight="bold"
+                  color="primary.main"
+                >
+                  ₹{" "}
+                  {orders
+                    .filter((order) => order.status === "paid")
+                    .reduce((sum, order) => sum + order.totalAmount, 0)
+                    .toFixed(2)}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      )}
     </Box>
   );
 
