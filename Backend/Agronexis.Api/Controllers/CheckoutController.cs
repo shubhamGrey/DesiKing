@@ -133,20 +133,36 @@ namespace Agronexis.Api.Controllers
         [HttpGet("orders/{userId}")]
         public ActionResult<ApiResponseModel> GetOrdersByUserId(string userId)
         {
-            SetXCorrelationId();
-            var addresses = _configService.GetOrdersByUserId(userId, XCorrelationID);
-
-            return new ApiResponseModel
+            var correlationId = string.Empty;
+            ApiResponseModel response = new()
             {
-                Info = new ApiResponseInfoModel
-                {
-                    IsSuccess = true,
-                    Code = ((int)HttpStatusCode.OK).ToString(),
-                    Message = ApiResponseMessage.SUCCESS
-                },
-                Data = addresses,
-                Id = XCorrelationID
+                Info = new ApiResponseInfoModel()
             };
+
+            try
+            {
+                correlationId = GetCorrelationId();
+
+                var orders = _configService.GetOrdersByUserId(userId, XCorrelationID);
+                if (orders == null || !orders.Any())
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                }
+                else
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+                    response.Info.Message = ApiResponseMessage.SUCCESS;
+                    response.Data = orders;
+                }
+                response.Id = correlationId;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching orders for user {UserId}, correlation ID: {CorrelationId}", userId, correlationId);
+                return HandleException(ex, "Failed to fetch orders", correlationId);
+            }
         }
     }
 }
