@@ -100,9 +100,9 @@ const AddCategory: React.FC = () => {
         "Content-Type": "application/json",
       },
     })
-      .then((res): Promise<Brand[]> => res.json())
-      .then((data: Brand[]) => {
-        const formattedBrands: FormattedBrand[] = data
+      .then((res): Promise<Brand> => res.json())
+      .then((data: Brand) => {
+        const formattedBrands: FormattedBrand[] = data.data
           .filter((brand) => brand.isActive)
           .map((brand) => ({
             label: brand.name,
