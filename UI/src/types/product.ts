@@ -135,6 +135,16 @@ export interface Category {
   isActive: boolean;
 }
 
+export interface CategoryFormData {
+  name: string;
+  description: string;
+  brandId?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  isActive?: boolean;
+  imageUrl?: string;
+}
+
 export interface FormattedCategory {
   id: string;
   title: string;

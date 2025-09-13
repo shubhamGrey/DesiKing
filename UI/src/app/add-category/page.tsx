@@ -31,32 +31,12 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { michroma } from "@/styles/fonts";
+import { Brand, CategoryFormData, FormattedBrand } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
   return imageSrc.includes("cloud.agronexis.com");
 };
-
-interface CategoryFormData {
-  name: string;
-  description: string;
-  brandId?: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  isActive?: boolean;
-  imageUrl?: string;
-}
-
-interface Brand {
-  name: string;
-  id: string;
-  isActive: boolean;
-}
-
-interface FormattedBrand {
-  label: string;
-  value: string;
-}
 
 const AddCategory: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));

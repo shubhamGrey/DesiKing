@@ -92,8 +92,8 @@ const ProductsClient = () => {
   }, []);
 
   // Check if user has admin role
-  const userRole = Cookies.get("user_role");
-  const isAdmin = userRole === "Admin";
+  //   const userRole = Cookies.get("user_role");
+  //   const isAdmin = userRole === "Admin";
 
   if (loading) {
     return (
