@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250914103430_RemoveOnModelCreatingConfiguration")]
-    partial class RemoveOnModelCreatingConfiguration
+    [Migration("20250914124032_CreateAnalyticsTables")]
+    partial class CreateAnalyticsTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

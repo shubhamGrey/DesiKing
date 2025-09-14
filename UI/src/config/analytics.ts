@@ -52,9 +52,7 @@ export interface PageViewEvent {
 // Analytics configuration from environment variables
 export const analyticsConfig: AnalyticsConfig = {
   isEnabled: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true",
-  gaTrackingId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-  facebookPixelId: process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID,
-  customEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT,
+  customEndpoint: `${process.env.NEXT_PUBLIC_API_URL}/analytics/track`,
   enableDebugMode: false, // Disabled for production database storage
   enableBeaconAnalytics: true,
 };
