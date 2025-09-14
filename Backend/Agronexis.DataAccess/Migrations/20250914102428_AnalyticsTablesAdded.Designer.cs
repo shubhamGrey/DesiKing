@@ -3,6 +3,7 @@ using System;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250914102428_AnalyticsTablesAdded")]
+    partial class AnalyticsTablesAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,7 +101,9 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<string>("CustomData")
                         .HasColumnType("text");
@@ -107,7 +112,9 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<string>("EventName")
                         .IsRequired()
@@ -145,6 +152,21 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Action")
+                        .HasDatabaseName("IX_AnalyticsEvents_Action");
+
+                    b.HasIndex("Category")
+                        .HasDatabaseName("IX_AnalyticsEvents_Category");
+
+                    b.HasIndex("EventDate")
+                        .HasDatabaseName("IX_AnalyticsEvents_EventDate");
+
+                    b.HasIndex("SessionId")
+                        .HasDatabaseName("IX_AnalyticsEvents_SessionId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_AnalyticsEvents_UserId");
 
                     b.ToTable("AnalyticsEvents");
                 });
@@ -320,7 +342,9 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<string>("Currency")
                         .HasMaxLength(10)

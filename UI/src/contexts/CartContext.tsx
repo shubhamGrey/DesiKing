@@ -8,6 +8,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+import { useEcommerceTracking } from "@/hooks/useAnalytics";
 
 // Types
 export interface CartItem {
@@ -77,6 +78,7 @@ interface CartContextType extends CartState {
   getItemQuantity: (productId: string) => number;
   syncCartWithDatabase: () => Promise<void>;
   getEnhancedItems: () => Promise<EnhancedCartItem[]>;
+  trackCartView: () => void;
 }
 
 // Helper function to fetch product details by productId
@@ -603,6 +605,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
+  // Analytics hooks
+  const { trackAddToCart, trackRemoveFromCart, trackViewCart } =
+    useEcommerceTracking();
+
   // Load cart from database or localStorage on mount
   useEffect(() => {
     const loadCart = async () => {
@@ -662,13 +668,41 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const addItem = useCallback(
     (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
       dispatch({ type: "ADD_ITEM", payload: item });
+
+      // Track add to cart event
+      trackAddToCart({
+        id: item.productId,
+        name: item.name,
+        category: "Spices", // Default category, could be enhanced with actual category
+        price: item.price,
+        quantity: item.quantity || 1,
+        brand: "Agro Nexis",
+      });
     },
-    []
+    [trackAddToCart]
   );
 
-  const removeItem = useCallback((id: string) => {
-    dispatch({ type: "REMOVE_ITEM", payload: id });
-  }, []);
+  const removeItem = useCallback(
+    (id: string) => {
+      // Find the item before removing to track analytics
+      const itemToRemove = state.items.find((item) => item.id === id);
+
+      dispatch({ type: "REMOVE_ITEM", payload: id });
+
+      // Track remove from cart event
+      if (itemToRemove) {
+        trackRemoveFromCart({
+          id: itemToRemove.productId,
+          name: itemToRemove.name,
+          category: "Spices",
+          price: itemToRemove.price,
+          quantity: itemToRemove.quantity,
+          brand: "Agro Nexis",
+        });
+      }
+    },
+    [state.items, trackRemoveFromCart]
+  );
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
     dispatch({ type: "UPDATE_QUANTITY", payload: { id, quantity } });
@@ -827,6 +861,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [state.items]);
 
+  // Track cart view function
+  const handleTrackCartView = useCallback(() => {
+    const total = state.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    trackViewCart({
+      total,
+      itemCount: state.items.length,
+    });
+  }, [state.items, trackViewCart]);
+
   const contextValue: CartContextType = useMemo(
     () => ({
       ...state,
@@ -838,6 +884,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       getItemQuantity,
       syncCartWithDatabase,
       getEnhancedItems,
+      trackCartView: handleTrackCartView,
     }),
     [
       state,
@@ -849,6 +896,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       getItemQuantity,
       syncCartWithDatabase,
       getEnhancedItems,
+      handleTrackCartView,
     ]
   );
 

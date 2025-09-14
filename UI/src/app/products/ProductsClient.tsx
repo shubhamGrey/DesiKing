@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { Product, ProductFormData } from "@/types/product";
+import { usePageTracking, useErrorTracking } from "@/hooks/useAnalytics";
+import { useCallback } from "react";
 
 interface CategorizedProducts {
   [key: string]: {
@@ -27,7 +29,11 @@ const ProductsClient = () => {
   >([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = async () => {
+  // Analytics hooks
+  usePageTracking(); // Automatically track page views
+  const { trackApiError } = useErrorTracking();
+
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/product`,
@@ -82,14 +88,21 @@ const ProductsClient = () => {
       setProductsList(sortedArray);
     } catch (error) {
       console.error("Failed to fetch products:", error);
+
+      // Track API error
+      trackApiError(
+        "product",
+        500,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [trackApiError]);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   // Check if user has admin role
   //   const userRole = Cookies.get("user_role");

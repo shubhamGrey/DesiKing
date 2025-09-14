@@ -43,6 +43,7 @@ import { UserSessionManager } from "@/utils/userSession";
 import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 import { Category, FormattedCategory } from "@/types/product";
+import { usePageTracking } from "@/hooks/useAnalytics";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
@@ -179,6 +180,10 @@ const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const { addItem } = useCart();
+
+  // Analytics hooks
+  usePageTracking(); // Automatically track page views
+  // Note: Global click tracking is handled by GlobalClickTracker component
 
   const [productCategories, setProductCategories] = React.useState<
     FormattedCategory[]

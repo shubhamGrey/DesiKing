@@ -10,6 +10,8 @@ import { poppins } from "@/styles/fonts";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CartProvider } from "@/contexts/CartContext";
+import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
+import { GlobalClickTracker } from "@/components/GlobalClickTracker";
 
 export default function RootLayout({
   children,
@@ -32,11 +34,15 @@ export default function RootLayout({
         <ThemeProvider theme={theme}>
           <ErrorBoundary showDetails={process.env.NODE_ENV === "development"}>
             <NotificationProvider>
-              <CartProvider>
-                {!isAuthPage && <Header />}
-                <main>{children}</main>
-                {!isAuthPage && <Footer />}
-              </CartProvider>
+              <AnalyticsProvider>
+                <GlobalClickTracker>
+                  <CartProvider>
+                    {!isAuthPage && <Header />}
+                    <main>{children}</main>
+                    {!isAuthPage && <Footer />}
+                  </CartProvider>
+                </GlobalClickTracker>
+              </AnalyticsProvider>
             </NotificationProvider>
           </ErrorBoundary>
         </ThemeProvider>

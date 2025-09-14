@@ -29,6 +29,7 @@ import theme from "@/styles/theme";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import BrandLogo from "../../../public/AgroNexisWhite.png";
+import { useFormTracking, usePageTracking } from "@/hooks/useAnalytics";
 
 interface ContactFormData {
   firstName: string;
@@ -42,6 +43,10 @@ export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
+
+  // Analytics hooks
+  usePageTracking(); // Automatically track page views
+  const { trackFormSubmit } = useFormTracking();
   const {
     control,
     handleSubmit,
@@ -59,6 +64,9 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
+    let success = false;
+    let errorMessage = "";
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/contact`,
@@ -81,9 +89,14 @@ export default function Contact() {
       }
 
       await response.json();
+      success = true;
     } catch (error) {
       console.error("Error sending email:", error);
+      errorMessage = error instanceof Error ? error.message : "Unknown error";
     }
+
+    // Track form submission
+    trackFormSubmit("contact_form", success, errorMessage);
 
     setIsSubmitting(false);
     reset();

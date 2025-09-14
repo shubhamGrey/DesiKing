@@ -1309,5 +1309,73 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching orders by user id", xCorrelationId, ex);
             }
         }
+
+        public async Task<AnalyticsResponseModel> ProcessAnalyticsEvents(AnalyticsPayloadRequest payload, string xCorrelationId)
+        {
+            try
+            {
+                var response = new AnalyticsResponseModel
+                {
+                    Success = true,
+                    Message = "Analytics events processed successfully",
+                    ProcessedEvents = 0,
+                    Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                };
+
+                if (payload?.Events?.Any() == true)
+                {
+                    foreach (var eventData in payload.Events)
+                    {
+                        // Create analytics event
+                        var analyticsEvent = new AnalyticsEvent
+                        {
+                            EventName = eventData.Event,
+                            Category = eventData.Category,
+                            Action = eventData.Action,
+                            Label = eventData.Label,
+                            Value = eventData.Value,
+                            Timestamp = eventData.Timestamp,
+                            EventDate = DateTime.UtcNow,
+                            SessionId = eventData.SessionId,
+                            UserId = eventData.UserId,
+                            CustomData = eventData.CustomData != null ? JsonSerializer.Serialize(eventData.CustomData) : null,
+                            UserAgent = payload.UserAgent,
+                            PageUrl = payload.Url,
+                            ReferrerUrl = null, // Can be added to request model if needed
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        _dbContext.AnalyticsEvents.Add(analyticsEvent);
+                        await _dbContext.SaveChangesAsync(); // Save to get the ID
+
+                        // Handle ecommerce events
+                        if (!string.IsNullOrEmpty(eventData.TransactionId) || eventData.Items?.Any() == true)
+                        {
+                            var ecommerceEvent = new EcommerceEvent
+                            {
+                                AnalyticsEventId = analyticsEvent.Id,
+                                TransactionId = eventData.TransactionId,
+                                Currency = eventData.Currency,
+                                TotalValue = eventData.Value,
+                                ItemsData = eventData.Items != null ? JsonSerializer.Serialize(eventData.Items) : null,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            _dbContext.EcommerceEvents.Add(ecommerceEvent);
+                        }
+
+                        response.ProcessedEvents++;
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while processing analytics events", xCorrelationId, ex);
+            }
+        }
     }
 }

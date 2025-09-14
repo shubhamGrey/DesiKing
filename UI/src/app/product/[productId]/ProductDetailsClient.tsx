@@ -7,6 +7,7 @@ import { Box, Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import React, { useEffect, useState } from "react";
 import { Product, ProductFormData } from "@/types/product";
+import { useEcommerceTracking, useErrorTracking } from "@/hooks/useAnalytics";
 
 interface ProductDetailsClientProps {
   productId: string;
@@ -18,6 +19,10 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
   const [selectedProduct, setSelectedProduct] =
     useState<ProductFormData | null>(null);
   const [similarProducts, setSimilarProducts] = useState<ProductFormData[]>([]);
+
+  // Analytics hooks
+  const { trackProductView } = useEcommerceTracking();
+  const { trackApiError } = useErrorTracking();
 
   useEffect(() => {
     if (!productId) return;
@@ -62,7 +67,14 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 
         setSelectedProduct(data);
 
-        // Fetch similar products
+        // Track product view
+        trackProductView({
+          id: data.id?.toString() || productId,
+          name: data.name || "Unknown Product",
+          category: data.categoryName || "Spices",
+          price: data.pricesAndSkus?.[0]?.price || 0,
+          brand: "Agro Nexis",
+        });
         const similarResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/product/category/${data.categoryId}`,
           {
@@ -92,11 +104,18 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
         );
       } catch (error) {
         console.error("Failed to fetch product data:", error);
+
+        // Track API error
+        trackApiError(
+          `product/${productId}`,
+          500,
+          error instanceof Error ? error.message : "Unknown error"
+        );
       }
     };
 
     fetchProduct();
-  }, [productId]);
+  }, [productId, trackProductView, trackApiError]);
 
   if (!selectedProduct) {
     return (
