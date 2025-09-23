@@ -68,6 +68,17 @@ export function middleware(request) {
   const isProtectedRoute = isRouteMatch(protectedRoutes, pathname);
   const isAdminRoute = isRouteMatch(adminRoutes, pathname);
 
+  // If user is already logged in and trying to access login page, redirect to home or redirect parameter
+  if (isLoggedIn && pathname === "/login") {
+    const redirectParam = request.nextUrl.searchParams.get("redirect");
+    if (redirectParam && redirectParam.startsWith("/") && !redirectParam.includes("://")) {
+      const redirectUrl = new URL(redirectParam, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+    const homeUrl = new URL("/", request.url);
+    return NextResponse.redirect(homeUrl);
+  }
+
   // If it's a public route and not protected, allow access
   if (isPublicRoute && !isProtectedRoute && !isAdminRoute) {
     return NextResponse.next();

@@ -45,6 +45,9 @@ export class UserSessionManager {
         this.USER_PROFILE_KEY,
         JSON.stringify(userProfile)
       );
+
+      // Also store a simple flag in localStorage for faster auth checks
+      localStorage.setItem("isAuthenticated", "true");
     } catch (error) {
       console.error("Error storing user profile:", error);
     }
@@ -88,6 +91,8 @@ export class UserSessionManager {
       }
 
       sessionStorage.removeItem(this.USER_PROFILE_KEY);
+      // Also clear the authentication flag
+      localStorage.removeItem("isAuthenticated");
     } catch (error) {
       console.error("Error clearing user profile:", error);
     }
@@ -97,7 +102,20 @@ export class UserSessionManager {
    * Check if user is logged in (has profile in session)
    */
   static isLoggedIn(): boolean {
-    return this.getUserProfile() !== null;
+    try {
+      // Check both user profile and authentication flag for more reliable detection
+      const userProfile = this.getUserProfile();
+
+      // Quick check for auth flag in localStorage
+      const isAuthFlagSet =
+        typeof window !== "undefined" &&
+        localStorage.getItem("isAuthenticated") === "true";
+
+      return userProfile !== null && isAuthFlagSet;
+    } catch (error) {
+      console.error("Error checking login status:", error);
+      return false;
+    }
   }
 
   /**

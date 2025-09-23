@@ -26,6 +26,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
+import BrandLogoWhite from "../../public/AgroNexisWhite.png";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
 import { useCart } from "@/contexts/CartContext";
@@ -38,12 +39,36 @@ export default function Header() {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { itemCount } = useCart();
   const { getUserFullName, isLoggedIn } = useUserSession();
 
   // Only run after client-side hydration
   useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  // Track scroll position
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollTop = window.scrollY;
+          const scrollThreshold = 80; // Adjusted threshold for better UX
+          setIsScrolled(scrollTop > scrollThreshold);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Initial check
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const leftNavLinks = [
@@ -84,12 +109,13 @@ export default function Header() {
         <Toolbar
           sx={{
             justifyContent: "start",
-            height: 64,
+            height: isScrolled ? 64 : 80,
             backgroundColor:
               pathname === "/contact" ? "primary.contrastText" : "primary.main",
             color:
               pathname === "/contact" ? "primary.main" : "primary.contrastText",
             borderBottom: "0.5px solid #b36a26",
+            transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design easing
           }}
         >
           {/* Desktop Nav */}
@@ -97,27 +123,44 @@ export default function Header() {
             <>
               <Box
                 sx={{
-                  backgroundColor: "#fff",
-                  borderRadius: 5,
-                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
-                  p: 1.5,
-                  pt: 8,
+                  backgroundColor: isScrolled ? "transparent" : "#fff",
+                  borderRadius: isScrolled ? 0 : 5,
+                  boxShadow: isScrolled
+                    ? "none"
+                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                  p: isScrolled ? 0.5 : 1,
+                  pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  height: 90,
-                  width: 90,
+                  height: isScrolled ? 40 : 110,
+                  width: isScrolled ? 40 : 100,
                   cursor: "pointer",
                   ml: 1,
+                  mt: isScrolled ? 1 : 3,
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
                 }}
               >
                 <Link href="/" passHref>
-                  <Image
-                    src={BrandLogo}
-                    alt="AGRO NEXIS Logo"
-                    layout="intrinsic"
-                    priority
-                  />
+                  {isScrolled && pathname !== "/contact" ? (
+                    <Image
+                      src={BrandLogoWhite}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  ) : (
+                    <Image
+                      src={BrandLogo}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  )}
                 </Link>
               </Box>
               <Grid container sx={{ flexGrow: 1, ml: 2.5 }}>
@@ -199,27 +242,44 @@ export default function Header() {
             >
               <Box
                 sx={{
-                  backgroundColor: "#fff",
-                  borderRadius: 5,
-                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
-                  p: 1.5,
-                  pt: 8,
+                  backgroundColor: isScrolled ? "transparent" : "#fff",
+                  borderRadius: isScrolled ? 0 : 5,
+                  boxShadow: isScrolled
+                    ? "none"
+                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                  p: isScrolled ? 0.5 : 1,
+                  pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  height: 90,
-                  width: 90,
+                  height: isScrolled ? 40 : 110,
+                  width: isScrolled ? 40 : 100,
                   cursor: "pointer",
                   ml: 1,
+                  mt: isScrolled ? 1 : 3,
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
                 }}
               >
                 <Link href="/" passHref>
-                  <Image
-                    src={BrandLogo}
-                    alt="AGRO NEXIS Logo"
-                    layout="intrinsic"
-                    priority
-                  />
+                  {isScrolled && pathname !== "/contact" ? (
+                    <Image
+                      src={BrandLogoWhite}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  ) : (
+                    <Image
+                      src={BrandLogo}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  )}
                 </Link>
               </Box>
               <Box>
