@@ -425,7 +425,7 @@ const AddProduct: React.FC = () => {
 
   const onSubmit = async (data: ProductFormData) => {
     // Log each price and SKU entry with its ID status
-    data.pricesAndSkus.forEach((item, index) => {
+    data.pricesAndSkus.forEach((item) => {
       item.discountedAmount =
         item.price - (item.price * item.discountPercentage) / 100;
 
