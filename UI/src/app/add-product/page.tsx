@@ -424,20 +424,12 @@ const AddProduct: React.FC = () => {
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    console.log("=== FORM SUBMISSION DEBUG ===");
-    console.log("Form data received:", data);
-    console.log("PricesAndSkus from form:", data.pricesAndSkus);
-
     // Log each price and SKU entry with its ID status
     data.pricesAndSkus.forEach((item, index) => {
-      console.log(`PriceAndSku ${index}:`, {
-        id: item.id,
-        price: item.price,
-        skuNumber: item.skuNumber,
-        hasId: !!item.id,
-        isNewEntry: !item.id || item.id === "",
-        idValue: item.id || "NOT_SET",
-      });
+      item.discountedAmount =
+        item.price - (item.price * item.discountPercentage) / 100;
+
+      item.isDiscounted = item.discountPercentage > 0;
     });
 
     const imageUrls = await uploadAllImages(uploadedImages);

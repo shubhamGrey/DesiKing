@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Box,
   Grid,
@@ -158,9 +158,25 @@ const Cart = () => {
   const [loadingBillingStates, setLoadingBillingStates] = useState(false); // Default to manual
   const [isProcessing, setIsProcessing] = useState(false); // For save address operations
 
-  // Calculate totals
+  // Calculate totals and discounts
   const taxes = subtotal * 0.05; // 5% of subtotal
-  const orderTotal = subtotal + taxes;
+
+  // Calculate total discount from enhanced items
+  const totalDiscount = useMemo(() => {
+    if (enhancedItems.length > 0) {
+      return enhancedItems.reduce((discount, item) => {
+        const pricing = item.productDetails?.pricesAndSkus?.[0];
+        if (pricing && pricing.isDiscounted && pricing.discountedAmount) {
+          // discountedAmount represents the discount per unit
+          return discount + pricing.discountedAmount * item.quantity;
+        }
+        return discount;
+      }, 0);
+    }
+    return 0;
+  }, [enhancedItems]);
+
+  const orderTotal = totalDiscount + taxes;
 
   // Helper function to save address
   const saveAddress = async (addressData: AddressFormData): Promise<string> => {
@@ -180,8 +196,6 @@ const Cart = () => {
         isActive: true,
         isDeleted: false,
       };
-
-      console.log("🚀 Saving address:", payload);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/address`,
@@ -955,7 +969,7 @@ const Cart = () => {
                                 color="primary.main"
                                 sx={{ fontSize: "0.875rem", mt: 0.5 }}
                               >
-                                Total: {getCurrencySymbol(displayCurrency)}
+                                Total: {getCurrencySymbol(displayCurrency)}{" "}
                                 {((displayPrice || 0) * item.quantity).toFixed(
                                   2
                                 )}
@@ -1791,6 +1805,19 @@ const Cart = () => {
                     {subtotal.toFixed(2)}
                   </Typography>
                 </Box>
+
+                {/* Only show discount row if there are actual discounts */}
+                {totalDiscount > 0 && (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography color="#84a897">Discount</Typography>
+                    <Typography color="#4caf50">
+                      -{getCurrencySymbol(displayCurrency)}
+                      {(subtotal - totalDiscount).toFixed(2)}
+                    </Typography>
+                  </Box>
+                )}
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography color="#84a897">Shipping</Typography>

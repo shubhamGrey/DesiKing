@@ -80,13 +80,11 @@ const ProductDetails = ({
 
     // Validate required data
     if (!selectedProduct.id) {
-      console.error("❌ Product ID is missing");
       alert("Error: Product information is incomplete");
       return;
     }
 
     if (skuData.price <= 0) {
-      console.error("❌ Product price is invalid:", skuData.price);
       alert("Error: Product price information is missing");
       return;
     }
@@ -121,13 +119,11 @@ const ProductDetails = ({
 
     // Validate required data
     if (!selectedProduct.id) {
-      console.error("❌ Product ID is missing");
       alert("Error: Product information is incomplete");
       return;
     }
 
     if (skuData.price <= 0) {
-      console.error("❌ Product price is invalid:", skuData.price);
       alert("Error: Product price information is missing");
       return;
     }
@@ -252,7 +248,7 @@ const ProductDetails = ({
               sx={{ mb: 12 }}
             >
               <Typography
-                variant="h4"
+                variant="h5"
                 fontWeight={600}
                 sx={{ mb: 2 }}
                 fontFamily={michroma.style.fontFamily}
@@ -278,28 +274,36 @@ const ProductDetails = ({
               >
                 {selectedProduct?.description}
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="h4" sx={{ color: "primary.main" }}>
-                  {getCurrencySymbol(
-                    selectedProduct?.pricesAndSkus.find(
-                      (sku) =>
-                        sku.weightValue + sku.weightUnit === selectedPacket
-                    )?.currencyCode || ""
-                  )}
-                  {
-                    selectedProduct?.pricesAndSkus.find(
-                      (sku) =>
-                        sku.weightValue + sku.weightUnit === selectedPacket
-                    )?.price
-                  }
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", my: "8px !important" }}
-                >
-                  ({selectedPacket})
-                </Typography>
-              </Stack>
+              {/* Move selectedSKU declaration above JSX */}
+              {(() => {
+                const selectedSKU = selectedProduct?.pricesAndSkus.find(
+                  (sku) => sku.weightValue + sku.weightUnit === selectedPacket
+                );
+
+                return (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="h5" sx={{ color: "secondary.main" }}>
+                      <span style={{ textDecoration: "line-through" }}>
+                        {getCurrencySymbol(selectedSKU?.currencyCode || "")}
+                        {selectedSKU?.price}
+                      </span>
+                    </Typography>
+                    {"  "}
+                    <Typography variant="h5" sx={{ color: "primary.main" }}>
+                      <span>
+                        {getCurrencySymbol(selectedSKU?.currencyCode || "")}
+                        {selectedSKU?.discountedAmount}
+                      </span>
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", my: "8px !important" }}
+                    >
+                      ({selectedPacket})
+                    </Typography>
+                  </Stack>
+                );
+              })()}
             </Stack>
           </Box>
         </Box>

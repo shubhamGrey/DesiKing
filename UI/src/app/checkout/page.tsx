@@ -486,6 +486,10 @@ const CheckoutContent: React.FC = () => {
               <Typography>₹{totalAmount.toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography>Discount:</Typography>
+              <Typography>₹{(totalAmount * 0.1).toFixed(2)}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Shipping:</Typography>
               <Typography>
                 {shippingCost === 0 ? "FREE" : `₹${shippingCost.toFixed(2)}`}
