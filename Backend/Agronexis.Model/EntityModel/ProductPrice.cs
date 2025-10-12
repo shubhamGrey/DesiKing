@@ -22,8 +22,8 @@ namespace Agronexis.Model.EntityModel
         public Currency Currency { get; set; }
         public decimal Price { get; set; }
         public bool IsDiscounted { get; set; }
-        public int DiscountPercentage { get; set; }
-        public int DiscountedAmount { get; set; }
+        public decimal DiscountPercentage { get; set; }
+        public decimal DiscountedAmount { get; set; }
         public string? SkuNumber { get; set; }
         [ForeignKey("Weight")]
         public Guid WeightId { get; set; }
