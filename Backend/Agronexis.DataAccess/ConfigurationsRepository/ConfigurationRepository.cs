@@ -801,7 +801,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
                         CreatedDate = DateTime.UtcNow,
                         IsActive = true,
-                        RoleId = model.RoleId
+                        RoleId = model.RoleId ?? Guid.Empty
                     };
 
                     _dbContext.Users.Add(user);
@@ -1398,6 +1398,62 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             catch (Exception ex)
             {
                 throw new RepositoryException("Error occurred while processing analytics events", xCorrelationId, ex);
+            }
+        }
+
+        public async Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId)
+        {
+            try
+            {
+                // For profile updates, Id should be provided
+                if (!model.Id.HasValue)
+                {
+                    throw new RepositoryException("User ID is required for profile updates", xCorrelationId);
+                }
+
+                var user = await _dbContext.Users
+                    .Include(u => u.Roles)
+                    .FirstOrDefaultAsync(u => u.Id == model.Id.Value && u.IsActive && !u.IsDeleted);
+
+                if (user == null)
+                {
+                    throw new RepositoryException("User not found", xCorrelationId);
+                }
+
+                // Update user properties
+                user.FirstName = model.FirstName?.Trim();
+                user.LastName = model.LastName?.Trim();
+                user.Email = model.Email?.Trim();
+                user.MobileNumber = model.MobileNumber?.Trim();
+                user.ModifiedDate = DateTime.UtcNow;
+
+                // Update username if provided, otherwise use email
+                user.UserName = !string.IsNullOrWhiteSpace(model.UserName) 
+                    ? model.UserName.Trim() 
+                    : model.Email?.Trim();
+
+                await _dbContext.SaveChangesAsync();
+
+                // Return updated profile
+                return new UserProfileResponseModel
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    MobileNumber = user.MobileNumber,
+                    RoleId = user.RoleId,
+                    RoleName = user.Roles?.Name,
+                    CreatedDate = user.CreatedDate,
+                    ModifiedDate = user.ModifiedDate,
+                    BrandId = user.BrandId,
+                    IsActive = user.IsActive
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while updating user profile", xCorrelationId, ex);
             }
         }
     }

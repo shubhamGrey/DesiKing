@@ -178,5 +178,10 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.ProcessAnalyticsEvents(payload, xCorrelationId);
         }
+
+        public async Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId)
+        {
+            return await _repository.UpdateUserProfile(model, xCorrelationId);
+        }
     }
 }
