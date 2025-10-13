@@ -518,13 +518,40 @@ const ProfileContent: React.FC = () => {
           >
             Personal Information
           </Typography>
-          <Button
-            startIcon={isEditing ? <Cancel /> : <Edit />}
-            onClick={handleEditToggle}
-            variant={isEditing ? "outlined" : "contained"}
-          >
-            {isEditing ? "Cancel" : "Edit"}
-          </Button>
+          {!isEditing ? (
+            <Button
+              startIcon={<Edit />}
+              onClick={handleEditToggle}
+              variant="contained"
+            >
+              Edit
+            </Button>
+          ) : (
+            <Box display="flex" gap={2}>
+              <Button
+                variant="outlined"
+                startIcon={<Cancel />}
+                onClick={handleEditToggle}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={
+                  saving ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <Save />
+                  )
+                }
+                onClick={handleSaveProfile}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </Box>
+          )}
         </Box>
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 6 }}>
@@ -585,32 +612,6 @@ const ProfileContent: React.FC = () => {
             />
           </Grid>
         </Grid>
-        {isEditing && (
-          <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-            <Button
-              variant="outlined"
-              startIcon={<Cancel />}
-              onClick={handleEditToggle}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={
-                saving ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <Save />
-                )
-              }
-              onClick={handleSaveProfile}
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </Box>
-        )}
       </CardContent>
     </Card>
   );
