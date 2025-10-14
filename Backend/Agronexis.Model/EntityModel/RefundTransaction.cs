@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace Agronexis.Model.EntityModel
 {
-    [Table("Refund", Schema = "dbo")]
-    public class Refund
+    [Table("RefundTransaction", Schema = "dbo")]
+    public class RefundTransaction
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
