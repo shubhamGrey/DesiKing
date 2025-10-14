@@ -37,14 +37,13 @@ import {
   NavigateNext,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { useUserSession } from "@/utils/userSession";
+import { isLoggedIn, isAdmin } from "@/utils/auth";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 
 const AdminDashboardContent: React.FC = () => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { isLoggedIn, isAdmin } = useUserSession();
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("overview");
 
@@ -60,7 +59,7 @@ const AdminDashboardContent: React.FC = () => {
     }
 
     setLoading(false);
-  }, [isLoggedIn, isAdmin, router]);
+  }, [router]);
 
   const menuItems = [
     { id: "overview", label: "Dashboard Overview", icon: <Dashboard /> },

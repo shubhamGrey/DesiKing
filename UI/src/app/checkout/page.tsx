@@ -34,7 +34,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
-import { useUserSession } from "@/utils/userSession";
+import { isLoggedIn } from "@/utils/auth";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 
@@ -54,12 +54,11 @@ const CheckoutContent: React.FC = () => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { items, total, clearCart } = useCart();
-  const { getUserProfile, isLoggedIn } = useUserSession();
 
   const [activeStep, setActiveStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string>("");
+  const [userId] = useState<string>(""); // Placeholder for now
 
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
     firstName: "",
@@ -174,19 +173,9 @@ const CheckoutContent: React.FC = () => {
       return;
     }
 
-    // Pre-fill form with user data if available
-    const userProfile = getUserProfile();
-    if (userProfile) {
-      setUserId(userProfile.id || "");
-      setShippingDetails((prev) => ({
-        ...prev,
-        firstName: userProfile.firstName || "",
-        lastName: userProfile.lastName || "",
-        email: userProfile.email || "",
-        phone: userProfile.mobileNumber || "",
-      }));
-    }
-  }, [isLoggedIn, items.length, getUserProfile, router]);
+    // For now, user needs to fill the form manually
+    // You can implement API call to get user profile if needed
+  }, [items.length, router]);
 
   const handleInputChange = (field: keyof ShippingDetails, value: string) => {
     setShippingDetails((prev) => ({ ...prev, [field]: value }));

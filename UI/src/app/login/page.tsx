@@ -19,7 +19,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
-import { UserSessionManager, type UserProfile } from "@/utils/userSession";
+
+// Simple UserProfile type
+type UserProfile = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  mobileNumber?: string;
+  [key: string]: any;
+};
 
 interface LoginCredentials {
   username: string;
@@ -214,13 +222,10 @@ function LoginPageContent() {
       const userProfile = await fetchUserProfile(loginData.accessToken);
 
       if (userProfile) {
-        // Store user profile using session manager
-        UserSessionManager.setUserProfile(userProfile);
-
         // Store user role in cookies for middleware
         Cookies.set("user_role", userProfile.roleName, { expires: 7 });
 
-        // Wait a bit more for cookies to be set properly
+        // Wait a bit for cookies to be set properly
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 

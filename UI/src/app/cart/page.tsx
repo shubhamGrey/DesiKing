@@ -43,6 +43,7 @@ import { useEnhancedCart } from "@/hooks/useEnhancedCart";
 import type { EnhancedCartItem } from "@/contexts/CartContext";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import AddressManager, { AddressResponse } from "@/components/AddressManager";
+import { getUserId, isLoggedIn } from "@/utils/auth";
 
 // API response interfaces for dropdowns
 interface CountryResponse {
@@ -590,19 +591,11 @@ const Cart = () => {
       return;
     }
 
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-
-    if (userProfileRaw) {
-      try {
-        const userProfile = JSON.parse(userProfileRaw);
-        const extractedUserId = userProfile?.id;
-        setUserId(extractedUserId);
-      } catch {
-        setUserId("");
-        // Redirect to login if user profile is invalid
-        router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
-      }
+    if (isLoggedIn()) {
+      const extractedUserId = getUserId();
+      setUserId(extractedUserId || "");
     } else {
+      setUserId("");
       // Redirect to login if no user profile exists
       router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
     }

@@ -360,24 +360,14 @@ class BeaconAnalytics {
     if (typeof window === "undefined") return null;
 
     try {
-      // Get user data from session storage or any other source
-      const userProfile = sessionStorage.getItem("user_profile");
-      if (userProfile) {
-        const user = JSON.parse(userProfile);
-        return {
-          userId: user.id || this.userId,
-          userName: user.name || user.fullName,
-          email: user.email,
-          userType: user.role || "guest",
-          registrationDate: user.createdDate,
-          lastLoginDate: user.lastLoginDate,
-          totalOrders: user.totalOrders,
-          totalSpent: user.totalSpent,
-          preferredLanguage: user.preferredLanguage || navigator.language,
-          customerSegment: user.customerSegment,
-          preferences: user.preferences,
-        };
-      }
+      // Since we no longer store user profile data, return minimal info
+      return {
+        userId: this.userId,
+        userType: this.userId ? "registered" : "guest",
+        isLoggedIn: document.cookie.includes("access_token="),
+        isAdmin: document.cookie.includes("user_role=admin"),
+        preferredLanguage: navigator.language,
+      };
     } catch (error) {
       console.warn("Failed to get user profile:", error);
     }

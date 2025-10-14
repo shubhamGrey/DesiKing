@@ -1,17 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Helper function to decode JWT token (basic decoding without verification)
-function decodeJWT(token) {
-  try {
-    const payload = token.split(".")[1];
-    const decoded = JSON.parse(atob(payload));
-    return decoded;
-  } catch (error) {
-    console.error("Error decoding JWT:", error);
-    return null;
-  }
-}
-
 export function middleware(request) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("access_token");
@@ -94,34 +82,20 @@ export function middleware(request) {
 
     // Additional check for admin routes
     if (isAdminRoute) {
-      return checkAdminAccess(request, accessToken);
+      return checkAdminAccess(request);
     }
   }
 
   return NextResponse.next();
 }
 
-// Separate function to handle admin access checks
-function checkAdminAccess(request, accessToken) {
-  // First try to get role from cookies
-  let userRole = request.cookies.get("user_role")?.value;
+// Simplified function to handle admin access checks
+function checkAdminAccess(request) {
+  // Simple check for user_role cookie
+  const userRole = request.cookies.get("user_role")?.value;
 
-  // If no role in cookies, try to decode from JWT token
-  if (!userRole && accessToken?.value) {
-    const decodedToken = decodeJWT(accessToken.value);
-    if (decodedToken) {
-      // Extract role from token (adjust based on your JWT structure)
-      userRole =
-        decodedToken.role ||
-        decodedToken.userRole ||
-        decodedToken[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        ];
-    }
-  }
-
-  if (userRole !== "Admin") {
-    // Redirect non-admin users to unauthorized page or home
+  if (userRole !== "admin") {
+    // Redirect non-admin users to home
     const unauthorizedUrl = new URL("/", request.url);
     return NextResponse.redirect(unauthorizedUrl);
   }

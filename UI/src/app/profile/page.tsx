@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import {
   Box,
   Container,
@@ -36,13 +36,20 @@ import {
   Star,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import {
-  useUserSession,
-  type UserProfile,
-  UserSessionManager,
-} from "@/utils/userSession";
+import { isLoggedIn } from "@/utils/auth";
 import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
+
+// Simple UserProfile type
+type UserProfile = {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  mobileNumber?: string;
+  roleName?: string;
+  [key: string]: any;
+};
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { Order, OrdersApiResponse } from "@/types/order";
@@ -52,7 +59,6 @@ import AddressManager from "@/components/AddressManager";
 const ProfileContent: React.FC = () => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { getUserProfile, clearUserProfile, isLoggedIn } = useUserSession();
   const { showSuccess, showError } = useNotification();
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -73,24 +79,80 @@ const ProfileContent: React.FC = () => {
     mobileNumber: "",
   });
 
+  // Function to fetch user profile from API
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      // Get the access token from cookies
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        showError("Authentication token not found. Please log in again.");
+        router.push("/login");
+        return;
+      }
+
+      // Make API call to get user profile
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-profile`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token expired or invalid
+          showError("Session expired. Please log in again.");
+          Cookies.remove("access_token");
+          Cookies.remove("refresh_token");
+          Cookies.remove("user_role");
+          router.push("/login");
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.info?.isSuccess && result.data) {
+        const profileData: UserProfile = result.data;
+        setUserProfile(profileData);
+        setEditForm({
+          firstName: profileData.firstName || "",
+          lastName: profileData.lastName || "",
+          email: profileData.email || "",
+          mobileNumber: profileData.mobileNumber || "",
+        });
+      } else {
+        throw new Error(result.info?.message || "Failed to fetch profile data");
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load profile data. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [showError, router]);
+
   useEffect(() => {
+    // Check if user is logged in using simple cookie check
     if (!isLoggedIn()) {
       router.push("/login");
       return;
     }
 
-    const profile = getUserProfile();
-    if (profile) {
-      setUserProfile(profile);
-      setEditForm({
-        firstName: profile.firstName || "",
-        lastName: profile.lastName || "",
-        email: profile.email || "",
-        mobileNumber: profile.mobileNumber || "",
-      });
-    }
-    setLoading(false);
-  }, [isLoggedIn, getUserProfile, router]);
+    // Fetch user profile from API
+    fetchUserProfile();
+  }, [router, fetchUserProfile]);
 
   const fetchProductDetails = async (
     productId: string
@@ -186,7 +248,7 @@ const ProfileContent: React.FC = () => {
   }, [selectedTab, userProfile?.id]);
 
   const handleLogout = () => {
-    clearUserProfile();
+    // Simple logout - just remove cookies
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
     Cookies.remove("user_role");
@@ -279,9 +341,7 @@ const ProfileContent: React.FC = () => {
           const updatedProfile = { ...userProfile, ...result.data };
           setUserProfile(updatedProfile);
 
-          // Update the session storage
-          UserSessionManager.setUserProfile(updatedProfile);
-
+          // Profile updated successfully - no need to store in session
           showSuccess("Profile updated successfully");
           setIsEditing(false);
         } else {
@@ -868,9 +928,7 @@ const ProfileContent: React.FC = () => {
                         }}
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent card click
-                          showSuccess(
-                            "Order details functionality coming soon!"
-                          );
+                          router.push(`/order-details/${order.id}`);
                         }}
                       >
                         {isMobile ? "Details" : "Order Details"}
@@ -986,6 +1044,12 @@ const ProfileContent: React.FC = () => {
                                     productPriceInfo?.price || item.price;
                                   const discountedPrice = item.price; // This is the actual charged price
 
+                                  // Calculate total prices
+                                  const originalTotal =
+                                    originalPrice * item.quantity;
+                                  const discountedTotal =
+                                    discountedPrice * item.quantity;
+
                                   return (
                                     <>
                                       {isDiscounted &&
@@ -998,33 +1062,40 @@ const ProfileContent: React.FC = () => {
                                               textDecoration: "line-through",
                                             }}
                                           >
-                                            ₹{originalPrice.toFixed(2)}
+                                            ₹{originalTotal.toFixed(2)}
                                           </Typography>
                                           <Typography
                                             variant="body2"
                                             color="success.main"
                                             fontWeight="600"
                                           >
-                                            ₹{discountedPrice.toFixed(2)}
+                                            ₹{discountedTotal.toFixed(2)}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            (₹{discountedPrice.toFixed(2)} ×{" "}
+                                            {item.quantity})
                                           </Typography>
                                         </>
                                       ) : (
-                                        <Typography
-                                          variant="body2"
-                                          color="text.secondary"
-                                        >
-                                          ₹{discountedPrice.toFixed(2)}
-                                        </Typography>
+                                        <>
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                          >
+                                            ₹{discountedTotal.toFixed(2)}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            (₹{discountedPrice.toFixed(2)} ×{" "}
+                                            {item.quantity})
+                                          </Typography>
+                                        </>
                                       )}
-                                      <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                      >
-                                        × {item.quantity} = ₹
-                                        {(
-                                          discountedPrice * item.quantity
-                                        ).toFixed(2)}
-                                      </Typography>
                                     </>
                                   );
                                 })()}

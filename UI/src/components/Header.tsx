@@ -30,22 +30,23 @@ import BrandLogoWhite from "../../public/AgroNexisWhite.png";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
 import { useCart } from "@/contexts/CartContext";
-import { useUserSession } from "@/utils/userSession";
 import SearchAutocomplete from "./SearchAutocomplete";
+import { isLoggedIn, isAdmin } from "@/utils/auth";
 
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
   const { itemCount } = useCart();
-  const { getUserFullName, isLoggedIn } = useUserSession();
 
-  // Only run after client-side hydration
+  // Check auth status after hydration to prevent hydration mismatches
   useEffect(() => {
-    setIsClient(true);
+    setUserLoggedIn(isLoggedIn());
+    setUserIsAdmin(isAdmin());
   }, []);
 
   // Track scroll position
@@ -76,16 +77,15 @@ export default function Header() {
     { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
-    // ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
+    ...(userIsAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   const rightNavLinks = [
     {
       icon: <PermIdentityOutlined />,
-      href: isClient && isLoggedIn() ? "/profile" : "/login",
       key: "profile",
-      label:
-        isClient && isLoggedIn() ? getUserFullName() || "Profile" : "Login",
+      label: userLoggedIn ? "Profile" : "Login",
+      getHref: () => (userLoggedIn ? "/profile" : "/login"),
     },
     {
       icon: (
@@ -93,9 +93,9 @@ export default function Header() {
           <ShoppingCartOutlined />
         </Badge>
       ),
-      href: "/cart",
       key: "cart",
-      label: "Cart",
+      label: userLoggedIn ? "Cart" : "Login",
+      getHref: () => (userLoggedIn ? "/cart" : "/login"),
     },
   ];
 
@@ -209,7 +209,8 @@ export default function Header() {
                     <Box sx={{ minWidth: isMobile ? 200 : 250 }}>
                       <SearchAutocomplete />
                     </Box>
-                    {rightNavLinks.map(({ icon, href, key }) => {
+                    {rightNavLinks.map(({ icon, getHref, key }) => {
+                      const href = getHref();
                       const isActive = pathname === href;
                       return (
                         <IconButton
@@ -222,7 +223,8 @@ export default function Header() {
                               : "primary.contrastText",
                           }}
                           onClick={() => {
-                            router.push(href);
+                            const targetHref = userLoggedIn ? href : "/login";
+                            router.push(targetHref);
                           }}
                         >
                           {icon}
@@ -283,7 +285,8 @@ export default function Header() {
                 </Link>
               </Box>
               <Box>
-                {rightNavLinks.map(({ icon, href, key }) => {
+                {rightNavLinks.map(({ icon, getHref, key }) => {
+                  const href = getHref();
                   const isActive = pathname === href;
                   return (
                     <IconButton
@@ -298,7 +301,8 @@ export default function Header() {
                         mr: 1,
                       }}
                       onClick={() => {
-                        router.push(href);
+                        const targetHref = userLoggedIn ? href : "/login";
+                        router.push(targetHref);
                       }}
                     >
                       {icon}

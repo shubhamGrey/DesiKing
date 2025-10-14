@@ -39,7 +39,6 @@ import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
 import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import { UserSessionManager } from "@/utils/userSession";
 import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 import { Category, FormattedCategory } from "@/types/product";
@@ -205,10 +204,10 @@ const Home: React.FC = () => {
 
   const handleOrderNow = React.useCallback(
     (product: any) => {
-      // Check if user is logged in
-      const userProfile = UserSessionManager.getUserProfile();
+      // Check if user is logged in using simple cookie check
+      const accessToken = Cookies.get("access_token");
 
-      if (!userProfile) {
+      if (!accessToken) {
         // Redirect to login page with return URL
         router.push(
           `/login?redirect=${encodeURIComponent(window.location.pathname)}`
