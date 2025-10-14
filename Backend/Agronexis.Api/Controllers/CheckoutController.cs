@@ -96,7 +96,7 @@ namespace Agronexis.Api.Controllers
         }
 
         [HttpPost("refund-payment")]
-        public ActionResult<ApiResponseModel> RefundPayment([FromBody] RefundPaymentRequestModel refund)
+        public async Task<ActionResult<ApiResponseModel>> RefundPayment([FromBody] RefundPaymentRequestModel refund)
         {
             var correlationId = string.Empty;
             ApiResponseModel response = new()

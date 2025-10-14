@@ -1,12 +1,5 @@
-﻿using Agronexis.Model;
-using Agronexis.Model.EntityModel;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Agronexis.Model.EntityModel;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Agronexis.DataAccess.DbContexts
 {
@@ -35,5 +28,6 @@ namespace Agronexis.DataAccess.DbContexts
         public DbSet<CountryMaster> CountryMasters { get; set; }
         public DbSet<AnalyticsEvent> AnalyticsEvents { get; set; }
         public DbSet<EcommerceEvent> EcommerceEvents { get; set; }
+        public DbSet<RefundTransaction> RefundTransactions { get; set; }
     }
 }

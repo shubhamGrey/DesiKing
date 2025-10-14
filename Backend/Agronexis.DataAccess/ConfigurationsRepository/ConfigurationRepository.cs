@@ -767,11 +767,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     return GenerateJwtToken(user);
                 }
 
-                return new LoginResponseModel
-                {
-                    AccessToken = string.Empty,
-                    RefreshToken = string.Empty
-                };
+                return null;
             }
             catch (Exception ex)
             {
@@ -812,8 +808,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 }
                 else
                 {
-                    signupResponse.RegisteredId = userExists.Id.ToString();
-                    signupResponse.Message = "User already exists";
+                    return null;
                 }
 
                 return signupResponse;
@@ -971,29 +966,56 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             };
         }
 
-        public RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
+        public async Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
         {
+            // Call Razorpay to initiate refund
             var refundPaymentResponse = _externalUtility.RazorPayRefundPayment(refund.PaymentId, refund.AmountInPaise);
 
-            var transaction = new Transaction
+            // Fetch existing transaction based on PaymentId
+            var existingTransaction = await _dbContext.Transactions
+                .FirstOrDefaultAsync(t => t.RazorpayPaymentId == refund.PaymentId);
+
+            if (existingTransaction == null)
+            {
+                throw new Exception($"Transaction not found for PaymentId: {refund.PaymentId}");
+            }
+
+            // Create new refund entry
+            var refundEntity = new RefundTransaction
             {
                 Id = Guid.NewGuid(),
-                UserId = refund.UserId,
-                RazorpayOrderId = refund.OrderId,
-                RazorpayPaymentId = refund.PaymentId,
-                Signature = refund.Signature,
-                TotalAmount = refund.AmountInPaise / 100,
-                Currency = refund.Currency,
-                Status = "Paid",
-                PaymentMethod = refund.PaymentMethod,
+                RazorpayRefundId = refundPaymentResponse.RefundId,
+                TransactionId = existingTransaction.Id,
+                TotalAmount = refund.AmountInPaise / 100m, // convert paise → rupees
+                Status = refundPaymentResponse.Status,
                 CreatedDate = DateTime.UtcNow
             };
 
-            _dbContext.Transactions.Add(transaction);
-            _dbContext.SaveChangesAsync();
+            _dbContext.RefundTransactions.Add(refundEntity);
+
+            // Update transaction status if applicable
+            if (refundPaymentResponse.Status == "processed" || refundPaymentResponse.Status == "succeeded")
+            {
+                // Calculate total refunded amount so far for this transaction
+                var totalRefunded = await _dbContext.RefundTransactions
+                    .Where(r => r.TransactionId == existingTransaction.Id)
+                    .SumAsync(r => (decimal?)r.TotalAmount) ?? 0m;
+
+                // Include current refund amount as well
+                totalRefunded += refund.AmountInPaise / 100m;
+
+                if (totalRefunded >= existingTransaction.TotalAmount)
+                    existingTransaction.Status = "refunded";
+                else if (totalRefunded > 0)
+                    existingTransaction.Status = "partially_refunded";
+            }
+
+            await _dbContext.SaveChangesAsync();
 
             return refundPaymentResponse;
         }
+
+
 
         public List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId)
         {
@@ -1046,7 +1068,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public string SaveOrUpdateCart(CartRequestModel cartRequest, string xCorrelationId)
         {
-            var existingCartItem = _dbContext.Carts.FirstOrDefault(x => 
+            var existingCartItem = _dbContext.Carts.FirstOrDefault(x =>
                 x.UserId == cartRequest.UserId && x.ProductId == cartRequest.ProductId);
 
             if (existingCartItem != null)
