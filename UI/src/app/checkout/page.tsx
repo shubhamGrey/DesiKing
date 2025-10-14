@@ -34,7 +34,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
-import { isLoggedIn } from "@/utils/auth";
+import { isLoggedIn, getUserId } from "@/utils/auth";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 
@@ -58,7 +58,6 @@ const CheckoutContent: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
-  const [userId] = useState<string>(""); // Placeholder for now
 
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
     firstName: "",
@@ -95,7 +94,7 @@ const CheckoutContent: React.FC = () => {
     try {
       const payload = {
         id: "00000000-0000-0000-0000-000000000000",
-        userId: userId,
+        userId: getUserId(),
         fullName: addressData.fullName,
         phoneNumber: addressData.phoneNumber,
         addressLine: addressData.addressLine,
@@ -220,13 +219,14 @@ const CheckoutContent: React.FC = () => {
       try {
         setLoading(true);
 
-        if (!userId) {
+        const currentUserId = getUserId();
+        if (!currentUserId) {
           throw new Error("User not authenticated. Please log in.");
         }
 
         // Create order with COD
         const orderData = {
-          userId: userId,
+          userId: currentUserId,
           items: items.map((item) => ({
             productId: item.id,
             quantity: item.quantity,
@@ -281,7 +281,7 @@ const CheckoutContent: React.FC = () => {
       try {
         setLoading(true);
 
-        if (userId) {
+        if (getUserId()) {
           // Save shipping address for online payment as well
           try {
             const shippingAddress = formatAddressData(

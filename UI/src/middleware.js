@@ -94,7 +94,7 @@ function checkAdminAccess(request) {
   // Simple check for user_role cookie
   const userRole = request.cookies.get("user_role")?.value;
 
-  if (userRole !== "admin") {
+  if (userRole !== "Admin") {
     // Redirect non-admin users to home
     const unauthorizedUrl = new URL("/", request.url);
     return NextResponse.redirect(unauthorizedUrl);

@@ -67,7 +67,7 @@ import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { isLoggedIn } from "@/utils/auth";
+import { isLoggedIn, getUserId } from "@/utils/auth";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
 
@@ -402,33 +402,6 @@ const OrderDetailsContent: React.FC = () => {
     }
   };
 
-  // Fetch user profile function
-  const fetchUserProfile = async (accessToken: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-profile`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.info?.isSuccess && result.data) {
-          return result.data;
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      return null;
-    }
-  };
-
   // Enhanced fetch function with real API call
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -449,17 +422,17 @@ const OrderDetailsContent: React.FC = () => {
           return;
         }
 
-        // Fetch user profile first to get user details
-        const userProfileData = await fetchUserProfile(accessToken);
-        if (!userProfileData?.id) {
-          showError("Unable to fetch user profile. Please log in again.");
+        // Get user ID from cookies
+        const userId = getUserId();
+        if (!userId) {
+          showError("User ID not found. Please log in again.");
           router.push("/login");
           return;
         }
 
         // Fetch the specific order
         const orderResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userProfileData.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userId}`,
           {
             method: "GET",
             headers: {
@@ -646,21 +619,21 @@ const OrderDetailsContent: React.FC = () => {
             canExchange: specificOrder.status === "paid",
             helplineNumber: "+91-1800-DESI-KING",
             deliveryAddress: {
-              name: `${userProfileData.firstName} ${userProfileData.lastName}`,
+              name: "Customer Name", // Will be updated from user profile if needed
               address:
                 "Default Address (To be updated from user's saved addresses)",
               city: "City",
               state: "State",
               pincode: "000000",
-              phone: userProfileData.mobileNumber || "+91-0000000000",
+              phone: "+91-0000000000",
             },
             billingAddress: {
-              name: `${userProfileData.firstName} ${userProfileData.lastName}`,
+              name: "Customer Name", // Will be updated from user profile if needed
               address: "Same as delivery address",
               city: "City",
               state: "State",
               pincode: "000000",
-              phone: userProfileData.mobileNumber || "+91-0000000000",
+              phone: "+91-0000000000",
             },
             paymentInfo: {
               method: "Online Payment",

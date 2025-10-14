@@ -224,6 +224,7 @@ function LoginPageContent() {
       if (userProfile) {
         // Store user role in cookies for middleware
         Cookies.set("user_role", userProfile.roleName, { expires: 7 });
+        Cookies.set("user_id", userProfile.id, { expires: 7 });
 
         // Wait a bit for cookies to be set properly
         await new Promise((resolve) => setTimeout(resolve, 100));

@@ -133,7 +133,6 @@ const Cart = () => {
   const [billingErrors, setBillingErrors] = useState<
     Partial<PaymentFormData & { country: string }>
   >({});
-  const [userId, setUserId] = useState<string>("");
   const [useDifferentBilling, setUseDifferentBilling] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState<string>("INR");
 
@@ -184,7 +183,7 @@ const Cart = () => {
     try {
       const payload = {
         id: "00000000-0000-0000-0000-000000000000",
-        userId: userId,
+        userId: getUserId(),
         fullName: addressData.fullName,
         phoneNumber: addressData.phoneNumber,
         addressLine: addressData.addressLine,
@@ -591,11 +590,7 @@ const Cart = () => {
       return;
     }
 
-    if (isLoggedIn()) {
-      const extractedUserId = getUserId();
-      setUserId(extractedUserId || "");
-    } else {
-      setUserId("");
+    if (!isLoggedIn()) {
       // Redirect to login if no user profile exists
       router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
     }
@@ -646,7 +641,8 @@ const Cart = () => {
       setIsLoading(true);
 
       // Validate that we have a userId
-      if (!userId) {
+      const currentUserId = getUserId();
+      if (!currentUserId) {
         throw new Error("User not authenticated. Please log in.");
       }
 
@@ -674,7 +670,7 @@ const Cart = () => {
 
       const orderData: OrderCreateRequest = {
         id: orderId,
-        userId: userId,
+        userId: currentUserId,
         totalAmount: orderTotal,
         currency: "INR",
         status: "created",
@@ -744,7 +740,7 @@ const Cart = () => {
       setShowAlert(true);
 
       // Save shipping address (only if manually entered, not selected)
-      if (userId && useManualAddress && formData.name) {
+      if (getUserId() && useManualAddress && formData.name) {
         try {
           const shippingAddress = formatAddressData(formData, "SHIPPING");
           await saveAddress(shippingAddress);
@@ -757,7 +753,7 @@ const Cart = () => {
 
       // Save billing address if different from shipping (only if manually entered, not selected)
       if (
-        userId &&
+        getUserId() &&
         useDifferentBilling &&
         useManualBillingAddress &&
         billingData.name
@@ -778,7 +774,11 @@ const Cart = () => {
       setAlertMessage("Payment successful! Redirecting...");
       setTimeout(() => {
         router.push(
-          `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
+          `/payment-result?status=success&order_id=${
+            paymentData.razorpay_order_id
+          }&payment_id=${paymentData.razorpay_payment_id}&signature=${
+            paymentData.razorpay_signature
+          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR`
         );
       }, 2000);
     } catch (error) {
@@ -788,7 +788,11 @@ const Cart = () => {
       setAlertMessage("Payment successful! Redirecting...");
       setTimeout(() => {
         router.push(
-          `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
+          `/payment-result?status=success&order_id=${
+            paymentData.razorpay_order_id
+          }&payment_id=${paymentData.razorpay_payment_id}&signature=${
+            paymentData.razorpay_signature
+          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR`
         );
       }, 2000);
     }
@@ -1927,7 +1931,7 @@ const Cart = () => {
           <DialogTitle>Select an Address</DialogTitle>
           <DialogContent>
             <AddressManager
-              userId={userId}
+              userId={getUserId() || ""}
               onAddressSelect={handleAddressSelect}
               showSelectionMode={true}
               selectedAddressId={selectedAddress?.id}
@@ -1949,7 +1953,7 @@ const Cart = () => {
           <DialogTitle>Select a Billing Address</DialogTitle>
           <DialogContent>
             <AddressManager
-              userId={userId}
+              userId={getUserId() || ""}
               onAddressSelect={handleBillingAddressSelect}
               showSelectionMode={true}
               selectedAddressId={selectedBillingAddress?.id}

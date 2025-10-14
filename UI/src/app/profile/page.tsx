@@ -36,7 +36,7 @@ import {
   Star,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { isLoggedIn } from "@/utils/auth";
+import { isLoggedIn, getUserId } from "@/utils/auth";
 import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
 
@@ -182,12 +182,13 @@ const ProfileContent: React.FC = () => {
   };
 
   const fetchOrders = async () => {
-    if (!userProfile?.id) return;
+    const userId = getUserId();
+    if (!userId) return;
 
     setOrdersLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userProfile.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userId}`,
         {
           method: "GET",
           headers: {
@@ -240,18 +241,19 @@ const ProfileContent: React.FC = () => {
     }
   };
 
-  // Fetch orders when tab changes to orders or when userProfile is loaded
+  // Fetch orders when tab changes to orders or when user is logged in
   useEffect(() => {
-    if (selectedTab === "orders" && userProfile?.id) {
+    if (selectedTab === "orders" && getUserId()) {
       fetchOrders();
     }
-  }, [selectedTab, userProfile?.id]);
+  }, [selectedTab]);
 
   const handleLogout = () => {
     // Simple logout - just remove cookies
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
     Cookies.remove("user_role");
+    Cookies.remove("user_id");
     showSuccess("Logged out successfully");
     router.push("/");
   };
@@ -270,8 +272,8 @@ const ProfileContent: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!userProfile?.id) {
-      showError("User profile not found");
+    if (!getUserId()) {
+      showError("User ID not found. Please log in again.");
       return;
     }
 
@@ -313,7 +315,7 @@ const ProfileContent: React.FC = () => {
 
       // Prepare the update payload
       const updatePayload = {
-        id: userProfile.id,
+        id: getUserId(),
         firstName: editForm.firstName.trim(),
         lastName: editForm.lastName.trim(),
         email: editForm.email.trim(),
@@ -1172,9 +1174,9 @@ const ProfileContent: React.FC = () => {
               >
                 Saved Addresses
               </Typography>
-              {userProfile?.id ? (
+              {getUserId() ? (
                 <AddressManager
-                  userId={userProfile.id}
+                  userId={getUserId()!}
                   showSelectionMode={false}
                   hideAddNewButton={false}
                 />
