@@ -158,8 +158,20 @@ const Cart = () => {
   const [loadingBillingStates, setLoadingBillingStates] = useState(false); // Default to manual
   const [isProcessing, setIsProcessing] = useState(false); // For save address operations
 
-  // Calculate totals and discounts
-  const taxes = subtotal * 0.05; // 5% of subtotal
+  // Calculate subtotal using original prices for discount display
+  const originalSubtotal = useMemo(() => {
+    if (enhancedItems.length > 0) {
+      return enhancedItems.reduce((total, item) => {
+        const pricing = item.productDetails?.pricesAndSkus?.[0];
+        const originalPrice = pricing?.price || item.price || 0;
+        return total + originalPrice * item.quantity;
+      }, 0);
+    }
+    return subtotal;
+  }, [enhancedItems, subtotal]);
+
+  // Calculate taxes - 5% of final subtotal (after discount)
+  const taxes = subtotal * 0.05;
 
   // Calculate total discount from enhanced items
   const totalDiscount = useMemo(() => {
@@ -167,8 +179,10 @@ const Cart = () => {
       return enhancedItems.reduce((discount, item) => {
         const pricing = item.productDetails?.pricesAndSkus?.[0];
         if (pricing && pricing.isDiscounted && pricing.discountedAmount) {
-          // discountedAmount represents the discount per unit
-          return discount + pricing.discountedAmount * item.quantity;
+          // Calculate actual discount: original price - discounted price
+          const actualDiscountPerUnit =
+            pricing.price - pricing.discountedAmount;
+          return discount + actualDiscountPerUnit * item.quantity;
         }
         return discount;
       }, 0);
@@ -176,7 +190,7 @@ const Cart = () => {
     return 0;
   }, [enhancedItems]);
 
-  const orderTotal = totalDiscount + taxes;
+  const orderTotal = subtotal + taxes;
 
   // Helper function to save address
   const saveAddress = async (addressData: AddressFormData): Promise<string> => {
@@ -1799,7 +1813,7 @@ const Cart = () => {
                   <Typography color="#84a897">Subtotal</Typography>
                   <Typography>
                     {getCurrencySymbol(displayCurrency)}
-                    {subtotal.toFixed(2)}
+                    {originalSubtotal.toFixed(2)}
                   </Typography>
                 </Box>
 
@@ -1811,7 +1825,7 @@ const Cart = () => {
                     <Typography color="#84a897">Discount</Typography>
                     <Typography color="#4caf50">
                       -{getCurrencySymbol(displayCurrency)}
-                      {(subtotal - totalDiscount).toFixed(2)}
+                      {totalDiscount.toFixed(2)}
                     </Typography>
                   </Box>
                 )}

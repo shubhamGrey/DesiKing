@@ -1041,88 +1041,58 @@ const ProfileContent: React.FC = () => {
                                   const productPriceInfo =
                                     product?.pricesAndSkus?.[0];
                                   const isDiscounted =
-                                    productPriceInfo?.isDiscounted;
-                                  const originalPrice =
-                                    productPriceInfo?.price || item.price;
-                                  const discountedPrice = item.price; // This is the actual charged price
+                                    productPriceInfo?.isDiscounted || false;
+                                  const productPrice =
+                                    productPriceInfo?.price || 0;
+                                  const discountedAmount =
+                                    productPriceInfo?.discountedAmount || 0;
 
-                                  // Calculate total prices
-                                  const originalTotal =
-                                    originalPrice * item.quantity;
-                                  const discountedTotal =
-                                    discountedPrice * item.quantity;
+                                  // Calculate final price and total
+                                  const finalPrice = isDiscounted
+                                    ? discountedAmount
+                                    : productPrice;
+                                  const finalTotal = finalPrice * item.quantity;
+                                  const discountAmount = isDiscounted
+                                    ? productPrice - discountedAmount
+                                    : 0;
 
                                   return (
                                     <>
-                                      {isDiscounted &&
-                                      originalPrice > discountedPrice ? (
-                                        <>
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            sx={{
-                                              textDecoration: "line-through",
-                                            }}
-                                          >
-                                            ₹{originalTotal.toFixed(2)}
-                                          </Typography>
-                                          <Typography
-                                            variant="body2"
-                                            color="success.main"
-                                            fontWeight="600"
-                                          >
-                                            ₹{discountedTotal.toFixed(2)}
-                                          </Typography>
-                                          <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                          >
-                                            (₹{discountedPrice.toFixed(2)} ×{" "}
-                                            {item.quantity})
-                                          </Typography>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            ₹{discountedTotal.toFixed(2)}
-                                          </Typography>
-                                          <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                          >
-                                            (₹{discountedPrice.toFixed(2)} ×{" "}
-                                            {item.quantity})
-                                          </Typography>
-                                        </>
+                                      <Typography
+                                        variant="body2"
+                                        color={
+                                          isDiscounted
+                                            ? "success.main"
+                                            : "text.secondary"
+                                        }
+                                        fontWeight={
+                                          isDiscounted ? "600" : "400"
+                                        }
+                                      >
+                                        ₹{finalTotal.toFixed(2)}
+                                      </Typography>
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                      >
+                                        (₹{finalPrice.toFixed(2)} ×{" "}
+                                        {item.quantity})
+                                      </Typography>
+                                      {isDiscounted && discountAmount > 0 && (
+                                        <Typography
+                                          variant="caption"
+                                          color="success.main"
+                                        >
+                                          Saved ₹
+                                          {(
+                                            discountAmount * item.quantity
+                                          ).toFixed(2)}
+                                        </Typography>
                                       )}
                                     </>
                                   );
                                 })()}
                               </Box>
-
-                              {/* Discount Badge */}
-                              {(() => {
-                                const productPriceInfo =
-                                  product?.pricesAndSkus?.[0];
-                                const isDiscounted =
-                                  productPriceInfo?.isDiscounted;
-                                const discountPercentage =
-                                  productPriceInfo?.discountPercentage;
-
-                                return isDiscounted &&
-                                  discountPercentage > 0 ? (
-                                  <Typography
-                                    variant="caption"
-                                    color="success.main"
-                                    fontWeight="600"
-                                  >
-                                    {discountPercentage}% OFF
-                                  </Typography>
-                                ) : null;
-                              })()}
                             </Box>
                             {product?.categoryName && (
                               <Typography

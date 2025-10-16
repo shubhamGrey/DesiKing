@@ -50,8 +50,6 @@ import {
   Phone,
   Email,
   Inventory2,
-  Cancel,
-  SwapHoriz,
   Support,
   ExpandMore,
   Help,
@@ -60,8 +58,6 @@ import {
   CreditCard,
   DeliveryDining,
   TrackChanges,
-  AssignmentReturn,
-  ContactSupport,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
@@ -70,6 +66,7 @@ import theme from "@/styles/theme";
 import { isLoggedIn, getUserId } from "@/utils/auth";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
+import { getCurrencySymbol } from "@/utils/currencyUtils";
 
 // Styled Components
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
@@ -143,12 +140,9 @@ interface OrderItem {
   productImage: string;
   brandName: string;
   quantity: number;
-  price: number; // Final price after discount
-  originalPrice?: number; // Original price before discount
-  discountPercentage?: number; // Discount percentage
+  price: number; // Final price (discounted or original)
   discountAmount?: number; // Actual discount amount
   totalPrice: number;
-  totalOriginalPrice?: number; // Total original price (originalPrice * quantity)
   isDiscounted?: boolean; // Whether the item has a discount
   weight?: string;
   sku?: string;
@@ -216,9 +210,6 @@ interface OrderDetails {
   paymentInfo: PaymentInfo;
   timeline: OrderTimeline[];
   returnPolicyEndDate?: string;
-  canCancel?: boolean;
-  canReturn?: boolean;
-  canExchange?: boolean;
   helplineNumber?: string;
 }
 
@@ -497,34 +488,16 @@ const OrderDetailsContent: React.FC = () => {
               const product = productMap[item.productId];
               const productPriceInfo = product?.pricesAndSkus?.[0];
 
-              // Calculate discount information - More Robust Logic
-              const isDiscountedFlag = productPriceInfo?.isDiscounted || false;
-              const productOriginalPrice = productPriceInfo?.price || 0;
-              const finalPrice = item.price; // This is the actual charged price from order
-              const discountPercentage =
-                productPriceInfo?.discountPercentage || 0;
+              // Simplified calculation using product table data
+              const productPrice = productPriceInfo?.price || 0;
+              const discountedAmount = productPriceInfo?.discountedAmount || 0;
+              const isDiscounted = productPriceInfo?.isDiscounted || false;
 
-              // Determine original price with multiple fallback strategies
-              let originalPrice = finalPrice; // Default to charged price
-
-              if (
-                isDiscountedFlag &&
-                productOriginalPrice > 0 &&
-                productOriginalPrice > finalPrice
-              ) {
-                // Use product's original price if it's valid and higher than charged price
-                originalPrice = productOriginalPrice;
-              } else if (isDiscountedFlag && discountPercentage > 0) {
-                // Calculate original price from discount percentage if available
-                originalPrice = finalPrice / (1 - discountPercentage / 100);
-              }
-
-              // A product is discounted if original price is higher than final price
-              const hasActualDiscount = originalPrice > finalPrice;
-              const discountAmount = hasActualDiscount
-                ? originalPrice - finalPrice
+              // Calculate actual discount amount (price - discounted amount)
+              const discountAmount = isDiscounted
+                ? productPrice - discountedAmount
                 : 0;
-              const totalOriginalPrice = originalPrice * item.quantity;
+              const finalPrice = isDiscounted ? discountedAmount : productPrice;
 
               return {
                 id: item.id,
@@ -534,15 +507,12 @@ const OrderDetailsContent: React.FC = () => {
                   product?.thumbnailUrl ||
                   product?.imageUrls?.[0] ||
                   "/DesiKing.png",
-                brandName: "DesiKing", // Use static brand name since brandName is not in Product interface
+                brandName: "DesiKing",
                 quantity: item.quantity,
-                price: finalPrice, // Final price after discount
-                originalPrice: originalPrice, // Original price before discount
-                discountPercentage: discountPercentage,
-                discountAmount: discountAmount,
-                totalPrice: item.price * item.quantity,
-                totalOriginalPrice: totalOriginalPrice,
-                isDiscounted: hasActualDiscount,
+                price: finalPrice, // Final price (discounted or original)
+                discountAmount: discountAmount, // Actual discount amount
+                totalPrice: finalPrice * item.quantity,
+                isDiscounted: isDiscounted,
                 weight: product?.pricesAndSkus?.[0]?.weightValue
                   ? `${product.pricesAndSkus[0].weightValue}${product.pricesAndSkus[0].weightUnit}`
                   : "N/A",
@@ -552,9 +522,9 @@ const OrderDetailsContent: React.FC = () => {
             }
           );
 
-          // Calculate totals
-          const totalOriginalAmount = itemsData.reduce(
-            (sum: number, item: any) => sum + item.totalOriginalPrice,
+          // Calculate totals using simplified logic
+          const subtotal = itemsData.reduce(
+            (sum: number, item: any) => sum + item.totalPrice,
             0
           );
           const totalDiscountAmount = itemsData.reduce(
@@ -562,10 +532,7 @@ const OrderDetailsContent: React.FC = () => {
               sum + item.discountAmount * item.quantity,
             0
           );
-          const subtotalAfterDiscount =
-            totalOriginalAmount - totalDiscountAmount;
-          const taxAmount =
-            Math.round(subtotalAfterDiscount * 0.18 * 100) / 100; // 18% GST on discounted amount
+          const taxAmount = Math.round(subtotal * 0.05 * 100) / 100; // 5% tax on final subtotal
 
           // Map the API order data to our OrderDetails interface
           const mappedOrderDetails: OrderDetails = {
@@ -605,18 +572,15 @@ const OrderDetailsContent: React.FC = () => {
             shippingMethod: "Standard Delivery",
             deliveryInstructions:
               "Please call before delivery. Ring the doorbell.",
-            subtotal: totalOriginalAmount, // Original amount before discount
+            subtotal: subtotal, // Final subtotal after discounts
             shippingCharges: 0, // Free shipping
             discount: totalDiscountAmount, // Total discount amount
-            tax: taxAmount, // Tax on discounted amount
-            totalAmount: specificOrder.totalAmount, // Final amount from API
-            currency: specificOrder.currency || "₹",
+            tax: taxAmount, // 5% tax on subtotal
+            totalAmount: subtotal + taxAmount, // Final total (subtotal + tax)
+            currency: specificOrder.currency || "INR",
             returnPolicyEndDate: getReturnPolicyEndDate(
               specificOrder.createdDate
             ),
-            canCancel: specificOrder.status === "created",
-            canReturn: specificOrder.status === "paid",
-            canExchange: specificOrder.status === "paid",
             helplineNumber: "+91-1800-DESI-KING",
             deliveryAddress: {
               name: "Customer Name", // Will be updated from user profile if needed
@@ -724,29 +688,6 @@ const OrderDetailsContent: React.FC = () => {
 
   const handleTrackOrder = () => {
     setTrackingDialogOpen(true);
-  };
-
-  const handleCancelOrder = () => {
-    // TODO: Implement order cancellation
-    showSuccess("Order cancellation request submitted");
-  };
-
-  const handleReturnOrder = () => {
-    // TODO: Implement order return
-    showSuccess(
-      "Return request initiated. You will receive further instructions via email."
-    );
-  };
-
-  const handleExchangeOrder = () => {
-    // TODO: Implement order exchange
-    showSuccess(
-      "Exchange request initiated. Our team will contact you shortly."
-    );
-  };
-
-  const handleContactSupport = () => {
-    setHelpDialogOpen(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -1197,42 +1138,26 @@ const OrderDetailsContent: React.FC = () => {
                         gap: 1,
                       }}
                     >
-                      {/* Show original total price crossed out if discounted */}
-                      {item.isDiscounted &&
-                        item.originalPrice &&
-                        item.originalPrice > item.price && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ textDecoration: "line-through" }}
-                          >
-                            {orderDetails.currency}
-                            {(item.originalPrice * item.quantity).toFixed(2)}
-                          </Typography>
-                        )}
-
                       {/* Final Total Price */}
                       <Typography
                         variant="h6"
                         fontWeight="600"
                         color={
-                          item.isDiscounted &&
-                          item.originalPrice &&
-                          item.originalPrice > item.price
-                            ? "success.main"
-                            : "primary.main"
+                          item.isDiscounted ? "success.main" : "primary.main"
                         }
                       >
-                        {orderDetails.currency}
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
                         {item.totalPrice.toFixed(2)}
                       </Typography>
 
                       {/* Discount Badge */}
                       {item.isDiscounted &&
-                        item.discountPercentage &&
-                        item.discountPercentage > 0 && (
+                        item.discountAmount &&
+                        item.discountAmount > 0 && (
                           <Chip
-                            label={`${item.discountPercentage}% OFF`}
+                            label={`Saved ${getCurrencySymbol(
+                              orderDetails.currency || "INR"
+                            )}${item.discountAmount.toFixed(2)}`}
                             size="small"
                             color="success"
                             sx={{
@@ -1318,7 +1243,7 @@ const OrderDetailsContent: React.FC = () => {
                     >
                       <Typography variant="body2">Subtotal:</Typography>
                       <Typography variant="body2">
-                        {orderDetails.currency}
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
                         {orderDetails.subtotal}
                       </Typography>
                     </Box>
@@ -1336,7 +1261,9 @@ const OrderDetailsContent: React.FC = () => {
                       >
                         {orderDetails.shippingCharges === 0
                           ? "FREE"
-                          : `${orderDetails.currency}${orderDetails.shippingCharges}`}
+                          : `${getCurrencySymbol(
+                              orderDetails.currency || "INR"
+                            )}${orderDetails.shippingCharges}`}
                       </Typography>
                     </Box>
                     {orderDetails.discount > 0 && (
@@ -1352,7 +1279,7 @@ const OrderDetailsContent: React.FC = () => {
                           color="success.main"
                           fontWeight="600"
                         >
-                          -{orderDetails.currency}
+                          -{getCurrencySymbol(orderDetails.currency || "INR")}
                           {orderDetails.discount.toFixed(2)}
                         </Typography>
                       </Box>
@@ -1362,7 +1289,7 @@ const OrderDetailsContent: React.FC = () => {
                     >
                       <Typography variant="body2">Tax:</Typography>
                       <Typography variant="body2">
-                        {orderDetails.currency}
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
                         {orderDetails.tax}
                       </Typography>
                     </Box>
@@ -1378,7 +1305,7 @@ const OrderDetailsContent: React.FC = () => {
                         fontWeight="600"
                         color="primary.main"
                       >
-                        {orderDetails.currency}
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
                         {orderDetails.totalAmount.toFixed(2)}
                       </Typography>
                     </Box>
@@ -1407,7 +1334,7 @@ const OrderDetailsContent: React.FC = () => {
                           color="success.main"
                           fontWeight="600"
                         >
-                          {orderDetails.currency}
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
                           {orderDetails.discount.toFixed(2)}
                         </Typography>
                       </Box>
@@ -1663,7 +1590,7 @@ const OrderDetailsContent: React.FC = () => {
                     fontWeight="600"
                     color="success.main"
                   >
-                    {orderDetails.currency}
+                    {getCurrencySymbol(orderDetails.currency || "INR")}
                     {orderDetails.paymentInfo.amount}
                   </Typography>
                 </Box>
@@ -1711,84 +1638,6 @@ const OrderDetailsContent: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
-
-      {/* Order Actions */}
-      <Card sx={{ mb: 4, border: "1px solid", borderColor: "divider" }}>
-        <CardContent>
-          <Typography
-            variant="h6"
-            fontWeight="600"
-            color="primary.main"
-            sx={{ mb: 3 }}
-          >
-            Order Actions
-          </Typography>
-
-          <Grid container spacing={2}>
-            {orderDetails.canCancel && (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="error"
-                  startIcon={<Cancel />}
-                  onClick={handleCancelOrder}
-                >
-                  Cancel Order
-                </Button>
-              </Grid>
-            )}
-
-            {orderDetails.canReturn && (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<AssignmentReturn />}
-                  onClick={handleReturnOrder}
-                >
-                  Return Items
-                </Button>
-              </Grid>
-            )}
-
-            {orderDetails.canExchange && (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<SwapHoriz />}
-                  onClick={handleExchangeOrder}
-                >
-                  Exchange Items
-                </Button>
-              </Grid>
-            )}
-
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<ContactSupport />}
-                onClick={handleContactSupport}
-              >
-                Need Help?
-              </Button>
-            </Grid>
-          </Grid>
-
-          {orderDetails.helplineNumber && (
-            <Alert severity="info" sx={{ mt: 3 }}>
-              <Typography variant="body2">
-                For immediate assistance, call our helpline at{" "}
-                <Typography component="span" fontWeight="600">
-                  {orderDetails.helplineNumber}
-                </Typography>
-              </Typography>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Tracking Dialog */}
       <Dialog

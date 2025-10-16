@@ -61,8 +61,12 @@ export const useEnhancedCart = () => {
   const enhancedTotal =
     enhancedItems.length > 0
       ? enhancedItems.reduce((total, item) => {
+          const pricing = item.productDetails?.pricesAndSkus?.[0];
+          // Use discounted price if available, otherwise use original price
           const price =
-            item.productDetails?.pricesAndSkus?.[0]?.price || item.price || 0;
+            pricing?.isDiscounted && pricing?.discountedAmount
+              ? pricing.discountedAmount
+              : pricing?.price || item.price || 0;
           return total + price * item.quantity;
         }, 0)
       : cartContext.total;
