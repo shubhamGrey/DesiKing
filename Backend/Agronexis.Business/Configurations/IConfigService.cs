@@ -33,7 +33,7 @@ namespace Agronexis.Business.Configurations
         Task<OrderResponseModel> CreateOrder(OrderRequestModel order, string xCorrelationId);
         bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId);
         Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId);
-        RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel verify, string xCorrelationId);
+        Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel verify, string xCorrelationId);
         List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId);
         string DeleteCartById(string id, string xCorrelationId);
         string SaveOrUpdateCart(CartRequestModel cart, string xCorrelationId);

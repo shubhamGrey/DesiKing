@@ -22,54 +22,171 @@ namespace Agronexis.Api.Controllers
         [HttpPost("user-login")]
         public async Task<ActionResult<ApiResponseModel>> UserLogin([FromBody] LoginRequestModel model)
         {
-            if (model == null)
-                throw new ArgumentNullException(nameof(model), "Login model cannot be null");
+            SetXCorrelationId();
 
-            if (!ModelState.IsValid)
-                throw new ArgumentException("Invalid model state");
+            try
+            {
+                if (model == null)
+                {
+                    return new ApiResponseModel
+                    {
+                        Info = new ApiResponseInfoModel
+                        {
+                            Code = ((int)ServerStatusCodes.BadRequest).ToString(),
+                            Message = "Login model cannot be null"
+                        }
+                    };
+                }
 
-            var correlationId = GetCorrelationId();
-            var item = await _configService.UserLogin(model, correlationId);
+                if (!ModelState.IsValid)
+                {
+                    return new ApiResponseModel
+                    {
+                        Info = new ApiResponseInfoModel
+                        {
+                            Code = ((int)ServerStatusCodes.BadRequest).ToString(),
+                            Message = "Invalid model state"
+                        }
+                    };
+                }
 
-            if (item == null)
-                throw new UnauthorizedAccessException("Invalid credentials provided");
+                var item = await _configService.UserLogin(model, XCorrelationID);
 
-            return Ok(CreateSuccessResponse(item));
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = item == null
+                            ? ((int)ServerStatusCodes.Unauthorized).ToString()
+                            : ((int)ServerStatusCodes.Ok).ToString(),
+                        Message = item == null
+                            ? "Invalid credentials provided"
+                            : ApiResponseMessage.SUCCESS
+                    },
+                    Data = item
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = ((int)ServerStatusCodes.InternalServerError).ToString(),
+                        Message = $"Error during user login: {ex.Message}"
+                    }
+                };
+            }
         }
 
         [HttpPost("user-registration")]
         public async Task<ActionResult<ApiResponseModel>> UserRegistration([FromBody] RegistrationRequestModel model)
         {
-            if (model == null)
-                throw new ArgumentNullException(nameof(model), "Registration model cannot be null");
+            SetXCorrelationId();
 
-            if (!ModelState.IsValid)
-                throw new ArgumentException("Invalid model state");
+            try
+            {
+                if (model == null)
+                {
+                    return new ApiResponseModel
+                    {
+                        Info = new ApiResponseInfoModel
+                        {
+                            Code = ((int)ServerStatusCodes.BadRequest).ToString(),
+                            Message = "Registration model cannot be null"
+                        }
+                    };
+                }
 
-            var correlationId = GetCorrelationId();
-            var item = await _configService.UserRegistration(model, correlationId);
+                if (!ModelState.IsValid)
+                {
+                    return new ApiResponseModel
+                    {
+                        Info = new ApiResponseInfoModel
+                        {
+                            Code = ((int)ServerStatusCodes.BadRequest).ToString(),
+                            Message = "Invalid model state"
+                        }
+                    };
+                }
 
-            if (item == null)
-                throw new InvalidOperationException("Registration failed. User may already exist or invalid data provided");
+                var item = await _configService.UserRegistration(model, XCorrelationID);
 
-            return Ok(CreateSuccessResponse(item));
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = item == null
+                            ? ((int)ServerStatusCodes.BadRequest).ToString()
+                            : ((int)ServerStatusCodes.Ok).ToString(),
+                        Message = item == null
+                            ? "Registration failed. User may already exist or invalid data provided"
+                            : ApiResponseMessage.SUCCESS
+                    },
+                    Data = item
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = ((int)ServerStatusCodes.InternalServerError).ToString(),
+                        Message = $"Error during registration: {ex.Message}"
+                    }
+                };
+            }
         }
 
         [HttpGet("user-profile")]
         [Authorize]
         public async Task<ActionResult<ApiResponseModel>> GetUserProfile()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Invalid user token");
+            SetXCorrelationId();
 
-            var correlationId = GetCorrelationId();
-            var userProfile = await _configService.GetUserProfile(Guid.Parse(userId), correlationId);
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ApiResponseModel
+                    {
+                        Info = new ApiResponseInfoModel
+                        {
+                            Code = ((int)ServerStatusCodes.Unauthorized).ToString(),
+                            Message = "Invalid user token"
+                        }
+                    };
+                }
 
-            if (userProfile == null)
-                return NotFound("User profile not found");
+                var userProfile = await _configService.GetUserProfile(Guid.Parse(userId), XCorrelationID);
 
-            return Ok(CreateSuccessResponse(userProfile));
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = userProfile == null
+                            ? ((int)ServerStatusCodes.NotFound).ToString()
+                            : ((int)ServerStatusCodes.Ok).ToString(),
+                        Message = userProfile == null
+                            ? ApiResponseMessage.DATANOTFOUND
+                            : ApiResponseMessage.SUCCESS
+                    },
+                    Data = userProfile
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = ((int)ServerStatusCodes.InternalServerError).ToString(),
+                        Message = $"Error retrieving user profile: {ex.Message}"
+                    }
+                };
+            }
         }
 
         [HttpPut("user-profile")]

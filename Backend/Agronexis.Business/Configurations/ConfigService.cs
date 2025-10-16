@@ -123,9 +123,9 @@ namespace Agronexis.Business.Configurations
             return await _repository.GetUserProfile(userId, xCorrelationId);
         }
 
-        public RefundPaymentResponseModel RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
+        public async Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
         {
-            return _repository.RefundPayment(refund, xCorrelationId);
+            return await _repository.RefundPayment(refund, xCorrelationId);
         }
         public List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId)
         {
