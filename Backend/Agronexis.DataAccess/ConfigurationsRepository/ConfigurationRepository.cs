@@ -1014,6 +1014,14 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                         if (pickupResult != null && pickupResult.ResponseStatus?.ErrorCode == "0")
                         {
+                            // Save the docket number to the order
+                            if (!string.IsNullOrWhiteSpace(pickupResult.DocketNo))
+                            {
+                                order.DocketNumber = pickupResult.DocketNo;
+                                order.ModifiedDate = DateTime.UtcNow;
+                                await _dbContext.SaveChangesAsync();
+                            }
+
                             _logger.LogInformation("Pickup booking created successfully for order: {OrderId}, DocketNo: {DocketNo}", 
                                 order.Id, pickupResult.DocketNo ?? "N/A");
                         }
