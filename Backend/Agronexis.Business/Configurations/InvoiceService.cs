@@ -14,17 +14,17 @@ namespace Agronexis.Business.Configurations
                 // Download browser if not exists
                 var browserFetcher = new BrowserFetcher();
                 
-                Console.WriteLine("Downloading browser...");
+                Console.WriteLine("Checking browser availability...");
                 await browserFetcher.DownloadAsync();
-                Console.WriteLine("Browser downloaded successfully.");
-
+                
                 // Generate HTML content
                 var htmlContent = GenerateInvoiceHtml(invoiceData);
                 Console.WriteLine("HTML content generated.");
 
                 // Launch Puppeteer with enhanced compatibility options for macOS
                 Console.WriteLine("Launching browser...");
-                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                
+                var launchOptions = new LaunchOptions
                 {
                     Headless = true,
                     Args = new[] { 
@@ -35,9 +35,17 @@ namespace Agronexis.Business.Configurations
                         "--no-first-run",
                         "--no-zygote",
                         "--single-process",
-                        "--disable-gpu"
-                    }
-                });
+                        "--disable-gpu",
+                        "--disable-extensions",
+                        "--disable-plugins",
+                        "--disable-features=VizDisplayCompositor"
+                    },
+                    IgnoreHTTPSErrors = true,
+                    DefaultViewport = new ViewPortOptions { Width = 1024, Height = 768 },
+                    Timeout = 30000 // 30 seconds timeout
+                };
+
+                using var browser = await Puppeteer.LaunchAsync(launchOptions);
                 Console.WriteLine("Browser launched successfully.");
 
                 using var page = await browser.NewPageAsync();
@@ -59,10 +67,13 @@ namespace Agronexis.Business.Configurations
                 };
 
                 var pdfBytes = await page.PdfDataAsync(pdfOptions);
+                Console.WriteLine("PDF generated successfully.");
                 return pdfBytes;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in PDF generation: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw new Exception($"Error generating PDF: {ex.Message}", ex);
             }
         }
