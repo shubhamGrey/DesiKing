@@ -582,23 +582,70 @@ const OrderDetailsContent: React.FC = () => {
               specificOrder.createdDate
             ),
             helplineNumber: "+91-1800-DESI-KING",
-            deliveryAddress: {
-              name: "Customer Name", // Will be updated from user profile if needed
-              address:
-                "Default Address (To be updated from user's saved addresses)",
-              city: "City",
-              state: "State",
-              pincode: "000000",
-              phone: "+91-0000000000",
-            },
-            billingAddress: {
-              name: "Customer Name", // Will be updated from user profile if needed
-              address: "Same as delivery address",
-              city: "City",
-              state: "State",
-              pincode: "000000",
-              phone: "+91-0000000000",
-            },
+            deliveryAddress: specificOrder.shippingAddress
+              ? {
+                  name:
+                    specificOrder.shippingAddress.fullName || "Customer Name",
+                  address:
+                    [
+                      specificOrder.shippingAddress.addressLine,
+                      specificOrder.shippingAddress.landMark,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "Address not available",
+                  city: specificOrder.shippingAddress.city || "City",
+                  state: specificOrder.shippingAddress.stateCode || "State",
+                  pincode: specificOrder.shippingAddress.pinCode || "000000",
+                  phone:
+                    specificOrder.shippingAddress.phoneNumber ||
+                    "+91-0000000000",
+                }
+              : {
+                  name: "Customer Name",
+                  address: "Address not available",
+                  city: "City",
+                  state: "State",
+                  pincode: "000000",
+                  phone: "+91-0000000000",
+                },
+            billingAddress: specificOrder.billingAddress
+              ? {
+                  name:
+                    specificOrder.billingAddress.fullName || "Customer Name",
+                  address:
+                    [
+                      specificOrder.billingAddress.addressLine,
+                      specificOrder.billingAddress.landMark,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "Address not available",
+                  city: specificOrder.billingAddress.city || "City",
+                  state: specificOrder.billingAddress.stateCode || "State",
+                  pincode: specificOrder.billingAddress.pinCode || "000000",
+                  phone:
+                    specificOrder.billingAddress.phoneNumber ||
+                    "+91-0000000000",
+                }
+              : specificOrder.shippingAddress
+              ? {
+                  name:
+                    specificOrder.shippingAddress.fullName || "Customer Name",
+                  address: "Same as delivery address",
+                  city: specificOrder.shippingAddress.city || "City",
+                  state: specificOrder.shippingAddress.stateCode || "State",
+                  pincode: specificOrder.shippingAddress.pinCode || "000000",
+                  phone:
+                    specificOrder.shippingAddress.phoneNumber ||
+                    "+91-0000000000",
+                }
+              : {
+                  name: "Customer Name",
+                  address: "Same as delivery address",
+                  city: "City",
+                  state: "State",
+                  pincode: "000000",
+                  phone: "+91-0000000000",
+                },
             paymentInfo: {
               method: specificOrder.transaction?.paymentMethod
                 ? specificOrder.transaction.paymentMethod === "RAZORPAY"

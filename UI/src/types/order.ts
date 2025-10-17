@@ -24,6 +24,21 @@ export interface Transaction {
   createdDate?: string;
 }
 
+export interface DetailedAddress {
+  id: string;
+  userId: string;
+  fullName?: string;
+  phoneNumber?: string;
+  addressLine?: string;
+  city?: string;
+  landMark?: string;
+  pinCode?: string;
+  stateCode?: string;
+  countryCode?: string;
+  addressType?: string;
+  createdDate?: string;
+}
+
 export interface Order {
   id: string;
   userId: string;
@@ -37,6 +52,8 @@ export interface Order {
   modifiedDate?: string;
   orderItems: OrderItem[];
   transaction?: Transaction;
+  shippingAddress?: DetailedAddress;
+  billingAddress?: DetailedAddress;
 }
 
 export interface OrdersApiResponse {

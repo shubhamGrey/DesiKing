@@ -1340,6 +1340,54 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 PaidAt = t.PaidAt,
                                 CreatedDate = t.CreatedDate
                             })
+                            .FirstOrDefault(),
+                        // Fetch shipping address - most recent SHIPPING address around order creation time
+                        ShippingAddress = _dbContext.Addresses
+                            .Where(a => a.UserId == userGuid && 
+                                       a.AddressType == "SHIPPING" && 
+                                       a.IsActive == true && 
+                                       a.IsDeleted == false &&
+                                       a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
+                            .OrderByDescending(a => a.CreatedDate)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault(),
+                        // Fetch billing address - most recent BILLING address around order creation time
+                        BillingAddress = _dbContext.Addresses
+                            .Where(a => a.UserId == userGuid && 
+                                       a.AddressType == "BILLING" && 
+                                       a.IsActive == true && 
+                                       a.IsDeleted == false &&
+                                       a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
+                            .OrderByDescending(a => a.CreatedDate)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
                             .FirstOrDefault()
                     })
                     .ToList();

@@ -19,5 +19,7 @@ namespace Agronexis.Model.ResponseModel
         public DateTime? CreatedDate { get; set; }
         public List<OrderItemResponseModel> OrderItems { get; set; } = [];
         public TransactionResponseModel? Transaction { get; set; }
+        public DetailedAddressResponseModel? ShippingAddress { get; set; }
+        public DetailedAddressResponseModel? BillingAddress { get; set; }
     }
 }
