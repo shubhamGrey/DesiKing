@@ -10,7 +10,7 @@ namespace Agronexis.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class InvoiceController : BaseController
     {
         private readonly IInvoiceService _invoiceService;
@@ -171,44 +171,6 @@ namespace Agronexis.Api.Controllers
             }
 
             return errors;
-        }
-
-        /// <summary>
-        /// Health check endpoint for invoice service
-        /// </summary>
-        /// <returns>Service status</returns>
-        [HttpGet("health")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(ApiResponseModel), StatusCodes.Status200OK)]
-        public IActionResult HealthCheck()
-        {
-            try
-            {
-                SetXCorrelationId();
-                return Ok(new ApiResponseModel
-                {
-                    Data = "Invoice service is healthy",
-                    Info = new ApiResponseInfoModel
-                    {
-                        IsSuccess = true,
-                        Message = "Service is running",
-                        Code = Constants.ApiResponseMessage.SUCCESS
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"[{XCorrelationID}] Health check failed");
-                return StatusCode(500, new ApiResponseModel
-                {
-                    Info = new ApiResponseInfoModel
-                    {
-                        IsSuccess = false,
-                        Message = "Service health check failed",
-                        Code = Constants.ApiResponseMessage.INTERNALSERVERERROR
-                    }
-                });
-            }
         }
     }
 }
