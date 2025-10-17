@@ -3,6 +3,7 @@ using System;
 using Agronexis.DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251017194607_addColumnInOrders")]
+    partial class addColumnInOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,7 +206,7 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AnalyticsEvent", "dbo");
+                    b.ToTable("AnalyticsEvent");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Brand", b =>
@@ -395,6 +398,8 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AnalyticsEventId");
+
                     b.ToTable("EcommerceEvents");
                 });
 
@@ -457,6 +462,7 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("DocketNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -892,6 +898,17 @@ namespace Agronexis.DataAccess.Migrations
                     b.Navigation("State");
                 });
 
+            modelBuilder.Entity("Agronexis.Model.EntityModel.EcommerceEvent", b =>
+                {
+                    b.HasOne("Agronexis.Model.EntityModel.AnalyticsEvent", "AnalyticsEvent")
+                        .WithMany("EcommerceEvents")
+                        .HasForeignKey("AnalyticsEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AnalyticsEvent");
+                });
+
             modelBuilder.Entity("Agronexis.Model.EntityModel.Inventory", b =>
                 {
                     b.HasOne("Agronexis.Model.EntityModel.Product", "Product")
@@ -972,6 +989,11 @@ namespace Agronexis.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Roles");
+                });
+
+            modelBuilder.Entity("Agronexis.Model.EntityModel.AnalyticsEvent", b =>
+                {
+                    b.Navigation("EcommerceEvents");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Category", b =>

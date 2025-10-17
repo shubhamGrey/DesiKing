@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250914124032_CreateAnalyticsTables")]
-    partial class CreateAnalyticsTables
+    [Migration("20251017204008_changesForAnalyticsEvent")]
+    partial class changesForAnalyticsEvent
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,10 +100,24 @@ namespace Agronexis.DataAccess.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CustomData")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DeviceInfo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ElementAttributes")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("EventDate")
@@ -117,7 +131,27 @@ namespace Agronexis.DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("EventSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("InteractionTarget")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
                     b.Property<string>("Label")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Language")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("PageReferrer")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -125,14 +159,34 @@ namespace Agronexis.DataAccess.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("PerformanceData")
+                        .HasColumnType("text");
+
                     b.Property<string>("ReferrerUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("ScrollDepth")
+                        .HasColumnType("integer");
 
                     b.Property<string>("SessionId")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SessionInfo")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("TimeOnPage")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TimeZone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<long>("Timestamp")
                         .HasColumnType("bigint");
@@ -144,12 +198,15 @@ namespace Agronexis.DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("UserProfileInfo")
+                        .HasColumnType("text");
+
                     b.Property<decimal?>("Value")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AnalyticsEvents");
+                    b.ToTable("AnalyticsEvent", "dbo");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Brand", b =>
@@ -341,8 +398,6 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnalyticsEventId");
-
                     b.ToTable("EcommerceEvents");
                 });
 
@@ -402,6 +457,9 @@ namespace Agronexis.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Currency")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DocketNumber")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -558,11 +616,11 @@ namespace Agronexis.DataAccess.Migrations
                     b.Property<Guid>("CurrencyId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("DiscountPercentage")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasColumnType("numeric");
 
-                    b.Property<int>("DiscountedAmount")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("DiscountedAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -597,6 +655,32 @@ namespace Agronexis.DataAccess.Migrations
                     b.HasIndex("WeightId");
 
                     b.ToTable("ProductPrice", "dbo");
+                });
+
+            modelBuilder.Entity("Agronexis.Model.EntityModel.RefundTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RazorpayRefundId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RefundTransaction", "dbo");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Review", b =>
@@ -811,17 +895,6 @@ namespace Agronexis.DataAccess.Migrations
                     b.Navigation("State");
                 });
 
-            modelBuilder.Entity("Agronexis.Model.EntityModel.EcommerceEvent", b =>
-                {
-                    b.HasOne("Agronexis.Model.EntityModel.AnalyticsEvent", "AnalyticsEvent")
-                        .WithMany("EcommerceEvents")
-                        .HasForeignKey("AnalyticsEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AnalyticsEvent");
-                });
-
             modelBuilder.Entity("Agronexis.Model.EntityModel.Inventory", b =>
                 {
                     b.HasOne("Agronexis.Model.EntityModel.Product", "Product")
@@ -902,11 +975,6 @@ namespace Agronexis.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Roles");
-                });
-
-            modelBuilder.Entity("Agronexis.Model.EntityModel.AnalyticsEvent", b =>
-                {
-                    b.Navigation("EcommerceEvents");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Category", b =>

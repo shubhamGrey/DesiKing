@@ -149,7 +149,7 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AnalyticsEvents");
+                    b.ToTable("AnalyticsEvent");
                 });
 
             modelBuilder.Entity("Agronexis.Model.EntityModel.Brand", b =>
