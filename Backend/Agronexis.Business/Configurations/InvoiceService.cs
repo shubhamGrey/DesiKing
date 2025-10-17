@@ -1,5 +1,6 @@
 using Agronexis.Model.RequestModel;
 using PuppeteerSharp;
+using PuppeteerSharp.Media;
 using QRCoder;
 using System.Text;
 
@@ -9,72 +10,86 @@ namespace Agronexis.Business.Configurations
     {
         public async Task<byte[]> GenerateGstInvoicePdfAsync(InvoiceDataModel invoiceData)
         {
+            // Ensure Puppeteer downloads Chromium if not already present
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+
+            // Clean & stable launch configuration for Windows
+            var launchOptions = new LaunchOptions
+            {
+                Headless = true,
+                Args = new[]
+                {
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-extensions"
+            },
+                IgnoreHTTPSErrors = true,
+                DefaultViewport = new ViewPortOptions
+                {
+                    Width = 1280,
+                    Height = 800
+                },
+                Timeout = 60000 // 60 seconds
+            };
+
+            IBrowser browser = null;
+            IPage page = null;
+
+            // FIX: Generate HTML content before using it
+            var htmlContent = GenerateInvoiceHtml(invoiceData);
+
             try
             {
-                // Download browser if not exists
-                var browserFetcher = new BrowserFetcher();
-                
-                Console.WriteLine("Checking browser availability...");
-                await browserFetcher.DownloadAsync();
-                
-                // Generate HTML content
-                var htmlContent = GenerateInvoiceHtml(invoiceData);
-                Console.WriteLine("HTML content generated.");
+                Console.WriteLine("Launching Chromium browser...");
+                browser = await Puppeteer.LaunchAsync(launchOptions);
 
-                // Launch Puppeteer with enhanced compatibility options for macOS
-                Console.WriteLine("Launching browser...");
-                
-                var launchOptions = new LaunchOptions
+                page = await browser.NewPageAsync();
+                Console.WriteLine("New browser page opened.");
+
+                // Load HTML content and wait for rendering to complete
+                await page.SetContentAsync(htmlContent, new NavigationOptions
                 {
-                    Headless = true,
-                    Args = new[] { 
-                        "--no-sandbox", 
-                        "--disable-setuid-sandbox",
-                        "--disable-dev-shm-usage",
-                        "--disable-accelerated-2d-canvas",
-                        "--no-first-run",
-                        "--no-zygote",
-                        "--single-process",
-                        "--disable-gpu",
-                        "--disable-extensions",
-                        "--disable-plugins",
-                        "--disable-features=VizDisplayCompositor"
-                    },
-                    IgnoreHTTPSErrors = true,
-                    DefaultViewport = new ViewPortOptions { Width = 1024, Height = 768 },
-                    Timeout = 30000 // 30 seconds timeout
-                };
+                    WaitUntil = new[] { WaitUntilNavigation.Load }
+                });
 
-                using var browser = await Puppeteer.LaunchAsync(launchOptions);
-                Console.WriteLine("Browser launched successfully.");
+                // Wait a bit to ensure all fonts/images render fully
+                await page.WaitForTimeoutAsync(1000);
 
-                using var page = await browser.NewPageAsync();
+                Console.WriteLine("Rendering shipment label to PDF...");
 
-                // Set content and generate PDF
-                await page.SetContentAsync(htmlContent);
-
-                var pdfOptions = new PdfOptions
+                var pdfBytes = await page.PdfDataAsync(new PdfOptions
                 {
-                    Format = PuppeteerSharp.Media.PaperFormat.A4,
+                    Format = PaperFormat.A4,
                     PrintBackground = true,
-                    MarginOptions = new PuppeteerSharp.Media.MarginOptions
+                    MarginOptions = new MarginOptions
                     {
-                        Top = "20px",
-                        Bottom = "20px",
-                        Left = "20px",
-                        Right = "20px"
+                        Top = "10mm",
+                        Right = "10mm",
+                        Bottom = "10mm",
+                        Left = "10mm"
                     }
-                };
+                });
 
-                var pdfBytes = await page.PdfDataAsync(pdfOptions);
                 Console.WriteLine("PDF generated successfully.");
                 return pdfBytes;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in PDF generation: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                throw new Exception($"Error generating PDF: {ex.Message}", ex);
+                Console.WriteLine($"Error while generating shipment label: {ex.Message}");
+                throw new Exception("Failed to generate shipment label PDF.", ex);
+            }
+            finally
+            {
+                if (page != null && !page.IsClosed)
+                    await page.CloseAsync();
+
+                if (browser != null && !browser.IsClosed)
+                    await browser.CloseAsync();
+
+                Console.WriteLine("Chromium browser closed.");
             }
         }
 
