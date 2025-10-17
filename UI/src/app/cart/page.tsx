@@ -38,7 +38,11 @@ import {
   OrderCreateRequest,
   RazorpayPaymentData,
 } from "@/types/razorpay";
-import { createOrder, initializeRazorpayPayment } from "@/utils/razorpayUtils";
+import {
+  createOrder,
+  initializeRazorpayPayment,
+  verifyPayment,
+} from "@/utils/razorpayUtils";
 import { useEnhancedCart } from "@/hooks/useEnhancedCart";
 import type { EnhancedCartItem } from "@/contexts/CartContext";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
@@ -92,6 +96,7 @@ const Cart = () => {
     clearCart,
   } = useEnhancedCart();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
@@ -679,7 +684,7 @@ const Cart = () => {
         );
       }
 
-      // Generate a new GUID for the order
+      // Generate a new GUID for the order (used as frontend reference)
       const orderId = crypto.randomUUID();
 
       const orderData: OrderCreateRequest = {
@@ -698,11 +703,16 @@ const Cart = () => {
 
       const result = await createOrder(orderData, "RAZORPAY");
 
-      // The backend now returns the Razorpay order ID for Razorpay payments
+      // The backend returns both orderId (database ID) and razorpayOrderId (Razorpay order ID)
       const razorpayOrderId = result.data.razorpayOrderId || "";
+      const databaseOrderId = result.data.orderId || ""; // This is the actual database order ID
 
       if (!razorpayOrderId) {
         throw new Error("No Razorpay order ID received from server");
+      }
+
+      if (!databaseOrderId) {
+        throw new Error("No database order ID received from server");
       }
 
       // Directly initialize Razorpay payment
@@ -718,7 +728,8 @@ const Cart = () => {
       await initializeRazorpayPayment(
         razorpayOrderData,
         paymentFormData,
-        handlePaymentSuccess,
+        (paymentData: RazorpayPaymentData) =>
+          handlePaymentSuccess(paymentData, databaseOrderId), // Pass database order ID
         handlePaymentError
       );
     } catch (error: any) {
@@ -747,11 +758,34 @@ const Cart = () => {
   };
 
   // Handle successful payment
-  const handlePaymentSuccess = async (paymentData: RazorpayPaymentData) => {
+  const handlePaymentSuccess = async (
+    paymentData: RazorpayPaymentData,
+    internalOrderId?: string
+  ) => {
     try {
-      setAlertMessage("Payment successful! Saving your details...");
+      setIsPaymentProcessing(true); // Start payment processing
+      setAlertMessage("Payment successful! Verifying payment...");
       setAlertSeverity("success");
       setShowAlert(true);
+
+      // Verify payment signature on backend
+      const currentUserId = getUserId();
+      if (!currentUserId) {
+        throw new Error("User not authenticated");
+      }
+
+      const isPaymentValid = await verifyPayment(
+        paymentData,
+        currentUserId,
+        orderTotal,
+        "INR"
+      );
+
+      if (!isPaymentValid) {
+        throw new Error("Payment verification failed. Please contact support.");
+      }
+
+      setAlertMessage("Payment verified! Saving your details...");
 
       // Save shipping address (only if manually entered, not selected)
       if (getUserId() && useManualAddress && formData.name) {
@@ -782,33 +816,35 @@ const Cart = () => {
         }
       }
 
-      // Clear cart after successful payment and address saving
-      clearCart();
-
       setAlertMessage("Payment successful! Redirecting...");
       setTimeout(() => {
+        // Clear cart just before redirect
+        clearCart();
         router.push(
           `/payment-result?status=success&order_id=${
             paymentData.razorpay_order_id
           }&payment_id=${paymentData.razorpay_payment_id}&signature=${
             paymentData.razorpay_signature
-          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR`
+          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR&payment_method=RAZORPAY&internal_order_id=${internalOrderId}`
         );
       }, 2000);
     } catch (error) {
       console.error("Error in post-payment processing:", error);
-      // Still proceed with payment success flow
-      clearCart();
-      setAlertMessage("Payment successful! Redirecting...");
-      setTimeout(() => {
-        router.push(
-          `/payment-result?status=success&order_id=${
-            paymentData.razorpay_order_id
-          }&payment_id=${paymentData.razorpay_payment_id}&signature=${
-            paymentData.razorpay_signature
-          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR`
-        );
-      }, 2000);
+
+      // Reset payment processing state on error
+      setIsPaymentProcessing(false);
+
+      // Handle payment verification failure
+      setAlertMessage(
+        `Payment verification failed: ${
+          error instanceof Error ? error.message : "Please contact support."
+        }`
+      );
+      setAlertSeverity("error");
+      setShowAlert(true);
+
+      // Don't clear cart or redirect on verification failure
+      // User should contact support to resolve the issue
     }
   };
 
@@ -836,6 +872,46 @@ const Cart = () => {
   };
 
   if (cartItems.length === 0) {
+    // Show payment processing loader if payment is being processed
+    if (isPaymentProcessing) {
+      return (
+        <Container maxWidth="xl" sx={{ pb: 4, pt: 8 }}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            minHeight="60vh"
+            gap={3}
+          >
+            <CircularProgress
+              size={60}
+              thickness={4}
+              sx={{ color: "primary.main" }}
+            />
+            <Typography
+              variant="h6"
+              fontFamily={michroma.style.fontFamily}
+              fontWeight={600}
+              color="primary.main"
+              textAlign="center"
+            >
+              Processing Your Payment...
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+              maxWidth="400px"
+            >
+              Please don&apos;t close this window. We&apos;re verifying your
+              payment and saving your details.
+            </Typography>
+          </Box>
+        </Container>
+      );
+    }
+
     return <EmptyCart />; // Render EmptyCart component if cart is empty
   }
 

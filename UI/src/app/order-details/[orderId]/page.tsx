@@ -600,14 +600,26 @@ const OrderDetailsContent: React.FC = () => {
               phone: "+91-0000000000",
             },
             paymentInfo: {
-              method: "Online Payment",
+              method: specificOrder.transaction?.paymentMethod
+                ? specificOrder.transaction.paymentMethod === "RAZORPAY"
+                  ? "Online Payment (Razorpay)"
+                  : specificOrder.transaction.paymentMethod === "COD"
+                  ? "Cash on Delivery"
+                  : specificOrder.transaction.paymentMethod
+                : "Online Payment",
               transactionId:
+                specificOrder.transaction?.razorpayPaymentId ||
                 specificOrder.razorpayOrderId ||
                 `TXN${specificOrder.id.slice(-8)}`,
-              paymentDate: specificOrder.createdDate,
-              amount: specificOrder.totalAmount,
+              paymentDate:
+                specificOrder.transaction?.paidAt || specificOrder.createdDate,
+              amount:
+                specificOrder.transaction?.totalAmount ||
+                specificOrder.totalAmount,
               status:
-                specificOrder.status === "paid"
+                specificOrder.transaction?.status === "Paid"
+                  ? "Completed"
+                  : specificOrder.status === "paid"
                   ? "Completed"
                   : specificOrder.status === "created"
                   ? "Pending"

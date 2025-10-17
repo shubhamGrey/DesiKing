@@ -1308,6 +1308,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     {
                         Id = o.Id,
                         UserId = o.UserId,
+                        RazorpayOrderId = o.RazorpayOrderId,
+                        ReceiptId = o.ReceiptId,
                         Status = o.Status,
                         TotalAmount = o.TotalAmount,
                         Currency = o.Currency,
@@ -1320,7 +1322,25 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             Quantity = oi.Quantity,
                             Price = oi.Price,
                             CreatedDate = oi.CreatedDate
-                        }).ToList()
+                        }).ToList(),
+                        Transaction = _dbContext.Transactions
+                            .Where(t => t.RazorpayOrderId == o.RazorpayOrderId)
+                            .Select(t => new TransactionResponseModel
+                            {
+                                Id = t.Id,
+                                RazorpayPaymentId = t.RazorpayPaymentId,
+                                RazorpayOrderId = t.RazorpayOrderId,
+                                UserId = t.UserId,
+                                Signature = t.Signature,
+                                TotalAmount = t.TotalAmount,
+                                Currency = t.Currency,
+                                Status = t.Status,
+                                PaymentMethod = t.PaymentMethod,
+                                BrandId = t.BrandId,
+                                PaidAt = t.PaidAt,
+                                CreatedDate = t.CreatedDate
+                            })
+                            .FirstOrDefault()
                     })
                     .ToList();
 

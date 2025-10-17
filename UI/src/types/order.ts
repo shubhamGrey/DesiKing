@@ -9,6 +9,21 @@ export interface OrderItem {
   modifiedDate?: string;
 }
 
+export interface Transaction {
+  id: string;
+  razorpayPaymentId?: string;
+  razorpayOrderId?: string;
+  userId: string;
+  signature?: string;
+  totalAmount: number;
+  currency?: string;
+  status?: string; // captured, failed, refunded
+  paymentMethod?: string;
+  brandId: string;
+  paidAt?: string;
+  createdDate?: string;
+}
+
 export interface Order {
   id: string;
   userId: string;
@@ -21,6 +36,7 @@ export interface Order {
   createdDate: string;
   modifiedDate?: string;
   orderItems: OrderItem[];
+  transaction?: Transaction;
 }
 
 export interface OrdersApiResponse {
