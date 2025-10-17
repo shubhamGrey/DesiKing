@@ -47,5 +47,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         List<OrderByUserResponseModel> GetOrdersByUserId(string userId, string correlationId);
         Task<AnalyticsResponseModel> ProcessAnalyticsEvents(AnalyticsPayloadRequest payload, string xCorrelationId);
         Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId);
+        Task<ShipmentTrackingResponseModel> TrackShipment(string awbNo, string xCorrelationId);
+        Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId);
+        Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId);
     }
 }

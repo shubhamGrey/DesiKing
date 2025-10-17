@@ -183,5 +183,18 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.UpdateUserProfile(model, xCorrelationId);
         }
+        public async Task<ShipmentTrackingResponseModel> TrackShipment(string awbNo, string xCorrelationId)
+        {
+            return await _repository.TrackShipment(awbNo, xCorrelationId);
+        }
+        public async Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId)
+        {
+            return await _repository.GenerateShipmentLabel(awbNo, xCorrelationId);
+        }
+        public async Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId)
+        {
+            return await _repository.CreatePickupBooking(request, xCorrelationId);
+        }
+
     }
 }
