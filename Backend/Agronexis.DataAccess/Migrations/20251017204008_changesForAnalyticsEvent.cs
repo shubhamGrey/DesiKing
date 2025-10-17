@@ -7,13 +7,14 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Agronexis.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateAnalyticsTables : Migration
+    public partial class changesForAnalyticsEvent : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "AnalyticsEvents",
+                name: "AnalyticsEvent",
+                schema: "dbo",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -32,51 +33,36 @@ namespace Agronexis.DataAccess.Migrations
                     UserAgent = table.Column<string>(type: "text", nullable: true),
                     PageUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ReferrerUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Region = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    TimeZone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Language = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    DeviceInfo = table.Column<string>(type: "text", nullable: true),
+                    SessionInfo = table.Column<string>(type: "text", nullable: true),
+                    UserProfileInfo = table.Column<string>(type: "text", nullable: true),
+                    PageReferrer = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ScrollDepth = table.Column<int>(type: "integer", nullable: true),
+                    TimeOnPage = table.Column<long>(type: "bigint", nullable: true),
+                    InteractionTarget = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    EventSource = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ElementAttributes = table.Column<string>(type: "text", nullable: true),
+                    PerformanceData = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AnalyticsEvents", x => x.Id);
+                    table.PrimaryKey("PK_AnalyticsEvent", x => x.Id);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "EcommerceEvents",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AnalyticsEventId = table.Column<long>(type: "bigint", nullable: false),
-                    TransactionId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
-                    TotalValue = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
-                    ItemsData = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EcommerceEvents", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EcommerceEvents_AnalyticsEvents_AnalyticsEventId",
-                        column: x => x.AnalyticsEventId,
-                        principalTable: "AnalyticsEvents",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EcommerceEvents_AnalyticsEventId",
-                table: "EcommerceEvents",
-                column: "AnalyticsEventId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "EcommerceEvents");
-
-            migrationBuilder.DropTable(
-                name: "AnalyticsEvents");
+                name: "AnalyticsEvent",
+                schema: "dbo");
         }
     }
 }

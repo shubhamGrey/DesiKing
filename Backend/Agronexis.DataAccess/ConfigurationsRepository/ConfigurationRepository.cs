@@ -1525,7 +1525,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             UserAgent = payload.UserAgent,
                             PageUrl = payload.Url,
                             ReferrerUrl = eventData.PageReferrer,
-                            
+
                             // Enhanced User and Location Details
                             IpAddress = payload.IpAddress,
                             Country = payload.Country,
@@ -1533,12 +1533,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             City = payload.City,
                             TimeZone = payload.TimeZone,
                             Language = payload.Language,
-                            
+
                             // Device, Session, and User Profile Info (stored as JSON)
                             DeviceInfo = payload.DeviceInfo != null ? JsonSerializer.Serialize(payload.DeviceInfo) : null,
                             SessionInfo = payload.SessionInfo != null ? JsonSerializer.Serialize(payload.SessionInfo) : null,
                             UserProfileInfo = payload.UserProfile != null ? JsonSerializer.Serialize(payload.UserProfile) : null,
-                            
+
                             // Enhanced Event Context
                             PageReferrer = eventData.PageReferrer,
                             ScrollDepth = eventData.ScrollDepth,
@@ -1547,7 +1547,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             EventSource = eventData.EventSource,
                             ElementAttributes = eventData.ElementAttributes != null ? JsonSerializer.Serialize(eventData.ElementAttributes) : null,
                             PerformanceData = eventData.PerformanceData != null ? JsonSerializer.Serialize(eventData.PerformanceData) : null,
-                            
+
                             CreatedAt = DateTime.UtcNow
                         };
 

@@ -26,8 +26,9 @@ namespace Agronexis.DataAccess.DbContexts
         public DbSet<Weight> Weights { get; set; }
         public DbSet<StateMaster> StateMasters { get; set; }
         public DbSet<CountryMaster> CountryMasters { get; set; }
-        public DbSet<AnalyticsEvent> AnalyticsEvents { get; set; }
         public DbSet<EcommerceEvent> EcommerceEvents { get; set; }
         public DbSet<RefundTransaction> RefundTransactions { get; set; }
+        public DbSet<AnalyticsEvent> AnalyticsEvents { get; set; }
+
     }
 }

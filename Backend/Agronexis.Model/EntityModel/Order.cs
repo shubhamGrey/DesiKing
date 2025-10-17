@@ -21,6 +21,7 @@ namespace Agronexis.Model.EntityModel
         public string? Currency { get; set; }
         public string? Status { get; set; } //created, paid, failed
         public Guid BrandId { get; set; }
+        public string? DocketNumber { get; set; } // AWB or tracking number
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = [];

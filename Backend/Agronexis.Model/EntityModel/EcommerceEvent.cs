@@ -28,8 +28,8 @@ namespace Agronexis.Model.EntityModel
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation property
-        [ForeignKey("AnalyticsEventId")]
-        public virtual AnalyticsEvent? AnalyticsEvent { get; set; }
+        //// Navigation property
+        //[ForeignKey("AnalyticsEventId")]
+        //public virtual AnalyticsEvent? AnalyticsEvent { get; set; }
     }
 }
