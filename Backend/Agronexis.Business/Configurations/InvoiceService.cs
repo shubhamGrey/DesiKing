@@ -12,17 +12,33 @@ namespace Agronexis.Business.Configurations
             try
             {
                 // Download browser if not exists
-                await new BrowserFetcher().DownloadAsync();
+                var browserFetcher = new BrowserFetcher();
+                
+                Console.WriteLine("Downloading browser...");
+                await browserFetcher.DownloadAsync();
+                Console.WriteLine("Browser downloaded successfully.");
 
                 // Generate HTML content
                 var htmlContent = GenerateInvoiceHtml(invoiceData);
+                Console.WriteLine("HTML content generated.");
 
-                // Launch Puppeteer
+                // Launch Puppeteer with enhanced compatibility options for macOS
+                Console.WriteLine("Launching browser...");
                 using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     Headless = true,
-                    Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }
+                    Args = new[] { 
+                        "--no-sandbox", 
+                        "--disable-setuid-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-accelerated-2d-canvas",
+                        "--no-first-run",
+                        "--no-zygote",
+                        "--single-process",
+                        "--disable-gpu"
+                    }
                 });
+                Console.WriteLine("Browser launched successfully.");
 
                 using var page = await browser.NewPageAsync();
 
