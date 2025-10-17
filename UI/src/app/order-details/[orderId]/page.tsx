@@ -669,14 +669,7 @@ const OrderDetailsContent: React.FC = () => {
               amount:
                 specificOrder.transaction?.totalAmount ||
                 specificOrder.totalAmount,
-              status:
-                specificOrder.transaction?.status === "Paid"
-                  ? "Completed"
-                  : specificOrder.status === "paid"
-                  ? "Completed"
-                  : specificOrder.status === "created"
-                  ? "Pending"
-                  : "Failed",
+              status: specificOrder.transaction?.status || "Pending",
             },
             timeline: generateOrderTimeline(specificOrder),
             items: itemsData,
@@ -705,7 +698,6 @@ const OrderDetailsContent: React.FC = () => {
   const getStatusSteps = () => {
     const statuses = [
       { label: "Order Placed", key: "createdDate" },
-      { label: "Processing", key: "processingDate" },
       { label: "Packed", key: "packedDate" },
       { label: "Shipped", key: "shippedDate" },
       { label: "Delivered", key: "deliveredDate" },
@@ -714,7 +706,6 @@ const OrderDetailsContent: React.FC = () => {
     const currentStatusIndex = statuses.findIndex(
       (status) =>
         status.label === orderDetails?.status ||
-        (status.label === "Processing" && orderDetails?.processingDate) ||
         (status.label === "Packed" && orderDetails?.packedDate) ||
         (status.label === "Shipped" &&
           (orderDetails?.shippedDate || orderDetails?.outForDeliveryDate)) ||
@@ -746,9 +737,284 @@ const OrderDetailsContent: React.FC = () => {
     showSuccess(`${label} copied to clipboard`);
   };
 
-  const handleDownloadInvoice = () => {
-    // TODO: Implement actual invoice download
-    showSuccess("Invoice download will be available soon");
+  const handleDownloadInvoice = async () => {
+    if (!orderDetails) {
+      showError("Order details not available");
+      return;
+    }
+
+    try {
+      // Show loading state
+      showSuccess("Generating GST-compliant invoice...");
+
+      // Prepare GST-compliant invoice data
+      const invoiceData = {
+        // Supplier Details (Rule 46 compliance)
+        supplier: {
+          name: "DesiKing Private Limited",
+          address: "Premium Spices District, Mumbai, Maharashtra, 400001",
+          gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
+          panNumber: "AABCD1234E",
+          email: "invoices@desiking.com",
+          phone: "+91-1800-DESI-KING",
+          website: "www.desiking.com",
+        },
+
+        // Invoice Details (Rule 46 compliance)
+        invoice: {
+          number: `DK/${new Date().getFullYear()}-${(
+            new Date().getFullYear() + 1
+          )
+            .toString()
+            .slice(-2)}/${orderDetails.orderNumber}`,
+          date: new Date().toLocaleDateString("en-IN"),
+          dueDate: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString("en-IN"),
+          financialYear: `${new Date().getFullYear()}-${(
+            new Date().getFullYear() + 1
+          )
+            .toString()
+            .slice(-2)}`,
+          orderNumber: orderDetails.orderNumber,
+          orderDate: new Date(orderDetails.createdDate).toLocaleDateString(
+            "en-IN"
+          ),
+        },
+
+        // Customer Details (Rule 46 compliance)
+        customer: {
+          name:
+            orderDetails.billingAddress?.name ||
+            orderDetails.deliveryAddress?.name ||
+            "Customer",
+          address:
+            orderDetails.billingAddress?.address ||
+            orderDetails.deliveryAddress?.address ||
+            "Address not provided",
+          city:
+            orderDetails.billingAddress?.city ||
+            orderDetails.deliveryAddress?.city ||
+            "City",
+          state:
+            orderDetails.billingAddress?.state ||
+            orderDetails.deliveryAddress?.state ||
+            "State",
+          pincode:
+            orderDetails.billingAddress?.pincode ||
+            orderDetails.deliveryAddress?.pincode ||
+            "000000",
+          phone:
+            orderDetails.billingAddress?.phone ||
+            orderDetails.deliveryAddress?.phone ||
+            "+91-0000000000",
+          email: "customer@email.com", // You can collect this during checkout
+          gstin: null, // For B2C customers, this will be null
+          stateCode: getStateCode(
+            orderDetails.billingAddress?.state ||
+              orderDetails.deliveryAddress?.state ||
+              "Maharashtra"
+          ),
+        },
+
+        // Delivery Address (if different)
+        deliveryAddress: orderDetails.deliveryAddress
+          ? {
+              name: orderDetails.deliveryAddress.name,
+              address: orderDetails.deliveryAddress.address,
+              city: orderDetails.deliveryAddress.city,
+              state: orderDetails.deliveryAddress.state,
+              pincode: orderDetails.deliveryAddress.pincode,
+              phone: orderDetails.deliveryAddress.phone,
+              stateCode: getStateCode(
+                orderDetails.deliveryAddress.state || "Maharashtra"
+              ),
+            }
+          : null,
+
+        // Items with HSN/SAC codes (Rule 46 compliance)
+        items: orderDetails.items.map((item, index) => ({
+          slNo: index + 1,
+          description: item.productName,
+          hsnCode: "09109990", // HSN for spices - replace with actual HSN per product
+          quantity: item.quantity,
+          unit: "KG", // or appropriate unit
+          rate: item.price,
+          taxableValue: item.price * item.quantity,
+          discountAmount: item.discountAmount
+            ? item.discountAmount * item.quantity
+            : 0,
+
+          // GST Calculations
+          cgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
+          sgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
+          igstRate: isIntraState(orderDetails.billingAddress?.state) ? 0 : 5,
+
+          cgstAmount: isIntraState(orderDetails.billingAddress?.state)
+            ? (item.price * item.quantity * 2.5) / 100
+            : 0,
+          sgstAmount: isIntraState(orderDetails.billingAddress?.state)
+            ? (item.price * item.quantity * 2.5) / 100
+            : 0,
+          igstAmount: isIntraState(orderDetails.billingAddress?.state)
+            ? 0
+            : (item.price * item.quantity * 5) / 100,
+
+          totalAmount: item.totalPrice + (item.price * item.quantity * 5) / 100,
+        })),
+
+        // Tax Summary
+        taxSummary: {
+          totalTaxableValue: orderDetails.subtotal,
+          totalDiscount: orderDetails.discount,
+
+          // GST totals based on place of supply
+          totalCGST: isIntraState(orderDetails.billingAddress?.state)
+            ? (orderDetails.subtotal * 2.5) / 100
+            : 0,
+          totalSGST: isIntraState(orderDetails.billingAddress?.state)
+            ? (orderDetails.subtotal * 2.5) / 100
+            : 0,
+          totalIGST: isIntraState(orderDetails.billingAddress?.state)
+            ? 0
+            : (orderDetails.subtotal * 5) / 100,
+
+          totalTax: (orderDetails.subtotal * 5) / 100,
+          shippingCharges: orderDetails.shippingCharges,
+          grandTotal: orderDetails.totalAmount,
+
+          placeOfSupply: `${
+            orderDetails.billingAddress?.state ||
+            orderDetails.deliveryAddress?.state ||
+            "Maharashtra"
+          } (${getStateCode(
+            orderDetails.billingAddress?.state ||
+              orderDetails.deliveryAddress?.state ||
+              "Maharashtra"
+          )})`,
+        },
+
+        // Payment Details
+        payment: {
+          method: orderDetails.paymentInfo.method,
+          transactionId: orderDetails.paymentInfo.transactionId,
+          paymentDate: new Date(
+            orderDetails.paymentInfo.paymentDate
+          ).toLocaleDateString("en-IN"),
+          status: orderDetails.paymentInfo.status,
+          amountPaid: orderDetails.paymentInfo.amount,
+        },
+
+        // Additional Details
+        terms: [
+          "This is a computer-generated invoice and does not require a physical signature.",
+          "Goods once sold will not be taken back.",
+          "All disputes are subject to Mumbai jurisdiction only.",
+          "Payment due within 30 days of invoice date.",
+        ],
+
+        // E-invoice details (if applicable)
+        eInvoice: {
+          irn: null, // Will be populated if e-invoicing is required
+          qrCode: null, // Base64 QR code from IRP
+          ackNo: null,
+          ackDate: null,
+        },
+      };
+
+      // Call backend API to generate GST-compliant PDF
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/invoice/generate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+          body: JSON.stringify({
+            orderId: orderDetails.id,
+            invoiceData: invoiceData,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Handle PDF download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
+        /\//g,
+        "_"
+      )}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showSuccess("GST-compliant invoice downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating GST invoice:", error);
+      showError(
+        `Failed to generate GST invoice: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. Please try again.`
+      );
+    }
+  };
+
+  // Helper function to determine if transaction is intra-state
+  const isIntraState = (customerState?: string): boolean => {
+    const companyState = "Maharashtra"; // Your company's state
+    return (customerState || "Maharashtra") === companyState;
+  };
+
+  // Helper function to get state code for GST
+  const getStateCode = (stateName?: string): string => {
+    const stateCodes: Record<string, string> = {
+      "Andaman and Nicobar Islands": "35",
+      "Andhra Pradesh": "28",
+      "Arunachal Pradesh": "12",
+      Assam: "18",
+      Bihar: "10",
+      Chandigarh: "04",
+      Chhattisgarh: "22",
+      "Dadra and Nagar Haveli and Daman and Diu": "26",
+      Delhi: "07",
+      Goa: "30",
+      Gujarat: "24",
+      Haryana: "06",
+      "Himachal Pradesh": "02",
+      "Jammu and Kashmir": "01",
+      Jharkhand: "20",
+      Karnataka: "29",
+      Kerala: "32",
+      Ladakh: "38",
+      Lakshadweep: "31",
+      "Madhya Pradesh": "23",
+      Maharashtra: "27",
+      Manipur: "14",
+      Meghalaya: "17",
+      Mizoram: "15",
+      Nagaland: "13",
+      Odisha: "21",
+      Puducherry: "34",
+      Punjab: "03",
+      Rajasthan: "08",
+      Sikkim: "11",
+      "Tamil Nadu": "33",
+      Telangana: "36",
+      Tripura: "16",
+      "Uttar Pradesh": "09",
+      Uttarakhand: "05",
+      "West Bengal": "19",
+    };
+
+    return stateCodes[stateName || "Maharashtra"] || "27";
   };
 
   const handleTrackOrder = () => {
@@ -1239,7 +1505,7 @@ const OrderDetailsContent: React.FC = () => {
           ))}
 
           {/* Order Total Summary */}
-          <Box sx={{ p: 3, backgroundColor: "background.default" }}>
+          <Box sx={{ p: 3, mx: 3, backgroundColor: "background.default" }}>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Stack spacing={2}>
@@ -1449,19 +1715,6 @@ const OrderDetailsContent: React.FC = () => {
                     {orderDetails.deliveryAddress.state} -{" "}
                     {orderDetails.deliveryAddress.pincode}
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                      mt: 0.5,
-                    }}
-                  >
-                    <Phone fontSize="small" />
-                    <Typography variant="body2">
-                      {orderDetails.deliveryAddress.phone}
-                    </Typography>
-                  </Box>
                 </Box>
 
                 <Divider />
@@ -1692,20 +1945,20 @@ const OrderDetailsContent: React.FC = () => {
                       orderDetails.deliveryAddress.name &&
                     orderDetails.billingAddress.pincode ===
                       orderDetails.deliveryAddress.pincode ? (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          fontStyle: "italic",
-                          backgroundColor: "background.default",
-                          p: 1,
-                          borderRadius: 1,
-                          border: "1px dashed",
-                          borderColor: "divider",
-                        }}
-                      >
-                        Same as delivery address
-                      </Typography>
+                      <Box>
+                        {/* Show actual shipping address data */}
+                        <Typography variant="body2" fontWeight="500">
+                          {orderDetails.deliveryAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.city},{" "}
+                          {orderDetails.deliveryAddress.state} -{" "}
+                          {orderDetails.deliveryAddress.pincode}
+                        </Typography>
+                      </Box>
                     ) : (
                       <>
                         <Typography variant="body2">

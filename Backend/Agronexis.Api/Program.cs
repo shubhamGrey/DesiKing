@@ -71,6 +71,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 builder.Services.AddTransient<IConfigService, ConfigService>();
 builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ExternalUtility>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 //builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 //builder.Services.AddTransient<EmailService>();
