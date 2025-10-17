@@ -630,7 +630,13 @@ const OrderDetailsContent: React.FC = () => {
               ? {
                   name:
                     specificOrder.shippingAddress.fullName || "Customer Name",
-                  address: "Same as delivery address",
+                  address:
+                    [
+                      specificOrder.shippingAddress.addressLine,
+                      specificOrder.shippingAddress.landMark,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "Address not available",
                   city: specificOrder.shippingAddress.city || "City",
                   state: specificOrder.shippingAddress.stateCode || "State",
                   pincode: specificOrder.shippingAddress.pinCode || "000000",
@@ -640,7 +646,7 @@ const OrderDetailsContent: React.FC = () => {
                 }
               : {
                   name: "Customer Name",
-                  address: "Same as delivery address",
+                  address: "Address not available",
                   city: "City",
                   state: "State",
                   pincode: "000000",
@@ -1679,17 +1685,42 @@ const OrderDetailsContent: React.FC = () => {
                     >
                       Billing Address
                     </Typography>
-                    <Typography variant="body2">
-                      {orderDetails.billingAddress.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {orderDetails.billingAddress.address}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {orderDetails.billingAddress.city},{" "}
-                      {orderDetails.billingAddress.state} -{" "}
-                      {orderDetails.billingAddress.pincode}
-                    </Typography>
+                    {/* Check if billing address is same as shipping address */}
+                    {orderDetails.billingAddress.address ===
+                      orderDetails.deliveryAddress.address &&
+                    orderDetails.billingAddress.name ===
+                      orderDetails.deliveryAddress.name &&
+                    orderDetails.billingAddress.pincode ===
+                      orderDetails.deliveryAddress.pincode ? (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontStyle: "italic",
+                          backgroundColor: "background.default",
+                          p: 1,
+                          borderRadius: 1,
+                          border: "1px dashed",
+                          borderColor: "divider",
+                        }}
+                      >
+                        Same as delivery address
+                      </Typography>
+                    ) : (
+                      <>
+                        <Typography variant="body2">
+                          {orderDetails.billingAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.city},{" "}
+                          {orderDetails.billingAddress.state} -{" "}
+                          {orderDetails.billingAddress.pincode}
+                        </Typography>
+                      </>
+                    )}
                   </Box>
                 )}
               </Stack>
