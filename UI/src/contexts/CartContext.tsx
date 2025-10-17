@@ -9,6 +9,7 @@ import React, {
   useCallback,
 } from "react";
 import { useEcommerceTracking } from "@/hooks/useAnalytics";
+import { getUserId, isLoggedIn } from "@/utils/auth";
 
 // Types
 export interface CartItem {
@@ -109,14 +110,12 @@ const fetchProductDetails = async (productId: string): Promise<any> => {
 // Helper function to save cart item to database (for new items)
 const saveCartItemToDatabase = async (cartItem: CartItem): Promise<void> => {
   try {
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-    if (!userProfileRaw) {
+    if (!isLoggedIn()) {
       console.warn("User not logged in, skipping database save");
       return;
     }
 
-    const userProfile = JSON.parse(userProfileRaw);
-    const userId = userProfile?.id;
+    const userId = getUserId();
 
     if (!userId) {
       console.warn("User ID not found, skipping database save");
@@ -170,14 +169,12 @@ const saveCartItemToDatabase = async (cartItem: CartItem): Promise<void> => {
 // Helper function to update existing cart item in database
 const updateCartItemToDatabase = async (cartItem: CartItem): Promise<void> => {
   try {
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-    if (!userProfileRaw) {
+    if (!isLoggedIn()) {
       console.warn("User not logged in, skipping database update");
       return;
     }
 
-    const userProfile = JSON.parse(userProfileRaw);
-    const userId = userProfile?.id;
+    const userId = getUserId();
 
     if (!userId) {
       console.warn("User ID not found, skipping database update");
@@ -231,8 +228,7 @@ const deleteCartItemFromDatabase = async (
   cartItemId: string
 ): Promise<void> => {
   try {
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-    if (!userProfileRaw) {
+    if (!isLoggedIn()) {
       console.warn("User not logged in, skipping database delete");
       return;
     }
@@ -269,15 +265,12 @@ const loadCartItemsFromDatabase = async (): Promise<CartItem[]> => {
       return [];
     }
 
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-
-    if (!userProfileRaw) {
+    if (!isLoggedIn()) {
       console.warn("⚠️ User not logged in, loading from localStorage");
       return [];
     }
 
-    const userProfile = JSON.parse(userProfileRaw);
-    const userId = userProfile?.id;
+    const userId = getUserId();
 
     if (!userId) {
       console.warn("⚠️ User ID not found, loading from localStorage");
@@ -357,14 +350,12 @@ const loadCartItemsFromDatabase = async (): Promise<CartItem[]> => {
 // Helper function to clear all cart items from database
 const clearCartInDatabase = async (): Promise<void> => {
   try {
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-    if (!userProfileRaw) {
+    if (!isLoggedIn()) {
       console.warn("User not logged in, skipping database clear");
       return;
     }
 
-    const userProfile = JSON.parse(userProfileRaw);
-    const userId = userProfile?.id;
+    const userId = getUserId();
 
     if (!userId) {
       console.warn("User ID not found, skipping database clear");

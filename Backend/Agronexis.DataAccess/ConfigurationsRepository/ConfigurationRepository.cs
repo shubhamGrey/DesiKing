@@ -797,7 +797,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
                         CreatedDate = DateTime.UtcNow,
                         IsActive = true,
-                        RoleId = model.RoleId
+                        RoleId = model.RoleId ?? Guid.Empty
                     };
 
                     _dbContext.Users.Add(user);
@@ -1308,6 +1308,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     {
                         Id = o.Id,
                         UserId = o.UserId,
+                        RazorpayOrderId = o.RazorpayOrderId,
+                        ReceiptId = o.ReceiptId,
                         Status = o.Status,
                         TotalAmount = o.TotalAmount,
                         Currency = o.Currency,
@@ -1320,7 +1322,73 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             Quantity = oi.Quantity,
                             Price = oi.Price,
                             CreatedDate = oi.CreatedDate
-                        }).ToList()
+                        }).ToList(),
+                        Transaction = _dbContext.Transactions
+                            .Where(t => t.RazorpayOrderId == o.RazorpayOrderId)
+                            .Select(t => new TransactionResponseModel
+                            {
+                                Id = t.Id,
+                                RazorpayPaymentId = t.RazorpayPaymentId,
+                                RazorpayOrderId = t.RazorpayOrderId,
+                                UserId = t.UserId,
+                                Signature = t.Signature,
+                                TotalAmount = t.TotalAmount,
+                                Currency = t.Currency,
+                                Status = t.Status,
+                                PaymentMethod = t.PaymentMethod,
+                                BrandId = t.BrandId,
+                                PaidAt = t.PaidAt,
+                                CreatedDate = t.CreatedDate
+                            })
+                            .FirstOrDefault(),
+                        // Fetch shipping address - most recent SHIPPING address around order creation time
+                        ShippingAddress = _dbContext.Addresses
+                            .Where(a => a.UserId == userGuid && 
+                                       a.AddressType == "SHIPPING" && 
+                                       a.IsActive == true && 
+                                       a.IsDeleted == false &&
+                                       a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
+                            .OrderByDescending(a => a.CreatedDate)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault(),
+                        // Fetch billing address - most recent BILLING address around order creation time
+                        BillingAddress = _dbContext.Addresses
+                            .Where(a => a.UserId == userGuid && 
+                                       a.AddressType == "BILLING" && 
+                                       a.IsActive == true && 
+                                       a.IsDeleted == false &&
+                                       a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
+                            .OrderByDescending(a => a.CreatedDate)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault()
                     })
                     .ToList();
 
@@ -1363,7 +1431,30 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             CustomData = eventData.CustomData != null ? JsonSerializer.Serialize(eventData.CustomData) : null,
                             UserAgent = payload.UserAgent,
                             PageUrl = payload.Url,
-                            ReferrerUrl = null, // Can be added to request model if needed
+                            ReferrerUrl = eventData.PageReferrer,
+                            
+                            // Enhanced User and Location Details
+                            IpAddress = payload.IpAddress,
+                            Country = payload.Country,
+                            Region = payload.Region,
+                            City = payload.City,
+                            TimeZone = payload.TimeZone,
+                            Language = payload.Language,
+                            
+                            // Device, Session, and User Profile Info (stored as JSON)
+                            DeviceInfo = payload.DeviceInfo != null ? JsonSerializer.Serialize(payload.DeviceInfo) : null,
+                            SessionInfo = payload.SessionInfo != null ? JsonSerializer.Serialize(payload.SessionInfo) : null,
+                            UserProfileInfo = payload.UserProfile != null ? JsonSerializer.Serialize(payload.UserProfile) : null,
+                            
+                            // Enhanced Event Context
+                            PageReferrer = eventData.PageReferrer,
+                            ScrollDepth = eventData.ScrollDepth,
+                            TimeOnPage = eventData.TimeOnPage,
+                            InteractionTarget = eventData.InteractionTarget,
+                            EventSource = eventData.EventSource,
+                            ElementAttributes = eventData.ElementAttributes != null ? JsonSerializer.Serialize(eventData.ElementAttributes) : null,
+                            PerformanceData = eventData.PerformanceData != null ? JsonSerializer.Serialize(eventData.PerformanceData) : null,
+                            
                             CreatedAt = DateTime.UtcNow
                         };
 
@@ -1397,6 +1488,62 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             catch (Exception ex)
             {
                 throw new RepositoryException("Error occurred while processing analytics events", xCorrelationId, ex);
+            }
+        }
+
+        public async Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId)
+        {
+            try
+            {
+                // For profile updates, Id should be provided
+                if (!model.Id.HasValue)
+                {
+                    throw new RepositoryException("User ID is required for profile updates", xCorrelationId);
+                }
+
+                var user = await _dbContext.Users
+                    .Include(u => u.Roles)
+                    .FirstOrDefaultAsync(u => u.Id == model.Id.Value && u.IsActive && !u.IsDeleted);
+
+                if (user == null)
+                {
+                    throw new RepositoryException("User not found", xCorrelationId);
+                }
+
+                // Update user properties
+                user.FirstName = model.FirstName?.Trim();
+                user.LastName = model.LastName?.Trim();
+                user.Email = model.Email?.Trim();
+                user.MobileNumber = model.MobileNumber?.Trim();
+                user.ModifiedDate = DateTime.UtcNow;
+
+                // Update username if provided, otherwise use email
+                user.UserName = !string.IsNullOrWhiteSpace(model.UserName) 
+                    ? model.UserName.Trim() 
+                    : model.Email?.Trim();
+
+                await _dbContext.SaveChangesAsync();
+
+                // Return updated profile
+                return new UserProfileResponseModel
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    MobileNumber = user.MobileNumber,
+                    RoleId = user.RoleId,
+                    RoleName = user.Roles?.Name,
+                    CreatedDate = user.CreatedDate,
+                    ModifiedDate = user.ModifiedDate,
+                    BrandId = user.BrandId,
+                    IsActive = user.IsActive
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while updating user profile", xCorrelationId, ex);
             }
         }
 

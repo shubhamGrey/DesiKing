@@ -22,6 +22,25 @@ export interface AnalyticsEvent {
   sessionId: string;
   userId?: string;
   customData?: Record<string, any>;
+
+  // Enhanced event context
+  pageReferrer?: string;
+  scrollDepth?: number;
+  timeOnPage?: number;
+  interactionTarget?: string;
+  eventSource?: string;
+  elementAttributes?: Record<string, string>;
+  performanceData?: {
+    pageLoadTime?: number;
+    domLoadTime?: number;
+    firstContentfulPaint?: number;
+    largestContentfulPaint?: number;
+    firstInputDelay?: number;
+    cumulativeLayoutShift?: number;
+    timeToInteractive?: number;
+    resourceCount?: number;
+    totalResourceSize?: number;
+  };
 }
 
 export interface EcommerceEvent extends AnalyticsEvent {

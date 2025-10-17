@@ -28,7 +28,7 @@ export const useEnhancedCart = () => {
         setError("Failed to load product details");
         // Fallback to basic cart items
         setEnhancedItems(
-          items.map(item => ({
+          items.map((item) => ({
             ...item,
             productDetails: {
               name: item.name,
@@ -58,18 +58,24 @@ export const useEnhancedCart = () => {
   }, [items, getEnhancedItems]);
 
   // Calculate total from enhanced items when available
-  const enhancedTotal = enhancedItems.length > 0 
-    ? enhancedItems.reduce((total, item) => {
-        const price = item.productDetails?.pricesAndSkus?.[0]?.price || item.price || 0;
-        return total + (price * item.quantity);
-      }, 0)
-    : cartContext.total;
+  const enhancedTotal =
+    enhancedItems.length > 0
+      ? enhancedItems.reduce((total, item) => {
+          const pricing = item.productDetails?.pricesAndSkus?.[0];
+          // Use discounted price if available, otherwise use original price
+          const price =
+            pricing?.isDiscounted && pricing?.discountedAmount
+              ? pricing.discountedAmount
+              : pricing?.price || item.price || 0;
+          return total + price * item.quantity;
+        }, 0)
+      : cartContext.total;
 
   return {
     ...cartContext,
     items,
     enhancedItems,
-    total: enhancedTotal, // Use enhanced total when available
+    total: enhancedTotal,
     isLoading,
     error,
     refreshEnhancedItems: async () => {

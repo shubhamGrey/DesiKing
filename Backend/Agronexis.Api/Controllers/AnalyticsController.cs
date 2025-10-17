@@ -35,6 +35,12 @@ namespace Agronexis.Api.Controllers
                     return BadRequest(new { message = "No analytics events provided" });
                 }
 
+                // Enhance payload with server-side information
+                payload.IpAddress ??= GetClientIpAddress();
+                
+                // You could also add GeoIP lookup here if needed
+                // payload.Country ??= await _geoIpService.GetCountryAsync(payload.IpAddress);
+
                 var result = await _configService.ProcessAnalyticsEvents(payload, correlationId);
 
                 _logger.LogInformation("Successfully processed {Count} analytics events for correlation ID: {CorrelationId}", 
@@ -46,6 +52,35 @@ namespace Agronexis.Api.Controllers
             {
                 _logger.LogError(ex, "Error processing analytics events for correlation ID: {CorrelationId}", correlationId);
                 return StatusCode(500, new { message = "Internal server error while processing analytics events" });
+            }
+        }
+
+        private string? GetClientIpAddress()
+        {
+            try
+            {
+                // Check for forwarded IP addresses (common in load balancer scenarios)
+                var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].ToString();
+                if (!string.IsNullOrEmpty(forwardedFor))
+                {
+                    // Take the first IP if multiple are present
+                    return forwardedFor.Split(',')[0].Trim();
+                }
+
+                // Check for real IP header
+                var realIp = HttpContext.Request.Headers["X-Real-IP"].ToString();
+                if (!string.IsNullOrEmpty(realIp))
+                {
+                    return realIp;
+                }
+
+                // Fall back to remote IP address
+                return HttpContext.Connection.RemoteIpAddress?.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to extract client IP address");
+                return null;
             }
         }
     }

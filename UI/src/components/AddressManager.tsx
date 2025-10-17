@@ -375,7 +375,11 @@ const AddressManager: React.FC<AddressManagerProps> = ({
                     )}
                   </Box>
 
-                  <Typography variant="body2" color="text.primary">
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ overflowWrap: "break-word" }}
+                  >
                     {address.fullAddress}
                   </Typography>
 

@@ -34,7 +34,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
-import { useUserSession } from "@/utils/userSession";
+import { isLoggedIn, getUserId } from "@/utils/auth";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 
@@ -54,12 +54,10 @@ const CheckoutContent: React.FC = () => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { items, total, clearCart } = useCart();
-  const { getUserProfile, isLoggedIn } = useUserSession();
 
   const [activeStep, setActiveStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string>("");
 
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
     firstName: "",
@@ -96,7 +94,7 @@ const CheckoutContent: React.FC = () => {
     try {
       const payload = {
         id: "00000000-0000-0000-0000-000000000000",
-        userId: userId,
+        userId: getUserId(),
         fullName: addressData.fullName,
         phoneNumber: addressData.phoneNumber,
         addressLine: addressData.addressLine,
@@ -174,19 +172,9 @@ const CheckoutContent: React.FC = () => {
       return;
     }
 
-    // Pre-fill form with user data if available
-    const userProfile = getUserProfile();
-    if (userProfile) {
-      setUserId(userProfile.id || "");
-      setShippingDetails((prev) => ({
-        ...prev,
-        firstName: userProfile.firstName || "",
-        lastName: userProfile.lastName || "",
-        email: userProfile.email || "",
-        phone: userProfile.mobileNumber || "",
-      }));
-    }
-  }, [isLoggedIn, items.length, getUserProfile, router]);
+    // For now, user needs to fill the form manually
+    // You can implement API call to get user profile if needed
+  }, [items.length, router]);
 
   const handleInputChange = (field: keyof ShippingDetails, value: string) => {
     setShippingDetails((prev) => ({ ...prev, [field]: value }));
@@ -231,13 +219,14 @@ const CheckoutContent: React.FC = () => {
       try {
         setLoading(true);
 
-        if (!userId) {
+        const currentUserId = getUserId();
+        if (!currentUserId) {
           throw new Error("User not authenticated. Please log in.");
         }
 
         // Create order with COD
         const orderData = {
-          userId: userId,
+          userId: currentUserId,
           items: items.map((item) => ({
             productId: item.id,
             quantity: item.quantity,
@@ -292,7 +281,7 @@ const CheckoutContent: React.FC = () => {
       try {
         setLoading(true);
 
-        if (userId) {
+        if (getUserId()) {
           // Save shipping address for online payment as well
           try {
             const shippingAddress = formatAddressData(
@@ -484,6 +473,10 @@ const CheckoutContent: React.FC = () => {
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Subtotal:</Typography>
               <Typography>₹{totalAmount.toFixed(2)}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography>Discount:</Typography>
+              <Typography>₹{(totalAmount * 0.1).toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Shipping:</Typography>

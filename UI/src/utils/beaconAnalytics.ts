@@ -24,6 +24,19 @@ class BeaconAnalytics {
   constructor() {
     this.sessionId = this.generateSessionId();
     this.initializeBeaconAnalytics();
+    this.setupPageTracking();
+  }
+
+  /**
+   * Setup page tracking initialization
+   */
+  private setupPageTracking(): void {
+    if (typeof window === "undefined") return;
+
+    // Initialize page start time if not already set
+    if (!sessionStorage.getItem("page_start_time")) {
+      sessionStorage.setItem("page_start_time", Date.now().toString());
+    }
   }
 
   /**
@@ -108,6 +121,8 @@ class BeaconAnalytics {
     label?: string;
     value?: number;
     customData?: Record<string, any>;
+    interactionTarget?: string;
+    eventSource?: string;
   }): void {
     if (!this.isInitialized) return;
 
@@ -116,6 +131,11 @@ class BeaconAnalytics {
       timestamp: Date.now(),
       sessionId: this.sessionId,
       userId: this.userId,
+      // Enhanced event context
+      pageReferrer: document.referrer || undefined,
+      scrollDepth: this.getScrollDepth(),
+      timeOnPage: this.getTimeOnPage(),
+      performanceData: this.getPagePerformance() || {},
     };
 
     this.addToQueue(analyticsEvent);
@@ -271,6 +291,210 @@ class BeaconAnalytics {
   }
 
   /**
+   * Get device information
+   */
+  private getDeviceInfo() {
+    if (typeof window === "undefined") return null;
+
+    const ua = navigator.userAgent;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    const isTablet = /iPad|Android(?!.*Mobile)/i.test(ua);
+    const isDesktop = !isMobile && !isTablet;
+
+    return {
+      deviceType: isMobile ? "mobile" : isTablet ? "tablet" : "desktop",
+      operatingSystem: this.getOperatingSystem(ua),
+      browser: this.getBrowser(ua),
+      browserVersion: this.getBrowserVersion(ua),
+      screenWidth: screen.width,
+      screenHeight: screen.height,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      isMobile,
+      isTablet,
+      isDesktop,
+    };
+  }
+
+  /**
+   * Get session information
+   */
+  private getSessionInfo() {
+    if (typeof window === "undefined") return null;
+
+    const sessionStart = sessionStorage.getItem("analytics_session_start");
+    const pageViews = sessionStorage.getItem("analytics_page_views");
+    const isNewSession = !sessionStart;
+    const entryPage = sessionStorage.getItem("analytics_entry_page");
+
+    // Update session data
+    if (isNewSession) {
+      sessionStorage.setItem("analytics_session_start", Date.now().toString());
+      sessionStorage.setItem("analytics_entry_page", window.location.pathname);
+      sessionStorage.setItem("analytics_page_views", "1");
+    } else {
+      const currentPageViews = parseInt(pageViews || "1") + 1;
+      sessionStorage.setItem(
+        "analytics_page_views",
+        currentPageViews.toString()
+      );
+    }
+
+    return {
+      sessionId: this.sessionId,
+      sessionStartTime: sessionStart ? parseInt(sessionStart) : Date.now(),
+      pageViewsInSession: parseInt(pageViews || "1"),
+      sessionDuration: sessionStart ? Date.now() - parseInt(sessionStart) : 0,
+      isNewSession,
+      isReturningUser:
+        localStorage.getItem("analytics_returning_user") === "true",
+      entryPage: entryPage || window.location.pathname,
+      previousPage: document.referrer || null,
+    };
+  }
+
+  /**
+   * Get user profile information (when available)
+   */
+  private getUserProfile() {
+    if (typeof window === "undefined") return null;
+
+    try {
+      // Since we no longer store user profile data, return minimal info
+      return {
+        userId: this.userId,
+        userType: this.userId ? "registered" : "guest",
+        isLoggedIn: document.cookie.includes("access_token="),
+        isAdmin: document.cookie.includes("user_role=admin"),
+        preferredLanguage: navigator.language,
+      };
+    } catch (error) {
+      console.warn("Failed to get user profile:", error);
+    }
+
+    return {
+      userId: this.userId,
+      userType: this.userId ? "registered" : "guest",
+      preferredLanguage: navigator.language,
+    };
+  }
+
+  /**
+   * Get operating system from user agent
+   */
+  private getOperatingSystem(ua: string): string {
+    if (ua.includes("Windows")) return "Windows";
+    if (ua.includes("Mac OS X")) return "macOS";
+    if (ua.includes("Linux")) return "Linux";
+    if (ua.includes("Android")) return "Android";
+    if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
+    return "Unknown";
+  }
+
+  /**
+   * Get browser from user agent
+   */
+  private getBrowser(ua: string): string {
+    if (ua.includes("Chrome") && !ua.includes("Chromium")) return "Chrome";
+    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+    if (ua.includes("Firefox")) return "Firefox";
+    if (ua.includes("Edge")) return "Edge";
+    if (ua.includes("Opera")) return "Opera";
+    return "Unknown";
+  }
+
+  /**
+   * Get browser version from user agent
+   */
+  private getBrowserVersion(ua: string): string {
+    const match = ua.match(/(Chrome|Safari|Firefox|Edge|Opera)\/(\d+)/);
+    return match ? match[2] : "Unknown";
+  }
+
+  /**
+   * Get current scroll depth as percentage
+   */
+  private getScrollDepth(): number {
+    if (typeof window === "undefined") return 0;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+
+    if (scrollHeight <= 0) return 0;
+
+    return Math.round((scrollTop / scrollHeight) * 100);
+  }
+
+  /**
+   * Get time spent on current page
+   */
+  private getTimeOnPage(): number {
+    if (typeof window === "undefined") return 0;
+
+    const pageStartTime = sessionStorage.getItem("page_start_time");
+    if (!pageStartTime) {
+      sessionStorage.setItem("page_start_time", Date.now().toString());
+      return 0;
+    }
+
+    return Date.now() - parseInt(pageStartTime);
+  }
+
+  /**
+   * Get page performance metrics
+   */
+  private getPagePerformance() {
+    if (typeof window === "undefined" || !window.performance) return null;
+
+    try {
+      const perfData = window.performance;
+      const navigation = perfData.getEntriesByType(
+        "navigation"
+      )[0] as PerformanceNavigationTiming;
+
+      // Get paint metrics
+      const paintMetrics = perfData.getEntriesByType("paint");
+      const fcp = paintMetrics.find(
+        (metric) => metric.name === "first-contentful-paint"
+      );
+
+      // Get layout shift (if available)
+      let cls = 0;
+      if ("getCLS" in window) {
+        // This would require web-vitals library, simplified for now
+        cls = 0;
+      }
+
+      return {
+        pageLoadTime: navigation
+          ? Math.round(navigation.loadEventEnd - navigation.loadEventStart)
+          : 0,
+        domLoadTime: navigation
+          ? Math.round(
+              navigation.domContentLoadedEventEnd - navigation.loadEventStart
+            )
+          : 0,
+        firstContentfulPaint: fcp ? Math.round(fcp.startTime) : 0,
+        timeToInteractive: navigation
+          ? Math.round(navigation.domInteractive - navigation.loadEventStart)
+          : 0,
+        resourceCount: perfData.getEntriesByType("resource").length,
+        totalResourceSize: perfData
+          .getEntriesByType("resource")
+          .reduce((total, resource) => {
+            return total + ((resource as any).transferSize || 0);
+          }, 0),
+        cumulativeLayoutShift: cls,
+      };
+    } catch (error) {
+      console.warn("Failed to get performance data:", error);
+      return null;
+    }
+  }
+
+  /**
    * Flush events to analytics endpoints
    */
   private async flushEvents(useBeacon = false): Promise<void> {
@@ -313,6 +537,12 @@ class BeaconAnalytics {
       timestamp: Date.now(),
       userAgent: navigator.userAgent,
       url: window.location.href,
+      // Enhanced user details
+      language: navigator.language,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      deviceInfo: this.getDeviceInfo(),
+      sessionInfo: this.getSessionInfo(),
+      userProfile: this.getUserProfile(),
     });
 
     if (useBeacon && navigator.sendBeacon) {

@@ -26,24 +26,50 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
+import BrandLogoWhite from "../../public/AgroNexisWhite.png";
 import theme from "@/styles/theme";
 import { michroma } from "@/styles/fonts";
 import { useCart } from "@/contexts/CartContext";
-import { useUserSession } from "@/utils/userSession";
 import SearchAutocomplete from "./SearchAutocomplete";
+import { isLoggedIn, isAdmin } from "@/utils/auth";
 
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
   const { itemCount } = useCart();
-  const { getUserFullName, isLoggedIn } = useUserSession();
 
-  // Only run after client-side hydration
+  // Check auth status after hydration to prevent hydration mismatches
   useEffect(() => {
-    setIsClient(true);
+    setUserLoggedIn(isLoggedIn());
+    setUserIsAdmin(isAdmin());
+  }, []);
+
+  // Track scroll position
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollTop = window.scrollY;
+          const scrollThreshold = 80; // Adjusted threshold for better UX
+          setIsScrolled(scrollTop > scrollThreshold);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Initial check
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const leftNavLinks = [
@@ -51,16 +77,15 @@ export default function Header() {
     { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
-    // ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
+    ...(userIsAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   const rightNavLinks = [
     {
       icon: <PermIdentityOutlined />,
-      href: isClient && isLoggedIn() ? "/profile" : "/login",
       key: "profile",
-      label:
-        isClient && isLoggedIn() ? getUserFullName() || "Profile" : "Login",
+      label: userLoggedIn ? "Profile" : "Login",
+      getHref: () => (userLoggedIn ? "/profile" : "/login"),
     },
     {
       icon: (
@@ -68,9 +93,9 @@ export default function Header() {
           <ShoppingCartOutlined />
         </Badge>
       ),
-      href: "/cart",
       key: "cart",
-      label: "Cart",
+      label: userLoggedIn ? "Cart" : "Login",
+      getHref: () => (userLoggedIn ? "/cart" : "/login"),
     },
   ];
 
@@ -84,12 +109,13 @@ export default function Header() {
         <Toolbar
           sx={{
             justifyContent: "start",
-            height: 64,
+            height: isScrolled ? 64 : 80,
             backgroundColor:
               pathname === "/contact" ? "primary.contrastText" : "primary.main",
             color:
               pathname === "/contact" ? "primary.main" : "primary.contrastText",
             borderBottom: "0.5px solid #b36a26",
+            transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design easing
           }}
         >
           {/* Desktop Nav */}
@@ -97,27 +123,44 @@ export default function Header() {
             <>
               <Box
                 sx={{
-                  backgroundColor: "#fff",
-                  borderRadius: 5,
-                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
-                  p: 1.5,
-                  pt: 8,
+                  backgroundColor: isScrolled ? "transparent" : "#fff",
+                  borderRadius: isScrolled ? 0 : 5,
+                  boxShadow: isScrolled
+                    ? "none"
+                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                  p: isScrolled ? 0.5 : 1,
+                  pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  height: 90,
-                  width: 90,
+                  height: isScrolled ? 40 : 110,
+                  width: isScrolled ? 40 : 100,
                   cursor: "pointer",
                   ml: 1,
+                  mt: isScrolled ? 1 : 3,
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
                 }}
               >
                 <Link href="/" passHref>
-                  <Image
-                    src={BrandLogo}
-                    alt="AGRO NEXIS Logo"
-                    layout="intrinsic"
-                    priority
-                  />
+                  {isScrolled && pathname !== "/contact" ? (
+                    <Image
+                      src={BrandLogoWhite}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  ) : (
+                    <Image
+                      src={BrandLogo}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  )}
                 </Link>
               </Box>
               <Grid container sx={{ flexGrow: 1, ml: 2.5 }}>
@@ -166,7 +209,8 @@ export default function Header() {
                     <Box sx={{ minWidth: isMobile ? 200 : 250 }}>
                       <SearchAutocomplete />
                     </Box>
-                    {rightNavLinks.map(({ icon, href, key }) => {
+                    {rightNavLinks.map(({ icon, getHref, key }) => {
+                      const href = getHref();
                       const isActive = pathname === href;
                       return (
                         <IconButton
@@ -179,7 +223,8 @@ export default function Header() {
                               : "primary.contrastText",
                           }}
                           onClick={() => {
-                            router.push(href);
+                            const targetHref = userLoggedIn ? href : "/login";
+                            router.push(targetHref);
                           }}
                         >
                           {icon}
@@ -199,31 +244,49 @@ export default function Header() {
             >
               <Box
                 sx={{
-                  backgroundColor: "#fff",
-                  borderRadius: 5,
-                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.3)",
-                  p: 1.5,
-                  pt: 8,
+                  backgroundColor: isScrolled ? "transparent" : "#fff",
+                  borderRadius: isScrolled ? 0 : 5,
+                  boxShadow: isScrolled
+                    ? "none"
+                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                  p: isScrolled ? 0.5 : 1,
+                  pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  height: 90,
-                  width: 90,
+                  height: isScrolled ? 40 : 110,
+                  width: isScrolled ? 40 : 100,
                   cursor: "pointer",
                   ml: 1,
+                  mt: isScrolled ? 1 : 3,
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
                 }}
               >
                 <Link href="/" passHref>
-                  <Image
-                    src={BrandLogo}
-                    alt="AGRO NEXIS Logo"
-                    layout="intrinsic"
-                    priority
-                  />
+                  {isScrolled && pathname !== "/contact" ? (
+                    <Image
+                      src={BrandLogoWhite}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  ) : (
+                    <Image
+                      src={BrandLogo}
+                      alt="AGRO NEXIS Logo"
+                      layout="intrinsic"
+                      priority
+                      height={85}
+                      width={85}
+                    />
+                  )}
                 </Link>
               </Box>
               <Box>
-                {rightNavLinks.map(({ icon, href, key }) => {
+                {rightNavLinks.map(({ icon, getHref, key }) => {
+                  const href = getHref();
                   const isActive = pathname === href;
                   return (
                     <IconButton
@@ -238,7 +301,8 @@ export default function Header() {
                         mr: 1,
                       }}
                       onClick={() => {
-                        router.push(href);
+                        const targetHref = userLoggedIn ? href : "/login";
+                        router.push(targetHref);
                       }}
                     >
                       {icon}

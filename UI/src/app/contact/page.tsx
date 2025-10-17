@@ -139,17 +139,19 @@ export default function Contact() {
   ];
 
   return (
-    <Grid container spacing={0}>
+    <Grid container spacing={0} sx={{ m: isMobile ? 2 : 6 }}>
       <Grid
         size={{ xs: 12, md: 6 }}
         sx={{
-          p: isMobile ? 4 : 12,
+          px: isMobile ? 4 : 12,
+          py: 4,
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "space-between",
-          backgroundColor: "primary.main",
+          justifyContent: "center",
+          backgroundImage: 'url("/Dark Spice Illustration.png")',
+          borderRadius: isMobile ? "8px" : "50%",
         }}
       >
         <Box
@@ -158,32 +160,23 @@ export default function Contact() {
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            alignItems: "start",
-            justifyContent: "space-between",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <Typography
-            variant={isMobile ? "h3" : "h2"}
-            color="primary.contrastText"
-            sx={{ mb: 2, textAlign: "left" }}
-            fontFamily={michroma.style.fontFamily}
-            fontWeight={600}
-          >
-            We&apos;d love to hear from you!
-          </Typography>
           <Box
             sx={{
               width: "100%",
               display: "flex",
               justifyContent: "center",
-              my: 8,
+              mb: 8,
             }}
           >
             <Image src={BrandLogo} alt="Brand Logo" height={316} width={300} />
           </Box>
           <Stack direction={"column"} spacing={2} alignItems="center">
             <Typography
-              variant="h4"
+              variant={isMobile ? "body1" : "h5"}
               color="primary.contrastText"
               sx={{ mb: 4, textAlign: "left", width: "100%" }}
               fontFamily={michroma.style.fontFamily}
@@ -214,7 +207,7 @@ export default function Contact() {
                 {item.icon}
                 <Typography
                   key={item.label}
-                  variant="body1"
+                  variant={isMobile ? "body2" : "body1"}
                   sx={{ ml: 1.5, color: "primary.contrastText" }}
                 >
                   {item.label}
@@ -223,12 +216,12 @@ export default function Contact() {
             ))}
           </Stack>
         </Box>
-        <Box sx={{ height: 200 }}></Box>
       </Grid>
       <Grid
         size={{ xs: 12, md: 6 }}
         sx={{
-          p: isMobile ? 4 : 12,
+          px: isMobile ? 4 : 12,
+          py: 4,
           overflowY: "auto",
           display: "flex",
           alignItems: "center",
@@ -237,7 +230,7 @@ export default function Contact() {
       >
         <Box sx={{ width: "100%" }}>
           <Typography
-            variant="h3"
+            variant="h4"
             sx={{ mb: 6 }}
             color="primary.main"
             fontFamily={michroma.style.fontFamily}

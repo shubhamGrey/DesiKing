@@ -188,5 +188,40 @@ namespace Agronexis.Api.Controllers
                 };
             }
         }
+
+        [HttpPut("user-profile")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponseModel>> UpdateUserProfile([FromBody] RegistrationRequestModel model)
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model), "Update model cannot be null");
+
+            // Additional validation for profile updates
+            if (!model.Id.HasValue)
+                throw new ArgumentException("User ID is required for profile updates");
+
+            if (string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName) ||
+                string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.MobileNumber))
+                throw new ArgumentException("FirstName, LastName, Email, and MobileNumber are required");
+
+            if (!ModelState.IsValid)
+                throw new ArgumentException("Invalid model state");
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Invalid user token");
+
+            // Ensure the user can only update their own profile
+            if (model.Id.Value != Guid.Parse(userId))
+                return Forbid("You can only update your own profile");
+
+            var correlationId = GetCorrelationId();
+            var updatedProfile = await _configService.UpdateUserProfile(model, correlationId);
+
+            if (updatedProfile == null)
+                return NotFound("User profile not found");
+
+            return Ok(CreateSuccessResponse(updatedProfile));
+        }
     }
 }

@@ -20,6 +20,7 @@ import { getCurrencySymbol } from "@/utils/currencyUtils";
 interface PaymentResultData {
   status: "success" | "failed";
   orderId: string;
+  internalOrderId?: string;
   paymentId?: string;
   signature?: string;
   userId?: string;
@@ -42,8 +43,22 @@ const PaymentResultContent: React.FC = () => {
     null
   );
 
+  // Helper function to format payment method display name
+  const getPaymentMethodDisplayName = (paymentMethod: string) => {
+    switch (paymentMethod?.toLowerCase()) {
+      case "razorpay":
+        return "Online Payment (Razorpay)";
+      case "cod":
+        return "Cash on Delivery";
+      default:
+        return paymentMethod || "Unknown";
+    }
+  };
+
   const status = searchParams?.get("status");
   const orderIdFromUrl = searchParams?.get("order_id");
+  const internalOrderIdFromUrl = searchParams?.get("internal_order_id");
+  const paymentMethodFromUrl = searchParams?.get("payment_method");
 
   useEffect(() => {
     const verifyPaymentStatus = async () => {
@@ -84,7 +99,8 @@ const PaymentResultContent: React.FC = () => {
             setPaymentData({
               status: "success",
               orderId: orderIdFromUrl,
-              paymentMethod: "Unknown",
+              internalOrderId: internalOrderIdFromUrl || undefined,
+              paymentMethod: paymentMethodFromUrl || "Unknown",
             });
           } else {
             setPaymentStatus("failed");
@@ -116,7 +132,7 @@ const PaymentResultContent: React.FC = () => {
     };
 
     verifyPaymentStatus();
-  }, [status, orderIdFromUrl]);
+  }, [status, orderIdFromUrl, paymentMethodFromUrl, internalOrderIdFromUrl]);
 
   if (isVerifying) {
     return (
@@ -274,7 +290,12 @@ const PaymentResultContent: React.FC = () => {
                     color="text.secondary"
                     sx={{ mb: 1 }}
                   >
-                    Payment Method: <strong>{paymentData.paymentMethod}</strong>
+                    Payment Method:{" "}
+                    <strong>
+                      {getPaymentMethodDisplayName(
+                        paymentData.paymentMethod || ""
+                      )}
+                    </strong>
                   </Typography>
                 )}
                 {paymentData?.timestamp && (
@@ -341,7 +362,14 @@ const PaymentResultContent: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<Receipt />}
-              onClick={() => router.push("/orders")}
+              onClick={() => {
+                // Navigate to specific order details using the database order ID
+                // internalOrderId contains the actual database order ID from the backend
+                const targetPath = paymentData?.internalOrderId
+                  ? `/order-details/${paymentData.internalOrderId}`
+                  : "/profile"; // Fallback to profile page where user can see their orders
+                router.push(targetPath);
+              }}
               sx={{
                 backgroundColor: "primary.main",
                 "&:hover": { backgroundColor: "secondary.main" },
@@ -349,7 +377,7 @@ const PaymentResultContent: React.FC = () => {
                 minWidth: 140,
               }}
             >
-              View Orders
+              View Order Details
             </Button>
           ) : (
             <Button

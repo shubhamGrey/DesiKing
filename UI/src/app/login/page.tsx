@@ -19,7 +19,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import Cookies from "js-cookie";
 import { useNotification } from "@/components/NotificationProvider";
-import { UserSessionManager, type UserProfile } from "@/utils/userSession";
+
+// Simple UserProfile type
+type UserProfile = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  mobileNumber?: string;
+  [key: string]: any;
+};
 
 interface LoginCredentials {
   username: string;
@@ -205,37 +213,53 @@ function LoginPageContent() {
 
   // Helper function to handle successful login
   const handleSuccessfulLogin = async (loginData: any) => {
-    // Store tokens in cookies
-    Cookies.set("access_token", loginData.accessToken, { expires: 7 });
-    Cookies.set("refresh_token", loginData.refreshToken, { expires: 7 });
-
-    // Fetch user profile (but don't block redirect if it fails)
     try {
+      // Store tokens in cookies first
+      Cookies.set("access_token", loginData.accessToken, { expires: 7 });
+      Cookies.set("refresh_token", loginData.refreshToken, { expires: 7 });
+
+      // Fetch user profile and wait for it to complete
       const userProfile = await fetchUserProfile(loginData.accessToken);
 
       if (userProfile) {
-        // Store user profile using session manager
-        UserSessionManager.setUserProfile(userProfile);
-
         // Store user role in cookies for middleware
         Cookies.set("user_role", userProfile.roleName, { expires: 7 });
+        Cookies.set("user_id", userProfile.id, { expires: 7 });
+
+        // Wait a bit for cookies to be set properly
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      showSuccess("Login successful! Redirecting...");
+
+      // Handle redirect with proper validation - no timeout needed now since we await everything
+      const redirectPath = getValidRedirectPath(searchParams);
+
+      // Use window.location for more reliable redirect that doesn't rely on Next.js router state
+      if (typeof window !== "undefined") {
+        window.location.href = redirectPath;
+      } else {
+        // Fallback to router.push if window is not available (SSR)
+        router.push(redirectPath);
       }
     } catch (error) {
       console.warn(
         "Failed to fetch user profile, but login will continue:",
         error
       );
+
+      // Even if profile fetch fails, still redirect to avoid user being stuck
+      showSuccess("Login successful! Redirecting...");
+      const redirectPath = getValidRedirectPath(searchParams);
+
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          window.location.href = redirectPath;
+        } else {
+          router.push(redirectPath);
+        }
+      }, 300); // Longer delay if profile fetch failed
     }
-
-    showSuccess("Login successful! Redirecting...");
-
-    // Handle redirect with proper validation and timing
-    const redirectPath = getValidRedirectPath(searchParams);
-
-    // Add a small delay to ensure all async operations complete
-    setTimeout(() => {
-      router.push(redirectPath);
-    }, 150); // Slightly increased delay for better reliability
   };
 
   const handleLogin = async (credentials: LoginCredentials): Promise<void> => {

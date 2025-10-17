@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Box,
   Grid,
@@ -38,11 +38,16 @@ import {
   OrderCreateRequest,
   RazorpayPaymentData,
 } from "@/types/razorpay";
-import { createOrder, initializeRazorpayPayment } from "@/utils/razorpayUtils";
+import {
+  createOrder,
+  initializeRazorpayPayment,
+  verifyPayment,
+} from "@/utils/razorpayUtils";
 import { useEnhancedCart } from "@/hooks/useEnhancedCart";
 import type { EnhancedCartItem } from "@/contexts/CartContext";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import AddressManager, { AddressResponse } from "@/components/AddressManager";
+import { getUserId, isLoggedIn } from "@/utils/auth";
 
 // API response interfaces for dropdowns
 interface CountryResponse {
@@ -91,6 +96,7 @@ const Cart = () => {
     clearCart,
   } = useEnhancedCart();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
@@ -132,7 +138,6 @@ const Cart = () => {
   const [billingErrors, setBillingErrors] = useState<
     Partial<PaymentFormData & { country: string }>
   >({});
-  const [userId, setUserId] = useState<string>("");
   const [useDifferentBilling, setUseDifferentBilling] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState<string>("INR");
 
@@ -158,8 +163,38 @@ const Cart = () => {
   const [loadingBillingStates, setLoadingBillingStates] = useState(false); // Default to manual
   const [isProcessing, setIsProcessing] = useState(false); // For save address operations
 
-  // Calculate totals
-  const taxes = subtotal * 0.05; // 5% of subtotal
+  // Calculate subtotal using original prices for discount display
+  const originalSubtotal = useMemo(() => {
+    if (enhancedItems.length > 0) {
+      return enhancedItems.reduce((total, item) => {
+        const pricing = item.productDetails?.pricesAndSkus?.[0];
+        const originalPrice = pricing?.price || item.price || 0;
+        return total + originalPrice * item.quantity;
+      }, 0);
+    }
+    return subtotal;
+  }, [enhancedItems, subtotal]);
+
+  // Calculate taxes - 5% of final subtotal (after discount)
+  const taxes = subtotal * 0.05;
+
+  // Calculate total discount from enhanced items
+  const totalDiscount = useMemo(() => {
+    if (enhancedItems.length > 0) {
+      return enhancedItems.reduce((discount, item) => {
+        const pricing = item.productDetails?.pricesAndSkus?.[0];
+        if (pricing && pricing.isDiscounted && pricing.discountedAmount) {
+          // Calculate actual discount: original price - discounted price
+          const actualDiscountPerUnit =
+            pricing.price - pricing.discountedAmount;
+          return discount + actualDiscountPerUnit * item.quantity;
+        }
+        return discount;
+      }, 0);
+    }
+    return 0;
+  }, [enhancedItems]);
+
   const orderTotal = subtotal + taxes;
 
   // Helper function to save address
@@ -167,7 +202,7 @@ const Cart = () => {
     try {
       const payload = {
         id: "00000000-0000-0000-0000-000000000000",
-        userId: userId,
+        userId: getUserId(),
         fullName: addressData.fullName,
         phoneNumber: addressData.phoneNumber,
         addressLine: addressData.addressLine,
@@ -180,8 +215,6 @@ const Cart = () => {
         isActive: true,
         isDeleted: false,
       };
-
-      console.log("🚀 Saving address:", payload);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/address`,
@@ -576,19 +609,7 @@ const Cart = () => {
       return;
     }
 
-    const userProfileRaw = sessionStorage.getItem("user_profile");
-
-    if (userProfileRaw) {
-      try {
-        const userProfile = JSON.parse(userProfileRaw);
-        const extractedUserId = userProfile?.id;
-        setUserId(extractedUserId);
-      } catch {
-        setUserId("");
-        // Redirect to login if user profile is invalid
-        router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
-      }
-    } else {
+    if (!isLoggedIn()) {
       // Redirect to login if no user profile exists
       router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
     }
@@ -639,7 +660,8 @@ const Cart = () => {
       setIsLoading(true);
 
       // Validate that we have a userId
-      if (!userId) {
+      const currentUserId = getUserId();
+      if (!currentUserId) {
         throw new Error("User not authenticated. Please log in.");
       }
 
@@ -662,12 +684,12 @@ const Cart = () => {
         );
       }
 
-      // Generate a new GUID for the order
+      // Generate a new GUID for the order (used as frontend reference)
       const orderId = crypto.randomUUID();
 
       const orderData: OrderCreateRequest = {
         id: orderId,
-        userId: userId,
+        userId: currentUserId,
         totalAmount: orderTotal,
         currency: "INR",
         status: "created",
@@ -681,11 +703,16 @@ const Cart = () => {
 
       const result = await createOrder(orderData, "RAZORPAY");
 
-      // The backend now returns the Razorpay order ID for Razorpay payments
+      // The backend returns both orderId (database ID) and razorpayOrderId (Razorpay order ID)
       const razorpayOrderId = result.data.razorpayOrderId || "";
+      const databaseOrderId = result.data.orderId || ""; // This is the actual database order ID
 
       if (!razorpayOrderId) {
         throw new Error("No Razorpay order ID received from server");
+      }
+
+      if (!databaseOrderId) {
+        throw new Error("No database order ID received from server");
       }
 
       // Directly initialize Razorpay payment
@@ -701,7 +728,8 @@ const Cart = () => {
       await initializeRazorpayPayment(
         razorpayOrderData,
         paymentFormData,
-        handlePaymentSuccess,
+        (paymentData: RazorpayPaymentData) =>
+          handlePaymentSuccess(paymentData, databaseOrderId), // Pass database order ID
         handlePaymentError
       );
     } catch (error: any) {
@@ -730,14 +758,37 @@ const Cart = () => {
   };
 
   // Handle successful payment
-  const handlePaymentSuccess = async (paymentData: RazorpayPaymentData) => {
+  const handlePaymentSuccess = async (
+    paymentData: RazorpayPaymentData,
+    internalOrderId?: string
+  ) => {
     try {
-      setAlertMessage("Payment successful! Saving your details...");
+      setIsPaymentProcessing(true); // Start payment processing
+      setAlertMessage("Payment successful! Verifying payment...");
       setAlertSeverity("success");
       setShowAlert(true);
 
+      // Verify payment signature on backend
+      const currentUserId = getUserId();
+      if (!currentUserId) {
+        throw new Error("User not authenticated");
+      }
+
+      const isPaymentValid = await verifyPayment(
+        paymentData,
+        currentUserId,
+        orderTotal,
+        "INR"
+      );
+
+      if (!isPaymentValid) {
+        throw new Error("Payment verification failed. Please contact support.");
+      }
+
+      setAlertMessage("Payment verified! Saving your details...");
+
       // Save shipping address (only if manually entered, not selected)
-      if (userId && useManualAddress && formData.name) {
+      if (getUserId() && useManualAddress && formData.name) {
         try {
           const shippingAddress = formatAddressData(formData, "SHIPPING");
           await saveAddress(shippingAddress);
@@ -750,7 +801,7 @@ const Cart = () => {
 
       // Save billing address if different from shipping (only if manually entered, not selected)
       if (
-        userId &&
+        getUserId() &&
         useDifferentBilling &&
         useManualBillingAddress &&
         billingData.name
@@ -765,25 +816,35 @@ const Cart = () => {
         }
       }
 
-      // Clear cart after successful payment and address saving
-      clearCart();
-
       setAlertMessage("Payment successful! Redirecting...");
       setTimeout(() => {
+        // Clear cart just before redirect
+        clearCart();
         router.push(
-          `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
+          `/payment-result?status=success&order_id=${
+            paymentData.razorpay_order_id
+          }&payment_id=${paymentData.razorpay_payment_id}&signature=${
+            paymentData.razorpay_signature
+          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR&payment_method=RAZORPAY&internal_order_id=${internalOrderId}`
         );
       }, 2000);
     } catch (error) {
       console.error("Error in post-payment processing:", error);
-      // Still proceed with payment success flow
-      clearCart();
-      setAlertMessage("Payment successful! Redirecting...");
-      setTimeout(() => {
-        router.push(
-          `/payment-result?status=success&order_id=${paymentData.razorpay_order_id}&payment_id=${paymentData.razorpay_payment_id}&signature=${paymentData.razorpay_signature}&user_id=${userId}&total_amount=${orderTotal}&currency=INR`
-        );
-      }, 2000);
+
+      // Reset payment processing state on error
+      setIsPaymentProcessing(false);
+
+      // Handle payment verification failure
+      setAlertMessage(
+        `Payment verification failed: ${
+          error instanceof Error ? error.message : "Please contact support."
+        }`
+      );
+      setAlertSeverity("error");
+      setShowAlert(true);
+
+      // Don't clear cart or redirect on verification failure
+      // User should contact support to resolve the issue
     }
   };
 
@@ -811,6 +872,46 @@ const Cart = () => {
   };
 
   if (cartItems.length === 0) {
+    // Show payment processing loader if payment is being processed
+    if (isPaymentProcessing) {
+      return (
+        <Container maxWidth="xl" sx={{ pb: 4, pt: 8 }}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            minHeight="60vh"
+            gap={3}
+          >
+            <CircularProgress
+              size={60}
+              thickness={4}
+              sx={{ color: "primary.main" }}
+            />
+            <Typography
+              variant="h6"
+              fontFamily={michroma.style.fontFamily}
+              fontWeight={600}
+              color="primary.main"
+              textAlign="center"
+            >
+              Processing Your Payment...
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+              maxWidth="400px"
+            >
+              Please don&apos;t close this window. We&apos;re verifying your
+              payment and saving your details.
+            </Typography>
+          </Box>
+        </Container>
+      );
+    }
+
     return <EmptyCart />; // Render EmptyCart component if cart is empty
   }
 
@@ -955,7 +1056,7 @@ const Cart = () => {
                                 color="primary.main"
                                 sx={{ fontSize: "0.875rem", mt: 0.5 }}
                               >
-                                Total: {getCurrencySymbol(displayCurrency)}
+                                Total: {getCurrencySymbol(displayCurrency)}{" "}
                                 {((displayPrice || 0) * item.quantity).toFixed(
                                   2
                                 )}
@@ -1788,9 +1889,22 @@ const Cart = () => {
                   <Typography color="#84a897">Subtotal</Typography>
                   <Typography>
                     {getCurrencySymbol(displayCurrency)}
-                    {subtotal.toFixed(2)}
+                    {originalSubtotal.toFixed(2)}
                   </Typography>
                 </Box>
+
+                {/* Only show discount row if there are actual discounts */}
+                {totalDiscount > 0 && (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography color="#84a897">Discount</Typography>
+                    <Typography color="#4caf50">
+                      -{getCurrencySymbol(displayCurrency)}
+                      {totalDiscount.toFixed(2)}
+                    </Typography>
+                  </Box>
+                )}
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography color="#84a897">Shipping</Typography>
@@ -1907,7 +2021,7 @@ const Cart = () => {
           <DialogTitle>Select an Address</DialogTitle>
           <DialogContent>
             <AddressManager
-              userId={userId}
+              userId={getUserId() || ""}
               onAddressSelect={handleAddressSelect}
               showSelectionMode={true}
               selectedAddressId={selectedAddress?.id}
@@ -1929,7 +2043,7 @@ const Cart = () => {
           <DialogTitle>Select a Billing Address</DialogTitle>
           <DialogContent>
             <AddressManager
-              userId={userId}
+              userId={getUserId() || ""}
               onAddressSelect={handleBillingAddressSelect}
               showSelectionMode={true}
               selectedAddressId={selectedBillingAddress?.id}
