@@ -28,11 +28,14 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ExternalUtility _externalUtility;
-        public ConfigurationRepository(AppDbContext dbContext, IConfiguration configuration, ExternalUtility externalUtility)
+        private readonly ILogger<ConfigurationRepository> _logger;
+        
+        public ConfigurationRepository(AppDbContext dbContext, IConfiguration configuration, ExternalUtility externalUtility, ILogger<ConfigurationRepository> logger)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _externalUtility = externalUtility;
+            _logger = logger;
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
@@ -933,7 +936,97 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     CreatedDate = DateTime.UtcNow
                 };
                 _dbContext.Transactions.Add(transaction);
+                
+                // Update order status to "paid"
+                var order = _dbContext.Orders.FirstOrDefault(o => o.RazorpayOrderId == verify.OrderId);
+                if (order != null)
+                {
+                    order.Status = "paid";
+                    order.ModifiedDate = DateTime.UtcNow;
+                }
+                
                 _dbContext.SaveChangesAsync();
+
+                // Create pickup booking after successful payment
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Find the order by RazorpayOrderId
+                        var order = await _dbContext.Orders
+                            .Include(o => o.OrderItems)
+                            .FirstOrDefaultAsync(o => o.RazorpayOrderId == verify.OrderId);
+
+                        if (order == null)
+                        {
+                            _logger.LogWarning("Order not found for RazorpayOrderId: {RazorpayOrderId}", verify.OrderId);
+                            return;
+                        }
+
+                        // Get shipping address for the user
+                        var shippingAddress = await _dbContext.Addresses
+                            .FirstOrDefaultAsync(ua => ua.UserId == order.UserId && ua.AddressType == "SHIPPING");
+
+                        if (shippingAddress == null)
+                        {
+                            _logger.LogWarning("Shipping address not found for user: {UserId}", order.UserId);
+                            return;
+                        }
+
+                        // Get pickup booking configuration values directly
+                        var defaultWeight = decimal.Parse(_configuration["PickupBooking:DefaultWeight"] ?? "0.5");
+                        var totalWeight = order.OrderItems.Sum(oi => oi.Quantity * defaultWeight);
+                        var totalPieces = order.OrderItems.Sum(oi => oi.Quantity);
+
+                        // Create pickup booking request using configuration values
+                        var pickupBookingRequest = new PickupBookingRequestModel
+                        {
+                            SerialNo = Guid.NewGuid().ToString("N")[..10], // Generate unique serial number
+                            RefNo = order.ReceiptId ?? order.Id.ToString(),
+                            ActionType = "Book", // Book new pickup
+                            ClientName = shippingAddress.FullName,
+                            AddressLine1 = shippingAddress.AddressLine,
+                            AddressLine2 = shippingAddress.LandMark,
+                            City = shippingAddress.City,
+                            PinCode = shippingAddress.PinCode,
+                            MobileNo = shippingAddress.PhoneNumber,
+                            Email = _configuration["PickupBooking:Email"],
+                            DocType = "D", // Document type - D for delivery
+                            TypeOfService = "SF", // Surface service
+                            Weight = totalWeight.ToString("F2"),
+                            InvoiceValue = order.TotalAmount.ToString("F2"),
+                            NoOfPieces = totalPieces.ToString(),
+                            ItemName = "DesiKing Premium Spices",
+                            Remark = $"DesiKing Order: {order.ReceiptId}",
+                            
+                            // Pickup location from configuration
+                            PickupCustName = _configuration["PickupBooking:CompanyName"],
+                            PickupAddr = _configuration["PickupBooking:Address"],
+                            PickupCity = _configuration["PickupBooking:City"],
+                            PickupState = _configuration["PickupBooking:State"],
+                            PickupPincode = _configuration["PickupBooking:PinCode"],
+                            PickupPhone = _configuration["PickupBooking:Phone"],
+                            ServiceType = _configuration["PickupBooking:DefaultServiceType"]
+                        };
+
+                        // Call the existing pickup booking service
+                        var pickupResult = await CreatePickupBooking(pickupBookingRequest, xCorrelationId);
+
+                        if (pickupResult != null && pickupResult.ResponseStatus?.ErrorCode == "0")
+                        {
+                            _logger.LogInformation("Pickup booking created successfully for order: {OrderId}, DocketNo: {DocketNo}", 
+                                order.Id, pickupResult.DocketNo ?? "N/A");
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Failed to create pickup booking for order: {OrderId}", order.Id);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error creating pickup booking for RazorpayOrderId: {RazorpayOrderId}", verify.OrderId);
+                    }
+                });
             }
             return isVerify;
         }
