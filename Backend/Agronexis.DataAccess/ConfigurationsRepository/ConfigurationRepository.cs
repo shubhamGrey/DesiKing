@@ -1279,15 +1279,26 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             try
             {
-                List<AddressResponseModel> addresses = _dbContext.Addresses
-                    .Where(x => x.UserId == new Guid(id))
-                    .Select(x => new AddressResponseModel
-                    {
-                        Id = x.Id,
-                        UserId = x.UserId,
-                        FullAddress = x.AddressLine + ", " + x.City + ", " + x.State + ", " + x.Country + " - " + x.PinCode
-                    })
-                    .ToList();
+                Guid userGuid = Guid.Parse(id);
+
+                var addresses = (from a in _dbContext.Addresses
+                                 join s in _dbContext.StateMasters on a.StateCode equals s.StateCode into stateJoin
+                                 from s in stateJoin.DefaultIfEmpty()
+                                 join c in _dbContext.CountryMasters on a.CountryCode equals c.CountryCode into countryJoin
+                                 from c in countryJoin.DefaultIfEmpty()
+                                 where a.UserId == userGuid && !a.IsDeleted
+                                 select new AddressResponseModel
+                                 {
+                                     Id = a.Id,
+                                     UserId = a.UserId,
+                                     FullAddress =
+                                         a.AddressLine + ", " +
+                                         a.City + ", " +
+                                         (s != null ? s.StateName : a.StateCode) + ", " +
+                                         (c != null ? c.CountryName : a.CountryCode) + " - " +
+                                         a.PinCode
+                                 })
+                                .ToList();
 
                 return addresses;
             }
@@ -1296,6 +1307,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching addresses", xCorrelationId, ex);
             }
         }
+
 
         public string SaveOrUpdateAddress(AddressRequestModel request, string xCorrelationId)
         {
