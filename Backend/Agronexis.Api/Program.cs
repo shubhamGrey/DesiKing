@@ -1,28 +1,73 @@
-using Agronexis.Api.Middleware;
+﻿using Agronexis.Api.Middleware;
 using Agronexis.Business.Configurations;
 using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Agronexis.ExternalApi;
 using Agronexis.Model;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using System.Runtime.Loader;
 using System.Text;
 
+// Load configuration files
 var builder = WebApplication.CreateBuilder(args);
 
+// Load configuration files
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
     .AddEnvironmentVariables();
 
-// Add services to the container.
+Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
 
+// -----------------------------------------------------------------------------
+// Load wkhtmltopdf native library (Windows & Linux support)
+// -----------------------------------------------------------------------------
+try
+{
+    var context = new CustomAssemblyLoadContext();
+    string basePath = Directory.GetCurrentDirectory();
+    string libraryPath;
+
+    if (OperatingSystem.IsWindows())
+    {
+        libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.dll");
+    }
+    else if (OperatingSystem.IsLinux())
+    {
+        libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.so");
+    }
+    else
+    {
+        throw new PlatformNotSupportedException("Unsupported OS for DinkToPdf library.");
+    }
+
+    if (File.Exists(libraryPath))
+    {
+        context.LoadUnmanagedLibrary(libraryPath);
+        Console.WriteLine($"✅ Loaded DinkToPdf library: {libraryPath}");
+    }
+    else
+    {
+        Console.WriteLine($"⚠️ DinkToPdf library not found at: {libraryPath}");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine("❌ Failed to load DinkToPdf library: " + ex.Message);
+}
+// -----------------------------------------------------------------------------
+
+// Add services to the container
 builder.Services.AddControllers();
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Swagger Configuration
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -38,7 +83,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    // Add JWT Authentication to Swagger
+    // JWT in Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -64,20 +109,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
+// DB Context
 Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
+// Dependency Injections
 builder.Services.AddScoped<IConfigService, ConfigService>();
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ExternalUtility>();
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
-//builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
-//builder.Services.AddTransient<EmailService>();
-//builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
-//builder.Services.AddTransient<SmsService>();
-
-// Add logging
+// Logging
 builder.Services.AddLogging(logging =>
 {
     logging.ClearProviders();
@@ -85,15 +128,21 @@ builder.Services.AddLogging(logging =>
     logging.AddDebug();
 });
 
-var allowedOrigins = new[] { "http://localhost:3002", "https://agronexis.com", "https://www.agronexis.com" };
+// CORS
+var allowedOrigins = new[]
+{
+    "http://localhost:3002",
+    "https://agronexis.com",
+    "https://www.agronexis.com"
+};
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CorsPolicy", builder =>
+    options.AddPolicy("CorsPolicy", policyBuilder =>
     {
-        builder.WithOrigins(allowedOrigins)
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        policyBuilder.WithOrigins(allowedOrigins)
+                     .AllowAnyMethod()
+                     .AllowAnyHeader();
     });
 });
 
@@ -116,43 +165,47 @@ builder.Services.AddAuthentication("Bearer")
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// -----------------------------------------------------------------------------
+// Middleware pipeline
+// -----------------------------------------------------------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// Enable Swagger in Production for API documentation
-if (app.Environment.IsProduction())
+else if (app.Environment.IsProduction())
 {
-    app.UseSwagger(c =>
-    {
-        c.RouteTemplate = "swagger/{documentName}/swagger.json";
-    });
-
+    app.UseSwagger(c => c.RouteTemplate = "swagger/{documentName}/swagger.json");
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Agronexis API V1");
-        c.RoutePrefix = "swagger";  // Changed from "api/swagger" to "swagger" to work with nginx proxy
+        c.RoutePrefix = "swagger";
         c.DocumentTitle = "Agronexis API Documentation";
-        c.DefaultModelsExpandDepth(-1); // Hide schemas section by default
-        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+        c.DefaultModelsExpandDepth(-1);
+        c.DocExpansion(DocExpansion.None);
     });
 }
 
 app.UseHttpsRedirection();
-
-// Add Global Exception Handler Middleware (should be early in the pipeline)
 app.UseGlobalExceptionHandler();
-
 app.UseCors("CorsPolicy");
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
 app.UseMiddleware<RepositoryExceptionHandlerMiddleware>();
 
 app.Run();
+
+// Custom Assembly Loader for unmanaged library
+public class CustomAssemblyLoadContext : AssemblyLoadContext
+{
+    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    {
+        return base.LoadUnmanagedDll(unmanagedDllName);
+    }
+
+    public IntPtr LoadUnmanagedLibrary(string absolutePath)
+    {
+        return LoadUnmanagedDllFromPath(absolutePath);
+    }
+}
