@@ -42,6 +42,10 @@ try
     {
         libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.so");
     }
+    else if (OperatingSystem.IsMacOS())
+    {
+        libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.dylib");
+    }
     else
     {
         throw new PlatformNotSupportedException("Unsupported OS for DinkToPdf library.");
@@ -50,17 +54,18 @@ try
     if (File.Exists(libraryPath))
     {
         context.LoadUnmanagedLibrary(libraryPath);
-        Console.WriteLine($"✅ Loaded DinkToPdf library: {libraryPath}");
+        Console.WriteLine($"Loaded DinkToPdf library: {libraryPath}");
     }
     else
     {
-        Console.WriteLine($"⚠️ DinkToPdf library not found at: {libraryPath}");
+        Console.WriteLine($"DinkToPdf library not found at: {libraryPath}");
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine("❌ Failed to load DinkToPdf library: " + ex.Message);
+    Console.WriteLine("Failed to load DinkToPdf library: " + ex.Message);
 }
+
 // -----------------------------------------------------------------------------
 
 // Add services to the container
