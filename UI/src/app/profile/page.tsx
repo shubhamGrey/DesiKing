@@ -181,7 +181,7 @@ const ProfileContent: React.FC = () => {
     }
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     const userId = getUserId();
     if (!userId) return;
 
@@ -239,14 +239,14 @@ const ProfileContent: React.FC = () => {
     } finally {
       setOrdersLoading(false);
     }
-  };
+  }, [showError]);
 
   // Fetch orders when tab changes to orders or when user is logged in
   useEffect(() => {
     if (selectedTab === "orders" && getUserId()) {
       fetchOrders();
     }
-  }, [selectedTab]);
+  }, [selectedTab, fetchOrders]);
 
   const handleLogout = () => {
     // Simple logout - just remove cookies

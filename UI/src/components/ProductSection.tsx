@@ -22,6 +22,7 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import React, { useState } from "react";
 import Cookies from "js-cookie";
 
@@ -233,7 +234,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       zIndex: 1,
                     }}
                   >
-                    <img
+                    <Image
                       src="/premium symbol.png"
                       alt="Premium Quality"
                       width={isMobile ? 50 : 75}
