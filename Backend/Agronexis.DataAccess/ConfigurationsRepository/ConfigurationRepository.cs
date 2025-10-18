@@ -1872,6 +1872,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
             catch (Exception ex)
             {
+                File.WriteAllText("C:\\inetpub\\logs\\pdf_error.txt", ex.ToString());
                 throw new Exception("Failed to generate invoice PDF: " + ex.Message, ex);
             }
         }
