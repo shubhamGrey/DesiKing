@@ -8,7 +8,9 @@ namespace Agronexis.Model.ResponseModel
 {
     public class PickupBookingResponseModel
     {
-        public string DocketNo { get; set; } // example: "50005555555" (Trackon returns docket number)
-        public ResponseStatusModel ResponseStatus { get; set; }
+        public int ErrorCode { get; set; }
+        public string Message { get; set; }
+        public bool Status { get; set; }
+        public string Errors { get; set; }
     }
 }

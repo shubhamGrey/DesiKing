@@ -31,7 +31,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId);
         Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId);
         Task<OrderResponseModel> CreateOrder(OrderRequestModel order, string xCorrelationId);
-        bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId);
+        Task<bool> VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId);
         Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId);
         Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId);
         List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId);
@@ -49,6 +49,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId);
         Task<ShipmentTrackingResponseModel> TrackShipment(string awbNo, string xCorrelationId);
         Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId);
-        Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId);
+        //Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId);
+        Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel invoiceData, string xCorrelationId);
     }
 }

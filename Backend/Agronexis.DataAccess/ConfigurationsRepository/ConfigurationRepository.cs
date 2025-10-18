@@ -4,11 +4,14 @@ using Agronexis.Model;
 using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Asn1.X509;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 using Razorpay.Api;
 using System;
 using System.Collections.Generic;
@@ -29,7 +32,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly IConfiguration _configuration;
         private readonly ExternalUtility _externalUtility;
         private readonly ILogger<ConfigurationRepository> _logger;
-        
+
         public ConfigurationRepository(AppDbContext dbContext, IConfiguration configuration, ExternalUtility externalUtility, ILogger<ConfigurationRepository> logger)
         {
             _dbContext = dbContext;
@@ -903,8 +906,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 order.OrderItems.Add(orderItem);
             }
 
-            //Send order placement email
-            string emailResponse = await SendOrderPlacementEmail(xCorrelationId);
+            ////Send order placement email
+            //string emailResponse = await SendOrderPlacementEmail(xCorrelationId);
 
             _dbContext.Orders.Add(order);
             await _dbContext.SaveChangesAsync();
@@ -916,12 +919,18 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             };
         }
 
-        public bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
+        public async Task<bool> VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
         {
-            bool isVerify = _externalUtility.RazorPayVerifyPayment(verify.OrderId, verify.PaymentId, verify.Signature);
-            if (isVerify)
+            try
             {
-                //insert into transaction table
+                bool isVerify = _externalUtility.RazorPayVerifyPayment(verify.OrderId, verify.PaymentId, verify.Signature);
+                if (!isVerify)
+                    return false;
+
+                var order = await _dbContext.Orders
+                    .Include(o => o.OrderItems)
+                    .FirstOrDefaultAsync(o => o.RazorpayOrderId == verify.OrderId);
+
                 var transaction = new Transaction
                 {
                     Id = Guid.NewGuid(),
@@ -935,108 +944,77 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     PaymentMethod = verify.PaymentMethod,
                     CreatedDate = DateTime.UtcNow
                 };
-                _dbContext.Transactions.Add(transaction);
-                
-                // Update order status to "paid"
-                var order = _dbContext.Orders.FirstOrDefault(o => o.RazorpayOrderId == verify.OrderId);
+
+                await _dbContext.Transactions.AddAsync(transaction);
+
                 if (order != null)
                 {
                     order.Status = "paid";
                     order.ModifiedDate = DateTime.UtcNow;
-                }
-                
-                _dbContext.SaveChangesAsync();
 
-                // Create pickup booking after successful payment
-                _ = Task.Run(async () =>
-                {
                     try
                     {
-                        // Find the order by RazorpayOrderId
-                        var order = await _dbContext.Orders
-                            .Include(o => o.OrderItems)
-                            .FirstOrDefaultAsync(o => o.RazorpayOrderId == verify.OrderId);
-
-                        if (order == null)
-                        {
-                            _logger.LogWarning("Order not found for RazorpayOrderId: {RazorpayOrderId}", verify.OrderId);
-                            return;
-                        }
-
-                        // Get shipping address for the user
                         var shippingAddress = await _dbContext.Addresses
-                            .FirstOrDefaultAsync(ua => ua.UserId == order.UserId && ua.AddressType == "SHIPPING");
+                            .FirstOrDefaultAsync(a => a.UserId == order.UserId && a.AddressType == "SHIPPING");
 
-                        if (shippingAddress == null)
+                        if (shippingAddress != null)
                         {
-                            _logger.LogWarning("Shipping address not found for user: {UserId}", order.UserId);
-                            return;
-                        }
+                            var defaultWeight = decimal.Parse(_configuration["PickupBooking:DefaultWeight"] ?? "0.5");
+                            var totalWeight = order.OrderItems.Sum(oi => oi.Quantity * defaultWeight);
+                            var totalPieces = order.OrderItems.Sum(oi => oi.Quantity);
 
-                        // Get pickup booking configuration values directly
-                        var defaultWeight = decimal.Parse(_configuration["PickupBooking:DefaultWeight"] ?? "0.5");
-                        var totalWeight = order.OrderItems.Sum(oi => oi.Quantity * defaultWeight);
-                        var totalPieces = order.OrderItems.Sum(oi => oi.Quantity);
-
-                        // Create pickup booking request using configuration values
-                        var pickupBookingRequest = new PickupBookingRequestModel
-                        {
-                            SerialNo = Guid.NewGuid().ToString("N")[..10], // Generate unique serial number
-                            RefNo = order.ReceiptId ?? order.Id.ToString(),
-                            ActionType = "Book", // Book new pickup
-                            ClientName = shippingAddress.FullName,
-                            AddressLine1 = shippingAddress.AddressLine,
-                            AddressLine2 = shippingAddress.LandMark,
-                            City = shippingAddress.City,
-                            PinCode = shippingAddress.PinCode,
-                            MobileNo = shippingAddress.PhoneNumber,
-                            Email = _configuration["PickupBooking:Email"],
-                            DocType = "D", // Document type - D for delivery
-                            TypeOfService = "SF", // Surface service
-                            Weight = totalWeight.ToString("F2"),
-                            InvoiceValue = order.TotalAmount.ToString("F2"),
-                            NoOfPieces = totalPieces.ToString(),
-                            ItemName = "DesiKing Premium Spices",
-                            Remark = $"DesiKing Order: {order.ReceiptId}",
-                            
-                            // Pickup location from configuration
-                            PickupCustName = _configuration["PickupBooking:CompanyName"],
-                            PickupAddr = _configuration["PickupBooking:Address"],
-                            PickupCity = _configuration["PickupBooking:City"],
-                            PickupState = _configuration["PickupBooking:State"],
-                            PickupPincode = _configuration["PickupBooking:PinCode"],
-                            PickupPhone = _configuration["PickupBooking:Phone"],
-                            ServiceType = _configuration["PickupBooking:DefaultServiceType"]
-                        };
-
-                        // Call the existing pickup booking service
-                        var pickupResult = await CreatePickupBooking(pickupBookingRequest, xCorrelationId);
-
-                        if (pickupResult != null && pickupResult.ResponseStatus?.ErrorCode == "0")
-                        {
-                            // Save the docket number to the order
-                            if (!string.IsNullOrWhiteSpace(pickupResult.DocketNo))
+                            var pickupBookingRequest = new PickupBookingRequestModel
                             {
-                                order.DocketNumber = pickupResult.DocketNo;
-                                order.ModifiedDate = DateTime.UtcNow;
-                                await _dbContext.SaveChangesAsync();
-                            }
+                                SerialNo = Guid.NewGuid().ToString("N")[..10],
+                                RefNo = order.ReceiptId ?? order.Id.ToString(),
+                                ActionType = "Book",
+                                ClientName = shippingAddress.FullName,
+                                AddressLine1 = shippingAddress.AddressLine,
+                                AddressLine2 = shippingAddress.LandMark,
+                                City = shippingAddress.City,
+                                PinCode = shippingAddress.PinCode,
+                                MobileNo = shippingAddress.PhoneNumber,
+                                Email = _configuration["PickupBooking:Email"],
+                                DocType = "D",
+                                TypeOfService = "Surface",
+                                Weight = totalWeight.ToString("F2"),
+                                InvoiceValue = order.TotalAmount.ToString("F2"),
+                                NoOfPieces = totalPieces.ToString(),
+                                ItemName = "DesiKing Premium Spices",
+                                Remark = $"DesiKing Order: {order.ReceiptId}",
+                                PickupCustName = _configuration["PickupBooking:CompanyName"],
+                                PickupAddr = _configuration["PickupBooking:Address"],
+                                PickupCity = _configuration["PickupBooking:City"],
+                                PickupState = _configuration["PickupBooking:State"],
+                                PickupPincode = _configuration["PickupBooking:PinCode"],
+                                PickupPhone = _configuration["PickupBooking:Phone"],
+                                ServiceType = _configuration["PickupBooking:DefaultServiceType"]
+                            };
 
-                            _logger.LogInformation("Pickup booking created successfully for order: {OrderId}, DocketNo: {DocketNo}", 
-                                order.Id, pickupResult.DocketNo ?? "N/A");
-                        }
-                        else
-                        {
-                            _logger.LogWarning("Failed to create pickup booking for order: {OrderId}", order.Id);
+                            var pickupResult = await _externalUtility.CreatePickupBooking(pickupBookingRequest, xCorrelationId);
+
+                            if (pickupResult != null && pickupResult.ErrorCode == 0)
+                            {
+                                var docketNo = pickupResult.Message.Split(':').LastOrDefault();
+                                order.DocketNumber = docketNo;
+                                order.ModifiedDate = DateTime.UtcNow;
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error creating pickup booking for RazorpayOrderId: {RazorpayOrderId}", verify.OrderId);
                     }
-                });
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
             }
-            return isVerify;
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred during payment verification", xCorrelationId, ex);
+            }
         }
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
@@ -1115,8 +1093,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return refundPaymentResponse;
         }
-
-
 
         public List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId)
         {
@@ -1405,6 +1381,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 var orders = _dbContext.Orders
                     .Where(o => o.UserId == userGuid)
+                    .OrderByDescending(a => a.CreatedDate)
                     .Select(o => new OrderByUserResponseModel
                     {
                         Id = o.Id,
@@ -1415,7 +1392,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         TotalAmount = o.TotalAmount,
                         Currency = o.Currency,
                         CreatedDate = o.CreatedDate,
-                        OrderItems = o.OrderItems.Select(oi => new OrderItemResponseModel
+                        OrderItems = o.OrderItems.OrderByDescending(a => a.CreatedDate).Select(oi => new OrderItemResponseModel
                         {
                             Id = oi.Id,
                             OrderId = oi.OrderId,
@@ -1444,9 +1421,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             .FirstOrDefault(),
                         // Fetch shipping address - most recent SHIPPING address around order creation time
                         ShippingAddress = _dbContext.Addresses
-                            .Where(a => a.UserId == userGuid && 
-                                       a.AddressType == "SHIPPING" && 
-                                       a.IsActive == true && 
+                            .Where(a => a.UserId == userGuid &&
+                                       a.AddressType == "SHIPPING" &&
+                                       a.IsActive == true &&
                                        a.IsDeleted == false &&
                                        a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
                             .OrderByDescending(a => a.CreatedDate)
@@ -1468,9 +1445,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             .FirstOrDefault(),
                         // Fetch billing address - most recent BILLING address around order creation time
                         BillingAddress = _dbContext.Addresses
-                            .Where(a => a.UserId == userGuid && 
-                                       a.AddressType == "BILLING" && 
-                                       a.IsActive == true && 
+                            .Where(a => a.UserId == userGuid &&
+                                       a.AddressType == "BILLING" &&
+                                       a.IsActive == true &&
                                        a.IsDeleted == false &&
                                        a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
                             .OrderByDescending(a => a.CreatedDate)
@@ -1619,8 +1596,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 user.ModifiedDate = DateTime.UtcNow;
 
                 // Update username if provided, otherwise use email
-                user.UserName = !string.IsNullOrWhiteSpace(model.UserName) 
-                    ? model.UserName.Trim() 
+                user.UserName = !string.IsNullOrWhiteSpace(model.UserName)
+                    ? model.UserName.Trim()
                     : model.Email?.Trim();
 
                 await _dbContext.SaveChangesAsync();
@@ -1689,146 +1666,278 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public async Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId)
         {
+            ShipmentLabelResponseModel shipmentLabelResponse = new();
             try
             {
-                var appKey = _configuration["Trackon:AppKey"];
-                var userId = _configuration["Trackon:UserId"];
-                var password = _configuration["Trackon:Password"];
-                var baseUrl = _configuration["Trackon:LabelUrl"] ?? "http://trackon.in:5456/CrmApi/Crm/GenerateSoftdataLabel3x3";
-
-                if (string.IsNullOrWhiteSpace(appKey) || string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(password))
-                    throw new RepositoryException("Trackon API credentials missing.", xCorrelationId);
-
-                var requestBody = new
-                {
-                    AWBNo = awbNo,
-                    Appkey = appKey,
-                    userId = userId,
-                    password = password
-                };
-
-                using var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-
-                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-
-                var response = await httpClient.PostAsync(baseUrl, content);
-
-                if (!response.IsSuccessStatusCode)
-                    throw new RepositoryException($"Trackon Label API returned {response.StatusCode}", xCorrelationId);
-
-                var json = await response.Content.ReadAsStringAsync();
-
-                var result = JsonSerializer.Deserialize<ShipmentLabelResponseModel>(json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (result == null)
-                    throw new RepositoryException("Invalid response received from Trackon Label API.", xCorrelationId);
-
-                return result;
+                shipmentLabelResponse = await _externalUtility.GenerateShipmentLabel(awbNo, xCorrelationId);
             }
             catch (Exception ex)
             {
                 throw new RepositoryException($"Error while generating shipment label for AWB: {awbNo}", xCorrelationId, ex);
             }
+            return shipmentLabelResponse;
         }
 
-        public async Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId)
+        public async Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel invoiceData, string xCorrelationId)
         {
+            // Validate invoice data first
+            var validationErrors = ValidateInvoiceData(invoiceData.InvoiceData);
+            if (validationErrors.Any())
+            {
+                // You can throw an exception or return null/empty PDF as per your needs
+                throw new Exception("Invoice validation failed: " + string.Join("; ", validationErrors));
+            }
+
+            // Ensure Puppeteer downloads Chromium if not already present
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+
+            var launchOptions = new LaunchOptions
+            {
+                Headless = true,
+                Args = new[]
+                {
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-extensions"
+        },
+                IgnoreHTTPSErrors = true,
+                DefaultViewport = new ViewPortOptions
+                {
+                    Width = 1280,
+                    Height = 800
+                },
+                Timeout = 60000
+            };
+
+            IBrowser browser = null;
+            IPage page = null;
+
+            // Generate HTML content
+            var htmlContent = GenerateInvoiceHtml(invoiceData);
+
             try
             {
-                var appKey = _configuration["Trackon:AppKey"];
-                var userId = _configuration["Trackon:UserId"];
-                var password = _configuration["Trackon:Password"];
-                var baseUrl = _configuration["Trackon:BookingUrl"] ?? "http://trackon.in:5455/CrmApi/Crm/UploadPickupRequestWithoutDockNo";
+                browser = await Puppeteer.LaunchAsync(launchOptions);
+                page = await browser.NewPageAsync();
 
-                if (string.IsNullOrWhiteSpace(appKey) || string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(password))
-                    throw new RepositoryException("Trackon booking API credentials missing.", xCorrelationId);
-
-                // validate required fields minimally (repository can be lenient; controller/service can validate more)
-                if (request == null)
-                    throw new RepositoryException("Pickup booking request is null.", xCorrelationId);
-
-                if (string.IsNullOrWhiteSpace(request.SerialNo) ||
-                    string.IsNullOrWhiteSpace(request.ActionType) ||
-                    string.IsNullOrWhiteSpace(request.AddressLine1) ||
-                    string.IsNullOrWhiteSpace(request.City) ||
-                    string.IsNullOrWhiteSpace(request.PinCode) ||
-                    string.IsNullOrWhiteSpace(request.MobileNo) ||
-                    string.IsNullOrWhiteSpace(request.DocType) ||
-                    string.IsNullOrWhiteSpace(request.TypeOfService) ||
-                    string.IsNullOrWhiteSpace(request.Weight) ||
-                    string.IsNullOrWhiteSpace(request.NoOfPieces) ||
-                    string.IsNullOrWhiteSpace(request.ServiceType))
+                // Load HTML content
+                await page.SetContentAsync(htmlContent, new PuppeteerSharp.NavigationOptions
                 {
-                    throw new RepositoryException("Missing mandatory fields for pickup booking.", xCorrelationId);
-                }
+                    WaitUntil = new[] { WaitUntilNavigation.Load }
+                });
 
-                // Build request payload expected by Trackon
-                var payload = new Dictionary<string, object>
-                                {
-                                    { "Appkey", appKey },
-                                    { "userId", userId },
-                                    { "password", password },
-                                    { "SerialNo", request.SerialNo },
-                                    { "RefNo", request.RefNo ?? string.Empty },
-                                    { "ActionType", request.ActionType },
-                                    { "CustomerCode", request.CustomerCode ?? string.Empty },
-                                    { "ClientName", request.ClientName ?? string.Empty },
-                                    { "AddressLine1", request.AddressLine1 },
-                                    { "AddressLine2", request.AddressLine2 ?? string.Empty },
-                                    { "City", request.City },
-                                    { "PinCode", request.PinCode },
-                                    { "MobileNo", request.MobileNo },
-                                    { "Email", request.Email ?? string.Empty },
-                                    { "DocType", request.DocType },
-                                    { "TypeOfService", request.TypeOfService },
-                                    { "Weight", request.Weight },
-                                    { "InvoiceValue", request.InvoiceValue ?? "0" },
-                                    { "NoOfPieces", request.NoOfPieces },
-                                    { "ItemName", request.ItemName ?? string.Empty },
-                                    { "Remark", request.Remark ?? string.Empty },
-                                    { "PickupCustCode", request.PickupCustCode ?? string.Empty },
-                                    { "PickupCustName", request.PickupCustName ?? string.Empty },
-                                    { "PickupAddr", request.PickupAddr ?? string.Empty },
-                                    { "PickupCity", request.PickupCity ?? string.Empty },
-                                    { "PickupState", request.PickupState ?? string.Empty },
-                                    { "PickupPincode", request.PickupPincode ?? string.Empty },
-                                    { "PickupPhone", request.PickupPhone ?? string.Empty },
-                                    { "ServiceType", request.ServiceType }
-                                };
+                await page.WaitForTimeoutAsync(1000); // ensure fonts/images render
 
-                using var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-
-                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                var httpResponse = await httpClient.PostAsync(baseUrl, content);
-
-                if (!httpResponse.IsSuccessStatusCode)
-                    throw new RepositoryException($"Trackon booking API returned {(int)httpResponse.StatusCode} - {httpResponse.ReasonPhrase}", xCorrelationId);
-
-                var json = await httpResponse.Content.ReadAsStringAsync();
-
-                var bookingResponse = JsonSerializer.Deserialize<PickupBookingResponseModel>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (bookingResponse == null)
+                var pdfBytes = await page.PdfDataAsync(new PdfOptions
                 {
-                    // If Trackon returns different shape, you might want to parse via JsonDocument to map DocketNo field
-                    throw new RepositoryException("Invalid response from Trackon booking API.", xCorrelationId);
-                }
+                    Format = PaperFormat.A4,
+                    PrintBackground = true,
+                    MarginOptions = new MarginOptions
+                    {
+                        Top = "10mm",
+                        Right = "10mm",
+                        Bottom = "10mm",
+                        Left = "10mm"
+                    }
+                });
 
-                return bookingResponse;
-            }
-            catch (RepositoryException)
-            {
-                throw;
+                return pdfBytes;
             }
             catch (Exception ex)
             {
-                throw new RepositoryException($"Error while creating pickup booking for SerialNo: {request?.SerialNo}", xCorrelationId, ex);
+                throw new Exception("Failed to generate invoice PDF: " + ex.Message, ex);
+            }
+            finally
+            {
+                if (page != null && !page.IsClosed)
+                    await page.CloseAsync();
+                if (browser != null && !browser.IsClosed)
+                    await browser.CloseAsync();
             }
         }
+        private List<string> ValidateInvoiceData(InvoiceDataModel invoiceData)
+        {
+            var errors = new List<string>();
 
+            if (string.IsNullOrEmpty(invoiceData.Supplier?.Name))
+                errors.Add("Supplier name is required");
+            if (string.IsNullOrEmpty(invoiceData.Supplier?.Gstin))
+                errors.Add("Supplier GSTIN is required");
+            if (string.IsNullOrEmpty(invoiceData.Supplier?.Address))
+                errors.Add("Supplier address is required");
 
+            if (string.IsNullOrEmpty(invoiceData.Invoice?.Number))
+                errors.Add("Invoice number is required");
+            if (string.IsNullOrEmpty(invoiceData.Invoice?.Date))
+                errors.Add("Invoice date is required");
+
+            if (string.IsNullOrEmpty(invoiceData.Customer?.Name))
+                errors.Add("Customer name is required");
+            if (string.IsNullOrEmpty(invoiceData.Customer?.Address))
+                errors.Add("Customer address is required");
+            if (string.IsNullOrEmpty(invoiceData.Customer?.StateCode))
+                errors.Add("Customer state code is required for GST compliance");
+
+            if (invoiceData.Items == null || !invoiceData.Items.Any())
+                errors.Add("At least one invoice item is required");
+            else
+            {
+                for (int i = 0; i < invoiceData.Items.Count; i++)
+                {
+                    var item = invoiceData.Items[i];
+                    if (string.IsNullOrEmpty(item.Description))
+                        errors.Add($"Item {i + 1}: Description is required");
+                    if (string.IsNullOrEmpty(item.HsnCode))
+                        errors.Add($"Item {i + 1}: HSN code is required for GST compliance");
+                    if (item.Quantity <= 0)
+                        errors.Add($"Item {i + 1}: Quantity must be greater than 0");
+                    if (item.Rate <= 0)
+                        errors.Add($"Item {i + 1}: Rate must be greater than 0");
+                }
+            }
+
+            if (invoiceData.TaxSummary == null || string.IsNullOrEmpty(invoiceData.TaxSummary.PlaceOfSupply))
+                errors.Add("Place of supply is required for GST compliance");
+
+            return errors;
+        }
+        private string GenerateInvoiceHtml(GenerateInvoiceRequestModel request)
+        {
+            var invoiceData = request.InvoiceData; // Use the new structure
+            var html = new StringBuilder();
+
+            html.Append(@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>GST Invoice</title>
+    <style>
+        /* ... keep all your existing CSS here ... */
+    </style>
+</head>
+<body>
+    <div class='invoice-container'>
+        <!-- Header -->
+        <div class='header'>
+            <div class='header-content'>
+                <div class='company-info'>
+                    <h1>" + invoiceData.Supplier.Name + @"</h1>
+                    <p>" + invoiceData.Supplier.Address + @"</p>
+                    <p>GSTIN: " + invoiceData.Supplier.Gstin + @" | PAN: " + invoiceData.Supplier.PanNumber + @"</p>
+                    <p>📧 " + invoiceData.Supplier.Email + @" | 📞 " + invoiceData.Supplier.Phone + @"</p>
+                </div>
+                <div class='invoice-title'>
+                    <h2>TAX INVOICE</h2>
+                    <p>GST Compliant</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class='invoice-details'>
+            <div class='details-grid'>
+                <div class='detail-section'>
+                    <h3>Invoice Information</h3>
+                    <div class='detail-item'><span class='detail-label'>Invoice No:</span><span>" + invoiceData.Invoice.Number + @"</span></div>
+                    <div class='detail-item'><span class='detail-label'>Invoice Date:</span><span>" + invoiceData.Invoice.Date + @"</span></div>
+                    <div class='detail-item'><span class='detail-label'>Due Date:</span><span>" + invoiceData.Invoice.DueDate + @"</span></div>
+                    <div class='detail-item'><span class='detail-label'>Financial Year:</span><span>" + invoiceData.Invoice.FinancialYear + @"</span></div>
+                </div>
+                <div class='detail-section'>
+                    <h3>Order Information</h3>
+                    <div class='detail-item'><span class='detail-label'>Order No:</span><span>" + invoiceData.Invoice.OrderNumber + @"</span></div>
+                    <div class='detail-item'><span class='detail-label'>Order Date:</span><span>" + invoiceData.Invoice.OrderDate + @"</span></div>
+                    <div class='detail-item'><span class='detail-label'>Place of Supply:</span><span>" + invoiceData.TaxSummary.PlaceOfSupply + @"</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Addresses -->
+        <div class='addresses-section'>
+            <div class='addresses-header'>Bill To & Ship To</div>
+            <div class='addresses-content'>
+                <div class='address-box'>
+                    <div class='address-title'>🏢 Bill To (Customer Details)</div>
+                    <div><strong>" + invoiceData.Customer.Name + @"</strong></div>
+                    <div>" + invoiceData.Customer.Address + @"</div>
+                    <div>" + invoiceData.Customer.City + @", " + invoiceData.Customer.State + @" - " + invoiceData.Customer.Pincode + @"</div>
+                    <div>📞 " + invoiceData.Customer.Phone + @"</div>");
+
+            if (!string.IsNullOrEmpty(invoiceData.Customer.Email))
+                html.Append($@"<div>📧 {invoiceData.Customer.Email}</div>");
+
+            if (!string.IsNullOrEmpty(invoiceData.Customer.Gstin))
+                html.Append($@"<div><strong>GSTIN:</strong> {invoiceData.Customer.Gstin}</div>");
+
+            html.Append($@"<div><strong>State Code:</strong> {invoiceData.Customer.StateCode}</div>
+                </div>
+                <div class='address-box'>
+                    <div class='address-title'>🚚 Ship To</div>");
+
+            if (invoiceData.DeliveryAddress != null)
+            {
+                html.Append($@"
+                    <div><strong>{invoiceData.DeliveryAddress.Name}</strong></div>
+                    <div>{invoiceData.DeliveryAddress.Address}</div>
+                    <div>{invoiceData.DeliveryAddress.City}, {invoiceData.DeliveryAddress.State} - {invoiceData.DeliveryAddress.Pincode}</div>
+                    <div>📞 {invoiceData.DeliveryAddress.Phone}</div>
+                    <div><strong>State Code:</strong> {invoiceData.DeliveryAddress.StateCode}</div>");
+            }
+            else
+            {
+                html.Append(@"<div style='color: #666; font-style: italic;'>Same as billing address</div>");
+            }
+
+            html.Append(@"
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->");
+
+            html.Append("<table class='items-table'><thead>...</thead><tbody>");
+            foreach (var item in invoiceData.Items)
+            {
+                html.Append($@"
+            <tr>
+                <td>{item.SlNo}</td>
+                <td class='text-left'>{item.Description}</td>
+                <td>{item.HsnCode}</td>
+                <td>{item.Quantity}</td>
+                <td>{item.Unit}</td>
+                <td class='text-right'>{item.Rate:F2}</td>
+                <td class='text-right'>{item.TaxableValue:F2}</td>
+                <td>{item.CgstRate:F1}%</td>
+                <td>{item.SgstRate:F1}%</td>
+                <td>{item.IgstRate:F1}%</td>
+                <td class='text-right'><strong>{item.TotalAmount:F2}</strong></td>
+            </tr>");
+            }
+            html.Append("</tbody></table>");
+
+            // Tax Summary, Payment Info, Terms, Signature, Footer (similar update as above)
+            // ...
+
+            // Optionally include e-invoice info if available
+            if (!string.IsNullOrEmpty(invoiceData.EInvoice.Irn))
+            {
+                html.Append($@"
+        <div class='e-invoice-section'>
+            <h3>E-Invoice Details</h3>
+            <p>IRN: {invoiceData.EInvoice.Irn}</p>
+            <p>Ack No: {invoiceData.EInvoice.AckNo} | Ack Date: {invoiceData.EInvoice.AckDate}</p>
+            <p>QR Code: <img src='{invoiceData.EInvoice.QrCode}' alt='QR Code' /></p>
+        </div>");
+            }
+
+            html.Append("</div></body></html>");
+
+            return html.ToString();
+        }
     }
 }
