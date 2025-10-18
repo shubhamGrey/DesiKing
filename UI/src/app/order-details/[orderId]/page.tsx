@@ -44,7 +44,6 @@ import {
   CheckCircle,
   Schedule,
   Download,
-  ArrowBack,
   ContentCopy,
   Phone,
   Email,
@@ -56,12 +55,13 @@ import {
   AccessTime,
   CreditCard,
   DeliveryDining,
+  Print,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { isLoggedIn, getUserId } from "@/utils/auth";
+import { isLoggedIn, getUserId, isAdmin } from "@/utils/auth";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
@@ -173,35 +173,39 @@ interface OrderTimeline {
 
 // Shipment Tracking Interfaces
 interface ShipmentSummary {
-  awbNo: string;
-  refNo: string;
-  bookingDate: string;
-  origin: string;
-  destination: string;
-  product: string;
-  serviceType: string;
-  currentStatus: string;
-  currentCity: string;
-  eventDate: string;
-  eventTime: string;
-  trackingCode: string;
-  ndrReason?: string;
+  AWBNO: string;
+  REF_NO?: string;
+  BOOKING_DATE: string;
+  ORIGIN: string;
+  NO_OF_PIECES: string;
+  PINCODE: string;
+  DESTINATION: string;
+  PRODUCT: string;
+  SERVICE_TYPE: string;
+  CURRENT_STATUS: string;
+  CURRENT_CITY: string;
+  EVENTDATE: string;
+  EVENTTIME: string;
+  TRACKING_CODE: string;
+  NDR_REASON?: string;
 }
 
 interface TrackingDetail {
-  currentCity: string;
-  currentStatus: string;
-  eventDate: string;
-  eventTime: string;
-  trackingCode: string;
+  CURRENT_CITY: string;
+  CURRENT_STATUS: string;
+  EVENTDATE: string;
+  EVENTTIME: string;
+  TRACKING_CODE: string;
 }
 
 interface ShipmentTrackingData {
-  summaryTrack: ShipmentSummary;
+  summaryTrack: ShipmentSummary | null;
   lstDetails: TrackingDetail[];
-  responseStatus: {
-    status: string;
-    message: string;
+  ResponseStatus: {
+    ErrorCode: string | null;
+    Message: string;
+    StackTrace: string | null;
+    Errors: string | null;
   };
 }
 
@@ -224,6 +228,7 @@ interface OrderDetails {
   deliveredDate?: string;
   expectedDeliveryDate?: string;
   trackingNumber?: string;
+  docketNumber?: string;
   totalAmount: number;
   subtotal: number;
   shippingCharges: number;
@@ -324,74 +329,14 @@ const generateOrderTimeline = (
     },
   ];
 
-  // Add shipment tracking details to timeline if available
-  if (shipmentData?.lstDetails && shipmentData.lstDetails.length > 0) {
-    // Add shipment tracking events, sorted by event date (most recent first)
-    const sortedShipmentEvents = [...shipmentData.lstDetails].sort((a, b) => {
-      const dateA = new Date(`${a.eventDate} ${a.eventTime}`);
-      const dateB = new Date(`${b.eventDate} ${b.eventTime}`);
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    // Insert shipment events after order placed
-    sortedShipmentEvents.forEach((event) => {
-      const eventDateTime = `${event.eventDate} ${event.eventTime}`;
-      timeline.push({
-        status: event.currentStatus || "Shipment Update",
-        timestamp: eventDateTime,
-        description: `Package ${
-          event.currentStatus?.toLowerCase() || "status updated"
-        }`,
-        location: event.currentCity || "In Transit",
-      });
-    });
-  }
-
+  // Add payment confirmation only if order is paid
   if (order.status === "paid") {
-    timeline.push(
-      {
-        status: "Payment Confirmed",
-        timestamp: order.createdDate,
-        description: `Payment of ₹${order.totalAmount} received and confirmed`,
-        location: "Payment Gateway",
-      },
-      {
-        status: "Order Processing",
-        timestamp: addDays(order.createdDate, 1),
-        description: "Order is being prepared for shipment",
-        location: "DesiKing Warehouse",
-      },
-      {
-        status: "Quality Check",
-        timestamp: addDays(order.createdDate, 2),
-        description: "Products passed quality inspection",
-        location: "DesiKing Warehouse",
-      },
-      {
-        status: "Packed",
-        timestamp: addDays(order.createdDate, 2),
-        description: "Order packed and ready for shipment",
-        location: "DesiKing Warehouse",
-      },
-      {
-        status: "Shipped",
-        timestamp: addDays(order.createdDate, 3),
-        description: "Package handed over to delivery partner",
-        location: "Shipping Hub",
-      },
-      {
-        status: "Out for Delivery",
-        timestamp: addDays(order.createdDate, 5),
-        description: "Package is out for delivery",
-        location: "Local Delivery Hub",
-      },
-      {
-        status: "Delivered",
-        timestamp: addDays(order.createdDate, 6),
-        description: "Order delivered successfully",
-        location: "Customer Address",
-      }
-    );
+    timeline.push({
+      status: "Payment Confirmed",
+      timestamp: order.createdDate,
+      description: `Payment of ₹${order.totalAmount} received and confirmed`,
+      location: "Payment Gateway",
+    });
   } else if (order.status === "failed") {
     timeline.push({
       status: "Payment Failed",
@@ -400,6 +345,56 @@ const generateOrderTimeline = (
       location: "Payment Gateway",
     });
   }
+
+  // Add shipment tracking details to timeline if available
+  if (shipmentData?.lstDetails && shipmentData.lstDetails.length > 0) {
+    // Add shipment tracking events, sorted by event date (chronologically, oldest first for timeline)
+    const sortedShipmentEvents = [...shipmentData.lstDetails].sort((a, b) => {
+      const dateA = new Date(`${a.EVENTDATE} ${a.EVENTTIME}`);
+      const dateB = new Date(`${b.EVENTDATE} ${b.EVENTTIME}`);
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    // Add real shipment events from tracking API
+    sortedShipmentEvents.forEach((event) => {
+      const eventDateTime = `${event.EVENTDATE} ${event.EVENTTIME}`;
+      timeline.push({
+        status: event.CURRENT_STATUS || "Shipment Update",
+        timestamp: eventDateTime,
+        description: `${event.CURRENT_STATUS || "Package status updated"}`,
+        location: event.CURRENT_CITY || "In Transit",
+      });
+    });
+  }
+
+  // Sort the entire timeline in reverse chronological order (most recent first)
+  timeline.sort((a, b) => {
+    // Handle different date formats properly
+    let dateA, dateB;
+
+    // Check if timestamp contains date format from tracking API (DD/MM/YYYY HH:mm:ss)
+    if (a.timestamp.includes("/")) {
+      // Parse DD/MM/YYYY HH:mm:ss format
+      const [datePart, timePart] = a.timestamp.split(" ");
+      const [day, month, year] = datePart.split("/");
+      dateA = new Date(`${year}-${month}-${day}T${timePart}`);
+    } else {
+      // Standard ISO format from order dates
+      dateA = new Date(a.timestamp);
+    }
+
+    if (b.timestamp.includes("/")) {
+      // Parse DD/MM/YYYY HH:mm:ss format
+      const [datePart, timePart] = b.timestamp.split(" ");
+      const [day, month, year] = datePart.split("/");
+      dateB = new Date(`${year}-${month}-${day}T${timePart}`);
+    } else {
+      // Standard ISO format from order dates
+      dateB = new Date(b.timestamp);
+    }
+
+    return dateB.getTime() - dateA.getTime();
+  });
 
   return timeline;
 };
@@ -411,10 +406,61 @@ const OrderDetailsContent: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [shipmentTracking, setShipmentTracking] =
+    useState<ShipmentTrackingData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [trackingLoading, setTrackingLoading] = useState(false);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
 
   const orderId = params?.orderId as string;
+
+  // Fetch shipment tracking data
+  const fetchShipmentTracking = async (docketNumber: string) => {
+    try {
+      setTrackingLoading(true);
+
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        console.warn("Access token not found for tracking");
+        return null;
+      }
+
+      const trackingResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/shipment/track/${docketNumber}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!trackingResponse.ok) {
+        console.warn(`Tracking API returned ${trackingResponse.status}`);
+        return null;
+      }
+
+      const trackingResult = await trackingResponse.json();
+
+      // Handle the new API response format
+      if (trackingResult.ResponseStatus?.Message === "SUCCESS") {
+        return trackingResult as ShipmentTrackingData;
+      }
+
+      // Fallback for old API format
+      if (trackingResult.info?.isSuccess && trackingResult.data) {
+        return trackingResult.data as ShipmentTrackingData;
+      }
+
+      return null;
+    } catch (error) {
+      console.warn("Error fetching shipment tracking:", error);
+      return null;
+    } finally {
+      setTrackingLoading(false);
+    }
+  };
 
   // Fetch product details function (similar to profile page)
   const fetchProductDetails = async (
@@ -608,9 +654,8 @@ const OrderDetailsContent: React.FC = () => {
             expectedDeliveryDate: getExpectedDeliveryDate(
               specificOrder.createdDate
             ),
-            trackingNumber:
-              specificOrder.docketNumber ||
-              `DK${specificOrder.id.slice(-8).toUpperCase()}`,
+            trackingNumber: specificOrder.docketNumber,
+            docketNumber: specificOrder.docketNumber,
             subtotal: subtotal, // Final subtotal after discounts
             shippingCharges: 0, // Free shipping
             discount: totalDiscountAmount, // Total discount amount
@@ -715,6 +760,24 @@ const OrderDetailsContent: React.FC = () => {
           };
 
           setOrderDetails(mappedOrderDetails);
+
+          // Fetch shipment tracking data if docket number is available
+          if (specificOrder.docketNumber) {
+            const trackingData = await fetchShipmentTracking(
+              specificOrder.docketNumber
+            );
+            if (trackingData) {
+              setShipmentTracking(trackingData);
+              // Update timeline with real tracking data
+              const updatedTimeline = generateOrderTimeline(
+                specificOrder,
+                trackingData
+              );
+              setOrderDetails((prev) =>
+                prev ? { ...prev, timeline: updatedTimeline } : null
+              );
+            }
+          }
         } else {
           throw new Error(
             ordersResult.info?.message || "Failed to fetch order data"
@@ -756,7 +819,25 @@ const OrderDetailsContent: React.FC = () => {
 
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
+
+    let date: Date;
+
+    // Check if timestamp contains date format from tracking API (DD/MM/YYYY HH:mm:ss)
+    if (dateString.includes("/") && dateString.includes(" ")) {
+      // Parse DD/MM/YYYY HH:mm:ss format
+      const [datePart, timePart] = dateString.split(" ");
+      const [day, month, year] = datePart.split("/");
+      date = new Date(`${year}-${month}-${day}T${timePart}`);
+    } else {
+      // Standard ISO format from order dates
+      date = new Date(dateString);
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return { date: "Invalid Date", time: "Invalid Date" };
+    }
+
     return {
       date: date.toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -1018,6 +1099,164 @@ const OrderDetailsContent: React.FC = () => {
     }
   };
 
+  const handleDownloadShipmentLabel = async () => {
+    if (!orderDetails) {
+      showError("Order details not available");
+      return;
+    }
+
+    if (!orderDetails.docketNumber) {
+      showError("Docket number not available for this order");
+      return;
+    }
+
+    try {
+      // Show loading state
+      showSuccess("Generating shipment label...");
+
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        showError("Authentication token not found. Please log in again.");
+        return;
+      }
+
+      // Call backend API to generate shipment label
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/shipment/label/${orderDetails.docketNumber}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          showError("Session expired. Please log in again.");
+          router.push("/login");
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Check if response is PDF or JSON
+      const contentType = response.headers.get("content-type");
+
+      if (contentType && contentType.includes("application/pdf")) {
+        // Handle PDF response
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        // Open PDF in new window/tab
+        const newWindow = window.open(url, "_blank");
+
+        if (!newWindow) {
+          // Fallback: If popup is blocked, download the file
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `Shipment_Label_${orderDetails.docketNumber}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showSuccess("Shipment label downloaded successfully!");
+        } else {
+          showSuccess("Shipment label opened in new window!");
+        }
+
+        // Clean up the blob URL after a delay
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 1000);
+      } else {
+        // Handle JSON response with FileUrl
+        const result = await response.json();
+
+        // Check if we have the expected response structure
+        if (result.data && result.data.FileUrl) {
+          // Extract FileUrl from API response
+          const fileUrl = result.data.FileUrl;
+
+          // Open label PDF directly from S3 URL
+          const newWindow = window.open(fileUrl, "_blank");
+
+          if (!newWindow) {
+            // Fallback: If popup is blocked, try to download the file
+            try {
+              const link = document.createElement("a");
+              link.href = fileUrl;
+              link.target = "_blank";
+              link.download = `Shipment_Label_${
+                result.data.AwbNo || orderDetails.docketNumber
+              }.pdf`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              showSuccess("Shipment label download initiated!");
+            } catch {
+              // If download fails, show the URL to user
+              showError(
+                `Please copy this URL to download the label: ${fileUrl}`
+              );
+            }
+          } else {
+            showSuccess("Shipment label opened in new window!");
+          }
+        } else if (result.data && result.data.ResponseStatus) {
+          // Handle response with ResponseStatus structure
+          const responseStatus = result.data.ResponseStatus;
+
+          if (responseStatus.Message === "Success" && result.data.FileUrl) {
+            // Success case with FileUrl
+            const fileUrl = result.data.FileUrl;
+            const newWindow = window.open(fileUrl, "_blank");
+
+            if (!newWindow) {
+              try {
+                const link = document.createElement("a");
+                link.href = fileUrl;
+                link.target = "_blank";
+                link.download = `Shipment_Label_${
+                  result.data.AwbNo || orderDetails.docketNumber
+                }.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showSuccess("Shipment label download initiated!");
+              } catch {
+                showError(
+                  `Please copy this URL to download the label: ${fileUrl}`
+                );
+              }
+            } else {
+              showSuccess("Shipment label opened successfully!");
+            }
+          } else if (responseStatus.ErrorCode) {
+            // Error in response
+            showError(
+              responseStatus.Message || "Failed to generate shipment label"
+            );
+          } else {
+            showError("Shipment label URL not found in response");
+          }
+        } else if (result.info && result.info.message) {
+          // Handle standard API response format
+          showError(result.info.message);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      }
+    } catch (error) {
+      console.error("Error generating shipment label:", error);
+      showError(
+        `Failed to generate shipment label: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. Please try again.`
+      );
+    }
+  };
+
   // Helper function to determine if transaction is intra-state
   const isIntraState = (customerState?: string): boolean => {
     const companyState = "Maharashtra"; // Your company's state
@@ -1130,19 +1369,6 @@ const OrderDetailsContent: React.FC = () => {
     >
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
-        {/* Back Button */}
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => router.back()}
-          sx={{
-            mb: 2,
-            color: "text.secondary",
-            "&:hover": { color: "primary.main" },
-          }}
-        >
-          Back to Orders
-        </Button>
-
         {/* Breadcrumbs */}
         <Breadcrumbs
           separator={<NavigateNext fontSize="small" />}
@@ -1225,6 +1451,24 @@ const OrderDetailsContent: React.FC = () => {
             >
               View Invoice
             </Button>
+            {/* {isAdmin() && orderDetails.docketNumber && ( */}
+            <Button
+              variant="outlined"
+              startIcon={<Print />}
+              onClick={handleDownloadShipmentLabel}
+              sx={{
+                display: { xs: "none", sm: "flex" },
+                borderColor: "warning.main",
+                color: "warning.main",
+                "&:hover": {
+                  borderColor: "warning.dark",
+                  backgroundColor: "warning.50",
+                },
+              }}
+            >
+              Shipment Label
+            </Button>
+            {/* )} */}
           </Box>
         </Box>
 
@@ -1274,6 +1518,45 @@ const OrderDetailsContent: React.FC = () => {
                 </Typography>
               </Box>
             )}
+        </Box>
+
+        {/* Mobile Action Buttons */}
+        <Box
+          sx={{
+            display: { xs: "flex", sm: "none" },
+            gap: 1,
+            mb: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={handleDownloadInvoice}
+            size="small"
+            fullWidth={isMobile}
+          >
+            View Invoice
+          </Button>
+          {isAdmin() && orderDetails.docketNumber && (
+            <Button
+              variant="outlined"
+              startIcon={<Print />}
+              onClick={handleDownloadShipmentLabel}
+              size="small"
+              fullWidth={isMobile}
+              sx={{
+                borderColor: "warning.main",
+                color: "warning.main",
+                "&:hover": {
+                  borderColor: "warning.dark",
+                  backgroundColor: "warning.50",
+                },
+              }}
+            >
+              Shipment Label
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -1346,65 +1629,342 @@ const OrderDetailsContent: React.FC = () => {
               <Typography variant="h6" fontWeight="600" color="primary.main">
                 Detailed Timeline
               </Typography>
+              {trackingLoading && (
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}
+                >
+                  <Skeleton variant="circular" width={16} height={16} />
+                  <Typography variant="caption" color="text.secondary">
+                    Loading tracking data...
+                  </Typography>
+                </Box>
+              )}
+              {shipmentTracking && (
+                <Chip
+                  label="Real-time tracking"
+                  size="small"
+                  color="success"
+                  variant="outlined"
+                  sx={{ ml: 2 }}
+                />
+              )}
             </Box>
           </AccordionSummary>
           <AccordionDetails>
+            {shipmentTracking && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: "primary.50", borderRadius: 1 }}>
+                <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 1 }}>
+                  📦 Current Shipment Status
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Current Location:{" "}
+                      <strong>
+                        {shipmentTracking.lstDetails?.[0]?.CURRENT_CITY ||
+                          shipmentTracking.summaryTrack?.CURRENT_CITY ||
+                          "In Transit"}
+                      </strong>
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Status:{" "}
+                      <strong>
+                        {shipmentTracking.lstDetails?.[0]?.CURRENT_STATUS ||
+                          shipmentTracking.summaryTrack?.CURRENT_STATUS ||
+                          "Processing"}
+                      </strong>
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Tracking Code:{" "}
+                      <strong>
+                        {shipmentTracking.lstDetails?.[0]?.TRACKING_CODE ||
+                          shipmentTracking.summaryTrack?.TRACKING_CODE ||
+                          orderDetails.trackingNumber}
+                      </strong>
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Last Update:{" "}
+                      <strong>
+                        {shipmentTracking.lstDetails?.[0]
+                          ? `${shipmentTracking.lstDetails[0].EVENTDATE} ${shipmentTracking.lstDetails[0].EVENTTIME}`
+                          : shipmentTracking.summaryTrack?.EVENTDATE ||
+                            "Check back later"}
+                      </strong>
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
             <List>
-              {orderDetails.timeline.map((event, index) => (
-                <ListItem key={index} sx={{ pl: 0 }}>
-                  <ListItemIcon>
-                    <Box
-                      sx={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        backgroundColor: "primary.main",
-                      }}
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
+              {orderDetails.timeline.map((event, index) => {
+                // Check if this is a real tracking event vs estimated event
+                const isRealTrackingEvent = shipmentTracking?.lstDetails?.some(
+                  (detail) => detail.CURRENT_STATUS === event.status
+                );
+
+                return (
+                  <ListItem key={index} sx={{ pl: 0 }}>
+                    <ListItemIcon>
                       <Box
                         sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 0.5,
+                          width: 12,
+                          height: 12,
+                          borderRadius: "50%",
+                          backgroundColor: isRealTrackingEvent
+                            ? "success.main"
+                            : index === 0
+                            ? "primary.main"
+                            : "grey.400",
+                          border: isRealTrackingEvent ? "2px solid" : "none",
+                          borderColor: isRealTrackingEvent
+                            ? "success.light"
+                            : "none",
                         }}
-                      >
-                        <Typography variant="body1" fontWeight="600">
-                          {event.status}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {(() => {
-                            const formatted = formatDateTime(event.timestamp);
-                            return typeof formatted === "object"
-                              ? `${formatted.date} ${formatted.time}`
-                              : formatted;
-                          })()}
-                        </Typography>
-                      </Box>
-                    }
-                    secondary={
-                      <Stack spacing={0.5}>
-                        <Typography variant="body2" color="text.secondary">
-                          {event.description}
-                        </Typography>
-                        {event.location && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ fontStyle: "italic" }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 0.5,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
                           >
-                            📍 {event.location}
+                            <Typography
+                              variant="body1"
+                              fontWeight="600"
+                              color={
+                                isRealTrackingEvent
+                                  ? "success.main"
+                                  : "text.primary"
+                              }
+                            >
+                              {event.status}
+                            </Typography>
+                            {isRealTrackingEvent && (
+                              <Chip
+                                label="Live"
+                                size="small"
+                                color="success"
+                                variant="filled"
+                                sx={{ height: 18, fontSize: "0.7rem" }}
+                              />
+                            )}
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {(() => {
+                              const formatted = formatDateTime(event.timestamp);
+                              return typeof formatted === "object"
+                                ? `${formatted.date} ${formatted.time}`
+                                : formatted;
+                            })()}
                           </Typography>
-                        )}
-                      </Stack>
-                    }
-                  />
-                </ListItem>
-              ))}
+                        </Box>
+                      }
+                      secondary={
+                        <Stack spacing={0.5}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              fontWeight: isRealTrackingEvent ? 500 : 400,
+                              color: isRealTrackingEvent
+                                ? "text.primary"
+                                : "text.secondary",
+                            }}
+                          >
+                            {event.description}
+                          </Typography>
+                          {event.location && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                fontStyle: "italic",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              📍 {event.location}
+                              {isRealTrackingEvent && (
+                                <Typography
+                                  component="span"
+                                  variant="caption"
+                                  color="success.main"
+                                  sx={{ fontWeight: 600, ml: 1 }}
+                                >
+                                  (Real-time update)
+                                </Typography>
+                              )}
+                            </Typography>
+                          )}
+                        </Stack>
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
             </List>
+
+            {/* Detailed Shipment Information */}
+            {shipmentTracking?.summaryTrack && (
+              <Box sx={{ mt: 3, mb: 2 }}>
+                <Divider sx={{ mb: 2 }} />
+                <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 2 }}>
+                  📋 Detailed Shipment Information
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      AWB Number
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {shipmentTracking.summaryTrack.AWBNO}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Origin
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {shipmentTracking.summaryTrack.ORIGIN}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Destination
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {shipmentTracking.summaryTrack.DESTINATION}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Service Type
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {shipmentTracking.summaryTrack.SERVICE_TYPE} -{" "}
+                      {shipmentTracking.summaryTrack.PRODUCT}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Booking Date
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {shipmentTracking.summaryTrack.BOOKING_DATE}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Pieces
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {shipmentTracking.summaryTrack.NO_OF_PIECES} piece(s)
+                    </Typography>
+                  </Grid>
+                  {shipmentTracking.summaryTrack.NDR_REASON && (
+                    <Grid size={{ xs: 12 }}>
+                      <Typography variant="caption" color="error.main">
+                        NDR Reason
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight="500"
+                        color="error.main"
+                      >
+                        {shipmentTracking.summaryTrack.NDR_REASON}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+            )}
+
+            {/* Refresh Tracking Button */}
+            {orderDetails.docketNumber && (
+              <Box sx={{ mt: 2, textAlign: "center" }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={async () => {
+                    if (orderDetails.docketNumber) {
+                      const trackingData = await fetchShipmentTracking(
+                        orderDetails.docketNumber
+                      );
+                      if (trackingData) {
+                        setShipmentTracking(trackingData);
+                        // Update timeline with fresh tracking data
+                        const fetchOrderDetails = async () => {
+                          try {
+                            const accessToken = Cookies.get("access_token");
+                            const orderResponse = await fetch(
+                              `${process.env.NEXT_PUBLIC_API_URL}/checkout/order/${orderId}`,
+                              {
+                                method: "GET",
+                                headers: {
+                                  Authorization: `Bearer ${accessToken}`,
+                                  "Content-Type": "application/json",
+                                },
+                              }
+                            );
+                            const ordersResult = await orderResponse.json();
+                            if (
+                              ordersResult.info?.isSuccess &&
+                              ordersResult.data
+                            ) {
+                              const updatedTimeline = generateOrderTimeline(
+                                ordersResult.data,
+                                trackingData
+                              );
+                              setOrderDetails((prev) =>
+                                prev
+                                  ? { ...prev, timeline: updatedTimeline }
+                                  : null
+                              );
+                              showSuccess("Tracking information updated!");
+                            }
+                          } catch (error) {
+                            console.error("Error refreshing tracking:", error);
+                          }
+                        };
+                        fetchOrderDetails();
+                      } else {
+                        showError(
+                          "Unable to fetch latest tracking information"
+                        );
+                      }
+                    }
+                  }}
+                  disabled={trackingLoading}
+                  startIcon={
+                    trackingLoading ? (
+                      <Skeleton variant="circular" width={16} height={16} />
+                    ) : (
+                      <LocalShipping />
+                    )
+                  }
+                >
+                  {trackingLoading ? "Updating..." : "Refresh Tracking"}
+                </Button>
+              </Box>
+            )}
           </AccordionDetails>
         </Accordion>
       </Card>
@@ -1794,9 +2354,63 @@ const OrderDetailsContent: React.FC = () => {
                           </Box>
                         )}
 
+                      {/* Item Subtotal (before tax) */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          p: 1,
+                          bgcolor: "grey.100",
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          Item Subtotal:
+                        </Typography>
+                        <Typography variant="body2" fontWeight="600">
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
+                          {item.totalPrice.toFixed(2)}
+                        </Typography>
+                      </Box>
+
+                      {/* Tax (5% GST) */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          p: 1,
+                          bgcolor: "warning.50",
+                          border: "1px solid",
+                          borderColor: "warning.200",
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="warning.main"
+                          fontWeight="600"
+                        >
+                          GST (5%):
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          color="warning.main"
+                        >
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
+                          {(() => {
+                            const taxAmount =
+                              Math.round(item.totalPrice * 0.05 * 100) / 100;
+                            return taxAmount.toFixed(2);
+                          })()}
+                        </Typography>
+                      </Box>
+
                       <Divider sx={{ borderStyle: "dashed" }} />
 
-                      {/* Final Total */}
+                      {/* Final Total (including tax) */}
                       <Box
                         sx={{
                           display: "flex",
@@ -1809,11 +2423,16 @@ const OrderDetailsContent: React.FC = () => {
                         }}
                       >
                         <Typography variant="subtitle1" fontWeight="700">
-                          Item Total:
+                          Item Total (incl. GST):
                         </Typography>
                         <Typography variant="h6" fontWeight="700">
                           {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {item.totalPrice.toFixed(2)}
+                          {(() => {
+                            const taxAmount =
+                              Math.round(item.totalPrice * 0.05 * 100) / 100;
+                            const totalWithTax = item.totalPrice + taxAmount;
+                            return totalWithTax.toFixed(2);
+                          })()}
                         </Typography>
                       </Box>
 
@@ -1912,7 +2531,7 @@ const OrderDetailsContent: React.FC = () => {
                     }}
                   >
                     <Typography variant="body2" fontWeight="500">
-                      {orderDetails.trackingNumber}
+                      {orderDetails.docketNumber}
                     </Typography>
                     <IconButton
                       size="small"
