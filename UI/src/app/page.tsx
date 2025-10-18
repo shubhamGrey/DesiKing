@@ -14,6 +14,7 @@ import {
   useMediaQuery,
   IconButton,
   Skeleton,
+  Tooltip,
 } from "@mui/material";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
@@ -41,13 +42,22 @@ import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
-import { Category, FormattedCategory } from "@/types/product";
+import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
   return imageSrc.includes("cloud.agronexis.com");
 };
+
+// Interface for featured products UI display
+interface FeaturedProduct {
+  id: string;
+  title: string;
+  image: string;
+  description: string;
+  basePrice: number;
+}
 
 const achievements = [
   {
@@ -124,56 +134,7 @@ const chooseUs = [
   },
 ];
 
-const featuredProducts = [
-  {
-    id: 1,
-    title: "Lakhadong Turmeric Powder",
-    image: "/Lokadong Turmeric powder feature.jpg",
-    description: "Pure organic turmeric for health benefits.",
-    link: "/products/organic-turmeric",
-    basePrice: 149,
-  },
-  {
-    id: 2,
-    title: "Turmeric Powder",
-    image: "/Turmeric powder feature.jpg",
-    description: "Pure organic turmeric for health benefits.",
-    link: "/products/organic-turmeric",
-    basePrice: 129,
-  },
-  {
-    id: 3,
-    title: "Red Chili Powder",
-    image: "/Red chilli feature.jpg",
-    description: "Spicy and flavorful red chili powder.",
-    link: "/products/red-chili",
-    basePrice: 119,
-  },
-  {
-    id: 4,
-    title: "Garam Masala",
-    image: "/Garam masala feature.jpg",
-    description: "A blend of rich and aromatic spices.",
-    link: "/products/garam-masala",
-    basePrice: 179,
-  },
-  {
-    id: 5,
-    title: "Cumin seeds",
-    image: "/Jeera feature.jpg",
-    description: "Aromatic cumin for your dishes.",
-    link: "/products/cumin",
-    basePrice: 159,
-  },
-  {
-    id: 6,
-    title: "Black Pepper",
-    image: "/Kali mirch feature.jpg",
-    description: "Fresh and aromatic black pepper.",
-    link: "/products/black-pepper",
-    basePrice: 299,
-  },
-];
+// Featured products will be loaded from API
 
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -191,6 +152,10 @@ const Home: React.FC = () => {
   const [upcomingpProductCategories, setUpcomingpProductCategories] =
     React.useState<FormattedCategory[]>([]);
 
+  const [featuredProducts, setFeaturedProducts] = React.useState<
+    FeaturedProduct[]
+  >([]);
+
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
     string | null
@@ -203,7 +168,7 @@ const Home: React.FC = () => {
   }, []);
 
   const handleOrderNow = React.useCallback(
-    (product: any) => {
+    (product: FeaturedProduct) => {
       // Check if user is logged in using simple cookie check
       const accessToken = Cookies.get("access_token");
 
@@ -265,12 +230,59 @@ const Home: React.FC = () => {
   }, [selectedCategoryId]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/Category`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res): Promise<Category[]> => res.json())
-      .then((data: Category[]) => {
+    // Fetch featured products
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/Product`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const products: Product[] = await response.json();
+
+        // Filter products where isFeatured is true and map to FeaturedProduct interface
+        const featured: FeaturedProduct[] = products
+          .filter((product) => product.isFeatured && product.isActive)
+          .slice(0, 6) // Limit to 6 products for the UI
+          .map((product) => ({
+            id: product.id,
+            title: product.name,
+            image: product.imageUrls?.[0] ?? "/placeholder-image.jpg",
+            description: product.description,
+            basePrice: product.pricesAndSkus?.[0]?.price ?? 149,
+          }));
+
+        setFeaturedProducts(featured);
+      } catch (error) {
+        console.error("Error fetching featured products:", error);
+        // Keep empty array on error
+        setFeaturedProducts([]);
+      }
+    };
+
+    // Fetch categories
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/Category`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: Category[] = await response.json();
         const formattedActiveCategory: FormattedCategory[] = data
           .filter((cat) => cat.isActive)
           .sort((a, b) => a.name.localeCompare(b.name))
@@ -291,18 +303,24 @@ const Home: React.FC = () => {
 
         setProductCategories(formattedActiveCategory);
         setUpcomingpProductCategories(formattedUpcomingCategory);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching categories:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      }
+    };
+
+    // Execute both fetch operations
+    const fetchData = async () => {
+      await Promise.all([fetchFeaturedProducts(), fetchCategories()]);
+      setIsLoading(false);
+    };
+
+    fetchData();
 
     return () => {
       // Cleanup function if needed
       setProductCategories([]);
       setUpcomingpProductCategories([]);
+      setFeaturedProducts([]);
     };
   }, []);
 
@@ -491,12 +509,12 @@ const Home: React.FC = () => {
       >
         <Box
           sx={{
-            mt: isMobile ? 8 : 15,
+            mt: isMobile ? 4 : 8,
           }}
         >
           <Typography
             variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
+            sx={{ mb: isMobile ? 2 : 4, color: "primary.main" }}
             fontFamily={michroma.style.fontFamily}
             fontWeight={600}
             textAlign={isMobile ? "left" : "center"}
@@ -505,78 +523,110 @@ const Home: React.FC = () => {
           </Typography>
           <Grid
             container
-            columnSpacing={4}
-            rowSpacing={isMobile ? 4 : 8}
+            columnSpacing={isMobile ? 2 : 3}
+            rowSpacing={isMobile ? 3 : 4}
             sx={{
-              width: "70%",
+              width: isMobile ? "100%" : "80%",
               display: "flex",
               mx: "auto",
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "stretch",
             }}
           >
             {!isMobile ? (
-              featuredProducts.map((product) => (
+              featuredProducts.length > 0 ? (
+                featuredProducts.map((product) => (
+                  <Grid
+                    key={product.id}
+                    size={{ xs: 6, sm: 4, md: 4 }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "stretch",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        transition: "transform 0.3s ease-in-out",
+                        borderRadius: "8px",
+                        "&:hover": {
+                          transform: "scale(1.02)",
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height: "250px",
+                          mb: 2,
+                          overflow: "hidden",
+                          borderRadius: "8px",
+                          backgroundColor: "#f5f5f5",
+                        }}
+                      >
+                        <Image
+                          src={product.image}
+                          alt={product.title}
+                          fill
+                          unoptimized={shouldUnoptimizeImage(product.image)}
+                          style={{
+                            objectFit: "contain",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        size="large"
+                        sx={{
+                          color: "primary.main",
+                          border: "1px solid",
+                          borderColor: "primary.main",
+                          width: "100%",
+                          py: 1,
+                          cursor: "pointer",
+                          "&:hover": {
+                            color: "primary.contrastText",
+                            border: "1px solid",
+                            borderColor: "primary.main",
+                            backgroundColor: "primary.main",
+                          },
+                        }}
+                        onClick={() => {
+                          handleOrderNow(product);
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight={600}>
+                          Order Now
+                        </Typography>
+                      </Button>
+                    </Box>
+                  </Grid>
+                ))
+              ) : (
                 <Grid
-                  key={product.id}
-                  size={{ xs: 12, md: 4 }}
+                  size={{ xs: 12 }}
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "end",
+                    justifyContent: "center",
+                    py: 8,
                   }}
                 >
-                  <Box
-                    sx={{
-                      height: "fit-content",
-                      width: "100%",
-                      transition: "transform 0.3s ease-in-out",
-                      borderRadius: "8px",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
+                  <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    textAlign="center"
                   >
-                    <Image
-                      src={product.image}
-                      alt={product.title}
-                      width={200}
-                      height={200}
-                      unoptimized={shouldUnoptimizeImage(product.image)}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        borderRadius: "8px",
-                        marginBottom: "8px",
-                      }}
-                    />
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        color: "primary.main",
-                        border: "2px solid",
-                        borderColor: "primary.main",
-                        width: "100%",
-                        cursor: "pointer",
-                        "&:hover": {
-                          color: "primary.contrastText",
-                          border: "2px solid",
-                          borderColor: "primary.main",
-                          backgroundColor: "primary.main",
-                        },
-                      }}
-                      onClick={() => {
-                        handleOrderNow(product);
-                      }}
-                    >
-                      <Typography variant="body2" fontWeight={600}>
-                        Order Now
-                      </Typography>
-                    </Button>
-                  </Box>
+                    No featured products available at the moment.
+                  </Typography>
                 </Grid>
-              ))
+              )
             ) : (
               <Grid
                 size={{ xs: 12, md: 12 }}
@@ -586,81 +636,141 @@ const Home: React.FC = () => {
                   justifyContent: "center",
                 }}
               >
-                <Stack
-                  direction={"column"}
-                  spacing={4}
-                  height="100%"
-                  width="100%"
-                >
-                  {featuredProducts.map((product) => (
-                    <Stack
-                      key={product.id}
-                      direction={"row"}
-                      spacing={3}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        padding: 2,
-                        borderRadius: "8px",
-                        position: "relative",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <Grid container spacing={2}>
-                        <Grid size={{ xs: 4, md: 4 }}>
-                          <Image
-                            src={product.image}
-                            alt={product.title}
-                            width={100}
-                            height={100}
-                            unoptimized={shouldUnoptimizeImage(product.image)}
-                            style={{
-                              height: "100%",
-                              width: "100%",
-                              borderRadius: "8px",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 8, md: 8 }}>
-                          <Box>
-                            <Typography
-                              variant="h6"
-                              color="text.primary"
-                              sx={{ mb: 0.5 }}
-                            >
-                              {product.title}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ mb: 4 }}
-                            >
-                              {product.description}
-                            </Typography>
-                            <Button
-                              variant="contained"
-                              size="small"
+                {featuredProducts.length > 0 ? (
+                  <Stack
+                    direction={"column"}
+                    spacing={2}
+                    height="100%"
+                    width="100%"
+                  >
+                    {featuredProducts.map((product) => (
+                      <Stack
+                        key={product.id}
+                        direction={"row"}
+                        spacing={2}
+                        sx={{
+                          display: "flex",
+                          alignItems: "stretch",
+                          padding: 2,
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                          minHeight: "120px",
+                        }}
+                      >
+                        <Grid
+                          container
+                          spacing={1}
+                          sx={{ alignItems: "center" }}
+                        >
+                          <Grid size={{ xs: 4, md: 4 }}>
+                            <Box
                               sx={{
-                                backgroundClip: "primary.main",
-                                color: "primary.contrastText",
-                                position: "absolute",
-                                right: 16,
-                                bottom: 16,
-                                boxShadow: "none",
-                              }}
-                              onClick={() => {
-                                handleOrderNow(product);
+                                position: "relative",
+                                width: "100%",
+                                height: "100px",
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                                backgroundColor: "#f5f5f5",
                               }}
                             >
-                              Order Now
-                            </Button>
-                          </Box>
+                              <Image
+                                src={product.image}
+                                alt={product.title}
+                                fill
+                                unoptimized={shouldUnoptimizeImage(
+                                  product.image
+                                )}
+                                style={{
+                                  objectFit: "contain",
+                                  borderRadius: "8px",
+                                }}
+                              />
+                            </Box>
+                          </Grid>
+                          <Grid size={{ xs: 8, md: 8 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                height: "100%",
+                                justifyContent: "space-between",
+                                pl: 1,
+                              }}
+                            >
+                              <Box>
+                                <Typography
+                                  variant="subtitle2"
+                                  color="text.primary"
+                                  sx={{
+                                    mb: 0.5,
+                                    fontWeight: 600,
+                                    fontSize: "0.9rem",
+                                  }}
+                                >
+                                  {product.title}
+                                </Typography>
+                                <Tooltip
+                                  title={product.description}
+                                  arrow
+                                  placement="top"
+                                  enterDelay={500}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{
+                                      mb: 2,
+                                      display: "-webkit-box",
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: "vertical",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      cursor: "help",
+                                      lineHeight: 1.3,
+                                    }}
+                                  >
+                                    {product.description}
+                                  </Typography>
+                                </Tooltip>
+                              </Box>
+                              <Box>
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: "primary.main",
+                                    color: "primary.contrastText",
+                                    fontSize: "0.75rem",
+                                    py: 0.5,
+                                    px: 3,
+                                    boxShadow: "none",
+                                    "&:hover": {
+                                      backgroundColor: "primary.dark",
+                                    },
+                                  }}
+                                  onClick={() => {
+                                    handleOrderNow(product);
+                                  }}
+                                >
+                                  Order Now
+                                </Button>
+                              </Box>
+                            </Box>
+                          </Grid>
                         </Grid>
-                      </Grid>
-                    </Stack>
-                  ))}
-                </Stack>
+                      </Stack>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ py: 8 }}
+                  >
+                    No featured products available at the moment.
+                  </Typography>
+                )}
               </Grid>
             )}
           </Grid>

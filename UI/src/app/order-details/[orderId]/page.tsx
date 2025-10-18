@@ -173,6 +173,49 @@ interface OrderTimeline {
   location?: string;
 }
 
+// Shipment Tracking Interfaces
+interface ShipmentSummary {
+  awbNo: string;
+  refNo: string;
+  bookingDate: string;
+  origin: string;
+  destination: string;
+  product: string;
+  serviceType: string;
+  currentStatus: string;
+  currentCity: string;
+  eventDate: string;
+  eventTime: string;
+  trackingCode: string;
+  ndrReason?: string;
+}
+
+interface TrackingDetail {
+  currentCity: string;
+  currentStatus: string;
+  eventDate: string;
+  eventTime: string;
+  trackingCode: string;
+}
+
+interface ShipmentTrackingData {
+  summaryTrack: ShipmentSummary;
+  lstDetails: TrackingDetail[];
+  responseStatus: {
+    status: string;
+    message: string;
+  };
+}
+
+interface ShipmentLabelData {
+  awbNo: string;
+  fileUrl: string;
+  responseStatus: {
+    status: string;
+    message: string;
+  };
+}
+
 interface OrderDetails {
   id: string;
   orderNumber: string;
@@ -285,7 +328,10 @@ const getReturnPolicyEndDate = (createdDate: string): string => {
   return addDays(createdDate, 15); // 15 days return policy
 };
 
-const generateOrderTimeline = (order: any) => {
+const generateOrderTimeline = (
+  order: any,
+  shipmentData?: ShipmentTrackingData
+) => {
   const timeline = [
     {
       status: "Order Placed",
@@ -294,6 +340,29 @@ const generateOrderTimeline = (order: any) => {
       location: "Online",
     },
   ];
+
+  // Add shipment tracking details to timeline if available
+  if (shipmentData?.lstDetails && shipmentData.lstDetails.length > 0) {
+    // Add shipment tracking events, sorted by event date (most recent first)
+    const sortedShipmentEvents = [...shipmentData.lstDetails].sort((a, b) => {
+      const dateA = new Date(`${a.eventDate} ${a.eventTime}`);
+      const dateB = new Date(`${b.eventDate} ${b.eventTime}`);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // Insert shipment events after order placed
+    sortedShipmentEvents.forEach((event, index) => {
+      const eventDateTime = `${event.eventDate} ${event.eventTime}`;
+      timeline.push({
+        status: event.currentStatus || "Shipment Update",
+        timestamp: eventDateTime,
+        description: `Package ${
+          event.currentStatus?.toLowerCase() || "status updated"
+        }`,
+        location: event.currentCity || "In Transit",
+      });
+    });
+  }
 
   if (order.status === "paid") {
     timeline.push(
@@ -363,6 +432,15 @@ const OrderDetailsContent: React.FC = () => {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
 
+  // Shipment tracking state
+  const [shipmentData, setShipmentData] = useState<ShipmentTrackingData | null>(
+    null
+  );
+  const [shipmentLoading, setShipmentLoading] = useState(false);
+  const [shipmentError, setShipmentError] = useState<string | null>(null);
+  const [labelData, setLabelData] = useState<ShipmentLabelData | null>(null);
+  const [labelLoading, setLabelLoading] = useState(false);
+
   const orderId = params?.orderId as string;
 
   // Fetch product details function (similar to profile page)
@@ -390,6 +468,156 @@ const OrderDetailsContent: React.FC = () => {
     } catch (error) {
       console.error(`Error fetching product ${productId}:`, error);
       return null;
+    }
+  };
+
+  // Shipment tracking functions
+  const fetchShipmentTracking = async (
+    awbNo: string
+  ): Promise<ShipmentTrackingData | null> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/shipment/track/${awbNo}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to track shipment: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.info?.code === "200" && result.data) {
+        // Map backend response to frontend interface
+        return {
+          summaryTrack: {
+            awbNo: result.data.summaryTrack?.awbno || awbNo,
+            refNo: result.data.summaryTrack?.ref_no || "",
+            bookingDate: result.data.summaryTrack?.booking_date || "",
+            origin: result.data.summaryTrack?.origin || "",
+            destination: result.data.summaryTrack?.destination || "",
+            product: result.data.summaryTrack?.product || "",
+            serviceType: result.data.summaryTrack?.service_type || "",
+            currentStatus: result.data.summaryTrack?.current_status || "",
+            currentCity: result.data.summaryTrack?.current_city || "",
+            eventDate: result.data.summaryTrack?.eventdate || "",
+            eventTime: result.data.summaryTrack?.eventtime || "",
+            trackingCode: result.data.summaryTrack?.tracking_code || "",
+            ndrReason: result.data.summaryTrack?.ndr_reason || "",
+          },
+          lstDetails:
+            result.data.lstDetails?.map((detail: any) => ({
+              currentCity: detail.current_city || "",
+              currentStatus: detail.current_status || "",
+              eventDate: detail.eventdate || "",
+              eventTime: detail.eventtime || "",
+              trackingCode: detail.tracking_code || "",
+            })) || [],
+          responseStatus: result.data.responseStatus || {
+            status: "success",
+            message: "Success",
+          },
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error tracking shipment ${awbNo}:`, error);
+      throw error;
+    }
+  };
+
+  const fetchShipmentLabel = async (
+    awbNo: string
+  ): Promise<ShipmentLabelData | null> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/shipment/label/${awbNo}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to generate shipment label: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      if (result.info?.code === "200" && result.data) {
+        return {
+          awbNo: result.data.awbNo || awbNo,
+          fileUrl: result.data.fileUrl || "",
+          responseStatus: result.data.responseStatus || {
+            status: "success",
+            message: "Success",
+          },
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error generating shipment label ${awbNo}:`, error);
+      throw error;
+    }
+  };
+
+  // Load shipment tracking data
+  const loadShipmentData = async (trackingNumber: string) => {
+    try {
+      setShipmentLoading(true);
+      setShipmentError(null);
+
+      const trackingData = await fetchShipmentTracking(trackingNumber);
+      if (trackingData) {
+        setShipmentData(trackingData);
+      }
+    } catch (error) {
+      console.error("Error loading shipment data:", error);
+      setShipmentError("Failed to load shipment tracking information");
+    } finally {
+      setShipmentLoading(false);
+    }
+  };
+
+  // Generate shipment label
+  const generateShipmentLabel = async (trackingNumber: string) => {
+    try {
+      setLabelLoading(true);
+
+      const labelResult = await fetchShipmentLabel(trackingNumber);
+      if (labelResult?.fileUrl) {
+        setLabelData(labelResult);
+
+        // Open label in new window
+        const newWindow = window.open(labelResult.fileUrl, "_blank");
+        if (!newWindow) {
+          // Fallback: create download link
+          const link = document.createElement("a");
+          link.href = labelResult.fileUrl;
+          link.download = `shipment-label-${trackingNumber}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+
+        showSuccess("Shipment label generated successfully");
+      } else {
+        showError("Failed to generate shipment label");
+      }
+    } catch (error) {
+      console.error("Error generating shipment label:", error);
+      showError("Failed to generate shipment label");
+    } finally {
+      setLabelLoading(false);
     }
   };
 
@@ -564,7 +792,9 @@ const OrderDetailsContent: React.FC = () => {
             expectedDeliveryDate: getExpectedDeliveryDate(
               specificOrder.createdDate
             ),
-            trackingNumber: `DK${specificOrder.id.slice(-8).toUpperCase()}`,
+            trackingNumber:
+              specificOrder.docketNumber ||
+              `DK${specificOrder.id.slice(-8).toUpperCase()}`,
             courierCompany: "DesiKing Express Delivery",
             courierPhone: "+91-1800-DESI-KING",
             deliveryAgent: "Assigned Delivery Partner",
@@ -671,11 +901,19 @@ const OrderDetailsContent: React.FC = () => {
                 specificOrder.totalAmount,
               status: specificOrder.transaction?.status || "Pending",
             },
-            timeline: generateOrderTimeline(specificOrder),
+            timeline: generateOrderTimeline(
+              specificOrder,
+              shipmentData || undefined
+            ),
             items: itemsData,
           };
 
           setOrderDetails(mappedOrderDetails);
+
+          // Load shipment tracking data if tracking number is available
+          if (mappedOrderDetails.trackingNumber) {
+            loadShipmentData(mappedOrderDetails.trackingNumber);
+          }
         } else {
           throw new Error(
             ordersResult.info?.message || "Failed to fetch order data"
@@ -942,21 +1180,33 @@ const OrderDetailsContent: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Handle PDF download
+      // Handle PDF by opening in new window
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
-        /\//g,
-        "_"
-      )}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
 
-      showSuccess("GST-compliant invoice downloaded successfully!");
+      // Open PDF in new window/tab
+      const newWindow = window.open(url, "_blank");
+
+      if (!newWindow) {
+        // Fallback: If popup is blocked, download the file
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
+          /\//g,
+          "_"
+        )}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showSuccess("GST-compliant invoice downloaded successfully!");
+      } else {
+        showSuccess("GST-compliant invoice opened in new window!");
+      }
+
+      // Clean up the blob URL after a delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
     } catch (error) {
       console.error("Error generating GST invoice:", error);
       showError(
@@ -1015,10 +1265,6 @@ const OrderDetailsContent: React.FC = () => {
     };
 
     return stateCodes[stateName || "Maharashtra"] || "27";
-  };
-
-  const handleTrackOrder = () => {
-    setTrackingDialogOpen(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -1169,14 +1415,16 @@ const OrderDetailsContent: React.FC = () => {
               </IconButton>
             </Box>
           </Box>
-          <Button
-            variant="outlined"
-            startIcon={<TrackChanges />}
-            onClick={handleTrackOrder}
-            sx={{ display: { xs: "none", sm: "flex" } }}
-          >
-            Track Order
-          </Button>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Button
+              variant="outlined"
+              startIcon={<Download />}
+              onClick={handleDownloadInvoice}
+              sx={{ display: { xs: "none", sm: "flex" } }}
+            >
+              View Invoice
+            </Button>
+          </Box>
         </Box>
 
         {/* Status and Actions */}
@@ -1388,7 +1636,7 @@ const OrderDetailsContent: React.FC = () => {
             >
               <Grid container spacing={3} alignItems="center">
                 {/* Product Image */}
-                <Grid size={{ xs: 12, sm: 2 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Avatar
                     src={item.productImage}
                     variant="rounded"
@@ -1435,7 +1683,7 @@ const OrderDetailsContent: React.FC = () => {
                 </Grid>
 
                 {/* Quantity and Price */}
-                <Grid size={{ xs: 12, sm: 2 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Box sx={{ textAlign: { xs: "left", sm: "center" } }}>
                     <Typography
                       variant="body2"
@@ -1450,7 +1698,7 @@ const OrderDetailsContent: React.FC = () => {
                   </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 2 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Box sx={{ textAlign: { xs: "left", sm: "right" } }}>
                     <Typography
                       variant="body2"
@@ -1981,60 +2229,6 @@ const OrderDetailsContent: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
-
-      {/* Tracking Dialog */}
-      <Dialog
-        open={trackingDialogOpen}
-        onClose={() => setTrackingDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TrackChanges color="primary" />
-            Order Tracking Details
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Tracking Number
-              </Typography>
-              <Typography variant="h6">
-                {orderDetails.trackingNumber}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Current Status
-              </Typography>
-              <Chip
-                label={orderDetails.status}
-                color={getStatusColor(orderDetails.status) as any}
-                icon={<LocalShipping />}
-              />
-            </Box>
-            {orderDetails.expectedDeliveryDate &&
-              orderDetails.status !== "Delivered" && (
-                <Alert severity="info">
-                  Expected delivery by{" "}
-                  {(() => {
-                    const formatted = formatDateTime(
-                      orderDetails.expectedDeliveryDate
-                    );
-                    return typeof formatted === "object"
-                      ? `${formatted.date} at ${formatted.time}`
-                      : formatted;
-                  })()}
-                </Alert>
-              )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTrackingDialogOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Help Dialog */}
       <Dialog

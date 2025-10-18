@@ -134,7 +134,7 @@ const ProductDetails = ({
       price: skuData.price,
       image:
         typeof selectedProduct.imageUrls?.[0] === "string"
-          ? selectedProduct.imageUrls?.[0]
+          ? selectedProduct.imageUrls[0]
           : "/ProductBackground.png", // Fallback to default product image
       productId: selectedProduct.id,
       brandId: selectedProduct.brandId ?? "",
@@ -150,45 +150,49 @@ const ProductDetails = ({
   };
 
   return (
-    <Grid container spacing={8}>
+    <Grid container spacing={isMobile ? 4 : 8}>
       {/* Product Images Section */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Stack
-          direction="row"
+          direction="column"
           spacing={2}
           sx={{
-            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
+            justifyContent: "flex-start",
             width: "100%",
-            height: isMobile ? "400px" : "600px",
+            minHeight: isMobile ? "auto" : "600px",
           }}
           component={ProductImageContainer}
         >
-          <Box sx={{ height: "100%", width: "100%", mb: "80px !important" }}>
+          <Box
+            sx={{
+              height: isMobile ? "350px" : "500px",
+              width: "100%",
+              position: "relative",
+              backgroundColor: "#f5f5f5",
+              borderRadius: "8px",
+              overflow: "hidden",
+              mb: 2,
+            }}
+          >
             <Image
               src={
                 typeof selectedProduct?.imageUrls?.[currentImage] === "string"
-                  ? selectedProduct?.imageUrls?.[currentImage]
-                  : ""
+                  ? selectedProduct.imageUrls[currentImage]
+                  : "/ProductBackground.png"
               }
               alt={`Product Image ${currentImage + 1}`}
-              height={isMobile ? 300 : 500}
-              width={isMobile ? 300 : 500}
+              fill
               unoptimized={
                 typeof selectedProduct?.imageUrls?.[currentImage] ===
                   "string" &&
-                selectedProduct?.imageUrls?.[currentImage].includes(
+                selectedProduct.imageUrls[currentImage].includes(
                   "cloud.agronexis.com"
                 )
               }
               style={{
                 borderRadius: 8,
-                objectFit: "cover",
-                position: "relative",
-                height: "95%",
-                width: "100%",
+                objectFit: "contain",
               }}
             />
           </Box>
@@ -196,27 +200,39 @@ const ProductDetails = ({
             display="flex"
             flexDirection="row"
             gap={1}
-            sx={{ position: "absolute", bottom: 0 }}
+            sx={{
+              justifyContent: "center",
+              flexWrap: "wrap",
+              maxWidth: "100%",
+            }}
           >
             {selectedProduct?.imageUrls?.map((image, index) => (
               <Box
-                key={`thumbnail-${image}-${index}`}
+                key={`thumbnail-${index}`}
                 onClick={() => handleImageChange(index)}
                 sx={{
                   border: "2px solid",
                   borderColor:
                     currentImage === index ? "primary.main" : "transparent",
                   cursor: "pointer",
+                  borderRadius: "4px",
+                  overflow: "hidden",
+                  position: "relative",
+                  width: isMobile ? "50px" : "60px",
+                  height: isMobile ? "50px" : "60px",
+                  backgroundColor: "#f5f5f5",
+                  flexShrink: 0,
                 }}
               >
                 <Image
-                  src={typeof image === "string" ? image : ""}
+                  src={
+                    typeof image === "string" ? image : "/ProductBackground.png"
+                  }
                   alt={`Thumbnail ${index + 1}`}
-                  width={60}
-                  height={60}
+                  fill
                   unoptimized={
                     typeof image === "string" &&
-                    image?.includes("cloud.agronexis.com")
+                    image.includes("cloud.agronexis.com")
                   }
                   style={{ objectFit: "contain" }}
                 />
@@ -233,10 +249,15 @@ const ProductDetails = ({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
+          mt: isMobile ? 2 : 0,
         }}
       >
         <Box>
-          <Typography variant="body1" sx={{ my: 2 }} color="text.main">
+          <Typography
+            variant="body1"
+            sx={{ my: isMobile ? 1 : 2 }}
+            color="text.main"
+          >
             [{selectedProduct?.categoryName}]
           </Typography>
           <Box>
@@ -245,7 +266,7 @@ const ProductDetails = ({
               spacing={2}
               alignItems="start"
               justifyContent={"center"}
-              sx={{ mb: 12 }}
+              sx={{ mb: isMobile ? 6 : 12 }}
             >
               <Typography
                 variant="h5"

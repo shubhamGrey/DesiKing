@@ -155,7 +155,13 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 
   return (
     <>
-      <Container sx={{ m: 6, justifySelf: "center" }}>
+      <Container
+        sx={{
+          m: { xs: 2, md: 6 },
+          px: { xs: 2, md: 3 },
+          justifySelf: "center",
+        }}
+      >
         <ProductDetails selectedProduct={selectedProduct} />
         <AdditionalDetails selectedProduct={selectedProduct} />
       </Container>
@@ -168,7 +174,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
         }}
       >
         <Typography
-          variant="h4"
+          variant="h5"
           sx={{
             textAlign: "center",
             mb: 4,

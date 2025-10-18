@@ -208,22 +208,28 @@ const AdditionalDetails = ({
       return renderNutritionalInfo();
     }
 
+    // Enhanced scroll container for key features
+    const maxHeight = isMobile ? "325px" : "276px";
+
     return (
       <Box
         sx={{
           p: isMobile ? 1 : 1.5,
-          maxHeight: "400px", // Limit height to approximately 3 rows
-          overflowY: "auto", // Add vertical scroll
+          maxHeight: maxHeight,
+          overflowY: "auto",
+          overflowX: "hidden",
+          scrollBehavior: "smooth",
+          position: "relative",
           "&::-webkit-scrollbar": {
-            width: "4px",
+            width: sectionId === "keyFeatures" ? "6px" : "4px",
           },
           "&::-webkit-scrollbar-track": {
             backgroundColor: "grey.100",
-            borderRadius: "2px",
+            borderRadius: "3px",
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "primary.main",
-            borderRadius: "2px",
+            borderRadius: "3px",
             "&:hover": {
               backgroundColor: "primary.dark",
             },
@@ -232,7 +238,7 @@ const AdditionalDetails = ({
       >
         {isMobile ? (
           // Mobile: Simple list
-          <Box>
+          <Box sx={{ position: "relative" }}>
             {items.map((item, index) => (
               <Typography
                 key={`${sectionId}-mobile-${index}-${item.slice(0, 10)}`}
@@ -254,47 +260,49 @@ const AdditionalDetails = ({
           </Box>
         ) : (
           // Desktop: Enhanced grid layout
-          <Grid container spacing={1.5}>
-            {items.map((item, index) => (
-              <Grid
-                key={`${sectionId}-desktop-${index}-${item.slice(0, 10)}`}
-                size={12}
-              >
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 1.5,
-                    backgroundColor: "grey.50",
-                    borderLeft: "4px solid",
-                    borderLeftColor: "primary.main",
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      backgroundColor: "grey.100",
-                      transform: "translateX(4px)",
-                    },
-                  }}
+          <Box sx={{ position: "relative" }}>
+            <Grid container spacing={1.5}>
+              {items.map((item, index) => (
+                <Grid
+                  key={`${sectionId}-desktop-${index}-${item.slice(0, 10)}`}
+                  size={12}
                 >
-                  <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-                    <CheckCircle
-                      sx={{
-                        color: "primary.main",
-                        mr: 1.2,
-                        mt: 0.1,
-                        fontSize: 18,
-                      }}
-                    />
-                    <Typography
-                      variant="body1"
-                      color="text.primary"
-                      sx={{ lineHeight: 1.5, fontSize: "0.9rem" }}
-                    >
-                      {item}
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: "grey.50",
+                      borderLeft: "4px solid",
+                      borderLeftColor: "primary.main",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        backgroundColor: "grey.100",
+                        transform: "translateX(4px)",
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                      <CheckCircle
+                        sx={{
+                          color: "primary.main",
+                          mr: 1.2,
+                          mt: 0.1,
+                          fontSize: 18,
+                        }}
+                      />
+                      <Typography
+                        variant="body1"
+                        color="text.primary"
+                        sx={{ lineHeight: 1.5, fontSize: "0.9rem" }}
+                      >
+                        {item}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         )}
       </Box>
     );
@@ -323,9 +331,9 @@ const AdditionalDetails = ({
                 flexDirection: "column",
                 "&:hover": !isMobile
                   ? {
-                    elevation: 4,
-                    transform: "translateY(-2px)",
-                  }
+                      elevation: 4,
+                      transform: "translateY(-2px)",
+                    }
                   : {},
               }}
             >
@@ -339,7 +347,7 @@ const AdditionalDetails = ({
                   display: "flex",
                   flexDirection: "column",
                 }}
-              // Remove onChange to prevent toggle
+                // Remove onChange to prevent toggle
               >
                 <AccordionSummary
                   expandIcon={null} // Remove expand icon since it's always open
@@ -395,7 +403,7 @@ const AdditionalDetails = ({
                     ) &&
                     renderFeaturesList(
                       selectedProduct[
-                      section.id as "keyFeatures" | "uses"
+                        section.id as "keyFeatures" | "uses"
                       ] as string[],
                       section.id
                     )}
