@@ -16,6 +16,7 @@ namespace Agronexis.Model.ResponseModel
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
         public string? Currency { get; set; }
+        public string? DocketNumber { get; set; }
         public DateTime? CreatedDate { get; set; }
         public List<OrderItemResponseModel> OrderItems { get; set; } = [];
         public TransactionResponseModel? Transaction { get; set; }

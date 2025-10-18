@@ -45,6 +45,7 @@ namespace Agronexis.Business.Configurations
         string SaveOrUpdateAddress(AddressRequestModel address, string correlationId);
         string DeleteAddressById(string id, string correlationId);
         List<OrderByUserResponseModel> GetOrdersByUserId(string userId, string correlationId);
+        OrderByUserResponseModel GetOrderId(string orderId, string correlationId);
         Task<AnalyticsResponseModel> ProcessAnalyticsEvents(AnalyticsPayloadRequest payload, string xCorrelationId);
         Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId);
 
