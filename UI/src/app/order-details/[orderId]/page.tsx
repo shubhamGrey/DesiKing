@@ -44,7 +44,6 @@ import {
   CheckCircle,
   Schedule,
   Download,
-  Star,
   ArrowBack,
   ContentCopy,
   Phone,
@@ -225,12 +224,6 @@ interface OrderDetails {
   deliveredDate?: string;
   expectedDeliveryDate?: string;
   trackingNumber?: string;
-  courierCompany?: string;
-  courierPhone?: string;
-  deliveryAgent?: string;
-  deliveryAgentPhone?: string;
-  shippingMethod?: string;
-  deliveryInstructions?: string;
   totalAmount: number;
   subtotal: number;
   shippingCharges: number;
@@ -618,13 +611,6 @@ const OrderDetailsContent: React.FC = () => {
             trackingNumber:
               specificOrder.docketNumber ||
               `DK${specificOrder.id.slice(-8).toUpperCase()}`,
-            courierCompany: "DesiKing Express Delivery",
-            courierPhone: "+91-1800-DESI-KING",
-            deliveryAgent: "Assigned Delivery Partner",
-            deliveryAgentPhone: "+91-98765-43210",
-            shippingMethod: "Standard Delivery",
-            deliveryInstructions:
-              "Please call before delivery. Ring the doorbell.",
             subtotal: subtotal, // Final subtotal after discounts
             shippingCharges: 0, // Free shipping
             discount: totalDiscountAmount, // Total discount amount
@@ -1443,301 +1429,428 @@ const OrderDetailsContent: React.FC = () => {
             <Box
               key={item.id}
               sx={{
-                p: 3,
+                p: { xs: 2, sm: 3 },
                 borderBottom:
                   index < orderDetails.items.length - 1 ? "1px solid" : "none",
                 borderColor: "divider",
               }}
             >
-              <Grid container spacing={3} alignItems="center">
-                {/* Product Image */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Avatar
-                    src={item.productImage}
-                    variant="rounded"
+              <Grid container spacing={3}>
+                {/* Left Side - Product Details */}
+                <Grid size={{ xs: 12, md: 7 }}>
+                  <Box
                     sx={{
-                      width: { xs: 100, sm: 80 },
-                      height: { xs: 100, sm: 80 },
-                      bgcolor: "grey.100",
+                      display: "flex",
+                      gap: 2,
+                      p: 2,
                       border: "1px solid",
                       borderColor: "divider",
+                      borderRadius: 2,
+                      backgroundColor: "background.paper",
+                      height: "100%",
                     }}
                   >
-                    <Inventory2 />
-                  </Avatar>
-                </Grid>
-
-                {/* Product Details */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="h6" fontWeight="600" sx={{ mb: 1 }}>
-                    {item.productName}
-                  </Typography>
-                  <Stack spacing={0.5}>
-                    <Typography variant="body2" color="text.secondary">
-                      Brand: {item.brandName}
-                    </Typography>
-                    {item.weight && (
-                      <Typography variant="body2" color="text.secondary">
-                        Weight: {item.weight}
-                      </Typography>
-                    )}
-                    {item.sku && (
-                      <Typography variant="body2" color="text.secondary">
-                        SKU: {item.sku}
-                      </Typography>
-                    )}
-                    {item.categoryName && (
-                      <Chip
-                        label={item.categoryName}
-                        size="small"
-                        variant="outlined"
-                        sx={{ width: "fit-content", mt: 0.5 }}
-                      />
-                    )}
-                  </Stack>
-                </Grid>
-
-                {/* Quantity and Price */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ textAlign: { xs: "left", sm: "center" } }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 0.5 }}
-                    >
-                      Quantity
-                    </Typography>
-                    <Typography variant="h6" fontWeight="600">
-                      {item.quantity}
-                    </Typography>
-                  </Box>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ textAlign: { xs: "left", sm: "right" } }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 0.5 }}
-                    >
-                      Price
-                    </Typography>
-
-                    {/* Total Price Only - Simplified Display */}
-                    <Box
+                    {/* Product Image */}
+                    <Avatar
+                      src={item.productImage}
+                      variant="rounded"
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: { xs: "flex-start", sm: "flex-end" },
-                        gap: 1,
+                        width: { xs: 80, sm: 100 },
+                        height: { xs: 80, sm: 100 },
+                        bgcolor: "grey.100",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        flexShrink: 0,
                       }}
                     >
-                      {/* Final Total Price */}
+                      <Inventory2 />
+                    </Avatar>
+
+                    {/* Product Information */}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography
                         variant="h6"
                         fontWeight="600"
-                        color={
-                          item.isDiscounted ? "success.main" : "primary.main"
-                        }
+                        sx={{ mb: 1.5, color: "text.primary" }}
                       >
-                        {getCurrencySymbol(orderDetails.currency || "INR")}
-                        {item.totalPrice.toFixed(2)}
+                        {item.productName}
                       </Typography>
 
-                      {/* Discount Badge */}
+                      <Stack spacing={1.5}>
+                        {/* Brand and Category Row */}
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                          <Chip
+                            label={`Brand: ${item.brandName}`}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                          {item.categoryName && (
+                            <Chip
+                              label={item.categoryName}
+                              size="small"
+                              variant="filled"
+                              color="secondary"
+                              sx={{ fontSize: "0.75rem" }}
+                            />
+                          )}
+                        </Box>
+
+                        {/* Product Specifications */}
+                        <Box
+                          sx={{
+                            bgcolor: "grey.50",
+                            borderRadius: 1,
+                            p: 1.5,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            fontWeight="600"
+                            sx={{
+                              mb: 1,
+                              display: "block",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Product Details
+                          </Typography>
+                          <Stack spacing={0.8}>
+                            {item.weight && (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  Weight:
+                                </Typography>
+                                <Typography variant="body2" fontWeight="500">
+                                  {item.weight}
+                                </Typography>
+                              </Box>
+                            )}
+
+                            {item.sku && (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  SKU:
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  fontWeight="500"
+                                  sx={{
+                                    fontFamily: "monospace",
+                                    fontSize: "0.75rem",
+                                    bgcolor: "background.paper",
+                                    px: 1,
+                                    py: 0.25,
+                                    borderRadius: 0.5,
+                                  }}
+                                >
+                                  {item.sku}
+                                </Typography>
+                              </Box>
+                            )}
+
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Product ID:
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                fontWeight="500"
+                                sx={{
+                                  fontFamily: "monospace",
+                                  fontSize: "0.75rem",
+                                  color: "primary.main",
+                                }}
+                              >
+                                #{item.productId.slice(-8).toUpperCase()}
+                              </Typography>
+                            </Box>
+
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Quantity Ordered:
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                fontWeight="600"
+                                color="primary.main"
+                              >
+                                {item.quantity}{" "}
+                                {item.quantity === 1 ? "unit" : "units"}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Right Side - Price Details */}
+                <Grid size={{ xs: 12, md: 5 }}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      backgroundColor: "background.paper",
+                      height: "100%",
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="600"
+                      sx={{
+                        mb: 2,
+                        color: "primary.main",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      💰 Pricing Breakdown
+                    </Typography>
+
+                    <Stack spacing={2}>
+                      {/* Original Unit Price (if discounted) */}
+                      {item.isDiscounted &&
+                      item.discountAmount &&
+                      item.discountAmount > 0 ? (
+                        <>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              p: 1,
+                              bgcolor: "grey.50",
+                              borderRadius: 1,
+                            }}
+                          >
+                            <Typography variant="body2" color="text.secondary">
+                              Original Price:
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: "line-through",
+                                color: "text.secondary",
+                                fontWeight: "500",
+                              }}
+                            >
+                              {getCurrencySymbol(
+                                orderDetails.currency || "INR"
+                              )}
+                              {(item.totalPrice + item.discountAmount).toFixed(
+                                2
+                              )}
+                            </Typography>
+                          </Box>
+
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              p: 1,
+                              bgcolor: "success.50",
+                              borderRadius: 1,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="success.main"
+                              fontWeight="600"
+                            >
+                              Discounted Price:
+                            </Typography>
+                            <Typography
+                              variant="body1"
+                              fontWeight="700"
+                              color="success.main"
+                            >
+                              {getCurrencySymbol(
+                                orderDetails.currency || "INR"
+                              )}
+                              {item.price.toFixed(2)}
+                            </Typography>
+                          </Box>
+                        </>
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            p: 1,
+                            bgcolor: "grey.50",
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Unit Price:
+                          </Typography>
+                          <Typography
+                            variant="body1"
+                            fontWeight="600"
+                            color="text.primary"
+                          >
+                            {getCurrencySymbol(orderDetails.currency || "INR")}
+                            {item.price.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {/* Quantity Calculation */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          p: 1,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          Price × {item.quantity} qty:
+                        </Typography>
+                        <Typography variant="body2" fontWeight="600">
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
+                          {(item.price * item.quantity).toFixed(2)}
+                        </Typography>
+                      </Box>
+
+                      {/* Discount Applied */}
                       {item.isDiscounted &&
                         item.discountAmount &&
                         item.discountAmount > 0 && (
-                          <Chip
-                            label={`Saved ${getCurrencySymbol(
-                              orderDetails.currency || "INR"
-                            )}${item.discountAmount.toFixed(2)}`}
-                            size="small"
-                            color="success"
+                          <Box
                             sx={{
-                              fontSize: "0.75rem",
-                              height: "20px",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              p: 1,
+                              bgcolor: "success.50",
+                              border: "1px solid",
+                              borderColor: "success.200",
+                              borderRadius: 1,
                             }}
-                          />
+                          >
+                            <Typography
+                              variant="body2"
+                              color="success.main"
+                              fontWeight="600"
+                            >
+                              Discount Applied:
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="600"
+                              color="success.main"
+                            >
+                              -
+                              {getCurrencySymbol(
+                                orderDetails.currency || "INR"
+                              )}
+                              {item.discountAmount.toFixed(2)}
+                            </Typography>
+                          </Box>
                         )}
-                    </Box>
+
+                      <Divider sx={{ borderStyle: "dashed" }} />
+
+                      {/* Final Total */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          bgcolor: "primary.main",
+                          color: "white",
+                          p: 2,
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography variant="subtitle1" fontWeight="700">
+                          Item Total:
+                        </Typography>
+                        <Typography variant="h6" fontWeight="700">
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
+                          {item.totalPrice.toFixed(2)}
+                        </Typography>
+                      </Box>
+
+                      {/* Savings Summary */}
+                      {item.isDiscounted &&
+                        item.discountAmount &&
+                        item.discountAmount > 0 && (
+                          <Box
+                            sx={{
+                              textAlign: "center",
+                              p: 1,
+                              bgcolor: "success.100",
+                              borderRadius: 1,
+                              border: "2px solid",
+                              borderColor: "success.300",
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              color="success.dark"
+                              fontWeight="700"
+                              sx={{ fontSize: "0.85rem" }}
+                            >
+                              🎉 You saved{" "}
+                              {getCurrencySymbol(
+                                orderDetails.currency || "INR"
+                              )}
+                              {item.discountAmount.toFixed(2)} on this item!
+                            </Typography>
+                          </Box>
+                        )}
+                    </Stack>
                   </Box>
                 </Grid>
               </Grid>
             </Box>
           ))}
-
-          {/* Order Total Summary */}
-          <Box sx={{ p: 3, mx: 3, backgroundColor: "background.default" }}>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Stack spacing={2}>
-                  {/* Return Policy Notice */}
-                  {orderDetails.returnPolicyEndDate && (
-                    <Alert severity="info" variant="outlined">
-                      <Typography variant="body2">
-                        Return window expires on{" "}
-                        {(() => {
-                          const formatted = formatDateTime(
-                            orderDetails.returnPolicyEndDate
-                          );
-                          return typeof formatted === "object"
-                            ? formatted.date
-                            : formatted;
-                        })()}
-                      </Typography>
-                    </Alert>
-                  )}
-
-                  {/* Action Buttons */}
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<Download />}
-                      onClick={handleDownloadInvoice}
-                    >
-                      Invoice
-                    </Button>
-                    {orderDetails.status === "Delivered" && (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        startIcon={<Star />}
-                        onClick={() =>
-                          showSuccess("Rating feature coming soon!")
-                        }
-                      >
-                        Rate
-                      </Button>
-                    )}
-                  </Stack>
-                </Stack>
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Box
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                    p: 2,
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="600"
-                    sx={{ mb: 2 }}
-                  >
-                    Order Summary
-                  </Typography>
-                  <Stack spacing={1}>
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography variant="body2">Subtotal:</Typography>
-                      <Typography variant="body2">
-                        {getCurrencySymbol(orderDetails.currency || "INR")}
-                        {orderDetails.subtotal}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography variant="body2">Shipping:</Typography>
-                      <Typography
-                        variant="body2"
-                        color={
-                          orderDetails.shippingCharges === 0
-                            ? "success.main"
-                            : "text.primary"
-                        }
-                      >
-                        {orderDetails.shippingCharges === 0
-                          ? "FREE"
-                          : `${getCurrencySymbol(
-                              orderDetails.currency || "INR"
-                            )}${orderDetails.shippingCharges}`}
-                      </Typography>
-                    </Box>
-                    {orderDetails.discount > 0 && (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Typography variant="body2">Discount:</Typography>
-                        <Typography
-                          variant="body2"
-                          color="success.main"
-                          fontWeight="600"
-                        >
-                          -{getCurrencySymbol(orderDetails.currency || "INR")}
-                          {orderDetails.discount.toFixed(2)}
-                        </Typography>
-                      </Box>
-                    )}
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography variant="body2">Tax:</Typography>
-                      <Typography variant="body2">
-                        {getCurrencySymbol(orderDetails.currency || "INR")}
-                        {orderDetails.tax}
-                      </Typography>
-                    </Box>
-                    <Divider />
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography variant="h6" fontWeight="600">
-                        Total:
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        fontWeight="600"
-                        color="primary.main"
-                      >
-                        {getCurrencySymbol(orderDetails.currency || "INR")}
-                        {orderDetails.totalAmount.toFixed(2)}
-                      </Typography>
-                    </Box>
-                    {orderDetails.discount > 0 && (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          mt: 1,
-                          p: 1,
-                          backgroundColor: "success.50",
-                          borderRadius: 1,
-                          border: "1px solid",
-                          borderColor: "success.200",
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          color="success.main"
-                          fontWeight="600"
-                        >
-                          🎉 You saved:
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="success.main"
-                          fontWeight="600"
-                        >
-                          {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {orderDetails.discount.toFixed(2)}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Stack>
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
         </CardContent>
       </Card>
 
@@ -1788,19 +1901,6 @@ const OrderDetailsContent: React.FC = () => {
                     color="text.secondary"
                     sx={{ mb: 1 }}
                   >
-                    Shipping Method
-                  </Typography>
-                  <Typography variant="body1" fontWeight="500">
-                    {orderDetails.shippingMethod}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 1 }}
-                  >
                     Tracking Information
                   </Typography>
                   <Box
@@ -1819,63 +1919,67 @@ const OrderDetailsContent: React.FC = () => {
                       onClick={() =>
                         copyToClipboard(
                           orderDetails.trackingNumber || "",
-                          "Tracking number"
+                          "Docket number"
                         )
                       }
                     >
                       <ContentCopy fontSize="small" />
                     </IconButton>
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Courier: {orderDetails.courierCompany}
-                  </Typography>
-                  {orderDetails.courierPhone && (
-                    <Typography variant="body2" color="text.secondary">
-                      📞 {orderDetails.courierPhone}
-                    </Typography>
-                  )}
                 </Box>
 
-                {orderDetails.deliveryAgent && (
+                {orderDetails.billingAddress && (
                   <Box>
+                    <Divider sx={{ my: 1.5 }} />
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       sx={{ mb: 1 }}
                     >
-                      Delivery Agent
+                      Billing Address
                     </Typography>
-                    <Typography variant="body1" fontWeight="500">
-                      {orderDetails.deliveryAgent}
-                    </Typography>
-                    {orderDetails.deliveryAgentPhone && (
-                      <Typography variant="body2" color="text.secondary">
-                        📞 {orderDetails.deliveryAgentPhone}
-                      </Typography>
+                    {/* Check if billing address is same as shipping address */}
+                    {orderDetails.billingAddress.address ===
+                      orderDetails.deliveryAddress.address &&
+                    orderDetails.billingAddress.name ===
+                      orderDetails.deliveryAddress.name &&
+                    orderDetails.billingAddress.pincode ===
+                      orderDetails.deliveryAddress.pincode ? (
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontStyle: "italic", mb: 1 }}
+                        >
+                          Same as delivery address
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {orderDetails.deliveryAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.city},{" "}
+                          {orderDetails.deliveryAddress.state} -{" "}
+                          {orderDetails.deliveryAddress.pincode}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Typography variant="body2" fontWeight="500">
+                          {orderDetails.billingAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.city},{" "}
+                          {orderDetails.billingAddress.state} -{" "}
+                          {orderDetails.billingAddress.pincode}
+                        </Typography>
+                      </Box>
                     )}
-                  </Box>
-                )}
-
-                {orderDetails.deliveryInstructions && (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Delivery Instructions
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        backgroundColor: "background.default",
-                        p: 1.5,
-                        borderRadius: 1,
-                        fontStyle: "italic",
-                      }}
-                    >
-                      &quot;{orderDetails.deliveryInstructions}&quot;
-                    </Typography>
                   </Box>
                 )}
               </Stack>
@@ -1991,54 +2095,6 @@ const OrderDetailsContent: React.FC = () => {
                     icon={<CheckCircle />}
                   />
                 </Box>
-
-                {orderDetails.billingAddress && (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Billing Address
-                    </Typography>
-                    {/* Check if billing address is same as shipping address */}
-                    {orderDetails.billingAddress.address ===
-                      orderDetails.deliveryAddress.address &&
-                    orderDetails.billingAddress.name ===
-                      orderDetails.deliveryAddress.name &&
-                    orderDetails.billingAddress.pincode ===
-                      orderDetails.deliveryAddress.pincode ? (
-                      <Box>
-                        {/* Show actual shipping address data */}
-                        <Typography variant="body2" fontWeight="500">
-                          {orderDetails.deliveryAddress.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.deliveryAddress.address}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.deliveryAddress.city},{" "}
-                          {orderDetails.deliveryAddress.state} -{" "}
-                          {orderDetails.deliveryAddress.pincode}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <>
-                        <Typography variant="body2">
-                          {orderDetails.billingAddress.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.billingAddress.address}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.billingAddress.city},{" "}
-                          {orderDetails.billingAddress.state} -{" "}
-                          {orderDetails.billingAddress.pincode}
-                        </Typography>
-                      </>
-                    )}
-                  </Box>
-                )}
               </Stack>
             </CardContent>
           </Card>
