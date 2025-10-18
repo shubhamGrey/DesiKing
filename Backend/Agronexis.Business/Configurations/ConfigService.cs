@@ -113,9 +113,9 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.CreateOrder(order, xCorrelationId);
         }
-        public bool VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
+        public async Task<bool> VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
         {
-            return _repository.VerifyPayment(verify, xCorrelationId);
+            return await _repository.VerifyPayment(verify, xCorrelationId);
         }
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
@@ -191,10 +191,13 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.GenerateShipmentLabel(awbNo, xCorrelationId);
         }
-        public async Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId)
+        //public async Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId)
+        //{
+        //    return await _repository.CreatePickupBooking(request, xCorrelationId);
+        //}
+        public async Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel request, string xCorrelationId)
         {
-            return await _repository.CreatePickupBooking(request, xCorrelationId);
+            return await _repository.GenerateInvoicePdf(request, xCorrelationId);
         }
-
     }
 }

@@ -68,10 +68,9 @@ Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
 Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION"));
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION")));
-builder.Services.AddTransient<IConfigService, ConfigService>();
-builder.Services.AddTransient<IConfigurationRepository, ConfigurationRepository>();
+builder.Services.AddScoped<IConfigService, ConfigService>();
+builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ExternalUtility>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 //builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 //builder.Services.AddTransient<EmailService>();

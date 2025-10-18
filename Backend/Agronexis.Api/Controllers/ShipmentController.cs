@@ -91,48 +91,48 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpPost("pickup-booking")]
-        public async Task<ActionResult<ApiResponseModel>> CreatePickupBooking([FromBody] PickupBookingRequestModel request)
-        {
-            var correlationId = GetCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel(),
-                Id = correlationId
-            };
+        //[HttpPost("pickup-booking")]
+        //public async Task<ActionResult<ApiResponseModel>> CreatePickupBooking([FromBody] PickupBookingRequestModel request)
+        //{
+        //    var correlationId = GetCorrelationId();
+        //    ApiResponseModel response = new()
+        //    {
+        //        Info = new ApiResponseInfoModel(),
+        //        Id = correlationId
+        //    };
 
-            try
-            {
-                // optional: basic server-side validation and normalize request
-                if (request == null)
-                {
-                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.BadRequest).ToString();
-                    response.Info.Message = "Request body is required.";
-                    return BadRequest(response);
-                }
+        //    try
+        //    {
+        //        // optional: basic server-side validation and normalize request
+        //        if (request == null)
+        //        {
+        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.BadRequest).ToString();
+        //            response.Info.Message = "Request body is required.";
+        //            return BadRequest(response);
+        //        }
 
-                var result = await _configService.CreatePickupBooking(request, correlationId);
+        //        var result = await _configService.CreatePickupBooking(request, correlationId);
 
-                if (result == null)
-                {
-                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
-                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-                }
-                else
-                {
-                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
-                    response.Info.Message = ApiResponseMessage.SUCCESS;
-                    response.Data = result;
-                }
+        //        if (result == null)
+        //        {
+        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+        //            response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+        //        }
+        //        else
+        //        {
+        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+        //            response.Info.Message = ApiResponseMessage.SUCCESS;
+        //            response.Data = result;
+        //        }
 
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while creating pickup booking. Correlation ID: {CorrelationId}", correlationId);
-                return HandleException(ex, "Failed to create pickup booking", correlationId);
-            }
-        }
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred while creating pickup booking. Correlation ID: {CorrelationId}", correlationId);
+        //        return HandleException(ex, "Failed to create pickup booking", correlationId);
+        //    }
+        //}
 
 
     }
