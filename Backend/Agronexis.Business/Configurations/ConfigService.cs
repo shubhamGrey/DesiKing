@@ -173,7 +173,10 @@ namespace Agronexis.Business.Configurations
         {
             return _repository.GetOrdersByUserId(userId, xCorrelationId);
         }
-
+        public OrderByUserResponseModel GetOrderId(string orderId, string xCorrelationId)
+        {
+            return _repository.GetOrderId(orderId, xCorrelationId);
+        }
         public async Task<AnalyticsResponseModel> ProcessAnalyticsEvents(AnalyticsPayloadRequest payload, string xCorrelationId)
         {
             return await _repository.ProcessAnalyticsEvents(payload, xCorrelationId);
