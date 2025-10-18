@@ -188,7 +188,7 @@ const ProfileContent: React.FC = () => {
     setOrdersLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/checkout/user/${userId}`,
         {
           method: "GET",
           headers: {

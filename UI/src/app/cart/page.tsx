@@ -198,7 +198,7 @@ const Cart = () => {
   const orderTotal = subtotal + taxes;
 
   // Helper function to save address
-  const saveAddress = async (addressData: AddressFormData): Promise<string> => {
+  const saveAddress = async (addressData: AddressFormData): Promise<any> => {
     try {
       const payload = {
         id: "00000000-0000-0000-0000-000000000000",
@@ -684,6 +684,39 @@ const Cart = () => {
         );
       }
 
+      // Get or save shipping address ID
+      let shippingAddressId: string;
+      if (useManualAddress) {
+        // Save new shipping address and get ID
+        const shippingAddress = formatAddressData(formData, "SHIPPING");
+        const savedShippingAddress = await saveAddress(shippingAddress);
+        shippingAddressId = savedShippingAddress?.id || savedShippingAddress;
+      } else if (selectedAddress) {
+        // Use existing selected address ID
+        shippingAddressId = selectedAddress.id;
+      } else {
+        throw new Error("Please select or enter a shipping address");
+      }
+
+      // Get or save billing address ID
+      let billingAddressId: string;
+      if (useDifferentBilling) {
+        if (useManualBillingAddress) {
+          // Save new billing address and get ID
+          const billingAddress = formatAddressData(billingData, "BILLING");
+          const savedBillingAddress = await saveAddress(billingAddress);
+          billingAddressId = savedBillingAddress?.id || savedBillingAddress;
+        } else if (selectedBillingAddress) {
+          // Use existing selected billing address ID
+          billingAddressId = selectedBillingAddress.id;
+        } else {
+          throw new Error("Please select or enter a billing address");
+        }
+      } else {
+        // Use same address ID as shipping
+        billingAddressId = shippingAddressId;
+      }
+
       // Generate a new GUID for the order (used as frontend reference)
       const orderId = crypto.randomUUID();
 
@@ -694,6 +727,8 @@ const Cart = () => {
         currency: "INR",
         status: "created",
         paymentMethod: "RAZORPAY",
+        shippingAddressId: shippingAddressId,
+        billingAddressId: billingAddressId,
         items: cartItems.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -785,36 +820,10 @@ const Cart = () => {
         throw new Error("Payment verification failed. Please contact support.");
       }
 
-      setAlertMessage("Payment verified! Saving your details...");
+      setAlertMessage("Payment verified! Processing order...");
 
-      // Save shipping address (only if manually entered, not selected)
-      if (getUserId() && useManualAddress && formData.name) {
-        try {
-          const shippingAddress = formatAddressData(formData, "SHIPPING");
-          await saveAddress(shippingAddress);
-          console.log("✅ Shipping address saved successfully");
-        } catch (error) {
-          console.error("❌ Failed to save shipping address:", error);
-          // Don't block the flow for address saving failure
-        }
-      }
-
-      // Save billing address if different from shipping (only if manually entered, not selected)
-      if (
-        getUserId() &&
-        useDifferentBilling &&
-        useManualBillingAddress &&
-        billingData.name
-      ) {
-        try {
-          const billingAddress = formatAddressData(billingData, "BILLING");
-          await saveAddress(billingAddress);
-          console.log("✅ Billing address saved successfully");
-        } catch (error) {
-          console.error("❌ Failed to save billing address:", error);
-          // Don't block the flow for address saving failure
-        }
-      }
+      // Addresses were already saved during order creation
+      console.log("✅ Order processing completed");
 
       setAlertMessage("Payment successful! Redirecting...");
       setTimeout(() => {

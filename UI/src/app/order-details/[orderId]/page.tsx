@@ -479,9 +479,9 @@ const OrderDetailsContent: React.FC = () => {
           return;
         }
 
-        // Fetch the specific order
+        // Fetch the specific order by ID
         const orderResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/checkout/orders/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/checkout/order/${orderId}`,
           {
             method: "GET",
             headers: {
@@ -506,15 +506,8 @@ const OrderDetailsContent: React.FC = () => {
         const ordersResult = await orderResponse.json();
 
         if (ordersResult.info?.isSuccess && ordersResult.data) {
-          // Find the specific order by ID
-          const specificOrder = ordersResult.data.find(
-            (order: any) => order.id === orderId
-          );
-
-          if (!specificOrder) {
-            showError("Order not found.");
-            return;
-          }
+          // We now get a single order directly, not an array
+          const specificOrder = ordersResult.data;
 
           // Fetch product details for all order items
           const uniqueProductIds: string[] = Array.from(

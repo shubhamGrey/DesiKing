@@ -48,6 +48,8 @@ export interface OrderCreateRequest {
   currency: string;
   status: string;
   paymentMethod?: string;
+  shippingAddressId?: string;
+  billingAddressId?: string;
   items: OrderItem[];
 }
 
