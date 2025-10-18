@@ -10,7 +10,7 @@ namespace Agronexis.Model.ResponseModel
     {
         public string ErrorCode { get; set; }
         public string Message { get; set; }
-        public string StackTrace { get; set; }
+        public string Status { get; set; }
         public string Errors { get; set; }
     }
 }

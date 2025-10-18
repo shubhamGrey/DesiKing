@@ -61,7 +61,7 @@ namespace Agronexis.Api.Controllers
         }
 
         [HttpPost("verify-payment")]
-        public ActionResult<ApiResponseModel> VerifyPayment([FromBody] VerifyPaymentRequestModel verify)
+        public async Task<ActionResult<ApiResponseModel>> VerifyPaymentAsync([FromBody] VerifyPaymentRequestModel verify)
         {
             var correlationId = string.Empty;
 
@@ -73,7 +73,7 @@ namespace Agronexis.Api.Controllers
                     Info = new ApiResponseInfoModel()
                 };
 
-                var item = _configService.VerifyPayment(verify, XCorrelationID);
+                var item = await _configService.VerifyPayment(verify, XCorrelationID);
                 if (item == null)
                 {
                     response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
