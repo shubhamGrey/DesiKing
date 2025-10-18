@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Agronexis.Model.ResponseModel
@@ -32,10 +33,19 @@ namespace Agronexis.Model.ResponseModel
 
     public class TrackingDetailModel
     {
+        [JsonPropertyName("CURRENT_CITY")]
         public string CURRENT_CITY { get; set; }
+
+        [JsonPropertyName("CURRENT_STATUS")]
         public string CURRENT_STATUS { get; set; }
+
+        [JsonPropertyName("EVENTDATE")]
         public string EVENTDATE { get; set; }
+
+        [JsonPropertyName("EVENTTIME")]
         public string EVENTTIME { get; set; }
+
+        [JsonPropertyName("TRACKING_CODE")]
         public string TRACKING_CODE { get; set; }
     }
 }
