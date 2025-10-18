@@ -888,6 +888,8 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 TotalAmount = orderRequest.TotalAmount,
                 Currency = orderRequest.Currency,
                 Status = orderRequest.Status,
+                ShippingAddressId = orderRequest.ShippingAddressId,
+                BillingAddressId = orderRequest.BillingAddressId,
                 CreatedDate = DateTime.UtcNow
             };
 
@@ -1381,7 +1383,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 var orders = _dbContext.Orders
                     .Where(o => o.UserId == userGuid)
-                    .OrderByDescending(a => a.CreatedDate)
+                    .OrderByDescending(o => o.CreatedDate)
                     .Select(o => new OrderByUserResponseModel
                     {
                         Id = o.Id,
@@ -1392,15 +1394,21 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         TotalAmount = o.TotalAmount,
                         Currency = o.Currency,
                         CreatedDate = o.CreatedDate,
-                        OrderItems = o.OrderItems.OrderByDescending(a => a.CreatedDate).Select(oi => new OrderItemResponseModel
-                        {
-                            Id = oi.Id,
-                            OrderId = oi.OrderId,
-                            ProductId = oi.ProductId,
-                            Quantity = oi.Quantity,
-                            Price = oi.Price,
-                            CreatedDate = oi.CreatedDate
-                        }).ToList(),
+                        DocketNumber = o.DocketNumber,
+
+                        OrderItems = o.OrderItems
+                            .OrderByDescending(oi => oi.CreatedDate)
+                            .Select(oi => new OrderItemResponseModel
+                            {
+                                Id = oi.Id,
+                                OrderId = oi.OrderId,
+                                ProductId = oi.ProductId,
+                                Quantity = oi.Quantity,
+                                Price = oi.Price,
+                                CreatedDate = oi.CreatedDate
+                            })
+                            .ToList(),
+
                         Transaction = _dbContext.Transactions
                             .Where(t => t.RazorpayOrderId == o.RazorpayOrderId)
                             .Select(t => new TransactionResponseModel
@@ -1419,14 +1427,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 CreatedDate = t.CreatedDate
                             })
                             .FirstOrDefault(),
-                        // Fetch shipping address - most recent SHIPPING address around order creation time
+
                         ShippingAddress = _dbContext.Addresses
-                            .Where(a => a.UserId == userGuid &&
-                                       a.AddressType == "SHIPPING" &&
-                                       a.IsActive == true &&
-                                       a.IsDeleted == false &&
-                                       a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
-                            .OrderByDescending(a => a.CreatedDate)
+                            .Where(a => a.Id == o.ShippingAddressId && a.IsDeleted == false)
                             .Select(a => new DetailedAddressResponseModel
                             {
                                 Id = a.Id,
@@ -1443,14 +1446,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                                 CreatedDate = a.CreatedDate
                             })
                             .FirstOrDefault(),
-                        // Fetch billing address - most recent BILLING address around order creation time
+
                         BillingAddress = _dbContext.Addresses
-                            .Where(a => a.UserId == userGuid &&
-                                       a.AddressType == "BILLING" &&
-                                       a.IsActive == true &&
-                                       a.IsDeleted == false &&
-                                       a.CreatedDate <= (o.CreatedDate ?? DateTime.UtcNow).AddMinutes(10))
-                            .OrderByDescending(a => a.CreatedDate)
+                            .Where(a => a.Id == o.BillingAddressId && a.IsDeleted == false)
                             .Select(a => new DetailedAddressResponseModel
                             {
                                 Id = a.Id,
@@ -1475,6 +1473,106 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             catch (Exception ex)
             {
                 throw new RepositoryException("Error occurred while fetching orders by user id", xCorrelationId, ex);
+            }
+        }
+
+        public OrderByUserResponseModel GetOrderId(string orderId, string xCorrelationId)
+        {
+            try
+            {
+                Guid orderGuid = Guid.Parse(orderId);
+
+                var order = _dbContext.Orders
+                    .Where(o => o.Id == orderGuid)
+                    .Select(o => new OrderByUserResponseModel
+                    {
+                        Id = o.Id,
+                        UserId = o.UserId,
+                        RazorpayOrderId = o.RazorpayOrderId,
+                        ReceiptId = o.ReceiptId,
+                        Status = o.Status,
+                        TotalAmount = o.TotalAmount,
+                        Currency = o.Currency,
+                        CreatedDate = o.CreatedDate,
+                        DocketNumber = o.DocketNumber,
+
+                        OrderItems = o.OrderItems
+                            .OrderByDescending(oi => oi.CreatedDate)
+                            .Select(oi => new OrderItemResponseModel
+                            {
+                                Id = oi.Id,
+                                OrderId = oi.OrderId,
+                                ProductId = oi.ProductId,
+                                Quantity = oi.Quantity,
+                                Price = oi.Price,
+                                CreatedDate = oi.CreatedDate
+                            })
+                            .ToList(),
+
+                        Transaction = _dbContext.Transactions
+                            .Where(t => t.RazorpayOrderId == o.RazorpayOrderId)
+                            .Select(t => new TransactionResponseModel
+                            {
+                                Id = t.Id,
+                                RazorpayPaymentId = t.RazorpayPaymentId,
+                                RazorpayOrderId = t.RazorpayOrderId,
+                                UserId = t.UserId,
+                                Signature = t.Signature,
+                                TotalAmount = t.TotalAmount,
+                                Currency = t.Currency,
+                                Status = t.Status,
+                                PaymentMethod = t.PaymentMethod,
+                                BrandId = t.BrandId,
+                                PaidAt = t.PaidAt,
+                                CreatedDate = t.CreatedDate
+                            })
+                            .FirstOrDefault(),
+
+                        ShippingAddress = _dbContext.Addresses
+                            .Where(a => a.Id == o.ShippingAddressId && a.IsDeleted == false)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault(),
+
+                        BillingAddress = _dbContext.Addresses
+                            .Where(a => a.Id == o.BillingAddressId && a.IsDeleted == false)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault()
+                    })
+                    .FirstOrDefault();
+
+                return order;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while fetching order by order id", xCorrelationId, ex);
             }
         }
 

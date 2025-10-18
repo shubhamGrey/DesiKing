@@ -61,7 +61,7 @@ namespace Agronexis.Api.Controllers
         }
 
         [HttpPost("verify-payment")]
-        public async Task<ActionResult<ApiResponseModel>> VerifyPaymentAsync([FromBody] VerifyPaymentRequestModel verify)
+        public async Task<ActionResult<ApiResponseModel>> VerifyPayment([FromBody] VerifyPaymentRequestModel verify)
         {
             var correlationId = string.Empty;
 
@@ -130,7 +130,7 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpGet("orders/{userId}")]
+        [HttpGet("user/{userId}")]
         public ActionResult<ApiResponseModel> GetOrdersByUserId(string userId)
         {
             var correlationId = string.Empty;
@@ -161,6 +161,40 @@ namespace Agronexis.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while fetching orders for user {UserId}, correlation ID: {CorrelationId}", userId, correlationId);
+                return HandleException(ex, "Failed to fetch orders", correlationId);
+            }
+        }
+
+        [HttpGet("order/{orderId}")]
+        public ActionResult<ApiResponseModel> GetOrderId(string orderId)
+        {
+            var correlationId = string.Empty;
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel()
+            };
+
+            try
+            {
+                correlationId = GetCorrelationId();
+
+                var orders = _configService.GetOrderId(orderId, XCorrelationID);
+                if (orders == null)
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                }
+                else
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+                    response.Info.Message = ApiResponseMessage.SUCCESS;
+                    response.Data = orders;
+                }
+                response.Id = correlationId;
+                return response;
+            }
+            catch (Exception ex)
+            {
                 return HandleException(ex, "Failed to fetch orders", correlationId);
             }
         }

@@ -14,6 +14,8 @@ namespace Agronexis.Model.RequestModel
         public string? Currency { get; set; }
         public string? Status { get; set; } = "created";
         public string? PaymentMethod { get; set; } = "COD"; // COD, RAZORPAY
+        public Guid ShippingAddressId { get; set; }
+        public Guid BillingAddressId { get; set; }
         public List<OrderItemRequestModel> Items { get; set; } = [];
     }
 }
