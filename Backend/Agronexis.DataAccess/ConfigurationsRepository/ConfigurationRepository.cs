@@ -6,7 +6,6 @@ using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
 using DinkToPdf;
 using DinkToPdf.Contracts;
-using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -1929,9 +1928,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     var htmlContent = GenerateInvoiceHtml(invoiceData);
 
                     // Load HTML content and wait for rendering to complete
-                    await page.SetContentAsync(htmlContent, new NavigationOptions
+                    await page.SetContentAsync(htmlContent, new PuppeteerSharp.NavigationOptions
                     {
-                        WaitUntil = new[] { WaitUntilNavigation.Load, WaitUntilNavigation.NetworkIdle0 }
+                        WaitUntil = new[] { WaitUntilNavigation.Load }
                     });
 
                     // Wait for fonts and images to load
