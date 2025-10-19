@@ -857,6 +857,25 @@ const OrderDetailsContent: React.FC = () => {
     showSuccess(`${label} copied to clipboard`);
   };
 
+  // Environment validation utility
+  const validateEnvironment = () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const isDev = process.env.NODE_ENV === "development";
+
+    console.log("Environment validation:", {
+      apiUrl,
+      isDev,
+      origin: typeof window !== "undefined" ? window.location.origin : "SSR",
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "SSR",
+    });
+
+    return {
+      apiUrl: apiUrl || "",
+      isDev,
+      isProduction: process.env.NODE_ENV === "production",
+    };
+  };
+
   const handleDownloadInvoice = async () => {
     if (!orderDetails) {
       showError("Order details not available");
@@ -864,8 +883,31 @@ const OrderDetailsContent: React.FC = () => {
     }
 
     try {
+      // Validate environment first
+      const env = validateEnvironment();
+
       // Show loading state
       showSuccess("Generating GST-compliant invoice...");
+
+      // Get access token with validation
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        showError("Authentication token not found. Please log in again.");
+        return;
+      }
+
+      // Get API URL with fallback
+      if (!env.apiUrl) {
+        showError("API configuration not found. Please contact support.");
+        console.error(
+          "NEXT_PUBLIC_API_URL not configured for environment:",
+          env
+        );
+        return;
+      }
+
+      console.log("Generating invoice for order:", orderDetails.id);
+      console.log("Environment:", env);
 
       // Prepare GST-compliant invoice data
       const invoiceData = {
@@ -1042,60 +1084,260 @@ const OrderDetailsContent: React.FC = () => {
         },
       };
 
+      // Validate invoice data before sending to catch potential 500 error causes
+      const validationErrors = [];
+
+      if (!invoiceData.invoice?.number) {
+        validationErrors.push("Missing invoice number");
+      }
+
+      if (!invoiceData.customer?.name) {
+        validationErrors.push("Missing customer name");
+      }
+
+      if (!invoiceData.items || invoiceData.items.length === 0) {
+        validationErrors.push("No items in invoice");
+      }
+
+      if (
+        invoiceData.items?.some(
+          (item) => !item.description || !item.rate || !item.quantity
+        )
+      ) {
+        validationErrors.push("Some items have missing required fields");
+      }
+
+      if (!invoiceData.taxSummary?.grandTotal) {
+        validationErrors.push("Missing grand total");
+      }
+
+      if (validationErrors.length > 0) {
+        console.error("Invoice validation errors:", validationErrors);
+        throw new Error(
+          `Invoice data validation failed: ${validationErrors.join(", ")}`
+        );
+      }
+
+      console.log("Invoice data validation passed. Sending request...");
+      console.log("Invoice summary:", {
+        invoiceNumber: invoiceData.invoice.number,
+        customerName: invoiceData.customer.name,
+        itemsCount: invoiceData.items.length,
+        grandTotal: invoiceData.taxSummary.grandTotal,
+      });
+
       // Call backend API to generate GST-compliant PDF
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/invoice/generate`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("access_token")}`,
-          },
-          body: JSON.stringify({
-            orderId: orderDetails.id,
-            invoiceData: invoiceData,
-          }),
-        }
+      const response = await fetch(`${env.apiUrl}/invoice/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/pdf, application/json",
+        },
+        body: JSON.stringify({
+          orderId: orderDetails.id,
+          invoiceData: invoiceData,
+        }),
+      });
+
+      console.log("API Response status:", response.status);
+      console.log(
+        "API Response headers:",
+        Object.fromEntries(response.headers.entries())
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Get detailed error information for 500 errors
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        let errorDetails = null;
+
+        try {
+          const errorText = await response.text();
+          console.error("API Error response body:", errorText);
+
+          // Try to parse as JSON for structured error
+          try {
+            errorDetails = JSON.parse(errorText);
+            console.error("Parsed API Error:", errorDetails);
+            errorMessage =
+              errorDetails.message ||
+              errorDetails.info?.message ||
+              errorMessage;
+          } catch {
+            // If not JSON, use the text response
+            errorDetails = { rawResponse: errorText };
+            errorMessage = errorText || errorMessage;
+          }
+        } catch (parseError) {
+          console.error("Could not parse error response:", parseError);
+        }
+
+        // For 500 errors, provide more specific debugging info
+        if (response.status === 500) {
+          console.error("Server Error (500) Details:", {
+            url: `${env.apiUrl}/invoice/generate`,
+            method: "POST",
+            orderId: orderDetails.id,
+            requestPayload: {
+              orderId: orderDetails.id,
+              invoiceDataKeys: Object.keys(invoiceData),
+              itemsCount: invoiceData.items?.length || 0,
+              hasCustomer: !!invoiceData.customer,
+              hasTaxSummary: !!invoiceData.taxSummary,
+            },
+            errorDetails,
+            timestamp: new Date().toISOString(),
+          });
+
+          errorMessage = `Server error (500): ${errorMessage}. Please check the server logs for details.`;
+        }
+
+        throw new Error(errorMessage);
       }
 
-      // Handle PDF by opening in new window
+      // Check content type
+      const contentType = response.headers.get("content-type");
+      console.log("Response content type:", contentType);
+
+      if (!contentType || !contentType.includes("application/pdf")) {
+        // If not PDF, try to get error message from JSON response
+        const textResponse = await response.text();
+        console.error("Expected PDF but got:", contentType, textResponse);
+        throw new Error("Server did not return a PDF file. Please try again.");
+      }
+
+      // Handle PDF response
       const blob = await response.blob();
+      console.log("PDF blob size:", blob.size);
+
+      if (blob.size === 0) {
+        throw new Error("Received empty PDF file. Please try again.");
+      }
+
       const url = window.URL.createObjectURL(blob);
 
-      // Open PDF in new window/tab
-      const newWindow = window.open(url, "_blank");
-
-      if (!newWindow) {
-        // Fallback: If popup is blocked, download the file
+      // Enhanced download handling for production
+      const downloadPDF = () => {
         const link = document.createElement("a");
         link.href = url;
         link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
-          /\//g,
+          /[\/\\]/g,
           "_"
         )}.pdf`;
+
+        // Ensure link is in DOM for some browsers
         document.body.appendChild(link);
+
+        // Force download
+        link.style.display = "none";
         link.click();
+
+        // Cleanup
         document.body.removeChild(link);
+
         showSuccess("GST-compliant invoice downloaded successfully!");
-      } else {
-        showSuccess("GST-compliant invoice opened in new window!");
+      };
+
+      // Try to open in new window first, fallback to download
+      try {
+        const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+
+        if (
+          !newWindow ||
+          newWindow.closed ||
+          typeof newWindow.closed === "undefined"
+        ) {
+          // Popup was blocked, use direct download
+          console.log("Popup blocked, using direct download");
+          downloadPDF();
+        } else {
+          // Check if window actually opened
+          setTimeout(() => {
+            try {
+              if (newWindow.closed) {
+                downloadPDF();
+              } else {
+                showSuccess("GST-compliant invoice opened in new window!");
+              }
+            } catch {
+              console.log("Could not check window status, assuming success");
+              showSuccess("GST-compliant invoice opened!");
+            }
+          }, 1000);
+        }
+      } catch (windowError) {
+        console.log("Window.open failed, using direct download:", windowError);
+        downloadPDF();
       }
 
-      // Clean up the blob URL after a delay
+      // Clean up the blob URL after a longer delay for production
       setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 1000);
+        try {
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.log("Could not revoke blob URL:", error);
+        }
+      }, 5000);
     } catch (error) {
       console.error("Error generating GST invoice:", error);
-      showError(
-        `Failed to generate GST invoice: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }. Please try again.`
-      );
+
+      // Enhanced error logging for debugging 500 errors
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          cause: error.cause,
+        });
+      }
+
+      // Log request details for debugging
+      console.error("Request details for debugging:", {
+        orderId: orderDetails.id,
+        orderNumber: orderDetails.orderNumber,
+        totalAmount: orderDetails.totalAmount,
+        itemsCount: orderDetails.items?.length || 0,
+        hasValidItems:
+          orderDetails.items?.every((item) => item.productId && item.price) ||
+          false,
+        environment: validateEnvironment(),
+        timestamp: new Date().toISOString(),
+      });
+
+      // Enhanced error messages for production debugging
+      let userMessage = "Failed to generate GST invoice.";
+
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        userMessage =
+          "Network error. Please check your internet connection and try again.";
+      } else if (error instanceof Error) {
+        if (
+          error.message.includes("401") ||
+          error.message.includes("Unauthorized")
+        ) {
+          userMessage = "Session expired. Please log in again.";
+          // Optionally redirect to login
+          // router.push("/login");
+        } else if (error.message.includes("500")) {
+          userMessage = `Server error (500): The server encountered an internal error while generating your invoice. This has been logged for investigation. Please try again in a few minutes or contact support with order #${orderDetails.orderNumber}.`;
+        } else if (error.message.includes("timeout")) {
+          userMessage = "Request timed out. Please try again.";
+        } else {
+          userMessage = `${error.message}`;
+        }
+      }
+
+      // For production, also log to external service if available
+      if (process.env.NODE_ENV === "production") {
+        console.error("PRODUCTION ERROR - Invoice Generation Failed:", {
+          orderNumber: orderDetails.orderNumber,
+          error: error instanceof Error ? error.message : String(error),
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      showError(userMessage);
     }
   };
 
