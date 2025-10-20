@@ -1,13 +1,11 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Install wkhtmltopdf dependencies for production
+# Install system dependencies for PDF generation
 RUN apt-get update && apt-get install -y \
-    wkhtmltopdf \
     libgdiplus \
     fontconfig \
     fonts-liberation \
-    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy published files from the build context to the container
