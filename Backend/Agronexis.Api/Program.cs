@@ -28,6 +28,7 @@ Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
 // -----------------------------------------------------------------------------
 // Load wkhtmltopdf native library (Windows & Linux support)
 // -----------------------------------------------------------------------------
+bool isDinkToPdfAvailable = false;
 try
 {
     var context = new CustomAssemblyLoadContext();
@@ -45,6 +46,15 @@ try
     else if (OperatingSystem.IsMacOS())
     {
         libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.dylib");
+        
+        // Check if the library is compatible with current architecture
+        var archInfo = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture;
+        Console.WriteLine($"Current process architecture: {archInfo}");
+        
+        if (archInfo == System.Runtime.InteropServices.Architecture.Arm64)
+        {
+            Console.WriteLine("ARM64 detected. DinkToPdf library may not be compatible. Will use PuppeteerSharp as primary PDF generator.");
+        }
     }
     else
     {
@@ -54,7 +64,8 @@ try
     if (File.Exists(libraryPath))
     {
         context.LoadUnmanagedLibrary(libraryPath);
-        Console.WriteLine($"Loaded DinkToPdf library: {libraryPath}");
+        Console.WriteLine($"Successfully loaded DinkToPdf library: {libraryPath}");
+        isDinkToPdfAvailable = true;
     }
     else
     {
@@ -63,7 +74,8 @@ try
 }
 catch (Exception ex)
 {
-    Console.WriteLine("Failed to load DinkToPdf library: " + ex.Message);
+    Console.WriteLine($"Failed to load DinkToPdf library: {ex.Message}");
+    Console.WriteLine("Application will use PuppeteerSharp as the primary PDF generator.");
 }
 
 // -----------------------------------------------------------------------------
@@ -123,7 +135,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IConfigService, ConfigService>();
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ExternalUtility>();
-builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+
+// Conditionally register DinkToPdf converter based on library availability
+if (isDinkToPdfAvailable)
+{
+    builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+    Console.WriteLine("Registered DinkToPdf converter");
+}
+else
+{
+    // Register a dummy converter that will force the use of PuppeteerSharp
+    builder.Services.AddSingleton<IConverter>(provider => null);
+    Console.WriteLine("DinkToPdf not available. Will use PuppeteerSharp for PDF generation.");
+}
 
 // Logging
 builder.Services.AddLogging(logging =>
