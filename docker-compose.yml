@@ -76,22 +76,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=69.62.85.84;Port=5432;Database=agronexisdb;Username=agronexis;Password=agronexis@123
-      # Chrome/Puppeteer environment variables for headless operation
-      - CHROME_BIN=/usr/bin/google-chrome-stable
-      - DISPLAY=:99
-      - DEBIAN_FRONTEND=noninteractive
-    # Add capabilities needed for Chrome in Docker
-    cap_add:
-      - SYS_ADMIN
-    # Increase shared memory size for Chrome
-    shm_size: 2gb
-    # Resource limits to prevent Chrome from consuming too much memory
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 512M
     depends_on:
       - backend-db
     networks:

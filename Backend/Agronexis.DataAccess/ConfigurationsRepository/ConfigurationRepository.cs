@@ -1894,61 +1894,29 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 var installedBrowser = await browserFetcher.DownloadAsync();
                 _logger.LogInformation("Chromium path: {ChromiumPath}", installedBrowser.GetExecutablePath());
 
-                // Check if we're running on Linux/Ubuntu server
-                var isLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
-                _logger.LogInformation("Running on Linux: {IsLinux}", isLinux);
-
-                // Production-optimized launch configuration with Ubuntu server support
-                var chromeArgs = new List<string>
-                {
-                    "--no-sandbox",
-                    "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu",
-                    "--disable-extensions",
-                    "--disable-web-security",
-                    "--allow-running-insecure-content",
-                    "--disable-features=VizDisplayCompositor",
-                    "--no-first-run",
-                    "--disable-background-timer-throttling",
-                    "--disable-backgrounding-occluded-windows",
-                    "--disable-renderer-backgrounding"
-                };
-
-                // Additional args for Linux/Ubuntu servers
-                if (isLinux)
-                {
-                    chromeArgs.AddRange(new[]
-                    {
-                        "--disable-software-rasterizer",
-                        "--disable-background-networking",
-                        "--disable-default-apps",
-                        "--disable-sync",
-                        "--disable-translate",
-                        "--hide-scrollbars",
-                        "--metrics-recording-only",
-                        "--mute-audio",
-                        "--no-default-browser-check",
-                        "--no-zygote",
-                        "--single-process",
-                        "--disable-ipc-flooding-protection"
-                    });
-                }
-
+                // Production-optimized launch configuration
                 var launchOptions = new LaunchOptions
                 {
                     Headless = true,
                     ExecutablePath = installedBrowser.GetExecutablePath(),
-                    Args = chromeArgs.ToArray(),
+                    Args = new[]
+                    {
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu",
+                        "--disable-extensions",
+                        "--disable-web-security",
+                        "--allow-running-insecure-content",
+                        "--disable-features=VizDisplayCompositor"
+                    },
                     IgnoreHTTPSErrors = true,
                     DefaultViewport = new ViewPortOptions
                     {
                         Width = 1280,
                         Height = 800
                     },
-                    Timeout = 120000, // Increased timeout for server environments
-                    SlowMo = 0,
-                    IgnoreDefaultArgs = false
+                    Timeout = 60000 // 60 seconds
                 };
 
                 IBrowser browser = null;
@@ -1957,10 +1925,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 try
                 {
                     _logger.LogInformation("Launching Chromium browser for invoice generation, xCorrelationId: {CorrelationId}", xCorrelationId);
-                    _logger.LogInformation("Launch options - Headless: {Headless}, Args: {Args}", launchOptions.Headless, string.Join(" ", launchOptions.Args));
-                    
                     browser = await Puppeteer.LaunchAsync(launchOptions);
-                    _logger.LogInformation("Chromium browser launched successfully, xCorrelationId: {CorrelationId}", xCorrelationId);
 
                     page = await browser.NewPageAsync();
 
@@ -2012,116 +1977,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     }
                 }
             }
-            catch (PuppeteerSharp.ProcessException processEx)
-            {
-                _logger.LogError(processEx, "Puppeteer process failed - likely missing dependencies on Ubuntu server, xCorrelationId: {CorrelationId}", xCorrelationId);
-                
-                // Try alternative approach for Ubuntu servers
-                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-                {
-                    _logger.LogWarning("Attempting fallback configuration for Ubuntu server, xCorrelationId: {CorrelationId}", xCorrelationId);
-                    return await TryUbuntuFallback(invoiceData, xCorrelationId);
-                }
-                
-                throw new Exception($"Failed to launch browser on Ubuntu server. Please ensure Chrome dependencies are installed: {processEx.Message}", processEx);
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "PuppeteerSharp failed for invoice generation, xCorrelationId: {CorrelationId}", xCorrelationId);
                 throw new Exception($"PDF generation failed: {ex.Message}", ex);
             }
         }
-
-        private async Task<byte[]> TryUbuntuFallback(GenerateInvoiceRequestModel invoiceData, string xCorrelationId)
-        {
-            try
-            {
-                _logger.LogInformation("Attempting Ubuntu server fallback with system Chrome, xCorrelationId: {CorrelationId}", xCorrelationId);
-
-                // Try to use system-installed Chrome on Ubuntu
-                var systemChromePaths = new[]
-                {
-                    "/usr/bin/google-chrome",
-                    "/usr/bin/google-chrome-stable",
-                    "/usr/bin/chromium-browser",
-                    "/usr/bin/chromium",
-                    "/snap/bin/chromium"
-                };
-
-                string chromeExecutable = null;
-                foreach (var path in systemChromePaths)
-                {
-                    if (System.IO.File.Exists(path))
-                    {
-                        chromeExecutable = path;
-                        _logger.LogInformation("Found system Chrome at: {Path}", path);
-                        break;
-                    }
-                }
-
-                if (chromeExecutable == null)
-                {
-                    throw new Exception("No Chrome executable found. Please install Chrome or Chromium on Ubuntu server.");
-                }
-
-                var fallbackOptions = new LaunchOptions
-                {
-                    Headless = true,
-                    ExecutablePath = chromeExecutable,
-                    Args = new[]
-                    {
-                        "--no-sandbox",
-                        "--disable-setuid-sandbox",
-                        "--disable-dev-shm-usage",
-                        "--disable-gpu",
-                        "--disable-software-rasterizer",
-                        "--no-zygote",
-                        "--single-process",
-                        "--disable-extensions",
-                        "--disable-default-apps",
-                        "--disable-sync",
-                        "--disable-translate",
-                        "--disable-background-timer-throttling",
-                        "--disable-backgrounding-occluded-windows",
-                        "--disable-renderer-backgrounding",
-                        "--disable-ipc-flooding-protection",
-                        "--memory-pressure-off"
-                    },
-                    IgnoreHTTPSErrors = true,
-                    DefaultViewport = new ViewPortOptions { Width = 1280, Height = 800 },
-                    Timeout = 180000 // 3 minutes for Ubuntu servers
-                };
-
-                using var browser = await Puppeteer.LaunchAsync(fallbackOptions);
-                using var page = await browser.NewPageAsync();
-
-                var htmlContent = GenerateInvoiceHtml(invoiceData);
-                await page.SetContentAsync(htmlContent);
-                await page.WaitForTimeoutAsync(5000); // Extra wait time for Ubuntu
-
-                var pdfBytes = await page.PdfDataAsync(new PdfOptions
-                {
-                    Format = PuppeteerSharp.Media.PaperFormat.A4,
-                    PrintBackground = true,
-                    MarginOptions = new PuppeteerSharp.Media.MarginOptions
-                    {
-                        Top = "10mm",
-                        Right = "10mm", 
-                        Bottom = "10mm",
-                        Left = "10mm"
-                    }
-                });
-
-                _logger.LogInformation("Ubuntu fallback PDF generation successful, size: {Size} bytes, xCorrelationId: {CorrelationId}", pdfBytes.Length, xCorrelationId);
-                return pdfBytes;
-            }
-            catch (Exception fallbackEx)
-            {
-                _logger.LogError(fallbackEx, "Ubuntu fallback also failed, xCorrelationId: {CorrelationId}", xCorrelationId);
-                throw new Exception($"Both primary and fallback PDF generation failed on Ubuntu: {fallbackEx.Message}", fallbackEx);
-            }
-        }
-
         private List<string> ValidateInvoiceData(InvoiceDataModel invoiceData)
         {
             var errors = new List<string>();
