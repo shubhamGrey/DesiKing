@@ -2,27 +2,29 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Agronexis.Model.RequestModel
 {
-    public class GenerateInvoicePdfRequestModel
+    /// <summary>
+    /// Unified request model for invoice PDF generation
+    /// Supports both OrderId/UserId approach and complete invoice data approach
+    /// </summary>
+    public class InvoicePdfGenerationRequest
     {
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "OrderId must be greater than 0")]
-        public int OrderId { get; set; }
+        /// <summary>
+        /// OrderId - Use this with UserId to fetch invoice data from database
+        /// </summary>
+        public int? OrderId { get; set; }
 
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "UserId must be greater than 0")]
-        public int UserId { get; set; }
+        /// <summary>
+        /// UserId - Use this with OrderId to fetch invoice data from database
+        /// </summary>
+        public int? UserId { get; set; }
+
+        /// <summary>
+        /// Complete invoice data - Use this when you have all the invoice details
+        /// </summary>
+        public InvoiceDataModel? InvoiceData { get; set; }
     }
 
-    public class GenerateInvoiceByOrderRequestModel
-    {
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "OrderId must be greater than 0")]
-        public int OrderId { get; set; }
 
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "UserId must be greater than 0")]
-        public int UserId { get; set; }
-    }
 
     public class GenerateInvoiceRequestModel
     {
