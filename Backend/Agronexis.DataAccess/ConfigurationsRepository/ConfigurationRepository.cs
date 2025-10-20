@@ -2235,25 +2235,25 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 // Query to get order and related data
                 var orderQuery = @"
                     SELECT 
-                        o.""Id"" as OrderId,
-                        o.""OrderNumber"",
-                        o.""OrderDate"",
-                        o.""Status"",
-                        o.""TotalAmount"",
-                        o.""UserId"",
-                        u.""FirstName"",
-                        u.""LastName"",
-                        u.""Email"",
-                        u.""Phone"",
-                        a.""FullAddress"",
-                        a.""City"",
-                        a.""State"",
-                        a.""Pincode"",
-                        a.""Phone"" as AddressPhone
-                    FROM dbo.""Order"" o
-                    JOIN dbo.""User"" u ON o.""UserId"" = u.""Id""
-                    LEFT JOIN dbo.""Address"" a ON o.""DeliveryAddressId"" = a.""Id""
-                    WHERE o.""Id"" = @OrderId AND o.""UserId"" = @UserId";
+                        o.Id as OrderId,
+                        o.OrderNumber,
+                        o.OrderDate,
+                        o.Status,
+                        o.TotalAmount,
+                        o.UserId,
+                        u.FirstName,
+                        u.LastName,
+                        u.Email,
+                        u.Phone,
+                        a.FullAddress,
+                        a.City,
+                        a.State,
+                        a.Pincode,
+                        a.Phone as AddressPhone
+                    FROM orders o
+                    JOIN users u ON o.UserId = u.Id
+                    LEFT JOIN addresses a ON o.DeliveryAddressId = a.Id
+                    WHERE o.Id = @OrderId AND o.UserId = @UserId";
 
                 using var connection = new NpgsqlConnection(_connectionString);
                 await connection.OpenAsync();
@@ -2268,23 +2268,23 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 // Query to get order items
                 var itemsQuery = @"
                     SELECT 
-                        oi.""Id"",
-                        oi.""ProductId"",
-                        p.""Name"" as ProductName,
-                        p.""Description"",
-                        oi.""Quantity"",
-                        oi.""Price"",
-                        oi.""TotalPrice"",
-                        pp.""Weight"",
-                        w.""Unit"" as WeightUnit,
-                        c.""Name"" as CategoryName,
-                        p.""HsnCode""
-                    FROM dbo.""OrderItem"" oi
-                    JOIN dbo.""Product"" p ON oi.""ProductId"" = p.""Id""
-                    LEFT JOIN dbo.""ProductPrice"" pp ON p.""Id"" = pp.""ProductId""
-                    LEFT JOIN dbo.""Weight"" w ON pp.""WeightId"" = w.""Id""
-                    LEFT JOIN dbo.""Category"" c ON p.""CategoryId"" = c.""Id""
-                    WHERE oi.""OrderId"" = @OrderId";
+                        oi.Id,
+                        oi.ProductId,
+                        p.Name as ProductName,
+                        p.Description,
+                        oi.Quantity,
+                        oi.Price,
+                        oi.TotalPrice,
+                        pp.Weight,
+                        w.Unit as WeightUnit,
+                        c.Name as CategoryName,
+                        p.HsnCode
+                    FROM order_items oi
+                    JOIN products p ON oi.ProductId = p.Id
+                    LEFT JOIN product_prices pp ON p.Id = pp.ProductId
+                    LEFT JOIN weights w ON pp.WeightId = w.Id
+                    LEFT JOIN categories c ON p.CategoryId = c.Id
+                    WHERE oi.OrderId = @OrderId";
 
                 var orderItems = await connection.QueryAsync<dynamic>(itemsQuery, new { OrderId = orderId });
 
