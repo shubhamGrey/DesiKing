@@ -4,13 +4,10 @@ using Agronexis.DataAccess.ConfigurationsRepository;
 using Agronexis.DataAccess.DbContexts;
 using Agronexis.ExternalApi;
 using Agronexis.Model;
-using DinkToPdf;
-using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using System.Runtime.Loader;
 using System.Text;
 
 // Load configuration files
@@ -24,51 +21,6 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
-
-// -----------------------------------------------------------------------------
-// Load wkhtmltopdf native library (Windows & Linux support)
-// -----------------------------------------------------------------------------
-// Load wkhtmltopdf native library for PDF generation
-// -----------------------------------------------------------------------------
-try
-{
-    var context = new CustomAssemblyLoadContext();
-    string basePath = Directory.GetCurrentDirectory();
-    string libraryPath;
-
-    if (OperatingSystem.IsWindows())
-    {
-        libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.dll");
-    }
-    else if (OperatingSystem.IsLinux())
-    {
-        libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.so");
-    }
-    else if (OperatingSystem.IsMacOS())
-    {
-        libraryPath = Path.Combine(basePath, "wwwroot", "libwkhtmltox.dylib");
-    }
-    else
-    {
-        throw new PlatformNotSupportedException("Unsupported OS for DinkToPdf library.");
-    }
-
-    if (File.Exists(libraryPath))
-    {
-        context.LoadUnmanagedLibrary(libraryPath);
-        Console.WriteLine($"Successfully loaded DinkToPdf library: {libraryPath}");
-    }
-    else
-    {
-        Console.WriteLine($"DinkToPdf library not found at: {libraryPath}");
-    }
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Failed to load DinkToPdf library: {ex.Message}");
-}
-
-// -----------------------------------------------------------------------------
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -125,9 +77,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IConfigService, ConfigService>();
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ExternalUtility>();
-
-// Register DinkToPdf converter
-builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 // Logging
 builder.Services.AddLogging(logging =>
@@ -204,17 +153,3 @@ app.MapControllers();
 app.UseMiddleware<RepositoryExceptionHandlerMiddleware>();
 
 app.Run();
-
-// Custom Assembly Loader for unmanaged library
-public class CustomAssemblyLoadContext : AssemblyLoadContext
-{
-    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
-    {
-        return base.LoadUnmanagedDll(unmanagedDllName);
-    }
-
-    public IntPtr LoadUnmanagedLibrary(string absolutePath)
-    {
-        return LoadUnmanagedDllFromPath(absolutePath);
-    }
-}

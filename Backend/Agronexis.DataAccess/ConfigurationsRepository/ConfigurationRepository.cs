@@ -5,8 +5,9 @@ using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
 using Dapper;
-using DinkToPdf;
-using DinkToPdf.Contracts;
+using iText.Html2pdf;
+using iText.Kernel.Pdf;
+using iText.Layout;
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,7 +35,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly IConfiguration _configuration;
         private readonly ExternalUtility _externalUtility;
         private readonly ILogger<ConfigurationRepository> _logger;
-        private readonly IConverter _pdfConverter;
         private readonly IServiceProvider _serviceProvider;
         private readonly string _connectionString;
 
@@ -43,14 +43,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             IConfiguration configuration, 
             ExternalUtility externalUtility, 
             ILogger<ConfigurationRepository> logger,
-            IConverter pdfConverter, 
             IServiceProvider serviceProvider)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _externalUtility = externalUtility;
             _logger = logger;
-            _pdfConverter = pdfConverter;
             _serviceProvider = serviceProvider;
             _connectionString = configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION") ?? throw new InvalidOperationException("Connection string not found");
         }
@@ -1808,64 +1806,81 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             {
                 _logger.LogInformation("Starting invoice PDF generation for xCorrelationId: {CorrelationId}", xCorrelationId);
 
-                // Step 1: Validate invoice data
-                var validationErrors = ValidateInvoiceData(invoiceData.InvoiceData);
-                if (validationErrors.Any())
+                // Simple test HTML to verify iText7 is working
+                var simpleHtml = @"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background-color: #4a5568; color: white; padding: 20px; }
+        .content { margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h1>Test Invoice</h1>
+        <p>Company: " + invoiceData.InvoiceData.Supplier.Name + @"</p>
+    </div>
+    <div class='content'>
+        <h2>Invoice Details</h2>
+        <p><strong>Invoice No:</strong> " + invoiceData.InvoiceData.Invoice.Number + @"</p>
+        <p><strong>Date:</strong> " + invoiceData.InvoiceData.Invoice.Date + @"</p>
+        <p><strong>Customer:</strong> " + invoiceData.InvoiceData.Customer.Name + @"</p>
+        
+        <h3>Items</h3>
+        <table>";
+
+                if (invoiceData.InvoiceData.Items != null && invoiceData.InvoiceData.Items.Any())
                 {
-                    throw new Exception("Invoice validation failed: " + string.Join("; ", validationErrors));
+                    simpleHtml += @"
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Total</th>
+            </tr>";
+                    
+                    foreach (var item in invoiceData.InvoiceData.Items)
+                    {
+                        simpleHtml += $@"
+            <tr>
+                <td>{item.Description}</td>
+                <td>{item.Quantity}</td>
+                <td>₹{item.Rate:F2}</td>
+                <td>₹{item.TotalAmount:F2}</td>
+            </tr>";
+                    }
+                }
+                else
+                {
+                    simpleHtml += @"<tr><td colspan='4'>No items</td></tr>";
                 }
 
-                // Step 2: Generate HTML content
-                var htmlContent = GenerateInvoiceHtml(invoiceData);
+                simpleHtml += @"
+        </table>
+        
+        <div style='margin-top: 20px;'>
+            <p><strong>Total: ₹" + (invoiceData.InvoiceData.TaxSummary?.GrandTotal ?? 0) + @"</strong></p>
+        </div>
+    </div>
+</body>
+</html>";
 
-                // Step 3: Convert HTML to PDF using DinkToPdf (simple and reliable)
-                var globalSettings = new GlobalSettings
-                {
-                    ColorMode = ColorMode.Color,
-                    Orientation = Orientation.Portrait,
-                    PaperSize = PaperKind.A4,
-                    Margins = new MarginSettings
-                    {
-                        Top = 10,
-                        Bottom = 10,
-                        Left = 10,
-                        Right = 10
-                    },
-                    DocumentTitle = $"Invoice_{invoiceData.InvoiceData.Invoice.Number.Replace("/", "_")}",
-                    DPI = 300
-                };
-
-                var objectSettings = new ObjectSettings
-                {
-                    PagesCount = true,
-                    HtmlContent = htmlContent,
-                    WebSettings = new WebSettings
-                    {
-                        DefaultEncoding = "utf-8",
-                        PrintMediaType = true
-                    },
-                    HeaderSettings = new HeaderSettings
-                    {
-                        FontSize = 8,
-                        Right = "Page [page] of [toPage]",
-                        Line = false
-                    },
-                    FooterSettings = new FooterSettings
-                    {
-                        FontSize = 8,
-                        Center = "Generated by AgroNexis",
-                        Line = true
-                    }
-                };
-
-                var pdfDoc = new HtmlToPdfDocument
-                {
-                    GlobalSettings = globalSettings,
-                    Objects = { objectSettings }
-                };
-
-                // Generate PDF
-                var pdfBytes = _pdfConverter.Convert(pdfDoc);
+                // Step 3: Convert HTML to PDF using iText7
+                using var memoryStream = new MemoryStream();
+                
+                using var pdfWriter = new PdfWriter(memoryStream);
+                using var pdfDocument = new PdfDocument(pdfWriter);
+                
+                // Convert HTML to PDF with minimal configuration
+                var converterProperties = new ConverterProperties();
+                HtmlConverter.ConvertToPdf(simpleHtml, pdfDocument, converterProperties);
+                
+                var pdfBytes = memoryStream.ToArray();
                 
                 _logger.LogInformation("Invoice PDF generated successfully, size: {Size} bytes, xCorrelationId: {CorrelationId}", 
                     pdfBytes.Length, xCorrelationId);
@@ -1935,50 +1950,63 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>GST Invoice</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; }
-        .invoice-container { max-width: 1200px; margin: 0 auto; padding: 20px; background: white; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
-        .header-content { display: flex; justify-content: space-between; align-items: center; }
-        .company-info h1 { font-size: 28px; margin-bottom: 10px; }
-        .company-info p { margin-bottom: 5px; opacity: 0.9; }
+        body { font-family: Arial, sans-serif; color: #333; line-height: 1.4; }
+        .invoice-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        .header { background: #4a5568; color: white; padding: 20px; margin-bottom: 20px; }
+        .header-table { width: 100%; }
+        .header-table td { vertical-align: top; }
+        .company-info h1 { font-size: 24px; margin-bottom: 10px; }
+        .company-info p { margin-bottom: 5px; font-size: 14px; }
         .invoice-title { text-align: right; }
-        .invoice-title h2 { font-size: 32px; margin-bottom: 5px; }
-        .invoice-details { background: #f8f9fa; padding: 25px; border-left: 5px solid #667eea; }
-        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .detail-section h3 { color: #667eea; margin-bottom: 15px; font-size: 18px; }
-        .detail-item { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
-        .detail-label { font-weight: 600; color: #495057; }
-        .addresses-section { margin: 30px 0; }
-        .addresses-header { background: #667eea; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: 600; }
-        .addresses-content { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-        .address-box { padding: 25px; border: 1px solid #dee2e6; background: #fff; }
-        .address-box:first-child { border-right: none; }
-        .address-title { font-weight: 700; color: #667eea; margin-bottom: 15px; font-size: 16px; }
-        .address-box div { margin-bottom: 8px; }
-        .items-table { width: 100%; border-collapse: collapse; margin: 30px 0; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        .items-table th { background: #667eea; color: white; padding: 15px 10px; text-align: center; font-weight: 600; }
-        .items-table td { padding: 12px 10px; border: 1px solid #dee2e6; text-align: center; }
+        .invoice-title h2 { font-size: 28px; margin-bottom: 5px; }
+        
+        /* Details section */
+        .details-section { background: #f8f9fa; padding: 20px; margin-bottom: 20px; }
+        .details-table { width: 100%; }
+        .details-table td { padding: 8px; border-bottom: 1px solid #e9ecef; }
+        .detail-label { font-weight: bold; color: #495057; width: 150px; }
+        
+        /* Address section */
+        .addresses-section { margin-bottom: 20px; }
+        .addresses-header { background: #4a5568; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        .addresses-table { width: 100%; border: 1px solid #dee2e6; }
+        .addresses-table td { width: 50%; padding: 20px; border: 1px solid #dee2e6; vertical-align: top; }
+        .address-title { font-weight: bold; color: #4a5568; margin-bottom: 10px; }
+        .address-box div { margin-bottom: 5px; }
+        
+        /* Items table */
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th { background: #4a5568; color: white; padding: 12px 8px; text-align: center; font-weight: bold; border: 1px solid #333; }
+        .items-table td { padding: 10px 8px; border: 1px solid #dee2e6; text-align: center; }
         .items-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
-        .items-table tbody tr:hover { background-color: #e9ecef; }
         .text-left { text-align: left !important; }
         .text-right { text-align: right !important; }
-        .tax-summary { background: #f8f9fa; padding: 25px; border-radius: 8px; margin: 30px 0; }
-        .tax-summary h3 { color: #667eea; margin-bottom: 20px; }
-        .tax-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .tax-item { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; }
-        .total-amount { background: #667eea; color: white; padding: 15px; border-radius: 5px; margin-top: 15px; }
-        .total-amount .amount { font-size: 24px; font-weight: bold; }
-        .footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid #667eea; color: #6c757d; }
-        .signature-section { margin: 40px 0; display: flex; justify-content: space-between; }
-        .signature-box { text-align: center; width: 200px; }
-        .signature-line { border-top: 1px solid #000; margin-top: 60px; padding-top: 10px; }
-        .terms { background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        
+        /* Tax summary */
+        .tax-summary { background: #f8f9fa; padding: 20px; margin: 20px 0; }
+        .tax-summary h3 { color: #4a5568; margin-bottom: 15px; }
+        .tax-table { width: 100%; }
+        .tax-table td { padding: 5px 0; }
+        .tax-item-label { font-weight: bold; }
+        .tax-item-value { text-align: right; }
+        .total-amount { background: #4a5568; color: white; padding: 15px; margin-top: 15px; }
+        .total-amount-table { width: 100%; }
+        .total-amount .amount { font-size: 20px; font-weight: bold; }
+        
+        /* Footer sections */
+        .terms { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; }
         .terms h4 { color: #856404; margin-bottom: 10px; }
-        .e-invoice-section { background: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .signature-section { margin: 30px 0; }
+        .signature-table { width: 100%; }
+        .signature-box { text-align: center; padding: 20px; }
+        .signature-line { border-top: 1px solid #000; margin-top: 40px; padding-top: 10px; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; padding: 15px; border-top: 2px solid #4a5568; color: #6c757d; }
+        
         @media print { .invoice-container { max-width: none; padding: 0; } }
     </style>
 </head>
@@ -1986,69 +2014,81 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
     <div class='invoice-container'>
         <!-- Header -->
         <div class='header'>
-            <div class='header-content'>
-                <div class='company-info'>
-                    <h1>" + invoiceData.Supplier.Name + @"</h1>
-                    <p>" + invoiceData.Supplier.Address + @"</p>
-                    <p>GSTIN: " + invoiceData.Supplier.Gstin + @" | PAN: " + (invoiceData.Supplier.PanNumber ?? "N/A") + @"</p>
-                    <p>📧 " + (invoiceData.Supplier.Email ?? "N/A") + @" | 📞 " + (invoiceData.Supplier.Phone ?? "N/A") + @"</p>
-                </div>
-                <div class='invoice-title'>
-                    <h2>TAX INVOICE</h2>
-                    <p>GST Compliant</p>
-                </div>
-            </div>
+            <table class='header-table'>
+                <tr>
+                    <td>
+                        <div class='company-info'>
+                            <h1>" + invoiceData.Supplier.Name + @"</h1>
+                            <p>" + invoiceData.Supplier.Address + @"</p>
+                            <p>GSTIN: " + invoiceData.Supplier.Gstin + @" | PAN: " + (invoiceData.Supplier.PanNumber ?? "N/A") + @"</p>
+                            <p>Email: " + (invoiceData.Supplier.Email ?? "N/A") + @" | Phone: " + (invoiceData.Supplier.Phone ?? "N/A") + @"</p>
+                        </div>
+                    </td>
+                    <td>
+                        <div class='invoice-title'>
+                            <h2>TAX INVOICE</h2>
+                            <p>GST Compliant</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <!-- Invoice Details -->
-        <div class='invoice-details'>
-            <div class='details-grid'>
-                <div class='detail-section'>
-                    <h3>Invoice Information</h3>
-                    <div class='detail-item'><span class='detail-label'>Invoice No:</span><span>" + invoiceData.Invoice.Number + @"</span></div>
-                    <div class='detail-item'><span class='detail-label'>Invoice Date:</span><span>" + invoiceData.Invoice.Date + @"</span></div>
-                    <div class='detail-item'><span class='detail-label'>Due Date:</span><span>" + (invoiceData.Invoice.DueDate ?? "N/A") + @"</span></div>
-                    <div class='detail-item'><span class='detail-label'>Financial Year:</span><span>" + (invoiceData.Invoice.FinancialYear ?? "N/A") + @"</span></div>
-                </div>
-                <div class='detail-section'>
-                    <h3>Order Information</h3>
-                    <div class='detail-item'><span class='detail-label'>Order No:</span><span>" + (invoiceData.Invoice.OrderNumber ?? "N/A") + @"</span></div>
-                    <div class='detail-item'><span class='detail-label'>Order Date:</span><span>" + (invoiceData.Invoice.OrderDate ?? "N/A") + @"</span></div>
-                    <div class='detail-item'><span class='detail-label'>Place of Supply:</span><span>" + (invoiceData.TaxSummary?.PlaceOfSupply ?? "N/A") + @"</span></div>
-                </div>
-            </div>
+        <div class='details-section'>
+            <table class='details-table'>
+                <tr>
+                    <td class='detail-label'>Invoice No:</td>
+                    <td>" + invoiceData.Invoice.Number + @"</td>
+                    <td class='detail-label'>Order No:</td>
+                    <td>" + (invoiceData.Invoice.OrderNumber ?? "N/A") + @"</td>
+                </tr>
+                <tr>
+                    <td class='detail-label'>Invoice Date:</td>
+                    <td>" + invoiceData.Invoice.Date + @"</td>
+                    <td class='detail-label'>Order Date:</td>
+                    <td>" + (invoiceData.Invoice.OrderDate ?? "N/A") + @"</td>
+                </tr>
+                <tr>
+                    <td class='detail-label'>Due Date:</td>
+                    <td>" + (invoiceData.Invoice.DueDate ?? "N/A") + @"</td>
+                    <td class='detail-label'>Place of Supply:</td>
+                    <td>" + (invoiceData.TaxSummary?.PlaceOfSupply ?? "N/A") + @"</td>
+                </tr>
+            </table>
         </div>
 
         <!-- Addresses -->
         <div class='addresses-section'>
             <div class='addresses-header'>Bill To & Ship To</div>
-            <div class='addresses-content'>
-                <div class='address-box'>
-                    <div class='address-title'>🏢 Bill To (Customer Details)</div>
-                    <div><strong>" + invoiceData.Customer.Name + @"</strong></div>
-                    <div>" + invoiceData.Customer.Address + @"</div>
-                    <div>" + (invoiceData.Customer.City ?? "N/A") + @", " + (invoiceData.Customer.State ?? "N/A") + @" - " + (invoiceData.Customer.Pincode ?? "N/A") + @"</div>
-                    <div>📞 " + (invoiceData.Customer.Phone ?? "N/A") + @"</div>");
+            <table class='addresses-table'>
+                <tr>
+                    <td>
+                        <div class='address-title'>Bill To (Customer Details)</div>
+                        <div><strong>" + invoiceData.Customer.Name + @"</strong></div>
+                        <div>" + invoiceData.Customer.Address + @"</div>
+                        <div>" + (invoiceData.Customer.City ?? "N/A") + @", " + (invoiceData.Customer.State ?? "N/A") + @" - " + (invoiceData.Customer.Pincode ?? "N/A") + @"</div>
+                        <div>Phone: " + (invoiceData.Customer.Phone ?? "N/A") + @"</div>");
 
             if (!string.IsNullOrEmpty(invoiceData.Customer.Email))
-                html.Append($@"<div>📧 {invoiceData.Customer.Email}</div>");
+                html.Append($@"<div>Email: {invoiceData.Customer.Email}</div>");
 
             if (!string.IsNullOrEmpty(invoiceData.Customer.Gstin))
                 html.Append($@"<div><strong>GSTIN:</strong> {invoiceData.Customer.Gstin}</div>");
 
             html.Append($@"<div><strong>State Code:</strong> {invoiceData.Customer.StateCode ?? "N/A"}</div>
-                </div>
-                <div class='address-box'>
-                    <div class='address-title'>🚚 Ship To</div>");
+                    </td>
+                    <td>
+                        <div class='address-title'>Ship To</div>");
 
             if (invoiceData.DeliveryAddress != null)
             {
                 html.Append($@"
-                    <div><strong>{invoiceData.DeliveryAddress.Name}</strong></div>
-                    <div>{invoiceData.DeliveryAddress.Address}</div>
-                    <div>{invoiceData.DeliveryAddress.City}, {invoiceData.DeliveryAddress.State} - {invoiceData.DeliveryAddress.Pincode}</div>
-                    <div>📞 {invoiceData.DeliveryAddress.Phone}</div>
-                    <div><strong>State Code:</strong> {invoiceData.DeliveryAddress.StateCode}</div>");
+                        <div><strong>{invoiceData.DeliveryAddress.Name}</strong></div>
+                        <div>{invoiceData.DeliveryAddress.Address}</div>
+                        <div>{invoiceData.DeliveryAddress.City}, {invoiceData.DeliveryAddress.State} - {invoiceData.DeliveryAddress.Pincode}</div>
+                        <div>Phone: {invoiceData.DeliveryAddress.Phone}</div>
+                        <div><strong>State Code:</strong> {invoiceData.DeliveryAddress.StateCode}</div>");
             }
             else
             {
@@ -2056,8 +2096,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
 
             html.Append(@"
-                </div>
-            </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <!-- Items Table -->
@@ -2066,7 +2107,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 <tr>
                     <th>S.No</th>
                     <th>Description</th>
-                    <th>HSN Code</th>
+                    <th>HSN</th>
                     <th>Qty</th>
                     <th>Unit</th>
                     <th>Rate</th>
@@ -2074,7 +2115,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     <th>CGST</th>
                     <th>SGST</th>
                     <th>IGST</th>
-                    <th>Total Amount</th>
+                    <th>Total</th>
                 </tr>
             </thead>
             <tbody>");
@@ -2117,39 +2158,44 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 html.Append($@"
         <div class='tax-summary'>
             <h3>Tax Summary</h3>
-            <div class='tax-grid'>
-                <div>
-                    <div class='tax-item'><span>Total Taxable Value:</span><span>₹{invoiceData.TaxSummary.TotalTaxableValue:F2}</span></div>
-                    <div class='tax-item'><span>CGST:</span><span>₹{invoiceData.TaxSummary.TotalCGST:F2}</span></div>
-                    <div class='tax-item'><span>SGST:</span><span>₹{invoiceData.TaxSummary.TotalSGST:F2}</span></div>
-                    <div class='tax-item'><span>IGST:</span><span>₹{invoiceData.TaxSummary.TotalIGST:F2}</span></div>
-                </div>
-                <div>
-                    <div class='tax-item'><span>Total Discount:</span><span>₹{invoiceData.TaxSummary.TotalDiscount:F2}</span></div>
-                    <div class='tax-item'><span>Shipping Charges:</span><span>₹{invoiceData.TaxSummary.ShippingCharges:F2}</span></div>
-                    <div class='tax-item'><span>Total Tax:</span><span>₹{invoiceData.TaxSummary.TotalTax:F2}</span></div>
-                </div>
-            </div>
+            <table class='tax-table'>
+                <tr>
+                    <td class='tax-item-label'>Total Taxable Value:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalTaxableValue:F2}</td>
+                    <td width='50'></td>
+                    <td class='tax-item-label'>Total Discount:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalDiscount:F2}</td>
+                </tr>
+                <tr>
+                    <td class='tax-item-label'>CGST:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalCGST:F2}</td>
+                    <td></td>
+                    <td class='tax-item-label'>Shipping Charges:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.ShippingCharges:F2}</td>
+                </tr>
+                <tr>
+                    <td class='tax-item-label'>SGST:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalSGST:F2}</td>
+                    <td></td>
+                    <td class='tax-item-label'>Total Tax:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalTax:F2}</td>
+                </tr>
+                <tr>
+                    <td class='tax-item-label'>IGST:</td>
+                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalIGST:F2}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
             <div class='total-amount'>
-                <div style='display: flex; justify-content: space-between; align-items: center;'>
-                    <span>Grand Total:</span>
-                    <span class='amount'>₹{invoiceData.TaxSummary.GrandTotal:F2}</span>
-                </div>
+                <table class='total-amount-table'>
+                    <tr>
+                        <td>Grand Total:</td>
+                        <td class='text-right'><span class='amount'>₹{invoiceData.TaxSummary.GrandTotal:F2}</span></td>
+                    </tr>
+                </table>
             </div>
-        </div>");
-            }
-
-            // Payment Information
-            if (invoiceData.Payment != null)
-            {
-                html.Append($@"
-        <div class='tax-summary'>
-            <h3>Payment Information</h3>
-            <div class='tax-item'><span>Payment Method:</span><span>{invoiceData.Payment.Method ?? "N/A"}</span></div>
-            <div class='tax-item'><span>Transaction ID:</span><span>{invoiceData.Payment.TransactionId ?? "N/A"}</span></div>
-            <div class='tax-item'><span>Payment Date:</span><span>{invoiceData.Payment.PaymentDate ?? "N/A"}</span></div>
-            <div class='tax-item'><span>Status:</span><span>{invoiceData.Payment.Status ?? "N/A"}</span></div>
-            <div class='tax-item'><span>Amount Paid:</span><span>₹{invoiceData.Payment.AmountPaid:F2}</span></div>
         </div>");
             }
 
@@ -2180,40 +2226,22 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             html.Append("</div>");
 
-            // E-Invoice info (if available)
-            if (invoiceData.EInvoice != null && !string.IsNullOrEmpty(invoiceData.EInvoice.Irn))
-            {
-                html.Append($@"
-        <div class='e-invoice-section'>
-            <h3>E-Invoice Details</h3>
-            <p><strong>IRN:</strong> {invoiceData.EInvoice.Irn}</p>
-            <p><strong>Ack No:</strong> {invoiceData.EInvoice.AckNo} | <strong>Ack Date:</strong> {invoiceData.EInvoice.AckDate}</p>");
-                
-                if (!string.IsNullOrEmpty(invoiceData.EInvoice.QrCode))
-                {
-                    html.Append($@"<p><strong>QR Code:</strong> <img src='{invoiceData.EInvoice.QrCode}' alt='QR Code' style='width: 100px; height: 100px;' /></p>");
-                }
-                
-                html.Append("</div>");
-            }
-
             // Signature section
             html.Append(@"
         <div class='signature-section'>
-            <div class='signature-box'>
-                <div class='signature-line'>
-                    <strong>Customer Signature</strong>
-                </div>
-            </div>
-            <div class='signature-box'>
-                <div class='signature-line'>
-                    <strong>Authorized Signatory</strong>
-                </div>
-            </div>
-        </div>");
+            <table class='signature-table'>
+                <tr>
+                    <td class='signature-box'>
+                        <div class='signature-line'>Customer Signature</div>
+                    </td>
+                    <td class='signature-box'>
+                        <div class='signature-line'>Authorized Signatory</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-            // Footer
-            html.Append(@"
+        <!-- Footer -->
         <div class='footer'>
             <p>This is a computer-generated invoice and does not require a physical signature.</p>
             <p>Thank you for your business!</p>
