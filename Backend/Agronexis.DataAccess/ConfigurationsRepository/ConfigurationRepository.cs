@@ -13,8 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Asn1.X509;
-using PuppeteerSharp;
-using PuppeteerSharp.Media;
 using Razorpay.Api;
 using System;
 using System.Collections.Generic;
