@@ -37,11 +37,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly IServiceProvider _serviceProvider;
 
         public ConfigurationRepository(
-            AppDbContext dbContext, 
-            IConfiguration configuration, 
-            ExternalUtility externalUtility, 
+            AppDbContext dbContext,
+            IConfiguration configuration,
+            ExternalUtility externalUtility,
             ILogger<ConfigurationRepository> logger,
-            IConverter pdfConverter, 
+            IConverter pdfConverter,
             IServiceProvider serviceProvider)
         {
             _dbContext = dbContext;
@@ -959,6 +959,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 };
 
                 await _dbContext.Transactions.AddAsync(transaction);
+                await _dbContext.SaveChangesAsync();
 
                 if (order != null)
                 {
@@ -968,7 +969,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     try
                     {
                         var shippingAddress = await _dbContext.Addresses
-                            .FirstOrDefaultAsync(a => a.UserId == order.UserId && a.AddressType == "SHIPPING");
+                            .FirstOrDefaultAsync(a => a.UserId == order.UserId && a.AddressType == "SHIPPING" && a.Id == order.ShippingAddressId);
 
                         if (shippingAddress != null)
                         {
@@ -1006,11 +1007,30 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                             var pickupResult = await _externalUtility.CreatePickupBooking(pickupBookingRequest, xCorrelationId);
 
-                            if (pickupResult != null && pickupResult.ErrorCode == 0)
+                            if (pickupResult == null || pickupResult.ErrorCode != 0 ||
+                                (!string.IsNullOrEmpty(pickupResult.Errors) && pickupResult.Errors.Equals("error", StringComparison.OrdinalIgnoreCase)))
                             {
-                                var docketNo = pickupResult.Message.Split(':').LastOrDefault();
+                                _logger.LogWarning("Pickup booking failed for OrderId: {OrderId}, ErrorCode: {ErrorCode}, Errors: {Errors}",
+                                    verify.OrderId, pickupResult?.ErrorCode, pickupResult?.Errors);
+
+                                order.Status = "refund initiated";
+                                order.ModifiedDate = DateTime.UtcNow;
+                                await _dbContext.SaveChangesAsync();
+
+                                var refundRequest = new RefundPaymentRequestModel
+                                {
+                                    PaymentId = verify.PaymentId,
+                                    AmountInPaise = (int)(verify.TotalAmount * 100)
+                                };
+
+                                await RefundPayment(refundRequest, xCorrelationId);
+                            }
+                            else
+                            {
+                                var docketNo = pickupResult.Message?.Split(':').LastOrDefault()?.Trim();
                                 order.DocketNumber = docketNo;
                                 order.ModifiedDate = DateTime.UtcNow;
+                                await _dbContext.SaveChangesAsync();
                             }
                         }
                     }
@@ -1020,8 +1040,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     }
                 }
 
-                await _dbContext.SaveChangesAsync();
-
                 return true;
             }
             catch (Exception ex)
@@ -1029,6 +1047,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred during payment verification", xCorrelationId, ex);
             }
         }
+
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
         {
@@ -1099,7 +1118,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 if (totalRefunded >= existingTransaction.TotalAmount)
                     existingTransaction.Status = "refunded";
                 else if (totalRefunded > 0)
-                    existingTransaction.Status = "partially_refunded";
+                    existingTransaction.Status = "partially refunded";
             }
 
             await _dbContext.SaveChangesAsync();
