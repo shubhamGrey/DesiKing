@@ -2,6 +2,28 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Agronexis.Model.RequestModel
 {
+    public class GenerateInvoicePdfRequestModel
+    {
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "OrderId must be greater than 0")]
+        public int OrderId { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "UserId must be greater than 0")]
+        public int UserId { get; set; }
+    }
+
+    public class GenerateInvoiceByOrderRequestModel
+    {
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "OrderId must be greater than 0")]
+        public int OrderId { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "UserId must be greater than 0")]
+        public int UserId { get; set; }
+    }
+
     public class GenerateInvoiceRequestModel
     {
         [Required]

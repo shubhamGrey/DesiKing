@@ -4,8 +4,10 @@ using Agronexis.Model;
 using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
+using Dapper;
 using DinkToPdf;
 using DinkToPdf.Contracts;
+using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +36,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly ILogger<ConfigurationRepository> _logger;
         private readonly IConverter _pdfConverter;
         private readonly IServiceProvider _serviceProvider;
+        private readonly string _connectionString;
 
         public ConfigurationRepository(
             AppDbContext dbContext, 
@@ -49,6 +52,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             _logger = logger;
             _pdfConverter = pdfConverter;
             _serviceProvider = serviceProvider;
+            _connectionString = configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION") ?? throw new InvalidOperationException("Connection string not found");
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
@@ -2219,6 +2223,196 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 </html>");
 
             return html.ToString();
+        }
+
+        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(int orderId, int userId, string xCorrelationId)
+        {
+            try
+            {
+                _logger.LogInformation("Getting invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}", 
+                    orderId, userId, xCorrelationId);
+
+                // Query to get order and related data
+                var orderQuery = @"
+                    SELECT 
+                        o.Id as OrderId,
+                        o.OrderNumber,
+                        o.OrderDate,
+                        o.Status,
+                        o.TotalAmount,
+                        o.UserId,
+                        u.FirstName,
+                        u.LastName,
+                        u.Email,
+                        u.Phone,
+                        a.FullAddress,
+                        a.City,
+                        a.State,
+                        a.Pincode,
+                        a.Phone as AddressPhone
+                    FROM orders o
+                    JOIN users u ON o.UserId = u.Id
+                    LEFT JOIN addresses a ON o.DeliveryAddressId = a.Id
+                    WHERE o.Id = @OrderId AND o.UserId = @UserId";
+
+                using var connection = new NpgsqlConnection(_connectionString);
+                await connection.OpenAsync();
+
+                var orderData = await connection.QueryFirstOrDefaultAsync<dynamic>(orderQuery, new { OrderId = orderId, UserId = userId });
+
+                if (orderData == null)
+                {
+                    throw new Exception($"Order not found for OrderId: {orderId}, UserId: {userId}");
+                }
+
+                // Query to get order items
+                var itemsQuery = @"
+                    SELECT 
+                        oi.Id,
+                        oi.ProductId,
+                        p.Name as ProductName,
+                        p.Description,
+                        oi.Quantity,
+                        oi.Price,
+                        oi.TotalPrice,
+                        pp.Weight,
+                        w.Unit as WeightUnit,
+                        c.Name as CategoryName,
+                        p.HsnCode
+                    FROM order_items oi
+                    JOIN products p ON oi.ProductId = p.Id
+                    LEFT JOIN product_prices pp ON p.Id = pp.ProductId
+                    LEFT JOIN weights w ON pp.WeightId = w.Id
+                    LEFT JOIN categories c ON p.CategoryId = c.Id
+                    WHERE oi.OrderId = @OrderId";
+
+                var orderItems = await connection.QueryAsync<dynamic>(itemsQuery, new { OrderId = orderId });
+
+                // Build the invoice request model
+                var invoiceRequest = new GenerateInvoiceRequestModel
+                {
+                    OrderId = orderId.ToString(),
+                    InvoiceData = new InvoiceDataModel
+                    {
+                        Supplier = new InvoiceSupplierModel
+                        {
+                            Name = "AgroNexis Private Limited",
+                            Address = "123 Spice Market Road, Mumbai, Maharashtra, India - 400001",
+                            Gstin = "27ABCDE1234F1Z5",
+                            PanNumber = "ABCDE1234F",
+                            Email = "billing@agronexis.com",
+                            Phone = "+91 9876543210",
+                            Website = "https://agronexis.com"
+                        },
+                        Invoice = new InvoiceDetailsModel
+                        {
+                            Number = $"GST/INV/{DateTime.Now.Year}/{orderId:D6}",
+                            Date = DateTime.Now.ToString("dd-MM-yyyy"),
+                            DueDate = DateTime.Now.AddDays(30).ToString("dd-MM-yyyy"),
+                            FinancialYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
+                            OrderNumber = orderData.OrderNumber?.ToString() ?? orderId.ToString(),
+                            OrderDate = ((DateTime)orderData.OrderDate).ToString("dd-MM-yyyy")
+                        },
+                        Customer = new InvoiceCustomerModel
+                        {
+                            Name = $"{orderData.FirstName} {orderData.LastName}".Trim(),
+                            Address = orderData.FullAddress?.ToString() ?? "Address not provided",
+                            City = orderData.City?.ToString() ?? "City not provided",
+                            State = orderData.State?.ToString() ?? "State not provided",
+                            Pincode = orderData.Pincode?.ToString() ?? "000000",
+                            Phone = orderData.AddressPhone?.ToString() ?? orderData.Phone?.ToString() ?? "Phone not provided",
+                            Email = orderData.Email?.ToString() ?? "Email not provided",
+                            StateCode = "27" // Default to Maharashtra, you might want to add state code mapping
+                        },
+                        Items = new List<InvoiceItemModel>(),
+                        TaxSummary = new InvoiceTaxSummaryModel(),
+                        Payment = new InvoicePaymentModel
+                        {
+                            Method = "Online Payment",
+                            Status = "Paid",
+                            AmountPaid = (decimal)(orderData.TotalAmount ?? 0),
+                            PaymentDate = ((DateTime)orderData.OrderDate).ToString("dd-MM-yyyy")
+                        },
+                        Terms = new List<string>
+                        {
+                            "1. Payment is due within 30 days of invoice date.",
+                            "2. Goods once sold will not be taken back.",
+                            "3. All disputes are subject to Mumbai jurisdiction only.",
+                            "4. Late payment charges may apply after due date."
+                        },
+                        EInvoice = new InvoiceEInvoiceModel()
+                    }
+                };
+
+                // Process order items
+                decimal totalTaxableValue = 0;
+                decimal totalTax = 0;
+                int slNo = 1;
+
+                foreach (var item in orderItems)
+                {
+                    var rate = (decimal)(item.Price ?? 0);
+                    var quantity = (int)(item.Quantity ?? 0);
+                    var taxableValue = rate * quantity;
+                    
+                    // Calculate GST (assuming 18% GST for spices)
+                    var gstRate = 18m;
+                    var cgstRate = gstRate / 2; // 9%
+                    var sgstRate = gstRate / 2; // 9%
+                    
+                    var cgstAmount = (taxableValue * cgstRate) / 100;
+                    var sgstAmount = (taxableValue * sgstRate) / 100;
+                    var totalItemTax = cgstAmount + sgstAmount;
+                    var totalAmount = taxableValue + totalItemTax;
+
+                    invoiceRequest.InvoiceData.Items.Add(new InvoiceItemModel
+                    {
+                        SlNo = slNo++,
+                        Description = item.ProductName?.ToString() ?? "Product",
+                        HsnCode = item.HsnCode?.ToString() ?? "0909",
+                        Quantity = quantity,
+                        Unit = item.WeightUnit?.ToString() ?? "KG",
+                        Rate = rate,
+                        TaxableValue = taxableValue,
+                        DiscountAmount = 0,
+                        CgstRate = cgstRate,
+                        SgstRate = sgstRate,
+                        IgstRate = 0,
+                        CgstAmount = cgstAmount,
+                        SgstAmount = sgstAmount,
+                        IgstAmount = 0,
+                        TotalAmount = totalAmount
+                    });
+
+                    totalTaxableValue += taxableValue;
+                    totalTax += totalItemTax;
+                }
+
+                // Update tax summary
+                invoiceRequest.InvoiceData.TaxSummary = new InvoiceTaxSummaryModel
+                {
+                    TotalTaxableValue = totalTaxableValue,
+                    TotalDiscount = 0,
+                    TotalCGST = invoiceRequest.InvoiceData.Items.Sum(x => x.CgstAmount),
+                    TotalSGST = invoiceRequest.InvoiceData.Items.Sum(x => x.SgstAmount),
+                    TotalIGST = 0,
+                    TotalTax = totalTax,
+                    ShippingCharges = 0,
+                    GrandTotal = totalTaxableValue + totalTax,
+                    PlaceOfSupply = invoiceRequest.InvoiceData.Customer.State
+                };
+
+                _logger.LogInformation("Successfully retrieved invoice data for OrderId: {OrderId}, Items: {ItemCount}", 
+                    orderId, invoiceRequest.InvoiceData.Items.Count);
+
+                return invoiceRequest;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}", 
+                    orderId, userId, xCorrelationId);
+                throw;
+            }
         }
     }
 }
