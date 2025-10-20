@@ -447,7 +447,7 @@ export default function About() {
           </Typography>
         </Grid>
         <Grid
-          size={{ xs: 12, md: 6 }}
+          size={{ xs: 12, md: 12 }}
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
@@ -474,7 +474,7 @@ export default function About() {
             </IconButton>
           </Stack>
         </Grid>
-        <Grid
+        {/* <Grid
           size={{ xs: 12, md: 6 }}
           sx={{ display: "flex", justifyContent: "center" }}
         >
@@ -501,7 +501,7 @@ export default function About() {
               <LinkedIn fontSize="large" />
             </IconButton>
           </Stack>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Container>
   );
