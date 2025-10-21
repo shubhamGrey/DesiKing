@@ -2286,7 +2286,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     .Include(a => a.State)
                     .Include(a => a.Country)
                     .FirstOrDefaultAsync(a =>
-                        (a.UserId == request.UserId && a.AddressType == "SHIPPING" && a.IsActive && !a.IsDeleted)
+                        (a.UserId == order.UserId && a.AddressType == "SHIPPING" && a.IsActive && !a.IsDeleted)
                     );
 
                 if (order == null)
