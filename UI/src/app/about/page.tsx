@@ -25,7 +25,7 @@ import Spices from "../../../public/Spices.png";
 import Founder from "../../../public/Founder.jpg";
 import CoFounder from "../../../public/Co Founder.jpg";
 import CoFounderOld from "../../../public/Co Founder Old.PNG";
-// import Director from "../../../public/Director.jpg";
+import Director from "../../../public/Director.jpg";
 import Image from "next/image";
 import { Michroma } from "next/font/google";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -447,7 +447,7 @@ export default function About() {
           </Typography>
         </Grid>
         <Grid
-          size={{ xs: 12, md: 12 }}
+          size={{ xs: 12, md: 6 }}
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <Stack>
@@ -474,7 +474,7 @@ export default function About() {
             </IconButton>
           </Stack>
         </Grid>
-        {/* <Grid
+        <Grid
           size={{ xs: 12, md: 6 }}
           sx={{ display: "flex", justifyContent: "center" }}
         >
@@ -501,7 +501,7 @@ export default function About() {
               <LinkedIn fontSize="large" />
             </IconButton>
           </Stack>
-        </Grid> */}
+        </Grid>
       </Grid>
     </Container>
   );

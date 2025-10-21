@@ -44,6 +44,8 @@ import {
   CheckCircle,
   Schedule,
   Download,
+  Star,
+  ArrowBack,
   ContentCopy,
   Phone,
   Email,
@@ -55,13 +57,12 @@ import {
   AccessTime,
   CreditCard,
   DeliveryDining,
-  Print,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { isLoggedIn, getUserId, isAdmin } from "@/utils/auth";
+import { isLoggedIn, getUserId } from "@/utils/auth";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
@@ -173,39 +174,35 @@ interface OrderTimeline {
 
 // Shipment Tracking Interfaces
 interface ShipmentSummary {
-  AWBNO: string;
-  REF_NO?: string;
-  BOOKING_DATE: string;
-  ORIGIN: string;
-  NO_OF_PIECES: string;
-  PINCODE: string;
-  DESTINATION: string;
-  PRODUCT: string;
-  SERVICE_TYPE: string;
-  CURRENT_STATUS: string;
-  CURRENT_CITY: string;
-  EVENTDATE: string;
-  EVENTTIME: string;
-  TRACKING_CODE: string;
-  NDR_REASON?: string;
+  awbNo: string;
+  refNo: string;
+  bookingDate: string;
+  origin: string;
+  destination: string;
+  product: string;
+  serviceType: string;
+  currentStatus: string;
+  currentCity: string;
+  eventDate: string;
+  eventTime: string;
+  trackingCode: string;
+  ndrReason?: string;
 }
 
 interface TrackingDetail {
-  CURRENT_CITY: string;
-  CURRENT_STATUS: string;
-  EVENTDATE: string;
-  EVENTTIME: string;
-  TRACKING_CODE: string;
+  currentCity: string;
+  currentStatus: string;
+  eventDate: string;
+  eventTime: string;
+  trackingCode: string;
 }
 
 interface ShipmentTrackingData {
-  summaryTrack: ShipmentSummary | null;
+  summaryTrack: ShipmentSummary;
   lstDetails: TrackingDetail[];
-  ResponseStatus: {
-    ErrorCode: string | null;
-    Message: string;
-    StackTrace: string | null;
-    Errors: string | null;
+  responseStatus: {
+    status: string;
+    message: string;
   };
 }
 
@@ -228,7 +225,12 @@ interface OrderDetails {
   deliveredDate?: string;
   expectedDeliveryDate?: string;
   trackingNumber?: string;
-  docketNumber?: string;
+  courierCompany?: string;
+  courierPhone?: string;
+  deliveryAgent?: string;
+  deliveryAgentPhone?: string;
+  shippingMethod?: string;
+  deliveryInstructions?: string;
   totalAmount: number;
   subtotal: number;
   shippingCharges: number;
@@ -329,14 +331,74 @@ const generateOrderTimeline = (
     },
   ];
 
-  // Add payment confirmation only if order is paid
-  if (order.status === "paid") {
-    timeline.push({
-      status: "Payment Confirmed",
-      timestamp: order.createdDate,
-      description: `Payment of ₹${order.totalAmount} received and confirmed`,
-      location: "Payment Gateway",
+  // Add shipment tracking details to timeline if available
+  if (shipmentData?.lstDetails && shipmentData.lstDetails.length > 0) {
+    // Add shipment tracking events, sorted by event date (most recent first)
+    const sortedShipmentEvents = [...shipmentData.lstDetails].sort((a, b) => {
+      const dateA = new Date(`${a.eventDate} ${a.eventTime}`);
+      const dateB = new Date(`${b.eventDate} ${b.eventTime}`);
+      return dateB.getTime() - dateA.getTime();
     });
+
+    // Insert shipment events after order placed
+    sortedShipmentEvents.forEach((event) => {
+      const eventDateTime = `${event.eventDate} ${event.eventTime}`;
+      timeline.push({
+        status: event.currentStatus || "Shipment Update",
+        timestamp: eventDateTime,
+        description: `Package ${
+          event.currentStatus?.toLowerCase() || "status updated"
+        }`,
+        location: event.currentCity || "In Transit",
+      });
+    });
+  }
+
+  if (order.status === "paid") {
+    timeline.push(
+      {
+        status: "Payment Confirmed",
+        timestamp: order.createdDate,
+        description: `Payment of ₹${order.totalAmount} received and confirmed`,
+        location: "Payment Gateway",
+      },
+      {
+        status: "Order Processing",
+        timestamp: addDays(order.createdDate, 1),
+        description: "Order is being prepared for shipment",
+        location: "DesiKing Warehouse",
+      },
+      {
+        status: "Quality Check",
+        timestamp: addDays(order.createdDate, 2),
+        description: "Products passed quality inspection",
+        location: "DesiKing Warehouse",
+      },
+      {
+        status: "Packed",
+        timestamp: addDays(order.createdDate, 2),
+        description: "Order packed and ready for shipment",
+        location: "DesiKing Warehouse",
+      },
+      {
+        status: "Shipped",
+        timestamp: addDays(order.createdDate, 3),
+        description: "Package handed over to delivery partner",
+        location: "Shipping Hub",
+      },
+      {
+        status: "Out for Delivery",
+        timestamp: addDays(order.createdDate, 5),
+        description: "Package is out for delivery",
+        location: "Local Delivery Hub",
+      },
+      {
+        status: "Delivered",
+        timestamp: addDays(order.createdDate, 6),
+        description: "Order delivered successfully",
+        location: "Customer Address",
+      }
+    );
   } else if (order.status === "failed") {
     timeline.push({
       status: "Payment Failed",
@@ -345,56 +407,6 @@ const generateOrderTimeline = (
       location: "Payment Gateway",
     });
   }
-
-  // Add shipment tracking details to timeline if available
-  if (shipmentData?.lstDetails && shipmentData.lstDetails.length > 0) {
-    // Add shipment tracking events, sorted by event date (chronologically, oldest first for timeline)
-    const sortedShipmentEvents = [...shipmentData.lstDetails].sort((a, b) => {
-      const dateA = new Date(`${a.EVENTDATE} ${a.EVENTTIME}`);
-      const dateB = new Date(`${b.EVENTDATE} ${b.EVENTTIME}`);
-      return dateA.getTime() - dateB.getTime();
-    });
-
-    // Add real shipment events from tracking API
-    sortedShipmentEvents.forEach((event) => {
-      const eventDateTime = `${event.EVENTDATE} ${event.EVENTTIME}`;
-      timeline.push({
-        status: event.CURRENT_STATUS || "Shipment Update",
-        timestamp: eventDateTime,
-        description: `${event.CURRENT_STATUS || "Package status updated"}`,
-        location: event.CURRENT_CITY || "In Transit",
-      });
-    });
-  }
-
-  // Sort the entire timeline in reverse chronological order (most recent first)
-  timeline.sort((a, b) => {
-    // Handle different date formats properly
-    let dateA, dateB;
-
-    // Check if timestamp contains date format from tracking API (DD/MM/YYYY HH:mm:ss)
-    if (a.timestamp.includes("/")) {
-      // Parse DD/MM/YYYY HH:mm:ss format
-      const [datePart, timePart] = a.timestamp.split(" ");
-      const [day, month, year] = datePart.split("/");
-      dateA = new Date(`${year}-${month}-${day}T${timePart}`);
-    } else {
-      // Standard ISO format from order dates
-      dateA = new Date(a.timestamp);
-    }
-
-    if (b.timestamp.includes("/")) {
-      // Parse DD/MM/YYYY HH:mm:ss format
-      const [datePart, timePart] = b.timestamp.split(" ");
-      const [day, month, year] = datePart.split("/");
-      dateB = new Date(`${year}-${month}-${day}T${timePart}`);
-    } else {
-      // Standard ISO format from order dates
-      dateB = new Date(b.timestamp);
-    }
-
-    return dateB.getTime() - dateA.getTime();
-  });
 
   return timeline;
 };
@@ -406,61 +418,10 @@ const OrderDetailsContent: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
-  const [shipmentTracking, setShipmentTracking] =
-    useState<ShipmentTrackingData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [trackingLoading, setTrackingLoading] = useState(false);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
 
   const orderId = params?.orderId as string;
-
-  // Fetch shipment tracking data
-  const fetchShipmentTracking = async (docketNumber: string) => {
-    try {
-      setTrackingLoading(true);
-
-      const accessToken = Cookies.get("access_token");
-      if (!accessToken) {
-        console.warn("Access token not found for tracking");
-        return null;
-      }
-
-      const trackingResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/shipment/track/${docketNumber}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!trackingResponse.ok) {
-        console.warn(`Tracking API returned ${trackingResponse.status}`);
-        return null;
-      }
-
-      const trackingResult = await trackingResponse.json();
-
-      // Handle the new API response format
-      if (trackingResult.ResponseStatus?.Message === "SUCCESS") {
-        return trackingResult as ShipmentTrackingData;
-      }
-
-      // Fallback for old API format
-      if (trackingResult.info?.isSuccess && trackingResult.data) {
-        return trackingResult.data as ShipmentTrackingData;
-      }
-
-      return null;
-    } catch (error) {
-      console.warn("Error fetching shipment tracking:", error);
-      return null;
-    } finally {
-      setTrackingLoading(false);
-    }
-  };
 
   // Fetch product details function (similar to profile page)
   const fetchProductDetails = async (
@@ -654,8 +615,16 @@ const OrderDetailsContent: React.FC = () => {
             expectedDeliveryDate: getExpectedDeliveryDate(
               specificOrder.createdDate
             ),
-            trackingNumber: specificOrder.docketNumber,
-            docketNumber: specificOrder.docketNumber,
+            trackingNumber:
+              specificOrder.docketNumber ||
+              `DK${specificOrder.id.slice(-8).toUpperCase()}`,
+            courierCompany: "DesiKing Express Delivery",
+            courierPhone: "+91-1800-DESI-KING",
+            deliveryAgent: "Assigned Delivery Partner",
+            deliveryAgentPhone: "+91-98765-43210",
+            shippingMethod: "Standard Delivery",
+            deliveryInstructions:
+              "Please call before delivery. Ring the doorbell.",
             subtotal: subtotal, // Final subtotal after discounts
             shippingCharges: 0, // Free shipping
             discount: totalDiscountAmount, // Total discount amount
@@ -760,24 +729,6 @@ const OrderDetailsContent: React.FC = () => {
           };
 
           setOrderDetails(mappedOrderDetails);
-
-          // Fetch shipment tracking data if docket number is available
-          if (specificOrder.docketNumber) {
-            const trackingData = await fetchShipmentTracking(
-              specificOrder.docketNumber
-            );
-            if (trackingData) {
-              setShipmentTracking(trackingData);
-              // Update timeline with real tracking data
-              const updatedTimeline = generateOrderTimeline(
-                specificOrder,
-                trackingData
-              );
-              setOrderDetails((prev) =>
-                prev ? { ...prev, timeline: updatedTimeline } : null
-              );
-            }
-          }
         } else {
           throw new Error(
             ordersResult.info?.message || "Failed to fetch order data"
@@ -819,25 +770,7 @@ const OrderDetailsContent: React.FC = () => {
 
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "";
-
-    let date: Date;
-
-    // Check if timestamp contains date format from tracking API (DD/MM/YYYY HH:mm:ss)
-    if (dateString.includes("/") && dateString.includes(" ")) {
-      // Parse DD/MM/YYYY HH:mm:ss format
-      const [datePart, timePart] = dateString.split(" ");
-      const [day, month, year] = datePart.split("/");
-      date = new Date(`${year}-${month}-${day}T${timePart}`);
-    } else {
-      // Standard ISO format from order dates
-      date = new Date(dateString);
-    }
-
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return { date: "Invalid Date", time: "Invalid Date" };
-    }
-
+    const date = new Date(dateString);
     return {
       date: date.toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -857,25 +790,6 @@ const OrderDetailsContent: React.FC = () => {
     showSuccess(`${label} copied to clipboard`);
   };
 
-  // Environment validation utility
-  const validateEnvironment = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const isDev = process.env.NODE_ENV === "development";
-
-    console.log("Environment validation:", {
-      apiUrl,
-      isDev,
-      origin: typeof window !== "undefined" ? window.location.origin : "SSR",
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "SSR",
-    });
-
-    return {
-      apiUrl: apiUrl || "",
-      isDev,
-      isProduction: process.env.NODE_ENV === "production",
-    };
-  };
-
   const handleDownloadInvoice = async () => {
     if (!orderDetails) {
       showError("Order details not available");
@@ -883,688 +797,245 @@ const OrderDetailsContent: React.FC = () => {
     }
 
     try {
-      // Validate environment first
-      const env = validateEnvironment();
-
       // Show loading state
       showSuccess("Generating GST-compliant invoice...");
 
-      // Get access token with validation
-      const accessToken = Cookies.get("access_token");
-      if (!accessToken) {
-        showError("Authentication token not found. Please log in again.");
-        return;
-      }
-
-      // Get API URL with fallback
-      if (!env.apiUrl) {
-        showError("API configuration not found. Please contact support.");
-        console.error(
-          "NEXT_PUBLIC_API_URL not configured for environment:",
-          env
-        );
-        return;
-      }
-
-      console.log("Generating invoice for order:", orderDetails.id);
-      console.log("Environment:", env);
-
-      // Prepare GST-compliant invoice data matching Tax Invoice structure
+      // Prepare GST-compliant invoice data
       const invoiceData = {
-        // Supplier Details (hardcoded as per requirement)
-        Supplier: {
-          Name: "Braves Enterprise",
-          Address: "Munilanq Village, West Jamila Hills",
-          Gstin: "17MEZPS7848B1ZD",
-          PanNumber: "MEZPS7848B",
-          Email: "braves@enterprise.com",
-          Phone: "+91-9876543210",
-          Website: "www.bravesenterprise.com",
+        // Supplier Details (Rule 46 compliance)
+        supplier: {
+          name: "DesiKing Private Limited",
+          address: "Premium Spices District, Mumbai, Maharashtra, 400001",
+          gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
+          panNumber: "AABCD1234E",
+          email: "invoices@desiking.com",
+          phone: "+91-1800-DESI-KING",
+          website: "www.desiking.com",
         },
 
-        // Invoice Details (using actual order data)
-        Invoice: {
-          Number: orderDetails.orderNumber || `INV-${Date.now()}`,
-          Date: new Date(orderDetails.createdDate).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "2-digit",
-          }),
-          DueDate: new Date(
-            new Date(orderDetails.createdDate).getTime() +
-              30 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "2-digit",
-          }),
-          FinancialYear: `${new Date(
-            orderDetails.createdDate
-          ).getFullYear()}-${(
-            new Date(orderDetails.createdDate).getFullYear() + 1
+        // Invoice Details (Rule 46 compliance)
+        invoice: {
+          number: `DK/${new Date().getFullYear()}-${(
+            new Date().getFullYear() + 1
+          )
+            .toString()
+            .slice(-2)}/${orderDetails.orderNumber}`,
+          date: new Date().toLocaleDateString("en-IN"),
+          dueDate: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString("en-IN"),
+          financialYear: `${new Date().getFullYear()}-${(
+            new Date().getFullYear() + 1
           )
             .toString()
             .slice(-2)}`,
-          OrderNumber: orderDetails.orderNumber,
-          OrderDate: new Date(orderDetails.createdDate).toLocaleDateString(
-            "en-GB",
-            {
-              day: "2-digit",
-              month: "short",
-              year: "2-digit",
-            }
+          orderNumber: orderDetails.orderNumber,
+          orderDate: new Date(orderDetails.createdDate).toLocaleDateString(
+            "en-IN"
           ),
         },
 
-        // Customer Details (using actual delivery/billing address data)
-        Customer: {
-          Name:
-            orderDetails.deliveryAddress?.name ||
+        // Customer Details (Rule 46 compliance)
+        customer: {
+          name:
             orderDetails.billingAddress?.name ||
-            "Customer Name",
-          Address:
-            orderDetails.deliveryAddress?.address ||
+            orderDetails.deliveryAddress?.name ||
+            "Customer",
+          address:
             orderDetails.billingAddress?.address ||
-            "Address not available",
-          City:
-            orderDetails.deliveryAddress?.city ||
+            orderDetails.deliveryAddress?.address ||
+            "Address not provided",
+          city:
             orderDetails.billingAddress?.city ||
+            orderDetails.deliveryAddress?.city ||
             "City",
-          State:
-            orderDetails.deliveryAddress?.state ||
+          state:
             orderDetails.billingAddress?.state ||
-            "State",
-          Pincode:
-            orderDetails.deliveryAddress?.pincode ||
-            orderDetails.billingAddress?.pincode ||
-            "000000",
-          Phone:
-            orderDetails.deliveryAddress?.phone ||
-            orderDetails.billingAddress?.phone ||
-            "+91-0000000000",
-          Email: "customer@email.com", // Could be enhanced with actual user email if available
-          Gstin: null, // Most customers won't have GSTIN
-          StateCode: getStateCode(
             orderDetails.deliveryAddress?.state ||
-              orderDetails.billingAddress?.state ||
-              "Delhi"
+            "State",
+          pincode:
+            orderDetails.billingAddress?.pincode ||
+            orderDetails.deliveryAddress?.pincode ||
+            "000000",
+          phone:
+            orderDetails.billingAddress?.phone ||
+            orderDetails.deliveryAddress?.phone ||
+            "+91-0000000000",
+          email: "customer@email.com", // You can collect this during checkout
+          gstin: null, // For B2C customers, this will be null
+          stateCode: getStateCode(
+            orderDetails.billingAddress?.state ||
+              orderDetails.deliveryAddress?.state ||
+              "Maharashtra"
           ),
         },
 
-        // Delivery Address (using actual delivery address data)
-        DeliveryAddress: orderDetails.deliveryAddress
+        // Delivery Address (if different)
+        deliveryAddress: orderDetails.deliveryAddress
           ? {
-              Name: orderDetails.deliveryAddress.name,
-              Address: orderDetails.deliveryAddress.address,
-              City: orderDetails.deliveryAddress.city,
-              State: orderDetails.deliveryAddress.state,
-              Pincode: orderDetails.deliveryAddress.pincode,
-              Phone: orderDetails.deliveryAddress.phone,
-              StateCode: getStateCode(orderDetails.deliveryAddress.state),
+              name: orderDetails.deliveryAddress.name,
+              address: orderDetails.deliveryAddress.address,
+              city: orderDetails.deliveryAddress.city,
+              state: orderDetails.deliveryAddress.state,
+              pincode: orderDetails.deliveryAddress.pincode,
+              phone: orderDetails.deliveryAddress.phone,
+              stateCode: getStateCode(
+                orderDetails.deliveryAddress.state || "Maharashtra"
+              ),
             }
           : null,
 
-        // Items with HSN/SAC codes (using actual order items data)
-        Items: orderDetails.items.map((item, index) => {
-          const getHsnCode = (productName: string, categoryName?: string) => {
-            // Use category information if available
-            if (categoryName) {
-              const categoryLower = categoryName.toLowerCase();
-              if (
-                categoryLower.includes("spice") ||
-                categoryLower.includes("masala")
-              ) {
-                if (productName.toLowerCase().includes("cinnamon"))
-                  return "0906";
-                if (productName.toLowerCase().includes("turmeric"))
-                  return "091030";
-                if (productName.toLowerCase().includes("pepper")) return "0904";
-                if (productName.toLowerCase().includes("cardamom"))
-                  return "0908";
-                if (productName.toLowerCase().includes("clove")) return "0907";
-                return "0906"; // Default for spices
-              }
-              if (categoryLower.includes("herb")) return "0910";
-              if (categoryLower.includes("oil")) return "1515";
-              if (categoryLower.includes("tea")) return "0902";
-            }
+        // Items with HSN/SAC codes (Rule 46 compliance)
+        items: orderDetails.items.map((item, index) => ({
+          slNo: index + 1,
+          description: item.productName,
+          hsnCode: "09109990", // HSN for spices - replace with actual HSN per product
+          quantity: item.quantity,
+          unit: "KG", // or appropriate unit
+          rate: item.price,
+          taxableValue: item.price * item.quantity,
+          discountAmount: item.discountAmount
+            ? item.discountAmount * item.quantity
+            : 0,
 
-            // Product name based mapping
-            if (productName.toLowerCase().includes("cinnamon")) return "0906";
-            if (
-              productName.toLowerCase().includes("turmeric") ||
-              productName.toLowerCase().includes("ladong")
-            )
-              return "091030";
-            if (
-              productName.toLowerCase().includes("pepper") ||
-              productName.toLowerCase().includes("black")
-            )
-              return "0904";
-            if (
-              productName.toLowerCase().includes("bayleaf") ||
-              productName.toLowerCase().includes("bay")
-            )
-              return "0910";
-            if (productName.toLowerCase().includes("cardamom")) return "0908";
-            if (productName.toLowerCase().includes("clove")) return "0907";
-            if (productName.toLowerCase().includes("nutmeg")) return "0908";
-            if (productName.toLowerCase().includes("ginger")) return "0910";
+          // GST Calculations
+          cgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
+          sgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
+          igstRate: isIntraState(orderDetails.billingAddress?.state) ? 0 : 5,
 
-            return "0906"; // Default HSN for spices
-          };
+          cgstAmount: isIntraState(orderDetails.billingAddress?.state)
+            ? (item.price * item.quantity * 2.5) / 100
+            : 0,
+          sgstAmount: isIntraState(orderDetails.billingAddress?.state)
+            ? (item.price * item.quantity * 2.5) / 100
+            : 0,
+          igstAmount: isIntraState(orderDetails.billingAddress?.state)
+            ? 0
+            : (item.price * item.quantity * 5) / 100,
 
-          const rate = item.price;
-          const quantity = item.quantity;
-          const taxableValue = rate * quantity;
+          totalAmount: item.totalPrice + (item.price * item.quantity * 5) / 100,
+        })),
 
-          // Use 5% IGST (interstate transaction from Meghalaya to other states)
-          const igstRate = 5;
-          const igstAmount = (taxableValue * igstRate) / 100;
-          const totalAmount = taxableValue + igstAmount;
+        // Tax Summary
+        taxSummary: {
+          totalTaxableValue: orderDetails.subtotal,
+          totalDiscount: orderDetails.discount,
 
-          return {
-            SlNo: index + 1,
-            Description: item.productName,
-            HsnCode: getHsnCode(item.productName, item.categoryName),
-            Quantity: quantity,
-            Unit: item.weight
-              ? item.weight.replace(/[0-9.]/g, "") || "kgs"
-              : "kgs", // Extract unit from weight
-            Rate: rate,
-            TaxableValue: taxableValue,
-            DiscountAmount: item.discountAmount
-              ? item.discountAmount * quantity
-              : 0,
+          // GST totals based on place of supply
+          totalCGST: isIntraState(orderDetails.billingAddress?.state)
+            ? (orderDetails.subtotal * 2.5) / 100
+            : 0,
+          totalSGST: isIntraState(orderDetails.billingAddress?.state)
+            ? (orderDetails.subtotal * 2.5) / 100
+            : 0,
+          totalIGST: isIntraState(orderDetails.billingAddress?.state)
+            ? 0
+            : (orderDetails.subtotal * 5) / 100,
 
-            // GST Calculations - Using IGST for interstate (as per Tax Invoice image)
-            CgstRate: 0, // No CGST for interstate
-            SgstRate: 0, // No SGST for interstate
-            IgstRate: igstRate,
-            CgstAmount: 0,
-            SgstAmount: 0,
-            IgstAmount: igstAmount,
-            TotalAmount: totalAmount,
-          };
-        }),
+          totalTax: (orderDetails.subtotal * 5) / 100,
+          shippingCharges: orderDetails.shippingCharges,
+          grandTotal: orderDetails.totalAmount,
 
-        // Tax Summary (calculated from actual order data)
-        TaxSummary: {
-          TotalTaxableValue: orderDetails.subtotal,
-          TotalDiscount: orderDetails.discount || 0,
-
-          // GST totals - Using IGST for interstate transaction
-          TotalCGST: 0,
-          TotalSGST: 0,
-          TotalIGST: orderDetails.tax || (orderDetails.subtotal * 5) / 100, // Use actual tax or calculate 5%
-
-          TotalTax: orderDetails.tax || (orderDetails.subtotal * 5) / 100,
-          ShippingCharges: orderDetails.shippingCharges || 0,
-          GrandTotal: orderDetails.totalAmount,
-
-          PlaceOfSupply: `${
-            orderDetails.deliveryAddress?.state ||
+          placeOfSupply: `${
             orderDetails.billingAddress?.state ||
-            "Delhi"
-          } (${getStateCode(
             orderDetails.deliveryAddress?.state ||
-              orderDetails.billingAddress?.state ||
-              "Delhi"
+            "Maharashtra"
+          } (${getStateCode(
+            orderDetails.billingAddress?.state ||
+              orderDetails.deliveryAddress?.state ||
+              "Maharashtra"
           )})`,
         },
 
-        // Payment Details (using actual payment information)
-        Payment: {
-          Method: orderDetails.paymentInfo?.method || "Online Payment",
-          TransactionId:
-            orderDetails.paymentInfo?.transactionId ||
-            orderDetails.docketNumber ||
-            "N/A",
-          PaymentDate: orderDetails.paymentInfo?.paymentDate
-            ? new Date(orderDetails.paymentInfo.paymentDate).toLocaleDateString(
-                "en-GB",
-                {
-                  day: "2-digit",
-                  month: "short",
-                  year: "2-digit",
-                }
-              )
-            : new Date(orderDetails.createdDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "2-digit",
-              }),
-          Status: orderDetails.paymentInfo?.status || "Paid",
-          AmountPaid:
-            orderDetails.paymentInfo?.amount || orderDetails.totalAmount,
+        // Payment Details
+        payment: {
+          method: orderDetails.paymentInfo.method,
+          transactionId: orderDetails.paymentInfo.transactionId,
+          paymentDate: new Date(
+            orderDetails.paymentInfo.paymentDate
+          ).toLocaleDateString("en-IN"),
+          status: orderDetails.paymentInfo.status,
+          amountPaid: orderDetails.paymentInfo.amount,
         },
 
-        // Terms (matching Tax Invoice footer)
-        Terms: ["This is a Computer Generated Invoice"],
+        // Additional Details
+        terms: [
+          "This is a computer-generated invoice and does not require a physical signature.",
+          "Goods once sold will not be taken back.",
+          "All disputes are subject to Mumbai jurisdiction only.",
+          "Payment due within 30 days of invoice date.",
+        ],
 
         // E-invoice details (if applicable)
-        EInvoice: {
-          Irn: null,
-          QrCode: null,
-          AckNo: null,
-          AckDate: null,
+        eInvoice: {
+          irn: null, // Will be populated if e-invoicing is required
+          qrCode: null, // Base64 QR code from IRP
+          ackNo: null,
+          ackDate: null,
         },
       };
-
-      // Validate invoice data before sending to catch potential 500 error causes
-      const validationErrors = [];
-
-      if (!invoiceData.Invoice?.Number) {
-        validationErrors.push("Missing invoice number");
-      }
-
-      if (!invoiceData.Customer?.Name) {
-        validationErrors.push("Missing customer name");
-      }
-
-      if (!invoiceData.Items || invoiceData.Items.length === 0) {
-        validationErrors.push("No items in invoice");
-      }
-
-      if (
-        invoiceData.Items?.some(
-          (item: any) => !item.Description || !item.Rate || !item.Quantity
-        )
-      ) {
-        validationErrors.push("Some items have missing required fields");
-      }
-
-      if (!invoiceData.TaxSummary?.GrandTotal) {
-        validationErrors.push("Missing grand total");
-      }
-
-      if (validationErrors.length > 0) {
-        console.error("Invoice validation errors:", validationErrors);
-        throw new Error(
-          `Invoice data validation failed: ${validationErrors.join(", ")}`
-        );
-      }
-
-      console.log("Invoice data validation passed. Sending request...");
-      console.log("Invoice summary:", {
-        invoiceNumber: invoiceData.Invoice.Number,
-        customerName: invoiceData.Customer.Name,
-        itemsCount: invoiceData.Items.length,
-        grandTotal: invoiceData.TaxSummary.GrandTotal,
-      });
 
       // Call backend API to generate GST-compliant PDF
-      // Use the complete invoice data approach since we have all the data
-      const response = await fetch(`${env.apiUrl}/invoice/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/pdf, application/json",
-        },
-        body: JSON.stringify({
-          InvoiceData: invoiceData,
-        }),
-      });
-
-      console.log("API Response status:", response.status);
-      console.log(
-        "API Response headers:",
-        Object.fromEntries(response.headers.entries())
-      );
-
-      if (!response.ok) {
-        // Get detailed error information for 500 errors
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        let errorDetails = null;
-
-        try {
-          const errorText = await response.text();
-          console.error("API Error response body:", errorText);
-
-          // Try to parse as JSON for structured error
-          try {
-            errorDetails = JSON.parse(errorText);
-            console.error("Parsed API Error:", errorDetails);
-            errorMessage =
-              errorDetails.message ||
-              errorDetails.info?.message ||
-              errorMessage;
-          } catch {
-            // If not JSON, use the text response
-            errorDetails = { rawResponse: errorText };
-            errorMessage = errorText || errorMessage;
-          }
-        } catch (parseError) {
-          console.error("Could not parse error response:", parseError);
-        }
-
-        // For 500 errors, provide more specific debugging info
-        if (response.status === 500) {
-          console.error("Server Error (500) Details:", {
-            url: `${env.apiUrl}/invoice/generate`,
-            method: "POST",
-            orderId: orderDetails.id,
-            requestPayload: {
-              InvoiceData: {
-                invoiceDataKeys: Object.keys(invoiceData),
-                itemsCount: invoiceData.Items?.length || 0,
-                hasCustomer: !!invoiceData.Customer,
-                hasTaxSummary: !!invoiceData.TaxSummary,
-              },
-            },
-            errorDetails,
-            timestamp: new Date().toISOString(),
-          });
-
-          errorMessage = `Server error (500): ${errorMessage}. Please check the server logs for details.`;
-        }
-
-        throw new Error(errorMessage);
-      }
-
-      // Check content type
-      const contentType = response.headers.get("content-type");
-      console.log("Response content type:", contentType);
-
-      if (!contentType || !contentType.includes("application/pdf")) {
-        // If not PDF, try to get error message from JSON response
-        const textResponse = await response.text();
-        console.error("Expected PDF but got:", contentType, textResponse);
-        throw new Error("Server did not return a PDF file. Please try again.");
-      }
-
-      // Handle PDF response
-      const blob = await response.blob();
-      console.log("PDF blob size:", blob.size);
-
-      if (blob.size === 0) {
-        throw new Error("Received empty PDF file. Please try again.");
-      }
-
-      const url = window.URL.createObjectURL(blob);
-
-      // Enhanced download handling for production
-      const downloadPDF = () => {
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `GST_Invoice_${invoiceData.Invoice.Number.replace(
-          /[\/\\]/g,
-          "_"
-        )}.pdf`;
-
-        // Ensure link is in DOM for some browsers
-        document.body.appendChild(link);
-
-        // Force download
-        link.style.display = "none";
-        link.click();
-
-        // Cleanup
-        document.body.removeChild(link);
-
-        showSuccess("GST-compliant invoice downloaded successfully!");
-      };
-
-      // Try to open in new window first, fallback to download
-      try {
-        const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-
-        if (
-          !newWindow ||
-          newWindow.closed ||
-          typeof newWindow.closed === "undefined"
-        ) {
-          // Popup was blocked, use direct download
-          console.log("Popup blocked, using direct download");
-          downloadPDF();
-        } else {
-          // Check if window actually opened
-          setTimeout(() => {
-            try {
-              if (newWindow.closed) {
-                downloadPDF();
-              } else {
-                showSuccess("GST-compliant invoice opened in new window!");
-              }
-            } catch {
-              console.log("Could not check window status, assuming success");
-              showSuccess("GST-compliant invoice opened!");
-            }
-          }, 1000);
-        }
-      } catch (windowError) {
-        console.log("Window.open failed, using direct download:", windowError);
-        downloadPDF();
-      }
-
-      // Clean up the blob URL after a longer delay for production
-      setTimeout(() => {
-        try {
-          window.URL.revokeObjectURL(url);
-        } catch (error) {
-          console.log("Could not revoke blob URL:", error);
-        }
-      }, 5000);
-    } catch (error) {
-      console.error("Error generating GST invoice:", error);
-
-      // Enhanced error logging for debugging 500 errors
-      if (error instanceof Error) {
-        console.error("Error details:", {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-          cause: error.cause,
-        });
-      }
-
-      // Log request details for debugging
-      console.error("Request details for debugging:", {
-        orderId: orderDetails.id,
-        orderNumber: orderDetails.orderNumber,
-        totalAmount: orderDetails.totalAmount,
-        itemsCount: orderDetails.items?.length || 0,
-        hasValidItems:
-          orderDetails.items?.every((item) => item.productId && item.price) ||
-          false,
-        environment: validateEnvironment(),
-        timestamp: new Date().toISOString(),
-      });
-
-      // Enhanced error messages for production debugging
-      let userMessage = "Failed to generate GST invoice.";
-
-      if (error instanceof TypeError && error.message.includes("fetch")) {
-        userMessage =
-          "Network error. Please check your internet connection and try again.";
-      } else if (error instanceof Error) {
-        if (
-          error.message.includes("401") ||
-          error.message.includes("Unauthorized")
-        ) {
-          userMessage = "Session expired. Please log in again.";
-          // Optionally redirect to login
-          // router.push("/login");
-        } else if (error.message.includes("500")) {
-          userMessage = `Server error (500): The server encountered an internal error while generating your invoice. This has been logged for investigation. Please try again in a few minutes or contact support with order #${orderDetails.orderNumber}.`;
-        } else if (error.message.includes("timeout")) {
-          userMessage = "Request timed out. Please try again.";
-        } else {
-          userMessage = `${error.message}`;
-        }
-      }
-
-      // For production, also log to external service if available
-      if (process.env.NODE_ENV === "production") {
-        console.error("PRODUCTION ERROR - Invoice Generation Failed:", {
-          orderNumber: orderDetails.orderNumber,
-          error: error instanceof Error ? error.message : String(error),
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      showError(userMessage);
-    }
-  };
-
-  const handleDownloadShipmentLabel = async () => {
-    if (!orderDetails) {
-      showError("Order details not available");
-      return;
-    }
-
-    if (!orderDetails.docketNumber) {
-      showError("Docket number not available for this order");
-      return;
-    }
-
-    try {
-      // Show loading state
-      showSuccess("Generating shipment label...");
-
-      const accessToken = Cookies.get("access_token");
-      if (!accessToken) {
-        showError("Authentication token not found. Please log in again.");
-        return;
-      }
-
-      // Call backend API to generate shipment label
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/shipment/label/${orderDetails.docketNumber}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/invoice/generate`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
           },
+          body: JSON.stringify({
+            orderId: orderDetails.id,
+            invoiceData: invoiceData,
+          }),
         }
       );
 
       if (!response.ok) {
-        if (response.status === 401) {
-          showError("Session expired. Please log in again.");
-          router.push("/login");
-          return;
-        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Check if response is PDF or JSON
-      const contentType = response.headers.get("content-type");
+      // Handle PDF by opening in new window
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
-      if (contentType && contentType.includes("application/pdf")) {
-        // Handle PDF response
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+      // Open PDF in new window/tab
+      const newWindow = window.open(url, "_blank");
 
-        // Open PDF in new window/tab
-        const newWindow = window.open(url, "_blank");
-
-        if (!newWindow) {
-          // Fallback: If popup is blocked, download the file
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `Shipment_Label_${orderDetails.docketNumber}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          showSuccess("Shipment label downloaded successfully!");
-        } else {
-          showSuccess("Shipment label opened in new window!");
-        }
-
-        // Clean up the blob URL after a delay
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url);
-        }, 1000);
+      if (!newWindow) {
+        // Fallback: If popup is blocked, download the file
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
+          /\//g,
+          "_"
+        )}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showSuccess("GST-compliant invoice downloaded successfully!");
       } else {
-        // Handle JSON response with FileUrl
-        const result = await response.json();
-
-        // Check if we have the expected response structure
-        if (result.data && result.data.FileUrl) {
-          // Extract FileUrl from API response
-          const fileUrl = result.data.FileUrl;
-
-          // Open label PDF directly from S3 URL
-          const newWindow = window.open(fileUrl, "_blank");
-
-          if (!newWindow) {
-            // Fallback: If popup is blocked, try to download the file
-            try {
-              const link = document.createElement("a");
-              link.href = fileUrl;
-              link.target = "_blank";
-              link.download = `Shipment_Label_${
-                result.data.AwbNo || orderDetails.docketNumber
-              }.pdf`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              showSuccess("Shipment label download initiated!");
-            } catch {
-              // If download fails, show the URL to user
-              showError(
-                `Please copy this URL to download the label: ${fileUrl}`
-              );
-            }
-          } else {
-            showSuccess("Shipment label opened in new window!");
-          }
-        } else if (result.data && result.data.ResponseStatus) {
-          // Handle response with ResponseStatus structure
-          const responseStatus = result.data.ResponseStatus;
-
-          if (responseStatus.Message === "Success" && result.data.FileUrl) {
-            // Success case with FileUrl
-            const fileUrl = result.data.FileUrl;
-            const newWindow = window.open(fileUrl, "_blank");
-
-            if (!newWindow) {
-              try {
-                const link = document.createElement("a");
-                link.href = fileUrl;
-                link.target = "_blank";
-                link.download = `Shipment_Label_${
-                  result.data.AwbNo || orderDetails.docketNumber
-                }.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showSuccess("Shipment label download initiated!");
-              } catch {
-                showError(
-                  `Please copy this URL to download the label: ${fileUrl}`
-                );
-              }
-            } else {
-              showSuccess("Shipment label opened successfully!");
-            }
-          } else if (responseStatus.ErrorCode) {
-            // Error in response
-            showError(
-              responseStatus.Message || "Failed to generate shipment label"
-            );
-          } else {
-            showError("Shipment label URL not found in response");
-          }
-        } else if (result.info && result.info.message) {
-          // Handle standard API response format
-          showError(result.info.message);
-        } else {
-          throw new Error("Invalid response format");
-        }
+        showSuccess("GST-compliant invoice opened in new window!");
       }
+
+      // Clean up the blob URL after a delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
     } catch (error) {
-      console.error("Error generating shipment label:", error);
+      console.error("Error generating GST invoice:", error);
       showError(
-        `Failed to generate shipment label: ${
+        `Failed to generate GST invoice: ${
           error instanceof Error ? error.message : "Unknown error"
         }. Please try again.`
       );
     }
+  };
+
+  // Helper function to determine if transaction is intra-state
+  const isIntraState = (customerState?: string): boolean => {
+    const companyState = "Maharashtra"; // Your company's state
+    return (customerState || "Maharashtra") === companyState;
   };
 
   // Helper function to get state code for GST
@@ -1673,6 +1144,19 @@ const OrderDetailsContent: React.FC = () => {
     >
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
+        {/* Back Button */}
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => router.back()}
+          sx={{
+            mb: 2,
+            color: "text.secondary",
+            "&:hover": { color: "primary.main" },
+          }}
+        >
+          Back to Orders
+        </Button>
+
         {/* Breadcrumbs */}
         <Breadcrumbs
           separator={<NavigateNext fontSize="small" />}
@@ -1755,24 +1239,6 @@ const OrderDetailsContent: React.FC = () => {
             >
               View Invoice
             </Button>
-            {/* {isAdmin() && orderDetails.docketNumber && ( */}
-            <Button
-              variant="outlined"
-              startIcon={<Print />}
-              onClick={handleDownloadShipmentLabel}
-              sx={{
-                display: { xs: "none", sm: "flex" },
-                borderColor: "warning.main",
-                color: "warning.main",
-                "&:hover": {
-                  borderColor: "warning.dark",
-                  backgroundColor: "warning.50",
-                },
-              }}
-            >
-              Shipment Label
-            </Button>
-            {/* )} */}
           </Box>
         </Box>
 
@@ -1822,45 +1288,6 @@ const OrderDetailsContent: React.FC = () => {
                 </Typography>
               </Box>
             )}
-        </Box>
-
-        {/* Mobile Action Buttons */}
-        <Box
-          sx={{
-            display: { xs: "flex", sm: "none" },
-            gap: 1,
-            mb: 2,
-            flexWrap: "wrap",
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<Download />}
-            onClick={handleDownloadInvoice}
-            size="small"
-            fullWidth={isMobile}
-          >
-            View Invoice
-          </Button>
-          {isAdmin() && orderDetails.docketNumber && (
-            <Button
-              variant="outlined"
-              startIcon={<Print />}
-              onClick={handleDownloadShipmentLabel}
-              size="small"
-              fullWidth={isMobile}
-              sx={{
-                borderColor: "warning.main",
-                color: "warning.main",
-                "&:hover": {
-                  borderColor: "warning.dark",
-                  backgroundColor: "warning.50",
-                },
-              }}
-            >
-              Shipment Label
-            </Button>
-          )}
         </Box>
       </Box>
 
@@ -1933,342 +1360,65 @@ const OrderDetailsContent: React.FC = () => {
               <Typography variant="h6" fontWeight="600" color="primary.main">
                 Detailed Timeline
               </Typography>
-              {trackingLoading && (
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}
-                >
-                  <Skeleton variant="circular" width={16} height={16} />
-                  <Typography variant="caption" color="text.secondary">
-                    Loading tracking data...
-                  </Typography>
-                </Box>
-              )}
-              {shipmentTracking && (
-                <Chip
-                  label="Real-time tracking"
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                  sx={{ ml: 2 }}
-                />
-              )}
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            {shipmentTracking && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: "primary.50", borderRadius: 1 }}>
-                <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 1 }}>
-                  📦 Current Shipment Status
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Current Location:{" "}
-                      <strong>
-                        {shipmentTracking.lstDetails?.[0]?.CURRENT_CITY ||
-                          shipmentTracking.summaryTrack?.CURRENT_CITY ||
-                          "In Transit"}
-                      </strong>
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Status:{" "}
-                      <strong>
-                        {shipmentTracking.lstDetails?.[0]?.CURRENT_STATUS ||
-                          shipmentTracking.summaryTrack?.CURRENT_STATUS ||
-                          "Processing"}
-                      </strong>
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Tracking Code:{" "}
-                      <strong>
-                        {shipmentTracking.lstDetails?.[0]?.TRACKING_CODE ||
-                          shipmentTracking.summaryTrack?.TRACKING_CODE ||
-                          orderDetails.trackingNumber}
-                      </strong>
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Last Update:{" "}
-                      <strong>
-                        {shipmentTracking.lstDetails?.[0]
-                          ? `${shipmentTracking.lstDetails[0].EVENTDATE} ${shipmentTracking.lstDetails[0].EVENTTIME}`
-                          : shipmentTracking.summaryTrack?.EVENTDATE ||
-                            "Check back later"}
-                      </strong>
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
             <List>
-              {orderDetails.timeline.map((event, index) => {
-                // Check if this is a real tracking event vs estimated event
-                const isRealTrackingEvent = shipmentTracking?.lstDetails?.some(
-                  (detail) => detail.CURRENT_STATUS === event.status
-                );
-
-                return (
-                  <ListItem key={index} sx={{ pl: 0 }}>
-                    <ListItemIcon>
+              {orderDetails.timeline.map((event, index) => (
+                <ListItem key={index} sx={{ pl: 0 }}>
+                  <ListItemIcon>
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: "50%",
+                        backgroundColor: "primary.main",
+                      }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
                       <Box
                         sx={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: "50%",
-                          backgroundColor: isRealTrackingEvent
-                            ? "success.main"
-                            : index === 0
-                            ? "primary.main"
-                            : "grey.400",
-                          border: isRealTrackingEvent ? "2px solid" : "none",
-                          borderColor: isRealTrackingEvent
-                            ? "success.light"
-                            : "none",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          mb: 0.5,
                         }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            mb: 0.5,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Typography
-                              variant="body1"
-                              fontWeight="600"
-                              color={
-                                isRealTrackingEvent
-                                  ? "success.main"
-                                  : "text.primary"
-                              }
-                            >
-                              {event.status}
-                            </Typography>
-                            {isRealTrackingEvent && (
-                              <Chip
-                                label="Live"
-                                size="small"
-                                color="success"
-                                variant="filled"
-                                sx={{ height: 18, fontSize: "0.7rem" }}
-                              />
-                            )}
-                          </Box>
-                          <Typography variant="caption" color="text.secondary">
-                            {(() => {
-                              const formatted = formatDateTime(event.timestamp);
-                              return typeof formatted === "object"
-                                ? `${formatted.date} ${formatted.time}`
-                                : formatted;
-                            })()}
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={
-                        <Stack spacing={0.5}>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              fontWeight: isRealTrackingEvent ? 500 : 400,
-                              color: isRealTrackingEvent
-                                ? "text.primary"
-                                : "text.secondary",
-                            }}
-                          >
-                            {event.description}
-                          </Typography>
-                          {event.location && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{
-                                fontStyle: "italic",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 0.5,
-                              }}
-                            >
-                              📍 {event.location}
-                              {isRealTrackingEvent && (
-                                <Typography
-                                  component="span"
-                                  variant="caption"
-                                  color="success.main"
-                                  sx={{ fontWeight: 600, ml: 1 }}
-                                >
-                                  (Real-time update)
-                                </Typography>
-                              )}
-                            </Typography>
-                          )}
-                        </Stack>
-                      }
-                    />
-                  </ListItem>
-                );
-              })}
-            </List>
-
-            {/* Detailed Shipment Information */}
-            {shipmentTracking?.summaryTrack && (
-              <Box sx={{ mt: 3, mb: 2 }}>
-                <Divider sx={{ mb: 2 }} />
-                <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 2 }}>
-                  📋 Detailed Shipment Information
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      AWB Number
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500">
-                      {shipmentTracking.summaryTrack.AWBNO}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Origin
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500">
-                      {shipmentTracking.summaryTrack.ORIGIN}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Destination
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500">
-                      {shipmentTracking.summaryTrack.DESTINATION}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Service Type
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500">
-                      {shipmentTracking.summaryTrack.SERVICE_TYPE} -{" "}
-                      {shipmentTracking.summaryTrack.PRODUCT}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Booking Date
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500">
-                      {shipmentTracking.summaryTrack.BOOKING_DATE}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Pieces
-                    </Typography>
-                    <Typography variant="body2" fontWeight="500">
-                      {shipmentTracking.summaryTrack.NO_OF_PIECES} piece(s)
-                    </Typography>
-                  </Grid>
-                  {shipmentTracking.summaryTrack.NDR_REASON && (
-                    <Grid size={{ xs: 12 }}>
-                      <Typography variant="caption" color="error.main">
-                        NDR Reason
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        fontWeight="500"
-                        color="error.main"
                       >
-                        {shipmentTracking.summaryTrack.NDR_REASON}
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-            )}
-
-            {/* Refresh Tracking Button */}
-            {orderDetails.docketNumber && (
-              <Box sx={{ mt: 2, textAlign: "center" }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={async () => {
-                    if (orderDetails.docketNumber) {
-                      const trackingData = await fetchShipmentTracking(
-                        orderDetails.docketNumber
-                      );
-                      if (trackingData) {
-                        setShipmentTracking(trackingData);
-                        // Update timeline with fresh tracking data
-                        const fetchOrderDetails = async () => {
-                          try {
-                            const accessToken = Cookies.get("access_token");
-                            const orderResponse = await fetch(
-                              `${process.env.NEXT_PUBLIC_API_URL}/checkout/order/${orderId}`,
-                              {
-                                method: "GET",
-                                headers: {
-                                  Authorization: `Bearer ${accessToken}`,
-                                  "Content-Type": "application/json",
-                                },
-                              }
-                            );
-                            const ordersResult = await orderResponse.json();
-                            if (
-                              ordersResult.info?.isSuccess &&
-                              ordersResult.data
-                            ) {
-                              const updatedTimeline = generateOrderTimeline(
-                                ordersResult.data,
-                                trackingData
-                              );
-                              setOrderDetails((prev) =>
-                                prev
-                                  ? { ...prev, timeline: updatedTimeline }
-                                  : null
-                              );
-                              showSuccess("Tracking information updated!");
-                            }
-                          } catch (error) {
-                            console.error("Error refreshing tracking:", error);
-                          }
-                        };
-                        fetchOrderDetails();
-                      } else {
-                        showError(
-                          "Unable to fetch latest tracking information"
-                        );
-                      }
+                        <Typography variant="body1" fontWeight="600">
+                          {event.status}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {(() => {
+                            const formatted = formatDateTime(event.timestamp);
+                            return typeof formatted === "object"
+                              ? `${formatted.date} ${formatted.time}`
+                              : formatted;
+                          })()}
+                        </Typography>
+                      </Box>
                     }
-                  }}
-                  disabled={trackingLoading}
-                  startIcon={
-                    trackingLoading ? (
-                      <Skeleton variant="circular" width={16} height={16} />
-                    ) : (
-                      <LocalShipping />
-                    )
-                  }
-                >
-                  {trackingLoading ? "Updating..." : "Refresh Tracking"}
-                </Button>
-              </Box>
-            )}
+                    secondary={
+                      <Stack spacing={0.5}>
+                        <Typography variant="body2" color="text.secondary">
+                          {event.description}
+                        </Typography>
+                        {event.location && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontStyle: "italic" }}
+                          >
+                            📍 {event.location}
+                          </Typography>
+                        )}
+                      </Stack>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
           </AccordionDetails>
         </Accordion>
       </Card>
@@ -2293,487 +1443,301 @@ const OrderDetailsContent: React.FC = () => {
             <Box
               key={item.id}
               sx={{
-                p: { xs: 2, sm: 3 },
+                p: 3,
                 borderBottom:
                   index < orderDetails.items.length - 1 ? "1px solid" : "none",
                 borderColor: "divider",
               }}
             >
-              <Grid container spacing={3}>
-                {/* Left Side - Product Details */}
-                <Grid size={{ xs: 12, md: 7 }}>
-                  <Box
+              <Grid container spacing={3} alignItems="center">
+                {/* Product Image */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Avatar
+                    src={item.productImage}
+                    variant="rounded"
                     sx={{
-                      display: "flex",
-                      gap: 2,
-                      p: 2,
+                      width: { xs: 100, sm: 80 },
+                      height: { xs: 100, sm: 80 },
+                      bgcolor: "grey.100",
                       border: "1px solid",
                       borderColor: "divider",
-                      borderRadius: 2,
-                      backgroundColor: "background.paper",
-                      height: "100%",
                     }}
                   >
-                    {/* Product Image */}
-                    <Avatar
-                      src={item.productImage}
-                      variant="rounded"
-                      sx={{
-                        width: { xs: 80, sm: 100 },
-                        height: { xs: 80, sm: 100 },
-                        bgcolor: "grey.100",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Inventory2 />
-                    </Avatar>
+                    <Inventory2 />
+                  </Avatar>
+                </Grid>
 
-                    {/* Product Information */}
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography
-                        variant="h6"
-                        fontWeight="600"
-                        sx={{ mb: 1.5, color: "text.primary" }}
-                      >
-                        {item.productName}
+                {/* Product Details */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="h6" fontWeight="600" sx={{ mb: 1 }}>
+                    {item.productName}
+                  </Typography>
+                  <Stack spacing={0.5}>
+                    <Typography variant="body2" color="text.secondary">
+                      Brand: {item.brandName}
+                    </Typography>
+                    {item.weight && (
+                      <Typography variant="body2" color="text.secondary">
+                        Weight: {item.weight}
                       </Typography>
+                    )}
+                    {item.sku && (
+                      <Typography variant="body2" color="text.secondary">
+                        SKU: {item.sku}
+                      </Typography>
+                    )}
+                    {item.categoryName && (
+                      <Chip
+                        label={item.categoryName}
+                        size="small"
+                        variant="outlined"
+                        sx={{ width: "fit-content", mt: 0.5 }}
+                      />
+                    )}
+                  </Stack>
+                </Grid>
 
-                      <Stack spacing={1.5}>
-                        {/* Brand and Category Row */}
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                          <Chip
-                            label={`Brand: ${item.brandName}`}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                            sx={{ fontSize: "0.75rem" }}
-                          />
-                          {item.categoryName && (
-                            <Chip
-                              label={item.categoryName}
-                              size="small"
-                              variant="filled"
-                              color="secondary"
-                              sx={{ fontSize: "0.75rem" }}
-                            />
-                          )}
-                        </Box>
-
-                        {/* Product Specifications */}
-                        <Box
-                          sx={{
-                            bgcolor: "grey.50",
-                            borderRadius: 1,
-                            p: 1.5,
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            fontWeight="600"
-                            sx={{
-                              mb: 1,
-                              display: "block",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Product Details
-                          </Typography>
-                          <Stack spacing={0.8}>
-                            {item.weight && (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  Weight:
-                                </Typography>
-                                <Typography variant="body2" fontWeight="500">
-                                  {item.weight}
-                                </Typography>
-                              </Box>
-                            )}
-
-                            {item.sku && (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  SKU:
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  fontWeight="500"
-                                  sx={{
-                                    fontFamily: "monospace",
-                                    fontSize: "0.75rem",
-                                    bgcolor: "background.paper",
-                                    px: 1,
-                                    py: 0.25,
-                                    borderRadius: 0.5,
-                                  }}
-                                >
-                                  {item.sku}
-                                </Typography>
-                              </Box>
-                            )}
-
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                Product ID:
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                fontWeight="500"
-                                sx={{
-                                  fontFamily: "monospace",
-                                  fontSize: "0.75rem",
-                                  color: "primary.main",
-                                }}
-                              >
-                                #{item.productId.slice(-8).toUpperCase()}
-                              </Typography>
-                            </Box>
-
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                Quantity Ordered:
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                fontWeight="600"
-                                color="primary.main"
-                              >
-                                {item.quantity}{" "}
-                                {item.quantity === 1 ? "unit" : "units"}
-                              </Typography>
-                            </Box>
-                          </Stack>
-                        </Box>
-                      </Stack>
-                    </Box>
+                {/* Quantity and Price */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ textAlign: { xs: "left", sm: "center" } }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Quantity
+                    </Typography>
+                    <Typography variant="h6" fontWeight="600">
+                      {item.quantity}
+                    </Typography>
                   </Box>
                 </Grid>
 
-                {/* Right Side - Price Details */}
-                <Grid size={{ xs: 12, md: 5 }}>
-                  <Box
-                    sx={{
-                      p: 2,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      backgroundColor: "background.paper",
-                      height: "100%",
-                    }}
-                  >
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ textAlign: { xs: "left", sm: "right" } }}>
                     <Typography
-                      variant="subtitle1"
-                      fontWeight="600"
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Price
+                    </Typography>
+
+                    {/* Total Price Only - Simplified Display */}
+                    <Box
                       sx={{
-                        mb: 2,
-                        color: "primary.main",
                         display: "flex",
-                        alignItems: "center",
+                        flexDirection: "column",
+                        alignItems: { xs: "flex-start", sm: "flex-end" },
                         gap: 1,
                       }}
                     >
-                      💰 Pricing Breakdown
-                    </Typography>
-
-                    <Stack spacing={2}>
-                      {/* Original Unit Price (if discounted) */}
-                      {item.isDiscounted &&
-                      item.discountAmount &&
-                      item.discountAmount > 0 ? (
-                        <>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              p: 1,
-                              bgcolor: "grey.50",
-                              borderRadius: 1,
-                            }}
-                          >
-                            <Typography variant="body2" color="text.secondary">
-                              Original Price:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                textDecoration: "line-through",
-                                color: "text.secondary",
-                                fontWeight: "500",
-                              }}
-                            >
-                              {getCurrencySymbol(
-                                orderDetails.currency || "INR"
-                              )}
-                              {(item.totalPrice + item.discountAmount).toFixed(
-                                2
-                              )}
-                            </Typography>
-                          </Box>
-
-                          <Box
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              p: 1,
-                              bgcolor: "success.50",
-                              borderRadius: 1,
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              color="success.main"
-                              fontWeight="600"
-                            >
-                              Discounted Price:
-                            </Typography>
-                            <Typography
-                              variant="body1"
-                              fontWeight="700"
-                              color="success.main"
-                            >
-                              {getCurrencySymbol(
-                                orderDetails.currency || "INR"
-                              )}
-                              {item.price.toFixed(2)}
-                            </Typography>
-                          </Box>
-                        </>
-                      ) : (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            p: 1,
-                            bgcolor: "grey.50",
-                            borderRadius: 1,
-                          }}
-                        >
-                          <Typography variant="body2" color="text.secondary">
-                            Unit Price:
-                          </Typography>
-                          <Typography
-                            variant="body1"
-                            fontWeight="600"
-                            color="text.primary"
-                          >
-                            {getCurrencySymbol(orderDetails.currency || "INR")}
-                            {item.price.toFixed(2)}
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {/* Quantity Calculation */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          p: 1,
-                          border: "1px solid",
-                          borderColor: "divider",
-                          borderRadius: 1,
-                        }}
+                      {/* Final Total Price */}
+                      <Typography
+                        variant="h6"
+                        fontWeight="600"
+                        color={
+                          item.isDiscounted ? "success.main" : "primary.main"
+                        }
                       >
-                        <Typography variant="body2" color="text.secondary">
-                          Price × {item.quantity} qty:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="600">
-                          {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {(item.price * item.quantity).toFixed(2)}
-                        </Typography>
-                      </Box>
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
+                        {item.totalPrice.toFixed(2)}
+                      </Typography>
 
-                      {/* Discount Applied */}
+                      {/* Discount Badge */}
                       {item.isDiscounted &&
                         item.discountAmount &&
                         item.discountAmount > 0 && (
-                          <Box
+                          <Chip
+                            label={`Saved ${getCurrencySymbol(
+                              orderDetails.currency || "INR"
+                            )}${item.discountAmount.toFixed(2)}`}
+                            size="small"
+                            color="success"
                             sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              p: 1,
-                              bgcolor: "success.50",
-                              border: "1px solid",
-                              borderColor: "success.200",
-                              borderRadius: 1,
+                              fontSize: "0.75rem",
+                              height: "20px",
                             }}
-                          >
-                            <Typography
-                              variant="body2"
-                              color="success.main"
-                              fontWeight="600"
-                            >
-                              Discount Applied:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              fontWeight="600"
-                              color="success.main"
-                            >
-                              -
-                              {getCurrencySymbol(
-                                orderDetails.currency || "INR"
-                              )}
-                              {item.discountAmount.toFixed(2)}
-                            </Typography>
-                          </Box>
+                          />
                         )}
-
-                      {/* Item Subtotal (before tax) */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          p: 1,
-                          bgcolor: "grey.100",
-                          borderRadius: 1,
-                        }}
-                      >
-                        <Typography variant="body2" color="text.secondary">
-                          Item Subtotal:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="600">
-                          {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {item.totalPrice.toFixed(2)}
-                        </Typography>
-                      </Box>
-
-                      {/* Tax (5% GST) */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          p: 1,
-                          bgcolor: "warning.50",
-                          border: "1px solid",
-                          borderColor: "warning.200",
-                          borderRadius: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          color="warning.main"
-                          fontWeight="600"
-                        >
-                          GST (5%):
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          color="warning.main"
-                        >
-                          {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {(() => {
-                            const taxAmount =
-                              Math.round(item.totalPrice * 0.05 * 100) / 100;
-                            return taxAmount.toFixed(2);
-                          })()}
-                        </Typography>
-                      </Box>
-
-                      <Divider sx={{ borderStyle: "dashed" }} />
-
-                      {/* Final Total (including tax) */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          bgcolor: "primary.main",
-                          color: "white",
-                          p: 2,
-                          borderRadius: 1,
-                        }}
-                      >
-                        <Typography variant="subtitle1" fontWeight="700">
-                          Item Total (incl. GST):
-                        </Typography>
-                        <Typography variant="h6" fontWeight="700">
-                          {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {(() => {
-                            const taxAmount =
-                              Math.round(item.totalPrice * 0.05 * 100) / 100;
-                            const totalWithTax = item.totalPrice + taxAmount;
-                            return totalWithTax.toFixed(2);
-                          })()}
-                        </Typography>
-                      </Box>
-
-                      {/* Savings Summary */}
-                      {item.isDiscounted &&
-                        item.discountAmount &&
-                        item.discountAmount > 0 && (
-                          <Box
-                            sx={{
-                              textAlign: "center",
-                              p: 1,
-                              bgcolor: "success.100",
-                              borderRadius: 1,
-                              border: "2px solid",
-                              borderColor: "success.300",
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              color="success.dark"
-                              fontWeight="700"
-                              sx={{ fontSize: "0.85rem" }}
-                            >
-                              🎉 You saved{" "}
-                              {getCurrencySymbol(
-                                orderDetails.currency || "INR"
-                              )}
-                              {item.discountAmount.toFixed(2)} on this item!
-                            </Typography>
-                          </Box>
-                        )}
-                    </Stack>
+                    </Box>
                   </Box>
                 </Grid>
               </Grid>
             </Box>
           ))}
+
+          {/* Order Total Summary */}
+          <Box sx={{ p: 3, mx: 3, backgroundColor: "background.default" }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Stack spacing={2}>
+                  {/* Return Policy Notice */}
+                  {orderDetails.returnPolicyEndDate && (
+                    <Alert severity="info" variant="outlined">
+                      <Typography variant="body2">
+                        Return window expires on{" "}
+                        {(() => {
+                          const formatted = formatDateTime(
+                            orderDetails.returnPolicyEndDate
+                          );
+                          return typeof formatted === "object"
+                            ? formatted.date
+                            : formatted;
+                        })()}
+                      </Typography>
+                    </Alert>
+                  )}
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Download />}
+                      onClick={handleDownloadInvoice}
+                    >
+                      Invoice
+                    </Button>
+                    {orderDetails.status === "Delivered" && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<Star />}
+                        onClick={() =>
+                          showSuccess("Rating feature coming soon!")
+                        }
+                      >
+                        Rate
+                      </Button>
+                    )}
+                  </Stack>
+                </Stack>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Box
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    p: 2,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="600"
+                    sx={{ mb: 2 }}
+                  >
+                    Order Summary
+                  </Typography>
+                  <Stack spacing={1}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="body2">Subtotal:</Typography>
+                      <Typography variant="body2">
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
+                        {orderDetails.subtotal}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="body2">Shipping:</Typography>
+                      <Typography
+                        variant="body2"
+                        color={
+                          orderDetails.shippingCharges === 0
+                            ? "success.main"
+                            : "text.primary"
+                        }
+                      >
+                        {orderDetails.shippingCharges === 0
+                          ? "FREE"
+                          : `${getCurrencySymbol(
+                              orderDetails.currency || "INR"
+                            )}${orderDetails.shippingCharges}`}
+                      </Typography>
+                    </Box>
+                    {orderDetails.discount > 0 && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Typography variant="body2">Discount:</Typography>
+                        <Typography
+                          variant="body2"
+                          color="success.main"
+                          fontWeight="600"
+                        >
+                          -{getCurrencySymbol(orderDetails.currency || "INR")}
+                          {orderDetails.discount.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    )}
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="body2">Tax:</Typography>
+                      <Typography variant="body2">
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
+                        {orderDetails.tax}
+                      </Typography>
+                    </Box>
+                    <Divider />
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="h6" fontWeight="600">
+                        Total:
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        fontWeight="600"
+                        color="primary.main"
+                      >
+                        {getCurrencySymbol(orderDetails.currency || "INR")}
+                        {orderDetails.totalAmount.toFixed(2)}
+                      </Typography>
+                    </Box>
+                    {orderDetails.discount > 0 && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 1,
+                          p: 1,
+                          backgroundColor: "success.50",
+                          borderRadius: 1,
+                          border: "1px solid",
+                          borderColor: "success.200",
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="success.main"
+                          fontWeight="600"
+                        >
+                          🎉 You saved:
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="success.main"
+                          fontWeight="600"
+                        >
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
+                          {orderDetails.discount.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Stack>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
         </CardContent>
       </Card>
 
@@ -2824,6 +1788,19 @@ const OrderDetailsContent: React.FC = () => {
                     color="text.secondary"
                     sx={{ mb: 1 }}
                   >
+                    Shipping Method
+                  </Typography>
+                  <Typography variant="body1" fontWeight="500">
+                    {orderDetails.shippingMethod}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
                     Tracking Information
                   </Typography>
                   <Box
@@ -2835,74 +1812,70 @@ const OrderDetailsContent: React.FC = () => {
                     }}
                   >
                     <Typography variant="body2" fontWeight="500">
-                      {orderDetails.docketNumber}
+                      {orderDetails.trackingNumber}
                     </Typography>
                     <IconButton
                       size="small"
                       onClick={() =>
                         copyToClipboard(
                           orderDetails.trackingNumber || "",
-                          "Docket number"
+                          "Tracking number"
                         )
                       }
                     >
                       <ContentCopy fontSize="small" />
                     </IconButton>
                   </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Courier: {orderDetails.courierCompany}
+                  </Typography>
+                  {orderDetails.courierPhone && (
+                    <Typography variant="body2" color="text.secondary">
+                      📞 {orderDetails.courierPhone}
+                    </Typography>
+                  )}
                 </Box>
 
-                {orderDetails.billingAddress && (
+                {orderDetails.deliveryAgent && (
                   <Box>
-                    <Divider sx={{ my: 1.5 }} />
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       sx={{ mb: 1 }}
                     >
-                      Billing Address
+                      Delivery Agent
                     </Typography>
-                    {/* Check if billing address is same as shipping address */}
-                    {orderDetails.billingAddress.address ===
-                      orderDetails.deliveryAddress.address &&
-                    orderDetails.billingAddress.name ===
-                      orderDetails.deliveryAddress.name &&
-                    orderDetails.billingAddress.pincode ===
-                      orderDetails.deliveryAddress.pincode ? (
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontStyle: "italic", mb: 1 }}
-                        >
-                          Same as delivery address
-                        </Typography>
-                        <Typography variant="body2" fontWeight="500">
-                          {orderDetails.deliveryAddress.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.deliveryAddress.address}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.deliveryAddress.city},{" "}
-                          {orderDetails.deliveryAddress.state} -{" "}
-                          {orderDetails.deliveryAddress.pincode}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Box>
-                        <Typography variant="body2" fontWeight="500">
-                          {orderDetails.billingAddress.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.billingAddress.address}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.billingAddress.city},{" "}
-                          {orderDetails.billingAddress.state} -{" "}
-                          {orderDetails.billingAddress.pincode}
-                        </Typography>
-                      </Box>
+                    <Typography variant="body1" fontWeight="500">
+                      {orderDetails.deliveryAgent}
+                    </Typography>
+                    {orderDetails.deliveryAgentPhone && (
+                      <Typography variant="body2" color="text.secondary">
+                        📞 {orderDetails.deliveryAgentPhone}
+                      </Typography>
                     )}
+                  </Box>
+                )}
+
+                {orderDetails.deliveryInstructions && (
+                  <Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Delivery Instructions
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        backgroundColor: "background.default",
+                        p: 1.5,
+                        borderRadius: 1,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      &quot;{orderDetails.deliveryInstructions}&quot;
+                    </Typography>
                   </Box>
                 )}
               </Stack>
@@ -3018,6 +1991,54 @@ const OrderDetailsContent: React.FC = () => {
                     icon={<CheckCircle />}
                   />
                 </Box>
+
+                {orderDetails.billingAddress && (
+                  <Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Billing Address
+                    </Typography>
+                    {/* Check if billing address is same as shipping address */}
+                    {orderDetails.billingAddress.address ===
+                      orderDetails.deliveryAddress.address &&
+                    orderDetails.billingAddress.name ===
+                      orderDetails.deliveryAddress.name &&
+                    orderDetails.billingAddress.pincode ===
+                      orderDetails.deliveryAddress.pincode ? (
+                      <Box>
+                        {/* Show actual shipping address data */}
+                        <Typography variant="body2" fontWeight="500">
+                          {orderDetails.deliveryAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.city},{" "}
+                          {orderDetails.deliveryAddress.state} -{" "}
+                          {orderDetails.deliveryAddress.pincode}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <>
+                        <Typography variant="body2">
+                          {orderDetails.billingAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.city},{" "}
+                          {orderDetails.billingAddress.state} -{" "}
+                          {orderDetails.billingAddress.pincode}
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                )}
               </Stack>
             </CardContent>
           </Card>
