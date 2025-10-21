@@ -19,7 +19,7 @@ namespace Agronexis.Api.Controllers
             _configService = configService ?? throw new ArgumentNullException(nameof(configService));
         }
 
-        [HttpPost("user-login")]
+        [HttpPost("userLogin")]
         public async Task<ActionResult<ApiResponseModel>> UserLogin([FromBody] LoginRequestModel model)
         {
             SetXCorrelationId();
@@ -79,7 +79,7 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpPost("user-registration")]
+        [HttpPost("userRegistration")]
         public async Task<ActionResult<ApiResponseModel>> UserRegistration([FromBody] RegistrationRequestModel model)
         {
             SetXCorrelationId();
@@ -139,7 +139,7 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpGet("user-profile")]
+        [HttpGet("userProfile")]
         [Authorize]
         public async Task<ActionResult<ApiResponseModel>> GetUserProfile()
         {
@@ -189,7 +189,7 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpPut("user-profile")]
+        [HttpPut("userProfile")]
         [Authorize]
         public async Task<ActionResult<ApiResponseModel>> UpdateUserProfile([FromBody] RegistrationRequestModel model)
         {

@@ -94,7 +94,7 @@ const ProfileContent: React.FC = () => {
 
       // Make API call to get user profile
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/user-profile`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/userProfile`,
         {
           method: "GET",
           headers: {
@@ -324,7 +324,7 @@ const ProfileContent: React.FC = () => {
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/user-profile`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/userProfile`,
         {
           method: "PUT",
           headers: {

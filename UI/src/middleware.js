@@ -19,7 +19,6 @@ export function middleware(request) {
     "/terms-of-services",
     "/refund-policy",
     "/shipping-policy",
-    "/user-session-test", // Test page for user session
   ];
 
   // Protected routes that require authentication
@@ -119,7 +118,6 @@ export const config = {
     "/terms-of-services",
     "/refund-policy",
     "/shipping-policy",
-    "/user-session-test",
 
     // Protected routes
     "/cart",
