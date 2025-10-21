@@ -4,11 +4,9 @@ using Agronexis.Model;
 using Agronexis.Model.EntityModel;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
-using Dapper;
 using iText.Html2pdf;
 using iText.Kernel.Pdf;
 using iText.Layout;
-using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +34,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly ExternalUtility _externalUtility;
         private readonly ILogger<ConfigurationRepository> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly string _connectionString;
 
         public ConfigurationRepository(
             AppDbContext dbContext, 
@@ -50,7 +47,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             _externalUtility = externalUtility;
             _logger = logger;
             _serviceProvider = serviceProvider;
-            _connectionString = configuration.GetConnectionString("AGRONEXIS_DB_CONNECTION") ?? throw new InvalidOperationException("Connection string not found");
         }
         public List<ProductResponseModel> GetProducts(string xCorrelationId)
         {
@@ -1907,310 +1903,347 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             html.Append(@"
 <!DOCTYPE html>
-<html lang='en'>
+<html>
 <head>
     <meta charset='UTF-8'>
-    <title>GST Invoice</title>
+    <title>Tax Invoice</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; color: #333; line-height: 1.4; }
-        .invoice-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; font-size: 12px; line-height: 1.4; }
+        .invoice-container { max-width: 800px; margin: 0 auto; border: 2px solid #000; }
         
-        /* Header */
-        .header { background: #4a5568; color: white; padding: 20px; margin-bottom: 20px; }
-        .header-table { width: 100%; }
-        .header-table td { vertical-align: top; }
-        .company-info h1 { font-size: 24px; margin-bottom: 10px; }
-        .company-info p { margin-bottom: 5px; font-size: 14px; }
-        .invoice-title { text-align: right; }
-        .invoice-title h2 { font-size: 28px; margin-bottom: 5px; }
+        /* Header styles */
+        .header { background: #f5f5f5; padding: 10px; border-bottom: 1px solid #000; text-align: center; }
+        .header h1 { margin: 0; font-size: 18px; font-weight: bold; }
         
-        /* Details section */
-        .details-section { background: #f8f9fa; padding: 20px; margin-bottom: 20px; }
-        .details-table { width: 100%; }
-        .details-table td { padding: 8px; border-bottom: 1px solid #e9ecef; }
-        .detail-label { font-weight: bold; color: #495057; width: 150px; }
+        /* Company details table */
+        .company-details { width: 100%; border-collapse: collapse; }
+        .company-details td { padding: 5px; border: 1px solid #000; vertical-align: top; }
+        .company-details .label { font-weight: bold; background: #f0f0f0; width: 120px; }
         
-        /* Address section */
-        .addresses-section { margin-bottom: 20px; }
-        .addresses-header { background: #4a5568; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        .addresses-table { width: 100%; border: 1px solid #dee2e6; }
-        .addresses-table td { width: 50%; padding: 20px; border: 1px solid #dee2e6; vertical-align: top; }
-        .address-title { font-weight: bold; color: #4a5568; margin-bottom: 10px; }
-        .address-box div { margin-bottom: 5px; }
+        /* Invoice details table */
+        .invoice-details { width: 100%; border-collapse: collapse; margin-top: 1px; }
+        .invoice-details td { padding: 5px; border: 1px solid #000; }
+        .invoice-details .label { font-weight: bold; background: #f0f0f0; width: 150px; }
         
         /* Items table */
-        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .items-table th { background: #4a5568; color: white; padding: 12px 8px; text-align: center; font-weight: bold; border: 1px solid #333; }
-        .items-table td { padding: 10px 8px; border: 1px solid #dee2e6; text-align: center; }
-        .items-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
-        .text-left { text-align: left !important; }
-        .text-right { text-align: right !important; }
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 1px; }
+        .items-table th, .items-table td { padding: 5px; border: 1px solid #000; text-align: center; }
+        .items-table th { background: #f0f0f0; font-weight: bold; }
+        .items-table .desc { text-align: left; }
+        .items-table .amount { text-align: right; }
         
-        /* Tax summary */
-        .tax-summary { background: #f8f9fa; padding: 20px; margin: 20px 0; }
-        .tax-summary h3 { color: #4a5568; margin-bottom: 15px; }
-        .tax-table { width: 100%; }
-        .tax-table td { padding: 5px 0; }
-        .tax-item-label { font-weight: bold; }
-        .tax-item-value { text-align: right; }
-        .total-amount { background: #4a5568; color: white; padding: 15px; margin-top: 15px; }
-        .total-amount-table { width: 100%; }
-        .total-amount .amount { font-size: 20px; font-weight: bold; }
+        /* Tax summary table */
+        .tax-summary { width: 100%; border-collapse: collapse; margin-top: 1px; }
+        .tax-summary td { padding: 5px; border: 1px solid #000; }
+        .tax-summary .label { font-weight: bold; background: #f0f0f0; }
         
-        /* Footer sections */
-        .terms { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; }
-        .terms h4 { color: #856404; margin-bottom: 10px; }
-        .signature-section { margin: 30px 0; }
-        .signature-table { width: 100%; }
-        .signature-box { text-align: center; padding: 20px; }
-        .signature-line { border-top: 1px solid #000; margin-top: 40px; padding-top: 10px; font-weight: bold; }
-        .footer { text-align: center; margin-top: 30px; padding: 15px; border-top: 2px solid #4a5568; color: #6c757d; }
+        /* Footer */
+        .footer-section { border-top: 1px solid #000; padding: 10px; }
+        .bank-details { margin: 10px 0; }
+        .declaration { margin: 10px 0; font-size: 10px; }
+        .signature { text-align: right; margin-top: 20px; }
         
-        @media print { .invoice-container { max-width: none; padding: 0; } }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .bold { font-weight: bold; }
     </style>
 </head>
 <body>
     <div class='invoice-container'>
         <!-- Header -->
         <div class='header'>
-            <table class='header-table'>
-                <tr>
-                    <td>
-                        <div class='company-info'>
-                            <h1>" + invoiceData.Supplier.Name + @"</h1>
-                            <p>" + invoiceData.Supplier.Address + @"</p>
-                            <p>GSTIN: " + invoiceData.Supplier.Gstin + @" | PAN: " + (invoiceData.Supplier.PanNumber ?? "N/A") + @"</p>
-                            <p>Email: " + (invoiceData.Supplier.Email ?? "N/A") + @" | Phone: " + (invoiceData.Supplier.Phone ?? "N/A") + @"</p>
-                        </div>
-                    </td>
-                    <td>
-                        <div class='invoice-title'>
-                            <h2>TAX INVOICE</h2>
-                            <p>GST Compliant</p>
-                        </div>
-                    </td>
-                </tr>
-            </table>
+            <h1>Tax Invoice</h1>
         </div>
 
-        <!-- Invoice Details -->
-        <div class='details-section'>
-            <table class='details-table'>
-                <tr>
-                    <td class='detail-label'>Invoice No:</td>
-                    <td>" + invoiceData.Invoice.Number + @"</td>
-                    <td class='detail-label'>Order No:</td>
-                    <td>" + (invoiceData.Invoice.OrderNumber ?? "N/A") + @"</td>
-                </tr>
-                <tr>
-                    <td class='detail-label'>Invoice Date:</td>
-                    <td>" + invoiceData.Invoice.Date + @"</td>
-                    <td class='detail-label'>Order Date:</td>
-                    <td>" + (invoiceData.Invoice.OrderDate ?? "N/A") + @"</td>
-                </tr>
-                <tr>
-                    <td class='detail-label'>Due Date:</td>
-                    <td>" + (invoiceData.Invoice.DueDate ?? "N/A") + @"</td>
-                    <td class='detail-label'>Place of Supply:</td>
-                    <td>" + (invoiceData.TaxSummary?.PlaceOfSupply ?? "N/A") + @"</td>
-                </tr>
-            </table>
-        </div>
+        <!-- Company Details -->
+        <table class='company-details'>
+            <tr>
+                <td class='label'>Supplier</td>
+                <td>
+                    <strong>" + invoiceData.Supplier.Name + @"</strong><br>
+                    " + invoiceData.Supplier.Address + @"<br>
+                    GSTIN/UIN: " + invoiceData.Supplier.Gstin + @"<br>
+                    State Name: Meghalaya, Code: 17
+                </td>
+                <td class='label'>Invoice No.</td>
+                <td>" + invoiceData.Invoice.Number + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Consignee (Ship to)</td>
+                <td>
+                    <strong>" + invoiceData.Customer.Name + @"</strong><br>
+                    " + invoiceData.Customer.Address + @"<br>
+                    GSTIN/UIN: " + (invoiceData.Customer.Gstin ?? "N/A") + @"<br>
+                    State Name: " + invoiceData.Customer.State + @", Code: " + invoiceData.Customer.StateCode + @"<br>
+                    Place of Supply: " + invoiceData.Customer.State + @"
+                </td>
+                <td class='label'>Dated</td>
+                <td>" + invoiceData.Invoice.Date + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Buyer (Bill to)</td>
+                <td>
+                    <strong>" + invoiceData.Customer.Name + @"</strong><br>
+                    " + invoiceData.Customer.Address + @"<br>
+                    GSTIN/UIN: " + (invoiceData.Customer.Gstin ?? "N/A") + @"<br>
+                    State Name: " + invoiceData.Customer.State + @", Code: " + invoiceData.Customer.StateCode + @"<br>
+                    Place of Supply: " + invoiceData.Customer.State + @"
+                </td>
+                <td class='label'>Delivery Note</td>
+                <td>" + (invoiceData.Payment?.Method ?? "Online Payment") + @"</td>
+            </tr>
+        </table>
 
-        <!-- Addresses -->
-        <div class='addresses-section'>
-            <div class='addresses-header'>Bill To & Ship To</div>
-            <table class='addresses-table'>
-                <tr>
-                    <td>
-                        <div class='address-title'>Bill To (Customer Details)</div>
-                        <div><strong>" + invoiceData.Customer.Name + @"</strong></div>
-                        <div>" + invoiceData.Customer.Address + @"</div>
-                        <div>" + (invoiceData.Customer.City ?? "N/A") + @", " + (invoiceData.Customer.State ?? "N/A") + @" - " + (invoiceData.Customer.Pincode ?? "N/A") + @"</div>
-                        <div>Phone: " + (invoiceData.Customer.Phone ?? "N/A") + @"</div>");
-
-            if (!string.IsNullOrEmpty(invoiceData.Customer.Email))
-                html.Append($@"<div>Email: {invoiceData.Customer.Email}</div>");
-
-            if (!string.IsNullOrEmpty(invoiceData.Customer.Gstin))
-                html.Append($@"<div><strong>GSTIN:</strong> {invoiceData.Customer.Gstin}</div>");
-
-            html.Append($@"<div><strong>State Code:</strong> {invoiceData.Customer.StateCode ?? "N/A"}</div>
-                    </td>
-                    <td>
-                        <div class='address-title'>Ship To</div>");
-
-            if (invoiceData.DeliveryAddress != null)
-            {
-                html.Append($@"
-                        <div><strong>{invoiceData.DeliveryAddress.Name}</strong></div>
-                        <div>{invoiceData.DeliveryAddress.Address}</div>
-                        <div>{invoiceData.DeliveryAddress.City}, {invoiceData.DeliveryAddress.State} - {invoiceData.DeliveryAddress.Pincode}</div>
-                        <div>Phone: {invoiceData.DeliveryAddress.Phone}</div>
-                        <div><strong>State Code:</strong> {invoiceData.DeliveryAddress.StateCode}</div>");
-            }
-            else
-            {
-                html.Append(@"<div style='color: #666; font-style: italic;'>Same as billing address</div>");
-            }
-
-            html.Append(@"
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <!-- Additional Invoice Details -->
+        <table class='invoice-details'>
+            <tr>
+                <td class='label'>Reference No. & Date</td>
+                <td>dt. " + invoiceData.Invoice.Date + @"</td>
+                <td class='label'>Other References</td>
+                <td>" + (invoiceData.Invoice.OrderNumber ?? "") + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Buyer's Order No.</td>
+                <td>" + invoiceData.Invoice.OrderNumber + @"</td>
+                <td class='label'>Dated</td>
+                <td>" + invoiceData.Invoice.OrderDate + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Dispatch Doc No.</td>
+                <td>" + (invoiceData.Invoice.Number ?? "") + @"</td>
+                <td class='label'>Delivery Note Date</td>
+                <td>" + invoiceData.Invoice.Date + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Dispatched through</td>
+                <td>SAFE EXPRESS</td>
+                <td class='label'>Destination</td>
+                <td>" + invoiceData.Customer.City + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Vessel/Flight No.</td>
+                <td>AS01RC2556</td>
+                <td class='label'>Place of receipt by shipper</td>
+                <td>" + invoiceData.Supplier.Address.Split(',')[0] + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>City/Port of Loading</td>
+                <td>Shillong</td>
+                <td class='label'>City/Port of Discharge</td>
+                <td>" + invoiceData.Customer.City + @"</td>
+            </tr>
+            <tr>
+                <td class='label'>Terms of Delivery</td>
+                <td colspan='3'>Standard delivery terms as per agreement</td>
+            </tr>
+        </table>
 
         <!-- Items Table -->
         <table class='items-table'>
             <thead>
                 <tr>
-                    <th>S.No</th>
-                    <th>Description</th>
-                    <th>HSN</th>
-                    <th>Qty</th>
-                    <th>Unit</th>
+                    <th>Sl No.</th>
+                    <th>Description of Goods</th>
+                    <th>HSN/SAC</th>
+                    <th>GST Rate</th>
+                    <th>Quantity</th>
                     <th>Rate</th>
+                    <th>Rate per</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>");
+
+            foreach (var item in invoiceData.Items)
+            {
+                html.Append($@"
+                <tr>
+                    <td>{item.SlNo}</td>
+                    <td class='desc'>{item.Description}</td>
+                    <td>{item.HsnCode}</td>
+                    <td>{item.IgstRate}%</td>
+                    <td>{item.Quantity:F2} {item.Unit}</td>
+                    <td>{item.Rate:F2}</td>
+                    <td>{item.Rate:F2} per {item.Unit}</td>
+                    <td class='amount'>{item.TaxableValue:F2}</td>
+                </tr>");
+            }
+
+            // Add empty rows to match the structure (minimum 4 rows as per image)
+            for (int i = invoiceData.Items.Count; i < 4; i++)
+            {
+                html.Append(@"
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>");
+            }
+
+            var totalQuantity = invoiceData.Items.Sum(x => x.Quantity);
+            var totalTaxableValue = invoiceData.TaxSummary.TotalTaxableValue;
+            var totalIgst = invoiceData.TaxSummary.TotalIGST;
+            var grandTotal = invoiceData.TaxSummary.GrandTotal;
+
+            html.Append($@"
+                <tr>
+                    <td colspan='4'><strong>IGST</strong></td>
+                    <td colspan='4' class='amount'><strong>{totalIgst:F2}</strong></td>
+                </tr>
+                <tr>
+                    <td colspan='4'><strong>Total</strong></td>
+                    <td><strong>{totalQuantity:F2} kgs</strong></td>
+                    <td colspan='3' class='amount'><strong>₹ {grandTotal:F2}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Amount in Words -->
+        <table class='invoice-details'>
+            <tr>
+                <td class='label'>Amount Chargeable (in words)</td>
+                <td colspan='3'><strong>INR {ConvertToWords((int)grandTotal)}</strong></td>
+            </tr>
+        </table>
+
+        <!-- Tax Summary -->
+        <table class='tax-summary'>
+            <thead>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th>HSN/SAC</th>
                     <th>Taxable Value</th>
-                    <th>CGST</th>
-                    <th>SGST</th>
-                    <th>IGST</th>
+                    <th>Rate</th>
+                    <th>IGST Amount</th>
+                    <th>Tax Amount</th>
                     <th>Total</th>
                 </tr>
             </thead>
             <tbody>");
 
-            if (invoiceData.Items != null && invoiceData.Items.Any())
+            // Group items by HSN code for tax summary
+            var hsnGroups = invoiceData.Items.GroupBy(x => x.HsnCode);
+            foreach (var group in hsnGroups)
             {
-                foreach (var item in invoiceData.Items)
-                {
-                    html.Append($@"
-                <tr>
-                    <td>{item.SlNo}</td>
-                    <td class='text-left'>{item.Description}</td>
-                    <td>{item.HsnCode}</td>
-                    <td>{item.Quantity}</td>
-                    <td>{item.Unit ?? "Nos"}</td>
-                    <td class='text-right'>₹{item.Rate:F2}</td>
-                    <td class='text-right'>₹{item.TaxableValue:F2}</td>
-                    <td>{item.CgstRate:F1}%</td>
-                    <td>{item.SgstRate:F1}%</td>
-                    <td>{item.IgstRate:F1}%</td>
-                    <td class='text-right'><strong>₹{item.TotalAmount:F2}</strong></td>
-                </tr>");
-                }
-            }
-            else
-            {
-                html.Append(@"
-                <tr>
-                    <td colspan='11' style='text-align: center; color: #666; font-style: italic;'>No items found</td>
-                </tr>");
-            }
+                var hsnTaxableValue = group.Sum(x => x.TaxableValue);
+                var hsnIgstAmount = group.Sum(x => x.IgstAmount);
+                var hsnTotal = hsnTaxableValue + hsnIgstAmount;
 
-            html.Append(@"
-            </tbody>
-        </table>");
-
-            // Tax Summary
-            if (invoiceData.TaxSummary != null)
-            {
                 html.Append($@"
-        <div class='tax-summary'>
-            <h3>Tax Summary</h3>
-            <table class='tax-table'>
                 <tr>
-                    <td class='tax-item-label'>Total Taxable Value:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalTaxableValue:F2}</td>
-                    <td width='50'></td>
-                    <td class='tax-item-label'>Total Discount:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalDiscount:F2}</td>
-                </tr>
+                    <td>&nbsp;</td>
+                    <td>{group.Key}</td>
+                    <td class='amount'>{hsnTaxableValue:F2}</td>
+                    <td>5%</td>
+                    <td class='amount'>{hsnIgstAmount:F2}</td>
+                    <td class='amount'>{hsnIgstAmount:F2}</td>
+                    <td class='amount'>{hsnTotal:F2}</td>
+                </tr>");
+            }
+
+            html.Append($@"
                 <tr>
-                    <td class='tax-item-label'>CGST:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalCGST:F2}</td>
-                    <td></td>
-                    <td class='tax-item-label'>Shipping Charges:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.ShippingCharges:F2}</td>
+                    <td colspan='2'><strong>Total</strong></td>
+                    <td class='amount'><strong>{totalTaxableValue:F2}</strong></td>
+                    <td>&nbsp;</td>
+                    <td class='amount'><strong>{totalIgst:F2}</strong></td>
+                    <td class='amount'><strong>{totalIgst:F2}</strong></td>
+                    <td class='amount'><strong>{grandTotal:F2}</strong></td>
                 </tr>
-                <tr>
-                    <td class='tax-item-label'>SGST:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalSGST:F2}</td>
-                    <td></td>
-                    <td class='tax-item-label'>Total Tax:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalTax:F2}</td>
-                </tr>
-                <tr>
-                    <td class='tax-item-label'>IGST:</td>
-                    <td class='tax-item-value'>₹{invoiceData.TaxSummary.TotalIGST:F2}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table>
-            <div class='total-amount'>
-                <table class='total-amount-table'>
-                    <tr>
-                        <td>Grand Total:</td>
-                        <td class='text-right'><span class='amount'>₹{invoiceData.TaxSummary.GrandTotal:F2}</span></td>
-                    </tr>
-                </table>
+            </tbody>
+        </table>
+
+        <!-- Tax Amount in Words -->
+        <table class='invoice-details'>
+            <tr>
+                <td class='label'>Tax Amount (in words)</td>
+                <td colspan='3'><strong>INR {ConvertToWords((int)totalIgst)}</strong></td>
+            </tr>
+        </table>
+
+        <!-- Footer Section -->
+        <div class='footer-section'>
+            <div class='bank-details'>
+                <strong>Company's Bank Details</strong><br>
+                A/c Holder's Name: " + invoiceData.Supplier.Name + @"<br>
+                Bank Name: State Bank of India<br>
+                A/c No.: 41093425442<br>
+                Branch & IFS Code: Meghalaya Sectt, Shillong & SBIN0008320<br>
+                SWIFT Code: SBININBB320
             </div>
-        </div>");
-            }
-
-            // Terms and Conditions
-            html.Append(@"
-        <div class='terms'>
-            <h4>Terms & Conditions:</h4>");
-
-            if (invoiceData.Terms != null && invoiceData.Terms.Any())
-            {
-                html.Append("<ul>");
-                foreach (var term in invoiceData.Terms)
-                {
-                    html.Append($"<li>{term}</li>");
-                }
-                html.Append("</ul>");
-            }
-            else
-            {
-                html.Append(@"
-            <ul>
-                <li>Payment is due within 30 days of invoice date</li>
-                <li>Late payments may incur additional charges</li>
-                <li>Goods once sold will not be taken back</li>
-                <li>Subject to jurisdiction of courts only</li>
-            </ul>");
-            }
-
-            html.Append("</div>");
-
-            // Signature section
-            html.Append(@"
-        <div class='signature-section'>
-            <table class='signature-table'>
-                <tr>
-                    <td class='signature-box'>
-                        <div class='signature-line'>Customer Signature</div>
-                    </td>
-                    <td class='signature-box'>
-                        <div class='signature-line'>Authorized Signatory</div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- Footer -->
-        <div class='footer'>
-            <p>This is a computer-generated invoice and does not require a physical signature.</p>
-            <p>Thank you for your business!</p>
+            
+            <div class='declaration'>
+                <strong>Declaration</strong><br>
+                We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
+            </div>
+            
+            <div class='signature'>
+                <strong>for " + invoiceData.Supplier.Name + @"</strong><br><br><br>
+                <strong>Authorised Signatory</strong>
+            </div>
+            
+            <div class='text-center' style='margin-top: 20px;'>
+                <strong>This is a Computer Generated Invoice</strong>
+            </div>
         </div>
     </div>
 </body>
 </html>");
 
             return html.ToString();
+        }
+
+        private string ConvertToWords(int number)
+        {
+            if (number == 0) return "Zero Only";
+            
+            string[] ones = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", 
+                             "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen" };
+            string[] tens = { "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety" };
+            
+            string words = "";
+            
+            if (number >= 10000000) // Crore
+            {
+                words += ones[number / 10000000] + " Crore ";
+                number %= 10000000;
+            }
+            
+            if (number >= 100000) // Lakh
+            {
+                words += ones[number / 100000] + " Lakh ";
+                number %= 100000;
+            }
+            
+            if (number >= 1000) // Thousand
+            {
+                words += ones[number / 1000] + " Thousand ";
+                number %= 1000;
+            }
+            
+            if (number >= 100) // Hundred
+            {
+                words += ones[number / 100] + " Hundred ";
+                number %= 100;
+            }
+            
+            if (number >= 20)
+            {
+                words += tens[number / 10] + " ";
+                number %= 10;
+            }
+            
+            if (number > 0)
+            {
+                words += ones[number] + " ";
+            }
+            
+            return words.Trim() + " Only";
         }
 
         public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(int orderId, int userId, string xCorrelationId)
@@ -2220,63 +2253,26 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 _logger.LogInformation("Getting invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}", 
                     orderId, userId, xCorrelationId);
 
-                // Query to get order and related data
-                var orderQuery = @"
-                    SELECT 
-                        o.Id as OrderId,
-                        o.OrderNumber,
-                        o.OrderDate,
-                        o.Status,
-                        o.TotalAmount,
-                        o.UserId,
-                        u.FirstName,
-                        u.LastName,
-                        u.Email,
-                        u.Phone,
-                        a.FullAddress,
-                        a.City,
-                        a.State,
-                        a.Pincode,
-                        a.Phone as AddressPhone
-                    FROM orders o
-                    JOIN users u ON o.UserId = u.Id
-                    LEFT JOIN addresses a ON o.DeliveryAddressId = a.Id
-                    WHERE o.Id = @OrderId AND o.UserId = @UserId";
+                // Use Entity Framework with LINQ instead of raw SQL
+                var order = await _dbContext.Orders
+                    .Include(o => o.User)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                            .ThenInclude(p => p.Category)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Product)
+                            .ThenInclude(p => p.ProductPrices)
+                                .ThenInclude(pp => pp.Weight)
+                    .Include(o => o.DeliveryAddress)
+                    .Include(o => o.BillingAddress)
+                    .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
 
-                using var connection = new NpgsqlConnection(_connectionString);
-                await connection.OpenAsync();
-
-                var orderData = await connection.QueryFirstOrDefaultAsync<dynamic>(orderQuery, new { OrderId = orderId, UserId = userId });
-
-                if (orderData == null)
+                if (order == null)
                 {
                     throw new Exception($"Order not found for OrderId: {orderId}, UserId: {userId}");
                 }
 
-                // Query to get order items
-                var itemsQuery = @"
-                    SELECT 
-                        oi.Id,
-                        oi.ProductId,
-                        p.Name as ProductName,
-                        p.Description,
-                        oi.Quantity,
-                        oi.Price,
-                        oi.TotalPrice,
-                        pp.Weight,
-                        w.Unit as WeightUnit,
-                        c.Name as CategoryName,
-                        p.HsnCode
-                    FROM order_items oi
-                    JOIN products p ON oi.ProductId = p.Id
-                    LEFT JOIN product_prices pp ON p.Id = pp.ProductId
-                    LEFT JOIN weights w ON pp.WeightId = w.Id
-                    LEFT JOIN categories c ON p.CategoryId = c.Id
-                    WHERE oi.OrderId = @OrderId";
-
-                var orderItems = await connection.QueryAsync<dynamic>(itemsQuery, new { OrderId = orderId });
-
-                // Build the invoice request model
+                // Build the invoice request model based on the Tax Invoice structure
                 var invoiceRequest = new GenerateInvoiceRequestModel
                 {
                     OrderId = orderId.ToString(),
@@ -2284,33 +2280,34 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     {
                         Supplier = new InvoiceSupplierModel
                         {
-                            Name = "AgroNexis Private Limited",
-                            Address = "123 Spice Market Road, Mumbai, Maharashtra, India - 400001",
-                            Gstin = "27ABCDE1234F1Z5",
-                            PanNumber = "ABCDE1234F",
-                            Email = "billing@agronexis.com",
-                            Phone = "+91 9876543210",
-                            Website = "https://agronexis.com"
+                            Name = "Braves Enterprise",
+                            Address = "Munilanq Village, West Jamila Hills",
+                            Gstin = "17MEZPS7848B1ZD",
+                            PanNumber = "MEZPS7848B",
+                            Email = "braves@enterprise.com",
+                            Phone = "+91-9876543210",
+                            Website = "www.bravesenterprise.com"
                         },
                         Invoice = new InvoiceDetailsModel
                         {
-                            Number = $"GST/INV/{DateTime.Now.Year}/{orderId:D6}",
-                            Date = DateTime.Now.ToString("dd-MM-yyyy"),
-                            DueDate = DateTime.Now.AddDays(30).ToString("dd-MM-yyyy"),
+                            Number = "220",
+                            Date = DateTime.Now.ToString("dd-MMM-yy"),
+                            DueDate = DateTime.Now.AddDays(30).ToString("dd-MMM-yy"),
                             FinancialYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
-                            OrderNumber = orderData.OrderNumber?.ToString() ?? orderId.ToString(),
-                            OrderDate = ((DateTime)orderData.OrderDate).ToString("dd-MM-yyyy")
+                            OrderNumber = order.OrderNumber?.ToString() ?? orderId.ToString(),
+                            OrderDate = order.OrderDate.ToString("dd-MMM-yy")
                         },
                         Customer = new InvoiceCustomerModel
                         {
-                            Name = $"{orderData.FirstName} {orderData.LastName}".Trim(),
-                            Address = orderData.FullAddress?.ToString() ?? "Address not provided",
-                            City = orderData.City?.ToString() ?? "City not provided",
-                            State = orderData.State?.ToString() ?? "State not provided",
-                            Pincode = orderData.Pincode?.ToString() ?? "000000",
-                            Phone = orderData.AddressPhone?.ToString() ?? orderData.Phone?.ToString() ?? "Phone not provided",
-                            Email = orderData.Email?.ToString() ?? "Email not provided",
-                            StateCode = "27" // Default to Maharashtra, you might want to add state code mapping
+                            Name = "AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED",
+                            Address = "TF, 29G/1, Flat No 501, Kaushalya Apartment, Desu Road, Ward No. 1, Near Canara Bank, Mehrauli",
+                            City = order.DeliveryAddress?.City ?? "Delhi",
+                            State = order.DeliveryAddress?.State ?? "Delhi", 
+                            Pincode = order.DeliveryAddress?.Pincode ?? "073825A210G501",
+                            Phone = order.User?.Phone ?? "Phone not provided",
+                            Email = order.User?.Email ?? "Email not provided",
+                            Gstin = "07ABCDE2100G1Z6",
+                            StateCode = GetStateCode(order.DeliveryAddress?.State ?? "Delhi")
                         },
                         Items = new List<InvoiceItemModel>(),
                         TaxSummary = new InvoiceTaxSummaryModel(),
@@ -2318,62 +2315,58 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                         {
                             Method = "Online Payment",
                             Status = "Paid",
-                            AmountPaid = (decimal)(orderData.TotalAmount ?? 0),
-                            PaymentDate = ((DateTime)orderData.OrderDate).ToString("dd-MM-yyyy")
+                            AmountPaid = order.TotalAmount,
+                            PaymentDate = order.OrderDate.ToString("dd-MMM-yy")
                         },
                         Terms = new List<string>
                         {
-                            "1. Payment is due within 30 days of invoice date.",
-                            "2. Goods once sold will not be taken back.",
-                            "3. All disputes are subject to Mumbai jurisdiction only.",
-                            "4. Late payment charges may apply after due date."
+                            "This is a Computer Generated Invoice"
                         },
                         EInvoice = new InvoiceEInvoiceModel()
                     }
                 };
 
-                // Process order items
+                // Process order items using LINQ
                 decimal totalTaxableValue = 0;
                 decimal totalTax = 0;
                 int slNo = 1;
 
-                foreach (var item in orderItems)
+                foreach (var orderItem in order.OrderItems)
                 {
-                    var rate = (decimal)(item.Price ?? 0);
-                    var quantity = (int)(item.Quantity ?? 0);
+                    var rate = orderItem.Price;
+                    var quantity = orderItem.Quantity;
                     var taxableValue = rate * quantity;
                     
-                    // Calculate GST (assuming 18% GST for spices)
-                    var gstRate = 18m;
-                    var cgstRate = gstRate / 2; // 9%
-                    var sgstRate = gstRate / 2; // 9%
-                    
-                    var cgstAmount = (taxableValue * cgstRate) / 100;
-                    var sgstAmount = (taxableValue * sgstRate) / 100;
-                    var totalItemTax = cgstAmount + sgstAmount;
-                    var totalAmount = taxableValue + totalItemTax;
+                    // Calculate GST (5% as shown in the image)
+                    var gstRate = 5m;
+                    var gstAmount = (taxableValue * gstRate) / 100;
+                    var totalAmount = taxableValue + gstAmount;
 
-                    invoiceRequest.InvoiceData.Items.Add(new InvoiceItemModel
+                    // Get HSN code from product or use default
+                    var hsnCode = GetHsnCodeForProduct(orderItem.Product?.Name ?? "", orderItem.Product?.Category?.Name);
+
+                    var invoiceItem = new InvoiceItemModel
                     {
                         SlNo = slNo++,
-                        Description = item.ProductName?.ToString() ?? "Product",
-                        HsnCode = item.HsnCode?.ToString() ?? "0909",
+                        Description = orderItem.Product?.Name ?? "Product",
+                        HsnCode = hsnCode,
                         Quantity = quantity,
-                        Unit = item.WeightUnit?.ToString() ?? "KG",
+                        Unit = orderItem.Product?.ProductPrices?.FirstOrDefault()?.Weight?.Unit ?? "kgs",
                         Rate = rate,
                         TaxableValue = taxableValue,
                         DiscountAmount = 0,
-                        CgstRate = cgstRate,
-                        SgstRate = sgstRate,
-                        IgstRate = 0,
-                        CgstAmount = cgstAmount,
-                        SgstAmount = sgstAmount,
-                        IgstAmount = 0,
+                        CgstRate = 0, // IGST only for interstate
+                        SgstRate = 0, // IGST only for interstate  
+                        IgstRate = gstRate,
+                        CgstAmount = 0,
+                        SgstAmount = 0,
+                        IgstAmount = gstAmount,
                         TotalAmount = totalAmount
-                    });
+                    };
 
+                    invoiceRequest.InvoiceData.Items.Add(invoiceItem);
                     totalTaxableValue += taxableValue;
-                    totalTax += totalItemTax;
+                    totalTax += gstAmount;
                 }
 
                 // Update tax summary
@@ -2381,9 +2374,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 {
                     TotalTaxableValue = totalTaxableValue,
                     TotalDiscount = 0,
-                    TotalCGST = invoiceRequest.InvoiceData.Items.Sum(x => x.CgstAmount),
-                    TotalSGST = invoiceRequest.InvoiceData.Items.Sum(x => x.SgstAmount),
-                    TotalIGST = 0,
+                    TotalCGST = 0,
+                    TotalSGST = 0,
+                    TotalIGST = totalTax,
                     TotalTax = totalTax,
                     ShippingCharges = 0,
                     GrandTotal = totalTaxableValue + totalTax,
@@ -2397,7 +2390,98 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}", 
+                _logger.LogError(ex, "Failed to get invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}",
+                    orderId, userId, xCorrelationId);
+                throw;
+            }
+        }
+
+        private string GetHsnCodeForProduct(string productName, string categoryName = null)
+        {
+            // Map products to HSN codes based on the invoice image and GST guidelines
+            // This method can be enhanced to use category or dedicated HSN table in future
+            
+            var productNameLower = productName.ToLower();
+            var categoryNameLower = categoryName?.ToLower() ?? "";
+            
+            // Use category information if available and relevant
+            if (!string.IsNullOrEmpty(categoryNameLower))
+            {
+                if (categoryNameLower.Contains("spice") || categoryNameLower.Contains("masala"))
+                {
+                    // Return spice-specific HSN based on product name
+                    if (productNameLower.Contains("cinnamon")) return "0906";
+                    if (productNameLower.Contains("turmeric")) return "091030";
+                    if (productNameLower.Contains("pepper")) return "0904";
+                    if (productNameLower.Contains("cardamom")) return "0908";
+                    if (productNameLower.Contains("clove")) return "0907";
+                    return "0906"; // Default for spices
+                }
+                
+                if (categoryNameLower.Contains("herb"))
+                    return "0910";
+                    
+                if (categoryNameLower.Contains("oil"))
+                    return "1515";
+                    
+                if (categoryNameLower.Contains("tea"))
+                    return "0902";
+            }
+            
+            // Specific product mappings based on Tax Invoice document
+            if (productNameLower.Contains("cinnamon"))
+                return "0906";
+            if (productNameLower.Contains("turmeric") || productNameLower.Contains("ladong"))
+                return "091030";
+            if (productNameLower.Contains("pepper") || productNameLower.Contains("black"))
+                return "0904";
+            if (productNameLower.Contains("bayleaf") || productNameLower.Contains("bay"))
+                return "0910";
+            
+            // Additional common spice mappings
+            if (productNameLower.Contains("cardamom"))
+                return "0908";
+            if (productNameLower.Contains("clove"))
+                return "0907";
+            if (productNameLower.Contains("nutmeg"))
+                return "0908";
+            if (productNameLower.Contains("ginger"))
+                return "0910";
+            if (productNameLower.Contains("garlic"))
+                return "0703";
+            if (productNameLower.Contains("chili") || productNameLower.Contains("capsicum"))
+                return "0904";
+            
+            // Default HSN for spices and condiments
+            return "0906";
+        }
+
+        private string GetStateCode(string stateName)
+        {
+            try
+            {
+                // Get state code from database using StateMasters table
+                var stateInfo = _dbContext.StateMasters
+                    .FirstOrDefault(s => s.StateName.ToLower() == stateName.ToLower());
+                
+                if (stateInfo != null)
+                {
+                    return stateInfo.StateCode;
+                }
+                
+                // If exact match not found, try partial match
+                stateInfo = _dbContext.StateMasters
+                    .FirstOrDefault(s => s.StateName.ToLower().Contains(stateName.ToLower()) || 
+                                        stateName.ToLower().Contains(s.StateName.ToLower()));
+                
+                return stateInfo?.StateCode ?? "07"; // Default to Delhi if not found
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error getting state code for state: {StateName}, using default", stateName);
+                return "07"; // Default to Delhi on error
+            }
+        } 
                     orderId, userId, xCorrelationId);
                 throw;
             }
