@@ -909,77 +909,89 @@ const OrderDetailsContent: React.FC = () => {
       console.log("Generating invoice for order:", orderDetails.id);
       console.log("Environment:", env);
 
-      // Prepare GST-compliant invoice data
+      // Prepare GST-compliant invoice data matching Tax Invoice structure
       const invoiceData = {
-        // Supplier Details (Rule 46 compliance)
+        // Supplier Details (hardcoded as per requirement)
         Supplier: {
-          Name: "DesiKing Private Limited",
-          Address: "Premium Spices District, Mumbai, Maharashtra, 400001",
-          Gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
-          PanNumber: "AABCD1234E",
-          Email: "invoices@desiking.com",
-          Phone: "+91-1800-DESI-KING",
-          Website: "www.desiking.com",
+          Name: "Braves Enterprise",
+          Address: "Munilanq Village, West Jamila Hills",
+          Gstin: "17MEZPS7848B1ZD",
+          PanNumber: "MEZPS7848B",
+          Email: "braves@enterprise.com",
+          Phone: "+91-9876543210",
+          Website: "www.bravesenterprise.com",
         },
 
-        // Invoice Details (Rule 46 compliance)
+        // Invoice Details (using actual order data)
         Invoice: {
-          Number: `DK/${new Date().getFullYear()}-${(
-            new Date().getFullYear() + 1
-          )
-            .toString()
-            .slice(-2)}/${orderDetails.orderNumber}`,
-          Date: new Date().toLocaleDateString("en-IN"),
+          Number: orderDetails.orderNumber || `INV-${Date.now()}`,
+          Date: new Date(orderDetails.createdDate).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "2-digit",
+          }),
           DueDate: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString("en-IN"),
-          FinancialYear: `${new Date().getFullYear()}-${(
-            new Date().getFullYear() + 1
+            new Date(orderDetails.createdDate).getTime() +
+              30 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "2-digit",
+          }),
+          FinancialYear: `${new Date(
+            orderDetails.createdDate
+          ).getFullYear()}-${(
+            new Date(orderDetails.createdDate).getFullYear() + 1
           )
             .toString()
             .slice(-2)}`,
           OrderNumber: orderDetails.orderNumber,
           OrderDate: new Date(orderDetails.createdDate).toLocaleDateString(
-            "en-IN"
+            "en-GB",
+            {
+              day: "2-digit",
+              month: "short",
+              year: "2-digit",
+            }
           ),
         },
 
-        // Customer Details (Rule 46 compliance)
+        // Customer Details (using actual delivery/billing address data)
         Customer: {
           Name:
-            orderDetails.billingAddress?.name ||
             orderDetails.deliveryAddress?.name ||
-            "Customer",
+            orderDetails.billingAddress?.name ||
+            "Customer Name",
           Address:
-            orderDetails.billingAddress?.address ||
             orderDetails.deliveryAddress?.address ||
-            "Address not provided",
+            orderDetails.billingAddress?.address ||
+            "Address not available",
           City:
-            orderDetails.billingAddress?.city ||
             orderDetails.deliveryAddress?.city ||
+            orderDetails.billingAddress?.city ||
             "City",
           State:
-            orderDetails.billingAddress?.state ||
             orderDetails.deliveryAddress?.state ||
+            orderDetails.billingAddress?.state ||
             "State",
           Pincode:
-            orderDetails.billingAddress?.pincode ||
             orderDetails.deliveryAddress?.pincode ||
+            orderDetails.billingAddress?.pincode ||
             "000000",
           Phone:
-            orderDetails.billingAddress?.phone ||
             orderDetails.deliveryAddress?.phone ||
+            orderDetails.billingAddress?.phone ||
             "+91-0000000000",
-          Email: "customer@email.com", // You can collect this during checkout
-          Gstin: null, // For B2C customers, this will be null
+          Email: "customer@email.com", // Could be enhanced with actual user email if available
+          Gstin: null, // Most customers won't have GSTIN
           StateCode: getStateCode(
-            orderDetails.billingAddress?.state ||
-              orderDetails.deliveryAddress?.state ||
-              "Maharashtra"
+            orderDetails.deliveryAddress?.state ||
+              orderDetails.billingAddress?.state ||
+              "Delhi"
           ),
         },
 
-        // Delivery Address (if different)
+        // Delivery Address (using actual delivery address data)
         DeliveryAddress: orderDetails.deliveryAddress
           ? {
               Name: orderDetails.deliveryAddress.name,
@@ -988,97 +1000,152 @@ const OrderDetailsContent: React.FC = () => {
               State: orderDetails.deliveryAddress.state,
               Pincode: orderDetails.deliveryAddress.pincode,
               Phone: orderDetails.deliveryAddress.phone,
-              StateCode: getStateCode(
-                orderDetails.deliveryAddress.state || "Maharashtra"
-              ),
+              StateCode: getStateCode(orderDetails.deliveryAddress.state),
             }
           : null,
 
-        // Items with HSN/SAC codes (Rule 46 compliance)
-        Items: orderDetails.items.map((item, index) => ({
-          SlNo: index + 1,
-          Description: item.productName,
-          HsnCode: "09109990", // HSN for spices - replace with actual HSN per product
-          Quantity: item.quantity,
-          Unit: "KG", // or appropriate unit
-          Rate: item.price,
-          TaxableValue: item.price * item.quantity,
-          DiscountAmount: item.discountAmount
-            ? item.discountAmount * item.quantity
-            : 0,
+        // Items with HSN/SAC codes (using actual order items data)
+        Items: orderDetails.items.map((item, index) => {
+          const getHsnCode = (productName: string, categoryName?: string) => {
+            // Use category information if available
+            if (categoryName) {
+              const categoryLower = categoryName.toLowerCase();
+              if (
+                categoryLower.includes("spice") ||
+                categoryLower.includes("masala")
+              ) {
+                if (productName.toLowerCase().includes("cinnamon"))
+                  return "0906";
+                if (productName.toLowerCase().includes("turmeric"))
+                  return "091030";
+                if (productName.toLowerCase().includes("pepper")) return "0904";
+                if (productName.toLowerCase().includes("cardamom"))
+                  return "0908";
+                if (productName.toLowerCase().includes("clove")) return "0907";
+                return "0906"; // Default for spices
+              }
+              if (categoryLower.includes("herb")) return "0910";
+              if (categoryLower.includes("oil")) return "1515";
+              if (categoryLower.includes("tea")) return "0902";
+            }
 
-          // GST Calculations
-          CgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
-          SgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
-          IgstRate: isIntraState(orderDetails.billingAddress?.state) ? 0 : 5,
+            // Product name based mapping
+            if (productName.toLowerCase().includes("cinnamon")) return "0906";
+            if (
+              productName.toLowerCase().includes("turmeric") ||
+              productName.toLowerCase().includes("ladong")
+            )
+              return "091030";
+            if (
+              productName.toLowerCase().includes("pepper") ||
+              productName.toLowerCase().includes("black")
+            )
+              return "0904";
+            if (
+              productName.toLowerCase().includes("bayleaf") ||
+              productName.toLowerCase().includes("bay")
+            )
+              return "0910";
+            if (productName.toLowerCase().includes("cardamom")) return "0908";
+            if (productName.toLowerCase().includes("clove")) return "0907";
+            if (productName.toLowerCase().includes("nutmeg")) return "0908";
+            if (productName.toLowerCase().includes("ginger")) return "0910";
 
-          CgstAmount: isIntraState(orderDetails.billingAddress?.state)
-            ? (item.price * item.quantity * 2.5) / 100
-            : 0,
-          SgstAmount: isIntraState(orderDetails.billingAddress?.state)
-            ? (item.price * item.quantity * 2.5) / 100
-            : 0,
-          IgstAmount: isIntraState(orderDetails.billingAddress?.state)
-            ? 0
-            : (item.price * item.quantity * 5) / 100,
+            return "0906"; // Default HSN for spices
+          };
 
-          TotalAmount: item.totalPrice + (item.price * item.quantity * 5) / 100,
-        })),
+          const rate = item.price;
+          const quantity = item.quantity;
+          const taxableValue = rate * quantity;
 
-        // Tax Summary
+          // Use 5% IGST (interstate transaction from Meghalaya to other states)
+          const igstRate = 5;
+          const igstAmount = (taxableValue * igstRate) / 100;
+          const totalAmount = taxableValue + igstAmount;
+
+          return {
+            SlNo: index + 1,
+            Description: item.productName,
+            HsnCode: getHsnCode(item.productName, item.categoryName),
+            Quantity: quantity,
+            Unit: item.weight
+              ? item.weight.replace(/[0-9.]/g, "") || "kgs"
+              : "kgs", // Extract unit from weight
+            Rate: rate,
+            TaxableValue: taxableValue,
+            DiscountAmount: item.discountAmount
+              ? item.discountAmount * quantity
+              : 0,
+
+            // GST Calculations - Using IGST for interstate (as per Tax Invoice image)
+            CgstRate: 0, // No CGST for interstate
+            SgstRate: 0, // No SGST for interstate
+            IgstRate: igstRate,
+            CgstAmount: 0,
+            SgstAmount: 0,
+            IgstAmount: igstAmount,
+            TotalAmount: totalAmount,
+          };
+        }),
+
+        // Tax Summary (calculated from actual order data)
         TaxSummary: {
           TotalTaxableValue: orderDetails.subtotal,
-          TotalDiscount: orderDetails.discount,
+          TotalDiscount: orderDetails.discount || 0,
 
-          // GST totals based on place of supply
-          TotalCGST: isIntraState(orderDetails.billingAddress?.state)
-            ? (orderDetails.subtotal * 2.5) / 100
-            : 0,
-          TotalSGST: isIntraState(orderDetails.billingAddress?.state)
-            ? (orderDetails.subtotal * 2.5) / 100
-            : 0,
-          TotalIGST: isIntraState(orderDetails.billingAddress?.state)
-            ? 0
-            : (orderDetails.subtotal * 5) / 100,
+          // GST totals - Using IGST for interstate transaction
+          TotalCGST: 0,
+          TotalSGST: 0,
+          TotalIGST: orderDetails.tax || (orderDetails.subtotal * 5) / 100, // Use actual tax or calculate 5%
 
-          TotalTax: (orderDetails.subtotal * 5) / 100,
-          ShippingCharges: orderDetails.shippingCharges,
+          TotalTax: orderDetails.tax || (orderDetails.subtotal * 5) / 100,
+          ShippingCharges: orderDetails.shippingCharges || 0,
           GrandTotal: orderDetails.totalAmount,
 
           PlaceOfSupply: `${
-            orderDetails.billingAddress?.state ||
             orderDetails.deliveryAddress?.state ||
-            "Maharashtra"
-          } (${getStateCode(
             orderDetails.billingAddress?.state ||
-              orderDetails.deliveryAddress?.state ||
-              "Maharashtra"
+            "Delhi"
+          } (${getStateCode(
+            orderDetails.deliveryAddress?.state ||
+              orderDetails.billingAddress?.state ||
+              "Delhi"
           )})`,
         },
 
-        // Payment Details
+        // Payment Details (using actual payment information)
         Payment: {
-          Method: orderDetails.paymentInfo.method,
-          TransactionId: orderDetails.paymentInfo.transactionId,
-          PaymentDate: new Date(
-            orderDetails.paymentInfo.paymentDate
-          ).toLocaleDateString("en-IN"),
-          Status: orderDetails.paymentInfo.status,
-          AmountPaid: orderDetails.paymentInfo.amount,
+          Method: orderDetails.paymentInfo?.method || "Online Payment",
+          TransactionId:
+            orderDetails.paymentInfo?.transactionId ||
+            orderDetails.docketNumber ||
+            "N/A",
+          PaymentDate: orderDetails.paymentInfo?.paymentDate
+            ? new Date(orderDetails.paymentInfo.paymentDate).toLocaleDateString(
+                "en-GB",
+                {
+                  day: "2-digit",
+                  month: "short",
+                  year: "2-digit",
+                }
+              )
+            : new Date(orderDetails.createdDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "2-digit",
+              }),
+          Status: orderDetails.paymentInfo?.status || "Paid",
+          AmountPaid:
+            orderDetails.paymentInfo?.amount || orderDetails.totalAmount,
         },
 
-        // Additional Details
-        Terms: [
-          "This is a computer-generated invoice and does not require a physical signature.",
-          "Goods once sold will not be taken back.",
-          "All disputes are subject to Mumbai jurisdiction only.",
-          "Payment due within 30 days of invoice date.",
-        ],
+        // Terms (matching Tax Invoice footer)
+        Terms: ["This is a Computer Generated Invoice"],
 
         // E-invoice details (if applicable)
         EInvoice: {
-          Irn: null, // Will be populated if e-invoicing is required
-          QrCode: null, // Base64 QR code from IRP
+          Irn: null,
+          QrCode: null,
           AckNo: null,
           AckDate: null,
         },
