@@ -7,8 +7,8 @@ export interface ApiResponse<T> {
     code: string;
     message: string;
   };
-  data: T;
-  id: string;
+  data: T | null;
+  id: string | null;
 }
 
 /**
@@ -18,20 +18,31 @@ export interface ApiResponse<T> {
  */
 export async function handleApiResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    // Try to parse error response for better error message
+    try {
+      const errorData = await response.json();
+      if (errorData && typeof errorData === "object" && "info" in errorData) {
+        const apiErrorResponse = errorData as ApiResponse<any>;
+        throw new Error(`API Error: ${apiErrorResponse.info.message}`);
+      }
+    } catch (error) {
+      // Fall back to generic error if JSON parsing fails
+      console.log(error);
+    }
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
 
   // Check if response is wrapped in standard API response format
-  if (data && typeof data === "object" && "data" in data && "info" in data) {
+  if (data && typeof data === "object" && "info" in data) {
     const apiResponse = data as ApiResponse<T>;
 
     if (!apiResponse.info.isSuccess) {
       throw new Error(`API Error: ${apiResponse.info.message}`);
     }
 
-    return apiResponse.data;
+    return apiResponse.data as T;
   }
 
   // Return data directly if not wrapped

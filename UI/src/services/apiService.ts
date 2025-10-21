@@ -27,8 +27,8 @@ export interface ApiResponse<T = any> {
     code: string;
     message: string;
   };
-  data: T;
-  id: string;
+  data: T | null;
+  id: string | null;
 }
 
 export interface ApiOptions {
@@ -125,17 +125,69 @@ class ApiService {
     const data = await response.json();
 
     // Handle wrapped API responses
-    if (data && typeof data === "object" && "info" in data && "data" in data) {
+    if (data && typeof data === "object" && "info" in data) {
       const apiResponse = data as ApiResponse<T>;
 
       if (!apiResponse.info.isSuccess) {
-        throw new ServerError(
-          `API Error: ${apiResponse.info.message}`,
-          apiResponse.id
-        );
+        // Create appropriate error based on status code
+        const statusCode = parseInt(apiResponse.info.code);
+        const errorMessage = apiResponse.info.message;
+        const correlationId = apiResponse.id || undefined;
+
+        switch (statusCode) {
+          case 400:
+            throw new CustomError(
+              errorMessage,
+              "VALIDATION_ERROR",
+              400,
+              correlationId
+            );
+          case 401:
+            throw new AuthenticationError(errorMessage, correlationId);
+          case 403:
+            throw new CustomError(
+              errorMessage,
+              "AUTHORIZATION_ERROR",
+              403,
+              correlationId
+            );
+          case 404:
+            throw new CustomError(
+              errorMessage,
+              "NOT_FOUND_ERROR",
+              404,
+              correlationId
+            );
+          case 409:
+            throw new CustomError(
+              errorMessage,
+              "CONFLICT_ERROR",
+              409,
+              correlationId
+            );
+          case 422:
+            throw new CustomError(
+              errorMessage,
+              "VALIDATION_ERROR",
+              422,
+              correlationId
+            );
+          case 500:
+          case 502:
+          case 503:
+          case 504:
+            throw new ServerError(errorMessage, correlationId);
+          default:
+            throw new CustomError(
+              errorMessage,
+              "API_ERROR",
+              statusCode,
+              correlationId
+            );
+        }
       }
 
-      return apiResponse.data;
+      return apiResponse.data as T;
     }
 
     // Return direct data if not wrapped
@@ -152,9 +204,11 @@ class ApiService {
     try {
       const errorData = await response.json();
 
-      if (errorData.info?.message) {
-        errorMessage = errorData.info.message;
-        correlationId = errorData.id;
+      // Handle the standard API error response format
+      if (errorData && typeof errorData === "object" && "info" in errorData) {
+        const apiErrorResponse = errorData as ApiResponse<any>;
+        errorMessage = apiErrorResponse.info.message;
+        correlationId = apiErrorResponse.id || undefined;
       } else if (errorData.message) {
         errorMessage = errorData.message;
       } else if (typeof errorData === "string") {

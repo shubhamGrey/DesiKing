@@ -106,9 +106,10 @@ export class ErrorHandler {
     // Handle API response format
     if (response.info) {
       const { info, data } = response as ApiResponse<T>;
-      const statusCode = parseInt(info.code);
 
-      if (statusCode >= 400) {
+      // Check if the API operation was successful
+      if (!info.isSuccess) {
+        const statusCode = parseInt(info.code);
         this.handleApiError(statusCode, info.message, url);
       }
 

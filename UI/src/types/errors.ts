@@ -9,10 +9,12 @@ export interface ApiError {
 
 export interface ApiResponse<T = any> {
   info: {
+    isSuccess: boolean;
     code: string;
     message: string;
   };
-  data?: T;
+  data: T | null;
+  id: string | null;
 }
 
 export class CustomError extends Error {
