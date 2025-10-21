@@ -1567,12 +1567,6 @@ const OrderDetailsContent: React.FC = () => {
     }
   };
 
-  // Helper function to determine if transaction is intra-state
-  const isIntraState = (customerState?: string): boolean => {
-    const companyState = "Maharashtra"; // Your company's state
-    return (customerState || "Maharashtra") === companyState;
-  };
-
   // Helper function to get state code for GST
   const getStateCode = (stateName?: string): string => {
     const stateCodes: Record<string, string> = {
