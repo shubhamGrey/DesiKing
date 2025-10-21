@@ -25,6 +25,7 @@ export async function processApiResponse<T>(response: Response): Promise<T> {
         response.status
       );
     }
+    console.log(error);
     throw new CustomError("Invalid response format", "PARSE_ERROR", 500);
   }
 

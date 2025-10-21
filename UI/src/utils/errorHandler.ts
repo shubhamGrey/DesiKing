@@ -105,7 +105,7 @@ export class ErrorHandler {
 
     // Handle API response format
     if (response.info) {
-      const { info, data, id } = response as ApiResponse<T>;
+      const { info, data } = response as ApiResponse<T>;
 
       // Check if the API operation was successful
       if (!info.isSuccess) {
