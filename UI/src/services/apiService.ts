@@ -413,10 +413,8 @@ class ApiService {
   public async uploadFile<T>(
     endpoint: string,
     file: File | FormData,
-    options: ApiOptions & { onProgress?: (progress: number) => void } = {}
+    options: ApiOptions
   ): Promise<T> {
-    const { onProgress, ...restOptions } = options;
-
     let formData: FormData;
     if (file instanceof FormData) {
       formData = file;
@@ -433,7 +431,7 @@ class ApiService {
         method: "POST",
         body: formData,
       },
-      restOptions
+      options
     );
   }
 }

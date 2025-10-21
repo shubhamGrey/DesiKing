@@ -92,7 +92,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         "/Common/GetCountries",
         {},
         {
-          onError: (error) => {
+          onError: () => {
             setError("Failed to load countries. Please try again.");
           },
         }
@@ -123,7 +123,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         `/Common/GetStates/${countryCode}`,
         {},
         {
-          onError: (error) => {
+          onError: () => {
             setError("Failed to load states. Please try again.");
           },
         }
