@@ -15,6 +15,7 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
+import { useApiWithoutAuth } from "@/hooks/useApi";
 
 // API response interfaces
 interface CountryResponse {
@@ -57,6 +58,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   title = "Add New Address",
   addressType = "SHIPPING",
 }) => {
+  const api = useApiWithoutAuth(); // Using without auth since these are public endpoints
+
   const [formData, setFormData] = useState<AddressFormData>({
     fullName: initialData?.fullName || "",
     phoneNumber: initialData?.phoneNumber || "",
@@ -79,39 +82,33 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingStates, setLoadingStates] = useState(false);
 
-  // Fetch countries from API
+  // Fetch countries from API using unified API service
   const fetchCountries = async () => {
     try {
       setLoadingCountries(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Common/GetCountries`,
+      setError(null);
+
+      const countries = await api.get<CountryResponse[]>(
+        "/Common/GetCountries",
+        {},
         {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
+          onError: (error) => {
+            setError("Failed to load countries. Please try again.");
           },
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Handle both direct array response and wrapped response
-      const countries = Array.isArray(result) ? result : result.data || [];
-      setCountries(countries);
+      setCountries(countries || []);
       console.log("✅ Countries loaded:", countries);
     } catch (error) {
+      // Error is already handled by the API hook
       console.error("Failed to fetch countries:", error);
-      setError("Failed to load countries. Please try again.");
     } finally {
       setLoadingCountries(false);
     }
   };
 
-  // Fetch states based on selected country
+  // Fetch states based on selected country using unified API service
   const fetchStates = async (countryCode: string) => {
     if (!countryCode) {
       setStates([]);
@@ -120,29 +117,23 @@ export const AddressForm: React.FC<AddressFormProps> = ({
 
     try {
       setLoadingStates(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Common/GetStates/${countryCode}`,
+      setError(null);
+
+      const states = await api.get<StateResponse[]>(
+        `/Common/GetStates/${countryCode}`,
+        {},
         {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
+          onError: (error) => {
+            setError("Failed to load states. Please try again.");
           },
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Handle both direct array response and wrapped response
-      const states = Array.isArray(result) ? result : result.data || [];
-      setStates(states);
+      setStates(states || []);
       console.log("✅ States loaded:", states);
     } catch (error) {
+      // Error is already handled by the API hook
       console.error("Failed to fetch states:", error);
-      setError("Failed to load states. Please try again.");
     } finally {
       setLoadingStates(false);
     }
@@ -224,6 +215,10 @@ export const AddressForm: React.FC<AddressFormProps> = ({
 
     try {
       await onSave(formData);
+
+      // Show success message
+      api.showSuccess("Address saved successfully!");
+
       onClose();
       // Reset form
       setFormData({
@@ -238,6 +233,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         addressType: "SHIPPING",
       });
     } catch (error: any) {
+      // Use unified error handling
+      api.handleError(error, "Failed to save address");
       setError(error.message || "Failed to save address");
     } finally {
       setIsLoading(false);

@@ -165,7 +165,7 @@ function LoginPageContent() {
   ): Promise<UserProfile | null> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-profile`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/user-profile`,
         {
           method: "GET",
           headers: {
@@ -268,7 +268,7 @@ function LoginPageContent() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-login`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/user-login`,
         {
           method: "POST",
           headers: {
@@ -302,7 +302,7 @@ function LoginPageContent() {
   ): Promise<void> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Auth/user-registration`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/user-registration`,
         {
           method: "POST",
           headers: {
