@@ -1806,79 +1806,39 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             {
                 _logger.LogInformation("Starting invoice PDF generation for xCorrelationId: {CorrelationId}", xCorrelationId);
 
-                // Simple test HTML to verify iText7 is working
-                var simpleHtml = @"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { background-color: #4a5568; color: white; padding: 20px; }
-        .content { margin: 20px 0; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <div class='header'>
-        <h1>Test Invoice</h1>
-        <p>Company: " + invoiceData.InvoiceData.Supplier.Name + @"</p>
-    </div>
-    <div class='content'>
-        <h2>Invoice Details</h2>
-        <p><strong>Invoice No:</strong> " + invoiceData.InvoiceData.Invoice.Number + @"</p>
-        <p><strong>Date:</strong> " + invoiceData.InvoiceData.Invoice.Date + @"</p>
-        <p><strong>Customer:</strong> " + invoiceData.InvoiceData.Customer.Name + @"</p>
-        
-        <h3>Items</h3>
-        <table>";
-
-                if (invoiceData.InvoiceData.Items != null && invoiceData.InvoiceData.Items.Any())
+                // Step 1: Validate invoice data using existing validation method
+                var validationErrors = ValidateInvoiceData(invoiceData.InvoiceData);
+                if (validationErrors.Any())
                 {
-                    simpleHtml += @"
-            <tr>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Total</th>
-            </tr>";
-                    
-                    foreach (var item in invoiceData.InvoiceData.Items)
-                    {
-                        simpleHtml += $@"
-            <tr>
-                <td>{item.Description}</td>
-                <td>{item.Quantity}</td>
-                <td>₹{item.Rate:F2}</td>
-                <td>₹{item.TotalAmount:F2}</td>
-            </tr>";
-                    }
-                }
-                else
-                {
-                    simpleHtml += @"<tr><td colspan='4'>No items</td></tr>";
+                    throw new Exception("Invoice validation failed: " + string.Join("; ", validationErrors));
                 }
 
-                simpleHtml += @"
-        </table>
-        
-        <div style='margin-top: 20px;'>
-            <p><strong>Total: ₹" + (invoiceData.InvoiceData.TaxSummary?.GrandTotal ?? 0) + @"</strong></p>
-        </div>
-    </div>
-</body>
-</html>";
+                // Step 2: Generate HTML content using existing method
+                var htmlContent = GenerateInvoiceHtml(invoiceData);
 
                 // Step 3: Convert HTML to PDF using iText7
                 using var memoryStream = new MemoryStream();
                 
-                using var pdfWriter = new PdfWriter(memoryStream);
+                // Configure PDF writer properties
+                var writerProperties = new WriterProperties();
+                writerProperties.SetPdfVersion(PdfVersion.PDF_1_7);
+                
+                using var pdfWriter = new PdfWriter(memoryStream, writerProperties);
                 using var pdfDocument = new PdfDocument(pdfWriter);
                 
-                // Convert HTML to PDF with minimal configuration
+                // Set document metadata
+                var documentInfo = pdfDocument.GetDocumentInfo();
+                documentInfo.SetTitle($"Invoice_{invoiceData.InvoiceData.Invoice.Number.Replace("/", "_")}");
+                documentInfo.SetAuthor("AgroNexis");
+                documentInfo.SetCreator("AgroNexis Invoice System");
+                documentInfo.SetSubject("GST Invoice");
+                
+                // Configure converter properties for better rendering
                 var converterProperties = new ConverterProperties();
-                HtmlConverter.ConvertToPdf(simpleHtml, pdfDocument, converterProperties);
+                converterProperties.SetCharset("UTF-8");
+                
+                // Convert HTML to PDF
+                HtmlConverter.ConvertToPdf(htmlContent, pdfDocument, converterProperties);
                 
                 var pdfBytes = memoryStream.ToArray();
                 
