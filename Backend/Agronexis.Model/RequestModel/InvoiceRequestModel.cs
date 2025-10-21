@@ -2,25 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Agronexis.Model.RequestModel
 {
-    /// <summary>
-    /// Unified request model for invoice PDF generation
-    /// Supports both OrderId/UserId approach and complete invoice data approach
-    /// </summary>
     public class InvoicePdfGenerationRequest
     {
-        /// <summary>
-        /// OrderId - Use this with UserId to fetch invoice data from database
-        /// </summary>
-        public int? OrderId { get; set; }
-
-        /// <summary>
-        /// UserId - Use this with OrderId to fetch invoice data from database
-        /// </summary>
-        public int? UserId { get; set; }
-
-        /// <summary>
-        /// Complete invoice data - Use this when you have all the invoice details
-        /// </summary>
+        public Guid OrderId { get; set; }
+        public Guid UserId { get; set; }
+        public Guid? ShippingAddressId { get; set; }
         public InvoiceDataModel? InvoiceData { get; set; }
     }
 
@@ -84,13 +70,15 @@ namespace Agronexis.Model.RequestModel
 
     public class InvoiceAddressModel
     {
-        public string Name { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;         // FullName
+        public string Address { get; set; } = string.Empty;      // AddressLine
         public string City { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;        // StateMaster.StateName
+        public string StateCode { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;      // CountryMaster.CountryName
+        public string CountryCode { get; set; } = string.Empty;
         public string Pincode { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string StateCode { get; set; } = string.Empty;
     }
 
     public class InvoiceItemModel

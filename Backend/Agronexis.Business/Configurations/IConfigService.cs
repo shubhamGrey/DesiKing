@@ -53,6 +53,6 @@ namespace Agronexis.Business.Configurations
         Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId);
         //Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId);
         Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel request, string xCorrelationId);
-        Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(int orderId, int userId, string xCorrelationId);
+        Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId);
     }
 }

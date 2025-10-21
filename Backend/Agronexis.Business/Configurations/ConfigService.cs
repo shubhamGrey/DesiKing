@@ -203,9 +203,9 @@ namespace Agronexis.Business.Configurations
             return await _repository.GenerateInvoicePdf(request, xCorrelationId);
         }
 
-        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(int orderId, int userId, string xCorrelationId)
+        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId)
         {
-            return await _repository.GetInvoiceDataByOrder(orderId, userId, xCorrelationId);
+            return await _repository.GetInvoiceDataByOrder(request, xCorrelationId);
         }
     }
 }

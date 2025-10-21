@@ -36,9 +36,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private readonly IServiceProvider _serviceProvider;
 
         public ConfigurationRepository(
-            AppDbContext dbContext, 
-            IConfiguration configuration, 
-            ExternalUtility externalUtility, 
+            AppDbContext dbContext,
+            IConfiguration configuration,
+            ExternalUtility externalUtility,
             ILogger<ConfigurationRepository> logger,
             IServiceProvider serviceProvider)
         {
@@ -1814,31 +1814,31 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 // Step 3: Convert HTML to PDF using iText7
                 using var memoryStream = new MemoryStream();
-                
+
                 // Configure PDF writer properties
                 var writerProperties = new WriterProperties();
                 writerProperties.SetPdfVersion(PdfVersion.PDF_1_7);
-                
+
                 using var pdfWriter = new PdfWriter(memoryStream, writerProperties);
                 using var pdfDocument = new PdfDocument(pdfWriter);
-                
+
                 // Set document metadata
                 var documentInfo = pdfDocument.GetDocumentInfo();
                 documentInfo.SetTitle($"Invoice_{invoiceData.InvoiceData.Invoice.Number.Replace("/", "_")}");
                 documentInfo.SetAuthor("AgroNexis");
                 documentInfo.SetCreator("AgroNexis Invoice System");
                 documentInfo.SetSubject("GST Invoice");
-                
+
                 // Configure converter properties for better rendering
                 var converterProperties = new ConverterProperties();
                 converterProperties.SetCharset("UTF-8");
-                
+
                 // Convert HTML to PDF
                 HtmlConverter.ConvertToPdf(htmlContent, pdfDocument, converterProperties);
-                
+
                 var pdfBytes = memoryStream.ToArray();
-                
-                _logger.LogInformation("Invoice PDF generated successfully, size: {Size} bytes, xCorrelationId: {CorrelationId}", 
+
+                _logger.LogInformation("Invoice PDF generated successfully, size: {Size} bytes, xCorrelationId: {CorrelationId}",
                     pdfBytes.Length, xCorrelationId);
 
                 return await Task.FromResult(pdfBytes);
@@ -2201,81 +2201,82 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private string ConvertToWords(int number)
         {
             if (number == 0) return "Zero Only";
-            
-            string[] ones = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", 
+
+            string[] ones = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
                              "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen" };
             string[] tens = { "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety" };
-            
+
             string words = "";
-            
+
             if (number >= 10000000) // Crore
             {
                 words += ones[number / 10000000] + " Crore ";
                 number %= 10000000;
             }
-            
+
             if (number >= 100000) // Lakh
             {
                 words += ones[number / 100000] + " Lakh ";
                 number %= 100000;
             }
-            
+
             if (number >= 1000) // Thousand
             {
                 words += ones[number / 1000] + " Thousand ";
                 number %= 1000;
             }
-            
+
             if (number >= 100) // Hundred
             {
                 words += ones[number / 100] + " Hundred ";
                 number %= 100;
             }
-            
+
             if (number >= 20)
             {
                 words += tens[number / 10] + " ";
                 number %= 10;
             }
-            
+
             if (number > 0)
             {
                 words += ones[number] + " ";
             }
-            
+
             return words.Trim() + " Only";
         }
 
-        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(int orderId, int userId, string xCorrelationId)
+        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId)
         {
             try
             {
-                _logger.LogInformation("Getting invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}", 
-                    orderId, userId, xCorrelationId);
-
-                // Use Entity Framework with LINQ instead of raw SQL
+                //Get order with related items
                 var order = await _dbContext.Orders
-                    .Include(o => o.User)
                     .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Product)
-                            .ThenInclude(p => p.Category)
-                    .Include(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Product)
-                            .ThenInclude(p => p.ProductPrices)
-                                .ThenInclude(pp => pp.Weight)
-                    .Include(o => o.DeliveryAddress)
-                    .Include(o => o.BillingAddress)
-                    .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+                    .FirstOrDefaultAsync(o => o.Id == request.OrderId);
+
+                var productIds = order.OrderItems.Select(oi => oi.ProductId).ToList();
+
+                //var products = await _dbContext.Products
+                //    .Include(p => p.Category)
+                //    .Where(p => productIds.Contains(p.Id))
+                //    .ToListAsync();
+
+                //Get shipping address
+                var address = await _dbContext.Addresses
+                    .Include(a => a.State)
+                    .Include(a => a.Country)
+                    .FirstOrDefaultAsync(a =>
+                        (a.UserId == request.UserId && a.AddressType == "SHIPPING" && a.IsActive && !a.IsDeleted)
+                    );
 
                 if (order == null)
-                {
-                    throw new Exception($"Order not found for OrderId: {orderId}, UserId: {userId}");
-                }
+                    return null;
 
                 // Build the invoice request model based on the Tax Invoice structure
                 var invoiceRequest = new GenerateInvoiceRequestModel
                 {
-                    OrderId = orderId.ToString(),
+                    OrderId = request.OrderId.ToString(),
                     InvoiceData = new InvoiceDataModel
                     {
                         Supplier = new InvoiceSupplierModel
@@ -2288,27 +2289,29 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             Phone = "+91-9876543210",
                             Website = "www.bravesenterprise.com"
                         },
+
                         Invoice = new InvoiceDetailsModel
                         {
-                            Number = "220",
-                            Date = DateTime.Now.ToString("dd-MMM-yy"),
-                            DueDate = DateTime.Now.AddDays(30).ToString("dd-MMM-yy"),
+                            //Number = "220",
+                            //Date = DateTime.Now.ToString("dd-MMM-yy"),
+                            //DueDate = DateTime.Now.AddDays(30).ToString("dd-MMM-yy"),
                             FinancialYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
-                            OrderNumber = order.OrderNumber?.ToString() ?? orderId.ToString(),
-                            OrderDate = order.OrderDate.ToString("dd-MMM-yy")
+                            OrderNumber = order.Id.ToString(),
+                            OrderDate = order.CreatedDate?.ToString("dd-MMM-yy")
                         },
+
                         Customer = new InvoiceCustomerModel
                         {
-                            Name = "AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED",
-                            Address = "TF, 29G/1, Flat No 501, Kaushalya Apartment, Desu Road, Ward No. 1, Near Canara Bank, Mehrauli",
-                            City = order.DeliveryAddress?.City ?? "Delhi",
-                            State = order.DeliveryAddress?.State ?? "Delhi", 
-                            Pincode = order.DeliveryAddress?.Pincode ?? "073825A210G501",
-                            Phone = order.User?.Phone ?? "Phone not provided",
-                            Email = order.User?.Email ?? "Email not provided",
-                            Gstin = "07ABCDE2100G1Z6",
-                            StateCode = GetStateCode(order.DeliveryAddress?.State ?? "Delhi")
+                            Name = address.FullName ?? "",
+                            Address = address.AddressLine ?? "",
+                            City = address.City ?? "",
+                            State = address.State?.StateName ?? address.StateCode ?? "",
+                            StateCode = address.StateCode ?? "",
+                            Pincode = address.PinCode ?? "",
+                            Phone = address.PhoneNumber ?? "",
+                            Gstin = "07ABCDE2100G1Z6"
                         },
+
                         Items = new List<InvoiceItemModel>(),
                         TaxSummary = new InvoiceTaxSummaryModel(),
                         Payment = new InvoicePaymentModel
@@ -2316,7 +2319,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                             Method = "Online Payment",
                             Status = "Paid",
                             AmountPaid = order.TotalAmount,
-                            PaymentDate = order.OrderDate.ToString("dd-MMM-yy")
+                            PaymentDate = order.CreatedDate?.ToString("dd-MMM-yy")
                         },
                         Terms = new List<string>
                         {
@@ -2333,25 +2336,33 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 foreach (var orderItem in order.OrderItems)
                 {
+
+
+                    var product = await _dbContext.Products
+                        .Include(p => p.Category)
+                        .Where(p => p.Id == orderItem.ProductId)
+                        .FirstOrDefaultAsync();
+
+
                     var rate = orderItem.Price;
                     var quantity = orderItem.Quantity;
                     var taxableValue = rate * quantity;
-                    
+
                     // Calculate GST (5% as shown in the image)
                     var gstRate = 5m;
                     var gstAmount = (taxableValue * gstRate) / 100;
                     var totalAmount = taxableValue + gstAmount;
 
                     // Get HSN code from product or use default
-                    var hsnCode = GetHsnCodeForProduct(orderItem.Product?.Name ?? "", orderItem.Product?.Category?.Name);
+                    var hsnCode = GetHsnCodeForProduct(product?.Name ?? "", product?.Category?.Name);
 
                     var invoiceItem = new InvoiceItemModel
                     {
                         SlNo = slNo++,
-                        Description = orderItem.Product?.Name ?? "Product",
+                        //Description = orderItem.Product?.Name ?? "Product",
                         HsnCode = hsnCode,
                         Quantity = quantity,
-                        Unit = orderItem.Product?.ProductPrices?.FirstOrDefault()?.Weight?.Unit ?? "kgs",
+                        //Unit = orderItem.Product?.ProductPrices?.FirstOrDefault()?.Weight?.Unit ?? "kgs",
                         Rate = rate,
                         TaxableValue = taxableValue,
                         DiscountAmount = 0,
@@ -2383,15 +2394,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     PlaceOfSupply = invoiceRequest.InvoiceData.Customer.State
                 };
 
-                _logger.LogInformation("Successfully retrieved invoice data for OrderId: {OrderId}, Items: {ItemCount}", 
-                    orderId, invoiceRequest.InvoiceData.Items.Count);
-
                 return invoiceRequest;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get invoice data for OrderId: {OrderId}, UserId: {UserId}, xCorrelationId: {CorrelationId}",
-                    orderId, userId, xCorrelationId);
                 throw;
             }
         }
@@ -2400,10 +2406,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             // Map products to HSN codes based on the invoice image and GST guidelines
             // This method can be enhanced to use category or dedicated HSN table in future
-            
+
             var productNameLower = productName.ToLower();
             var categoryNameLower = categoryName?.ToLower() ?? "";
-            
+
             // Use category information if available and relevant
             if (!string.IsNullOrEmpty(categoryNameLower))
             {
@@ -2417,17 +2423,17 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     if (productNameLower.Contains("clove")) return "0907";
                     return "0906"; // Default for spices
                 }
-                
+
                 if (categoryNameLower.Contains("herb"))
                     return "0910";
-                    
+
                 if (categoryNameLower.Contains("oil"))
                     return "1515";
-                    
+
                 if (categoryNameLower.Contains("tea"))
                     return "0902";
             }
-            
+
             // Specific product mappings based on Tax Invoice document
             if (productNameLower.Contains("cinnamon"))
                 return "0906";
@@ -2437,7 +2443,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 return "0904";
             if (productNameLower.Contains("bayleaf") || productNameLower.Contains("bay"))
                 return "0910";
-            
+
             // Additional common spice mappings
             if (productNameLower.Contains("cardamom"))
                 return "0908";
@@ -2451,7 +2457,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 return "0703";
             if (productNameLower.Contains("chili") || productNameLower.Contains("capsicum"))
                 return "0904";
-            
+
             // Default HSN for spices and condiments
             return "0906";
         }
@@ -2463,27 +2469,23 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 // Get state code from database using StateMasters table
                 var stateInfo = _dbContext.StateMasters
                     .FirstOrDefault(s => s.StateName.ToLower() == stateName.ToLower());
-                
+
                 if (stateInfo != null)
                 {
                     return stateInfo.StateCode;
                 }
-                
+
                 // If exact match not found, try partial match
                 stateInfo = _dbContext.StateMasters
-                    .FirstOrDefault(s => s.StateName.ToLower().Contains(stateName.ToLower()) || 
+                    .FirstOrDefault(s => s.StateName.ToLower().Contains(stateName.ToLower()) ||
                                         stateName.ToLower().Contains(s.StateName.ToLower()));
-                
+
                 return stateInfo?.StateCode ?? "07"; // Default to Delhi if not found
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Error getting state code for state: {StateName}, using default", stateName);
                 return "07"; // Default to Delhi on error
-            }
-        } 
-                    orderId, userId, xCorrelationId);
-                throw;
             }
         }
     }
