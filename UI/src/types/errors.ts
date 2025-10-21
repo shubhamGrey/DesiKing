@@ -92,6 +92,27 @@ export class ServerError extends CustomError {
   }
 }
 
+export class ConflictError extends CustomError {
+  constructor(message: string = "Resource conflict", correlationId?: string) {
+    super(message, "CONFLICT_ERROR", 409, correlationId);
+    this.name = "ConflictError";
+  }
+}
+
+export class RateLimitError extends CustomError {
+  constructor(message: string = "Rate limit exceeded", correlationId?: string) {
+    super(message, "RATE_LIMIT_ERROR", 429, correlationId);
+    this.name = "RateLimitError";
+  }
+}
+
+export class TimeoutError extends CustomError {
+  constructor(message: string = "Request timeout", correlationId?: string) {
+    super(message, "TIMEOUT_ERROR", 408, correlationId);
+    this.name = "TimeoutError";
+  }
+}
+
 // Error severity levels
 export type ErrorSeverity = "low" | "medium" | "high" | "critical";
 

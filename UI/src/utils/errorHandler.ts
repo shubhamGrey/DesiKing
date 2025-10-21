@@ -7,6 +7,9 @@ import {
   AuthorizationError,
   NotFoundError,
   ServerError,
+  ConflictError,
+  RateLimitError,
+  TimeoutError,
   ApiResponse,
   ErrorLogEntry,
   ErrorSeverity,
@@ -314,13 +317,18 @@ export class ErrorHandler {
    * Get user-friendly error message
    */
   public getUserFriendlyMessage(error: CustomError): string {
+    // If the error message is already user-friendly, return it
+    if (this.isUserFriendlyMessage(error.message)) {
+      return error.message;
+    }
+
     switch (error.constructor) {
       case NetworkError:
         return "Please check your internet connection and try again.";
       case ValidationError:
         return error.message || "Please check your input and try again.";
       case AuthenticationError:
-        return "Please log in to continue.";
+        return "Your session has expired. Please log in again.";
       case AuthorizationError:
         return "You do not have permission to perform this action.";
       case NotFoundError:
@@ -330,6 +338,81 @@ export class ErrorHandler {
       default:
         return "Something went wrong. Please try again.";
     }
+  }
+
+  /**
+   * Check if error message is already user-friendly
+   */
+  private isUserFriendlyMessage(message: string): boolean {
+    const technicalKeywords = [
+      "null pointer",
+      "undefined",
+      "stack trace",
+      "exception",
+      "internal server error",
+      "http error",
+      "cors",
+      "fetch failed",
+      "network error",
+      "500 internal server error",
+      "404 not found",
+      "401 unauthorized",
+      "403 forbidden",
+    ];
+
+    const lowerMessage = message.toLowerCase();
+    return !technicalKeywords.some((keyword) => lowerMessage.includes(keyword));
+  }
+
+  /**
+   * Get appropriate notification duration based on error severity
+   */
+  public getNotificationDuration(error: CustomError): number {
+    switch (error.constructor) {
+      case ValidationError:
+        return 5000; // 5 seconds for validation errors
+      case AuthenticationError:
+      case AuthorizationError:
+        return 10000; // 10 seconds for auth errors
+      case NetworkError:
+        return 8000; // 8 seconds for network errors
+      case ServerError:
+        return 12000; // 12 seconds for server errors
+      default:
+        return 6000; // 6 seconds default
+    }
+  }
+
+  /**
+   * Get notification title based on error type
+   */
+  public getNotificationTitle(error: CustomError): string {
+    switch (error.constructor) {
+      case NetworkError:
+        return "Connection Error";
+      case ValidationError:
+        return "Validation Error";
+      case AuthenticationError:
+        return "Authentication Required";
+      case AuthorizationError:
+        return "Access Denied";
+      case NotFoundError:
+        return "Not Found";
+      case ServerError:
+        return "Server Error";
+      default:
+        return "Error";
+    }
+  }
+
+  /**
+   * Determine if error should trigger logout
+   */
+  public shouldTriggerLogout(error: CustomError): boolean {
+    return (
+      error instanceof AuthenticationError &&
+      (error.status === 401 || error.message.toLowerCase().includes("expired"))
+    );
   }
 }
 
