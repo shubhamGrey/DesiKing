@@ -912,67 +912,67 @@ const OrderDetailsContent: React.FC = () => {
       // Prepare GST-compliant invoice data
       const invoiceData = {
         // Supplier Details (Rule 46 compliance)
-        supplier: {
-          name: "DesiKing Private Limited",
-          address: "Premium Spices District, Mumbai, Maharashtra, 400001",
-          gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
-          panNumber: "AABCD1234E",
-          email: "invoices@desiking.com",
-          phone: "+91-1800-DESI-KING",
-          website: "www.desiking.com",
+        Supplier: {
+          Name: "DesiKing Private Limited",
+          Address: "Premium Spices District, Mumbai, Maharashtra, 400001",
+          Gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
+          PanNumber: "AABCD1234E",
+          Email: "invoices@desiking.com",
+          Phone: "+91-1800-DESI-KING",
+          Website: "www.desiking.com",
         },
 
         // Invoice Details (Rule 46 compliance)
-        invoice: {
-          number: `DK/${new Date().getFullYear()}-${(
+        Invoice: {
+          Number: `DK/${new Date().getFullYear()}-${(
             new Date().getFullYear() + 1
           )
             .toString()
             .slice(-2)}/${orderDetails.orderNumber}`,
-          date: new Date().toLocaleDateString("en-IN"),
-          dueDate: new Date(
+          Date: new Date().toLocaleDateString("en-IN"),
+          DueDate: new Date(
             Date.now() + 30 * 24 * 60 * 60 * 1000
           ).toLocaleDateString("en-IN"),
-          financialYear: `${new Date().getFullYear()}-${(
+          FinancialYear: `${new Date().getFullYear()}-${(
             new Date().getFullYear() + 1
           )
             .toString()
             .slice(-2)}`,
-          orderNumber: orderDetails.orderNumber,
-          orderDate: new Date(orderDetails.createdDate).toLocaleDateString(
+          OrderNumber: orderDetails.orderNumber,
+          OrderDate: new Date(orderDetails.createdDate).toLocaleDateString(
             "en-IN"
           ),
         },
 
         // Customer Details (Rule 46 compliance)
-        customer: {
-          name:
+        Customer: {
+          Name:
             orderDetails.billingAddress?.name ||
             orderDetails.deliveryAddress?.name ||
             "Customer",
-          address:
+          Address:
             orderDetails.billingAddress?.address ||
             orderDetails.deliveryAddress?.address ||
             "Address not provided",
-          city:
+          City:
             orderDetails.billingAddress?.city ||
             orderDetails.deliveryAddress?.city ||
             "City",
-          state:
+          State:
             orderDetails.billingAddress?.state ||
             orderDetails.deliveryAddress?.state ||
             "State",
-          pincode:
+          Pincode:
             orderDetails.billingAddress?.pincode ||
             orderDetails.deliveryAddress?.pincode ||
             "000000",
-          phone:
+          Phone:
             orderDetails.billingAddress?.phone ||
             orderDetails.deliveryAddress?.phone ||
             "+91-0000000000",
-          email: "customer@email.com", // You can collect this during checkout
-          gstin: null, // For B2C customers, this will be null
-          stateCode: getStateCode(
+          Email: "customer@email.com", // You can collect this during checkout
+          Gstin: null, // For B2C customers, this will be null
+          StateCode: getStateCode(
             orderDetails.billingAddress?.state ||
               orderDetails.deliveryAddress?.state ||
               "Maharashtra"
@@ -980,72 +980,72 @@ const OrderDetailsContent: React.FC = () => {
         },
 
         // Delivery Address (if different)
-        deliveryAddress: orderDetails.deliveryAddress
+        DeliveryAddress: orderDetails.deliveryAddress
           ? {
-              name: orderDetails.deliveryAddress.name,
-              address: orderDetails.deliveryAddress.address,
-              city: orderDetails.deliveryAddress.city,
-              state: orderDetails.deliveryAddress.state,
-              pincode: orderDetails.deliveryAddress.pincode,
-              phone: orderDetails.deliveryAddress.phone,
-              stateCode: getStateCode(
+              Name: orderDetails.deliveryAddress.name,
+              Address: orderDetails.deliveryAddress.address,
+              City: orderDetails.deliveryAddress.city,
+              State: orderDetails.deliveryAddress.state,
+              Pincode: orderDetails.deliveryAddress.pincode,
+              Phone: orderDetails.deliveryAddress.phone,
+              StateCode: getStateCode(
                 orderDetails.deliveryAddress.state || "Maharashtra"
               ),
             }
           : null,
 
         // Items with HSN/SAC codes (Rule 46 compliance)
-        items: orderDetails.items.map((item, index) => ({
-          slNo: index + 1,
-          description: item.productName,
-          hsnCode: "09109990", // HSN for spices - replace with actual HSN per product
-          quantity: item.quantity,
-          unit: "KG", // or appropriate unit
-          rate: item.price,
-          taxableValue: item.price * item.quantity,
-          discountAmount: item.discountAmount
+        Items: orderDetails.items.map((item, index) => ({
+          SlNo: index + 1,
+          Description: item.productName,
+          HsnCode: "09109990", // HSN for spices - replace with actual HSN per product
+          Quantity: item.quantity,
+          Unit: "KG", // or appropriate unit
+          Rate: item.price,
+          TaxableValue: item.price * item.quantity,
+          DiscountAmount: item.discountAmount
             ? item.discountAmount * item.quantity
             : 0,
 
           // GST Calculations
-          cgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
-          sgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
-          igstRate: isIntraState(orderDetails.billingAddress?.state) ? 0 : 5,
+          CgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
+          SgstRate: isIntraState(orderDetails.billingAddress?.state) ? 2.5 : 0,
+          IgstRate: isIntraState(orderDetails.billingAddress?.state) ? 0 : 5,
 
-          cgstAmount: isIntraState(orderDetails.billingAddress?.state)
+          CgstAmount: isIntraState(orderDetails.billingAddress?.state)
             ? (item.price * item.quantity * 2.5) / 100
             : 0,
-          sgstAmount: isIntraState(orderDetails.billingAddress?.state)
+          SgstAmount: isIntraState(orderDetails.billingAddress?.state)
             ? (item.price * item.quantity * 2.5) / 100
             : 0,
-          igstAmount: isIntraState(orderDetails.billingAddress?.state)
+          IgstAmount: isIntraState(orderDetails.billingAddress?.state)
             ? 0
             : (item.price * item.quantity * 5) / 100,
 
-          totalAmount: item.totalPrice + (item.price * item.quantity * 5) / 100,
+          TotalAmount: item.totalPrice + (item.price * item.quantity * 5) / 100,
         })),
 
         // Tax Summary
-        taxSummary: {
-          totalTaxableValue: orderDetails.subtotal,
-          totalDiscount: orderDetails.discount,
+        TaxSummary: {
+          TotalTaxableValue: orderDetails.subtotal,
+          TotalDiscount: orderDetails.discount,
 
           // GST totals based on place of supply
-          totalCGST: isIntraState(orderDetails.billingAddress?.state)
+          TotalCGST: isIntraState(orderDetails.billingAddress?.state)
             ? (orderDetails.subtotal * 2.5) / 100
             : 0,
-          totalSGST: isIntraState(orderDetails.billingAddress?.state)
+          TotalSGST: isIntraState(orderDetails.billingAddress?.state)
             ? (orderDetails.subtotal * 2.5) / 100
             : 0,
-          totalIGST: isIntraState(orderDetails.billingAddress?.state)
+          TotalIGST: isIntraState(orderDetails.billingAddress?.state)
             ? 0
             : (orderDetails.subtotal * 5) / 100,
 
-          totalTax: (orderDetails.subtotal * 5) / 100,
-          shippingCharges: orderDetails.shippingCharges,
-          grandTotal: orderDetails.totalAmount,
+          TotalTax: (orderDetails.subtotal * 5) / 100,
+          ShippingCharges: orderDetails.shippingCharges,
+          GrandTotal: orderDetails.totalAmount,
 
-          placeOfSupply: `${
+          PlaceOfSupply: `${
             orderDetails.billingAddress?.state ||
             orderDetails.deliveryAddress?.state ||
             "Maharashtra"
@@ -1057,18 +1057,18 @@ const OrderDetailsContent: React.FC = () => {
         },
 
         // Payment Details
-        payment: {
-          method: orderDetails.paymentInfo.method,
-          transactionId: orderDetails.paymentInfo.transactionId,
-          paymentDate: new Date(
+        Payment: {
+          Method: orderDetails.paymentInfo.method,
+          TransactionId: orderDetails.paymentInfo.transactionId,
+          PaymentDate: new Date(
             orderDetails.paymentInfo.paymentDate
           ).toLocaleDateString("en-IN"),
-          status: orderDetails.paymentInfo.status,
-          amountPaid: orderDetails.paymentInfo.amount,
+          Status: orderDetails.paymentInfo.status,
+          AmountPaid: orderDetails.paymentInfo.amount,
         },
 
         // Additional Details
-        terms: [
+        Terms: [
           "This is a computer-generated invoice and does not require a physical signature.",
           "Goods once sold will not be taken back.",
           "All disputes are subject to Mumbai jurisdiction only.",
@@ -1076,38 +1076,38 @@ const OrderDetailsContent: React.FC = () => {
         ],
 
         // E-invoice details (if applicable)
-        eInvoice: {
-          irn: null, // Will be populated if e-invoicing is required
-          qrCode: null, // Base64 QR code from IRP
-          ackNo: null,
-          ackDate: null,
+        EInvoice: {
+          Irn: null, // Will be populated if e-invoicing is required
+          QrCode: null, // Base64 QR code from IRP
+          AckNo: null,
+          AckDate: null,
         },
       };
 
       // Validate invoice data before sending to catch potential 500 error causes
       const validationErrors = [];
 
-      if (!invoiceData.invoice?.number) {
+      if (!invoiceData.Invoice?.Number) {
         validationErrors.push("Missing invoice number");
       }
 
-      if (!invoiceData.customer?.name) {
+      if (!invoiceData.Customer?.Name) {
         validationErrors.push("Missing customer name");
       }
 
-      if (!invoiceData.items || invoiceData.items.length === 0) {
+      if (!invoiceData.Items || invoiceData.Items.length === 0) {
         validationErrors.push("No items in invoice");
       }
 
       if (
-        invoiceData.items?.some(
-          (item) => !item.description || !item.rate || !item.quantity
+        invoiceData.Items?.some(
+          (item: any) => !item.Description || !item.Rate || !item.Quantity
         )
       ) {
         validationErrors.push("Some items have missing required fields");
       }
 
-      if (!invoiceData.taxSummary?.grandTotal) {
+      if (!invoiceData.TaxSummary?.GrandTotal) {
         validationErrors.push("Missing grand total");
       }
 
@@ -1120,13 +1120,14 @@ const OrderDetailsContent: React.FC = () => {
 
       console.log("Invoice data validation passed. Sending request...");
       console.log("Invoice summary:", {
-        invoiceNumber: invoiceData.invoice.number,
-        customerName: invoiceData.customer.name,
-        itemsCount: invoiceData.items.length,
-        grandTotal: invoiceData.taxSummary.grandTotal,
+        invoiceNumber: invoiceData.Invoice.Number,
+        customerName: invoiceData.Customer.Name,
+        itemsCount: invoiceData.Items.length,
+        grandTotal: invoiceData.TaxSummary.GrandTotal,
       });
 
       // Call backend API to generate GST-compliant PDF
+      // Use the complete invoice data approach since we have all the data
       const response = await fetch(`${env.apiUrl}/invoice/generate`, {
         method: "POST",
         headers: {
@@ -1135,8 +1136,7 @@ const OrderDetailsContent: React.FC = () => {
           Accept: "application/pdf, application/json",
         },
         body: JSON.stringify({
-          orderId: orderDetails.id,
-          invoiceData: invoiceData,
+          InvoiceData: invoiceData,
         }),
       });
 
@@ -1179,11 +1179,12 @@ const OrderDetailsContent: React.FC = () => {
             method: "POST",
             orderId: orderDetails.id,
             requestPayload: {
-              orderId: orderDetails.id,
-              invoiceDataKeys: Object.keys(invoiceData),
-              itemsCount: invoiceData.items?.length || 0,
-              hasCustomer: !!invoiceData.customer,
-              hasTaxSummary: !!invoiceData.taxSummary,
+              InvoiceData: {
+                invoiceDataKeys: Object.keys(invoiceData),
+                itemsCount: invoiceData.Items?.length || 0,
+                hasCustomer: !!invoiceData.Customer,
+                hasTaxSummary: !!invoiceData.TaxSummary,
+              },
             },
             errorDetails,
             timestamp: new Date().toISOString(),
@@ -1220,7 +1221,7 @@ const OrderDetailsContent: React.FC = () => {
       const downloadPDF = () => {
         const link = document.createElement("a");
         link.href = url;
-        link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
+        link.download = `GST_Invoice_${invoiceData.Invoice.Number.replace(
           /[\/\\]/g,
           "_"
         )}.pdf`;
