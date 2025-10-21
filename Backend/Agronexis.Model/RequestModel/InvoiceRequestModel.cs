@@ -2,6 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Agronexis.Model.RequestModel
 {
+    public class InvoicePdfGenerationRequest
+    {
+        public Guid OrderId { get; set; }
+        public Guid UserId { get; set; }
+        public Guid? ShippingAddressId { get; set; }
+        public InvoiceDataModel? InvoiceData { get; set; }
+    }
+
+
+
     public class GenerateInvoiceRequestModel
     {
         [Required]
@@ -60,13 +70,15 @@ namespace Agronexis.Model.RequestModel
 
     public class InvoiceAddressModel
     {
-        public string Name { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;         // FullName
+        public string Address { get; set; } = string.Empty;      // AddressLine
         public string City { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;        // StateMaster.StateName
+        public string StateCode { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;      // CountryMaster.CountryName
+        public string CountryCode { get; set; } = string.Empty;
         public string Pincode { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string StateCode { get; set; } = string.Empty;
     }
 
     public class InvoiceItemModel
