@@ -2439,19 +2439,6 @@ const OrderDetailsContent: React.FC = () => {
 
                 <Divider />
 
-                {/* <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 1 }}
-                  >
-                    Shipping Method
-                  </Typography>
-                  <Typography variant="body1" fontWeight="500">
-                    {orderDetails.shippingMethod}
-                  </Typography>
-                </Box> */}
-
                 <Box>
                   <Typography
                     variant="body2"
@@ -2483,14 +2470,6 @@ const OrderDetailsContent: React.FC = () => {
                       <ContentCopy fontSize="small" />
                     </IconButton>
                   </Box>
-                  {/* <Typography variant="body2" color="text.secondary">
-                    Courier: {orderDetails.courierCompany}
-                  </Typography>
-                  {orderDetails.courierPhone && (
-                    <Typography variant="body2" color="text.secondary">
-                      📞 {orderDetails.courierPhone}
-                    </Typography>
-                  )} */}
                 </Box>
 
                 {orderDetails.billingAddress && (
@@ -2540,49 +2519,6 @@ const OrderDetailsContent: React.FC = () => {
                     )}
                   </Box>
                 )}
-
-                {/* {orderDetails.deliveryAgent && (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Delivery Agent
-                    </Typography>
-                    <Typography variant="body1" fontWeight="500">
-                      {orderDetails.deliveryAgent}
-                    </Typography>
-                    {orderDetails.deliveryAgentPhone && (
-                      <Typography variant="body2" color="text.secondary">
-                        📞 {orderDetails.deliveryAgentPhone}
-                      </Typography>
-                    )}
-                  </Box>
-                )} */}
-
-                {/* {orderDetails.deliveryInstructions && (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Delivery Instructions
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        backgroundColor: "background.default",
-                        p: 1.5,
-                        borderRadius: 1,
-                        fontStyle: "italic",
-                      }}
-                    >
-                      &quot;{orderDetails.deliveryInstructions}&quot;
-                    </Typography>
-                  </Box>
-                )} */}
               </Stack>
             </CardContent>
           </Card>
