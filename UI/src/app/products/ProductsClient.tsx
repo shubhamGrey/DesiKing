@@ -7,7 +7,6 @@ import theme from "@/styles/theme";
 import AddIcon from "@mui/icons-material/Add";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 import { Product, ProductFormData } from "@/types/product";
 import { usePageTracking, useErrorTracking } from "@/hooks/useAnalytics";
 import { useCallback } from "react";

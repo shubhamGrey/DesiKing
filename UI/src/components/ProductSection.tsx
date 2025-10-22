@@ -24,7 +24,6 @@ import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useState } from "react";
-import Cookies from "js-cookie";
 
 const michroma = Michroma({
   subsets: ["latin"],

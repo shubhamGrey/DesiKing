@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 import { FormattedCategory } from "@/types/product";
 import { isAdmin } from "@/utils/auth";
 
