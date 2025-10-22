@@ -25,7 +25,6 @@ import Spices from "../../../public/Spices.png";
 import Founder from "../../../public/Founder.jpg";
 import CoFounder from "../../../public/Co Founder.jpg";
 import CoFounderOld from "../../../public/Co Founder Old.PNG";
-import Director from "../../../public/Director.jpg";
 import Image from "next/image";
 import { Michroma } from "next/font/google";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -446,42 +445,11 @@ export default function About() {
             Our Team (The best team)
           </Typography>
         </Grid>
-        <Grid
-          size={{ xs: 12, md: 6 }}
-          sx={{ display: "flex", justifyContent: "center" }}
-        >
+        <Grid size={12} sx={{ display: "flex", justifyContent: "center" }}>
           <Stack>
             <Image src={CoFounder} alt="Co Founder" width={200} height={230} />
             <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
               Vijay Sharma
-            </Typography>
-            <Typography
-              variant="h6"
-              textAlign="center"
-              fontWeight={600}
-              sx={{ mt: 1 }}
-            >
-              Director
-            </Typography>
-            <IconButton
-              sx={{
-                color: "primary.main",
-                "&:hover": { backgroundColor: "inherit" },
-              }}
-              disableRipple
-            >
-              <LinkedIn fontSize="large" />
-            </IconButton>
-          </Stack>
-        </Grid>
-        <Grid
-          size={{ xs: 12, md: 6 }}
-          sx={{ display: "flex", justifyContent: "center" }}
-        >
-          <Stack>
-            <Image src={Director} alt="Director" width={200} height={230} />
-            <Typography variant="h6" textAlign="center" sx={{ mt: 1 }}>
-              Purnima Sharma
             </Typography>
             <Typography
               variant="h6"
