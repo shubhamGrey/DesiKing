@@ -13,6 +13,7 @@ import { Edit, Delete } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { FormattedCategory } from "@/types/product";
+import { isAdmin } from "@/utils/auth";
 
 interface AllProductsProps {
   items: FormattedCategory[];
@@ -93,7 +94,7 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
             }}
           >
             {/* Edit and Delete Icon Buttons */}
-            {Cookies.get("user_role") === "Admin" && (
+            {isAdmin() && (
               <Box
                 sx={{
                   position: "absolute",

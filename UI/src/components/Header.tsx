@@ -77,7 +77,7 @@ export default function Header() {
     { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
-    ...(userIsAdmin ? [{ label: "Admin", href: "/admin" }] : []),
+    ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   const rightNavLinks = [

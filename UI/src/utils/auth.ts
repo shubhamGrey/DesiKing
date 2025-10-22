@@ -18,7 +18,7 @@ export const isLoggedIn = (): boolean => {
 export const isAdmin = (): boolean => {
   if (typeof window === "undefined") return false;
   const userRole = Cookies.get("user_role");
-  return userRole === "admin";
+  return userRole === "Admin";
 };
 
 /**

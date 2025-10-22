@@ -60,7 +60,7 @@ import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { isLoggedIn, getUserId } from "@/utils/auth";
+import { isLoggedIn, getUserId, isAdmin } from "@/utils/auth";
 import { processApiResponse } from "@/utils/apiErrorHandling";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
@@ -1633,11 +1633,7 @@ const OrderDetailsContent: React.FC = () => {
             >
               View Invoice
             </Button>
-            {(() => {
-              const userRole = Cookies.get("user_role");
-              const isAdminRole = userRole === "admin" || userRole === "Admin";
-              return isAdminRole && orderDetails?.trackingNumber;
-            })() && (
+            {isAdmin() && (
               <Button
                 variant="outlined"
                 startIcon={<Label />}
@@ -1716,11 +1712,7 @@ const OrderDetailsContent: React.FC = () => {
           >
             View Invoice
           </Button>
-          {(() => {
-            const userRole = Cookies.get("user_role");
-            const isAdminRole = userRole === "admin" || userRole === "Admin";
-            return isAdminRole && orderDetails?.trackingNumber;
-          })() && (
+          {isAdmin() && (
             <Button
               variant="outlined"
               startIcon={<Label />}

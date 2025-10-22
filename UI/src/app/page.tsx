@@ -44,6 +44,7 @@ import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
+import { isAdmin } from "@/utils/auth";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
@@ -798,7 +799,7 @@ const Home: React.FC = () => {
             >
               Product Categories
             </Typography>
-            {Cookies.get("user_role") === "Admin" && (
+            {isAdmin() && (
               <IconButton
                 color="primary"
                 onClick={() => router.push("/add-category")}
@@ -843,7 +844,7 @@ const Home: React.FC = () => {
                   router.push("/products");
                 }}
               >
-                {Cookies.get("user_role") === "Admin" && (
+                {isAdmin() && (
                   <Box
                     sx={{
                       position: "absolute",

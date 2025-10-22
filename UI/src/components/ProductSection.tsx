@@ -33,6 +33,7 @@ const michroma = Michroma({
 });
 
 import { ProductFormData } from "@/types/product";
+import { isAdmin } from "@/utils/auth";
 
 interface ProductSectionProps {
   item: {
@@ -163,7 +164,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                 }}
                 elevation={0}
               >
-                {Cookies.get("user_role") === "Admin" && (
+                {isAdmin() && (
                   <Box
                     sx={{
                       position: "absolute",

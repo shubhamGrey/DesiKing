@@ -11,6 +11,7 @@ import Cookies from "js-cookie";
 import { Product, ProductFormData } from "@/types/product";
 import { usePageTracking, useErrorTracking } from "@/hooks/useAnalytics";
 import { useCallback } from "react";
+import { isAdmin } from "@/utils/auth";
 
 interface CategorizedProducts {
   [key: string]: {
@@ -103,10 +104,6 @@ const ProductsClient = () => {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
-
-  // Check if user has admin role
-  //   const userRole = Cookies.get("user_role");
-  //   const isAdmin = userRole === "Admin";
 
   if (loading) {
     return (
@@ -262,7 +259,7 @@ const ProductsClient = () => {
           onProductDeleted={fetchProducts}
         />
       ))}
-      {Cookies.get("user_role") === "Admin" && (
+      {isAdmin() && (
         <Fab
           color="primary"
           aria-label="add"

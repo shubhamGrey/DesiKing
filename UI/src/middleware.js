@@ -127,6 +127,7 @@ export const config = {
     // Admin routes
     "/add-category/:path*",
     "/add-product/:path*",
+    "/admin/:path*",
 
     // Catch-all for any other routes
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
