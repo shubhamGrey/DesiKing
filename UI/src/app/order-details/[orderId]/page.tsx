@@ -29,10 +29,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -174,37 +170,39 @@ interface OrderTimeline {
   location?: string;
 }
 
-// Shipment Tracking Interfaces
+// Shipment Tracking Interfaces - Updated to match backend API response
 interface ShipmentSummary {
-  awbNo: string;
-  refNo: string;
-  bookingDate: string;
-  origin: string;
-  destination: string;
-  product: string;
-  serviceType: string;
-  currentStatus: string;
-  currentCity: string;
-  eventDate: string;
-  eventTime: string;
-  trackingCode: string;
-  ndrReason?: string;
+  AWBNO: string;
+  REF_NO: string;
+  BOOKING_DATE: string;
+  ORIGIN: string;
+  DESTINATION: string;
+  PRODUCT: string;
+  SERVICE_TYPE: string;
+  CURRENT_STATUS: string;
+  CURRENT_CITY: string;
+  EVENTDATE: string;
+  EVENTTIME: string;
+  TRACKING_CODE: string;
+  NDR_REASON: string;
 }
 
 interface TrackingDetail {
-  currentCity: string;
-  currentStatus: string;
-  eventDate: string;
-  eventTime: string;
-  trackingCode: string;
+  CURRENT_CITY: string;
+  CURRENT_STATUS: string;
+  EVENTDATE: string;
+  EVENTTIME: string;
+  TRACKING_CODE: string;
 }
 
 interface ShipmentTrackingData {
-  summaryTrack: ShipmentSummary;
-  lstDetails: TrackingDetail[];
-  responseStatus: {
-    status: string;
+  SummaryTrack: ShipmentSummary | null;
+  LstDetails: TrackingDetail[];
+  ResponseStatus: {
+    errorCode: string | null;
     message: string;
+    status: string | null;
+    errors: string | null;
   };
 }
 
@@ -333,74 +331,14 @@ const generateOrderTimeline = (
     },
   ];
 
-  // Add shipment tracking details to timeline if available
-  if (shipmentData?.lstDetails && shipmentData.lstDetails.length > 0) {
-    // Add shipment tracking events, sorted by event date (most recent first)
-    const sortedShipmentEvents = [...shipmentData.lstDetails].sort((a, b) => {
-      const dateA = new Date(`${a.eventDate} ${a.eventTime}`);
-      const dateB = new Date(`${b.eventDate} ${b.eventTime}`);
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    // Insert shipment events after order placed
-    sortedShipmentEvents.forEach((event) => {
-      const eventDateTime = `${event.eventDate} ${event.eventTime}`;
-      timeline.push({
-        status: event.currentStatus || "Shipment Update",
-        timestamp: eventDateTime,
-        description: `Package ${
-          event.currentStatus?.toLowerCase() || "status updated"
-        }`,
-        location: event.currentCity || "In Transit",
-      });
-    });
-  }
-
+  // Add basic order events first
   if (order.status === "paid") {
-    timeline.push(
-      {
-        status: "Payment Confirmed",
-        timestamp: order.createdDate,
-        description: `Payment of ₹${order.totalAmount} received and confirmed`,
-        location: "Payment Gateway",
-      },
-      {
-        status: "Order Processing",
-        timestamp: addDays(order.createdDate, 1),
-        description: "Order is being prepared for shipment",
-        location: "DesiKing Warehouse",
-      },
-      {
-        status: "Quality Check",
-        timestamp: addDays(order.createdDate, 2),
-        description: "Products passed quality inspection",
-        location: "DesiKing Warehouse",
-      },
-      {
-        status: "Packed",
-        timestamp: addDays(order.createdDate, 2),
-        description: "Order packed and ready for shipment",
-        location: "DesiKing Warehouse",
-      },
-      {
-        status: "Shipped",
-        timestamp: addDays(order.createdDate, 3),
-        description: "Package handed over to delivery partner",
-        location: "Shipping Hub",
-      },
-      {
-        status: "Out for Delivery",
-        timestamp: addDays(order.createdDate, 5),
-        description: "Package is out for delivery",
-        location: "Local Delivery Hub",
-      },
-      {
-        status: "Delivered",
-        timestamp: addDays(order.createdDate, 6),
-        description: "Order delivered successfully",
-        location: "Customer Address",
-      }
-    );
+    timeline.push({
+      status: "Payment Confirmed",
+      timestamp: order.createdDate,
+      description: `Payment of ₹${order.totalAmount} received and confirmed`,
+      location: "Payment Gateway",
+    });
   } else if (order.status === "failed") {
     timeline.push({
       status: "Payment Failed",
@@ -410,7 +348,43 @@ const generateOrderTimeline = (
     });
   }
 
-  return timeline;
+  // Add shipment tracking details to timeline if available
+  if (shipmentData?.LstDetails && shipmentData.LstDetails.length > 0) {
+    console.log("Processing LstDetails for timeline:", shipmentData.LstDetails);
+    // Add shipment tracking events
+    shipmentData.LstDetails.forEach((event: TrackingDetail) => {
+      console.log("Processing tracking event:", event);
+      // Parse and format the date from DD/MM/YYYY to proper format
+      const [day, month, year] = event.EVENTDATE.split("/");
+      const eventDateTime = new Date(
+        `${year}-${month}-${day} ${event.EVENTTIME}`
+      );
+
+      const trackingEvent = {
+        status: event.CURRENT_STATUS || "Shipment Update",
+        timestamp: eventDateTime.toISOString(),
+        description: `Package ${
+          event.CURRENT_STATUS?.toLowerCase() || "status updated"
+        } at ${event.CURRENT_CITY || "location"}`,
+        location: event.CURRENT_CITY || "In Transit",
+      };
+
+      console.log("Adding tracking event to timeline:", trackingEvent);
+      timeline.push(trackingEvent);
+    });
+  } else {
+    console.log(
+      "No LstDetails found or empty array:",
+      shipmentData?.LstDetails
+    );
+  }
+
+  // Sort timeline by timestamp (most recent first)
+  return timeline.sort((a, b) => {
+    const dateA = new Date(a.timestamp);
+    const dateB = new Date(b.timestamp);
+    return dateB.getTime() - dateA.getTime();
+  });
 };
 
 const OrderDetailsContent: React.FC = () => {
@@ -422,6 +396,10 @@ const OrderDetailsContent: React.FC = () => {
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+  const [trackingData, setTrackingData] = useState<ShipmentTrackingData | null>(
+    null
+  );
+  const [trackingLoading, setTrackingLoading] = useState(false);
 
   const orderId = params?.orderId as string;
 
@@ -446,6 +424,94 @@ const OrderDetailsContent: React.FC = () => {
     } catch (error) {
       console.error(`Error fetching product ${productId}:`, error);
       return null;
+    }
+  };
+
+  // Fetch shipment tracking data function
+  const fetchTrackingData = async (
+    trackingNumber: string
+  ): Promise<ShipmentTrackingData | null> => {
+    try {
+      setTrackingLoading(true);
+      console.log(`Fetching tracking data for: ${trackingNumber}`);
+
+      // Get access token
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        console.error("No access token found");
+        return null;
+      }
+
+      // Call the existing shipment track API (GET method with awbNo in path)
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Shipment/track/${trackingNumber}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(`Tracking API response status: ${response.status}`);
+
+      if (!response.ok) {
+        console.error(`API returned status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Parse the API response (it comes wrapped in ApiResponseModel)
+      const apiResponse = await response.json();
+      console.log("API response received:", apiResponse);
+
+      // Check if the API call was successful
+      if (apiResponse.info?.code === "200" && apiResponse.data) {
+        console.log("Tracking data is valid, setting state");
+        // Extract the actual tracking data from the API response
+        const trackingData = apiResponse.data;
+
+        // Map the API response to our interface (note the property name differences)
+        const mappedData: ShipmentTrackingData = {
+          SummaryTrack: trackingData.summaryTrack, // API returns lowercase
+          LstDetails: trackingData.lstDetails, // API returns lowercase
+          ResponseStatus: trackingData.responseStatus, // API returns lowercase
+        };
+
+        console.log("Mapped tracking data:", mappedData);
+        return mappedData;
+      } else {
+        console.error("API returned non-success response:", apiResponse.info);
+        showError("No tracking information available for this shipment.");
+        return null;
+      }
+    } catch (error) {
+      console.error(
+        `Error fetching tracking data for ${trackingNumber}:`,
+        error
+      );
+
+      // Show more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes("401")) {
+          showError("Session expired. Please refresh the page and try again.");
+        } else if (error.message.includes("404")) {
+          showError("Tracking information not found for this shipment.");
+        } else if (error.message.includes("500")) {
+          showError(
+            "Server error while fetching tracking data. Please try again later."
+          );
+        } else {
+          showError(
+            "Unable to fetch tracking information. Please check your internet connection and try again."
+          );
+        }
+      }
+      return null;
+    } finally {
+      setTrackingLoading(false);
     }
   };
 
@@ -715,7 +781,40 @@ const OrderDetailsContent: React.FC = () => {
             items: itemsData,
           };
 
+          // Set initial order details
           setOrderDetails(mappedOrderDetails);
+
+          // Fetch tracking data if tracking number is available
+          const trackingNumber = mappedOrderDetails.trackingNumber;
+          if (trackingNumber) {
+            console.log(`Attempting to fetch tracking for: ${trackingNumber}`);
+
+            // Try to fetch tracking data for any tracking number
+            // This will work for both real tracking numbers and generated ones
+            const trackingResult = await fetchTrackingData(trackingNumber);
+
+            if (trackingResult) {
+              console.log(
+                "Successfully received tracking data, updating timeline"
+              );
+              setTrackingData(trackingResult);
+
+              // Update order details with enhanced timeline including tracking data
+              const enhancedTimeline = generateOrderTimeline(
+                specificOrder,
+                trackingResult
+              );
+              setOrderDetails((prevDetails) =>
+                prevDetails
+                  ? { ...prevDetails, timeline: enhancedTimeline }
+                  : null
+              );
+            } else {
+              console.log("No tracking data received or API call failed");
+            }
+          } else {
+            console.log("No tracking number available for this order");
+          }
         } else {
           throw new Error("No order data received from server");
         }
@@ -1508,65 +1607,260 @@ const OrderDetailsContent: React.FC = () => {
               <Typography variant="h6" fontWeight="600" color="primary.main">
                 Detailed Timeline
               </Typography>
+              {trackingLoading && (
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}
+                >
+                  <Box
+                    sx={{
+                      width: 16,
+                      height: 16,
+                      border: "2px solid",
+                      borderColor: "primary.main",
+                      borderTopColor: "transparent",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                      "@keyframes spin": {
+                        from: { transform: "rotate(0deg)" },
+                        to: { transform: "rotate(360deg)" },
+                      },
+                    }}
+                  />
+                  <Typography variant="caption" color="primary.main">
+                    Loading tracking data...
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <List>
+            {trackingData && trackingData.SummaryTrack && (
+              <Box
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  backgroundColor: "primary.50",
+                  borderRadius: 1,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="600"
+                  color="primary.main"
+                  sx={{ mb: 1 }}
+                >
+                  📦 Shipment Information
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      AWB Number
+                    </Typography>
+                    <Typography variant="body2" fontWeight="600">
+                      {trackingData.SummaryTrack.AWBNO}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Current Status
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="primary.main"
+                    >
+                      {trackingData.SummaryTrack.CURRENT_STATUS}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Origin
+                    </Typography>
+                    <Typography variant="body2">
+                      {trackingData.SummaryTrack.ORIGIN}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Destination
+                    </Typography>
+                    <Typography variant="body2">
+                      {trackingData.SummaryTrack.DESTINATION}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            {/* {trackingData &&
+              trackingData.LstDetails &&
+              trackingData.LstDetails.length > 0 &&
+              !trackingData.SummaryTrack && (
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    backgroundColor: "info.50",
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="600"
+                    color="info.main"
+                    sx={{ mb: 1 }}
+                  >
+                    📦 Tracking Events Available
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {trackingData.LstDetails.length} tracking event(s) found for
+                    this shipment.
+                  </Typography>
+                </Box>
+              )} */}
+
+            <Box sx={{ position: "relative" }}>
+              {/* Continuous vertical line */}
+              {/* {orderDetails.timeline.length > 1 && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: "28px",
+                    top: "24px",
+                    bottom: "24px",
+                    width: "2px",
+                    backgroundColor: "grey.300",
+                    zIndex: 1,
+                  }}
+                />
+              )} */}
+
               {orderDetails.timeline.map((event, index) => (
-                <ListItem key={index} sx={{ pl: 0 }}>
-                  <ListItemIcon>
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    position: "relative",
+                    py: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(0,0,0,0.02)",
+                      borderRadius: 1,
+                    },
+                  }}
+                >
+                  {/* Timeline dot */}
+                  <Box
+                    sx={{
+                      width: index === 0 ? 16 : 12,
+                      height: index === 0 ? 16 : 12,
+                      borderRadius: "50%",
+                      backgroundColor:
+                        index === 0 ? "success.main" : "primary.main",
+                      border: index === 0 ? "4px solid" : "3px solid",
+                      borderColor: "background.paper",
+                      boxShadow:
+                        index === 0
+                          ? "0 0 0 2px rgba(76, 175, 80, 0.3)"
+                          : "0 0 0 1px rgba(0,0,0,0.1)",
+                      position: "relative",
+                      zIndex: 2,
+                      mt: 0.5,
+                      flexShrink: 0,
+                      transition: "all 0.3s ease",
+                    }}
+                  />
+
+                  {/* Content */}
+                  <Box sx={{ ml: 2, flex: 1 }}>
                     <Box
                       sx={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        backgroundColor: "primary.main",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        mb: 0.5,
+                        flexWrap: "wrap",
+                        gap: 1,
                       }}
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Box
+                    >
+                      <Typography
+                        variant="body1"
+                        fontWeight="600"
+                        color={index === 0 ? "success.main" : "text.primary"}
+                        sx={{ flex: 1, minWidth: "200px" }}
+                      >
+                        {event.status}
+                      </Typography>
+                      <Chip
+                        label={(() => {
+                          const formatted = formatDateTime(event.timestamp);
+                          return typeof formatted === "object"
+                            ? `${formatted.date} at ${formatted.time}`
+                            : formatted;
+                        })()}
+                        size="small"
+                        variant={index === 0 ? "filled" : "outlined"}
+                        color={index === 0 ? "success" : "default"}
                         sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 0.5,
+                          fontSize: "0.75rem",
+                          fontWeight: index === 0 ? 600 : 400,
+                        }}
+                      />
+                    </Box>
+
+                    <Stack spacing={0.5}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontWeight: index === 0 ? 500 : 400,
+                          color:
+                            index === 0 ? "success.dark" : "text.secondary",
                         }}
                       >
-                        <Typography variant="body1" fontWeight="600">
-                          {event.status}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {(() => {
-                            const formatted = formatDateTime(event.timestamp);
-                            return typeof formatted === "object"
-                              ? `${formatted.date} ${formatted.time}`
-                              : formatted;
-                          })()}
-                        </Typography>
-                      </Box>
-                    }
-                    secondary={
-                      <Stack spacing={0.5}>
-                        <Typography variant="body2" color="text.secondary">
-                          {event.description}
-                        </Typography>
-                        {event.location && (
+                        {event.description}
+                      </Typography>
+                      {event.location && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <LocalShipping
+                            sx={{
+                              fontSize: 14,
+                              color:
+                                index === 0 ? "success.main" : "text.secondary",
+                            }}
+                          />
                           <Typography
                             variant="caption"
-                            color="text.secondary"
-                            sx={{ fontStyle: "italic" }}
+                            color={
+                              index === 0 ? "success.main" : "text.secondary"
+                            }
+                            fontWeight="500"
                           >
                             📍 {event.location}
                           </Typography>
-                        )}
-                      </Stack>
-                    }
-                  />
-                </ListItem>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Box>
+                </Box>
               ))}
-            </List>
+            </Box>
+
+            {!trackingData &&
+              orderDetails.trackingNumber &&
+              orderDetails.trackingNumber.startsWith("DK") && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    Real-time tracking will be available once your order is
+                    shipped and assigned a tracking number.
+                  </Typography>
+                </Alert>
+              )}
           </AccordionDetails>
         </Accordion>
       </Card>
@@ -2145,7 +2439,7 @@ const OrderDetailsContent: React.FC = () => {
 
                 <Divider />
 
-                <Box>
+                {/* <Box>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -2156,7 +2450,7 @@ const OrderDetailsContent: React.FC = () => {
                   <Typography variant="body1" fontWeight="500">
                     {orderDetails.shippingMethod}
                   </Typography>
-                </Box>
+                </Box> */}
 
                 <Box>
                   <Typography
@@ -2189,17 +2483,65 @@ const OrderDetailsContent: React.FC = () => {
                       <ContentCopy fontSize="small" />
                     </IconButton>
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
+                  {/* <Typography variant="body2" color="text.secondary">
                     Courier: {orderDetails.courierCompany}
                   </Typography>
                   {orderDetails.courierPhone && (
                     <Typography variant="body2" color="text.secondary">
                       📞 {orderDetails.courierPhone}
                     </Typography>
-                  )}
+                  )} */}
                 </Box>
 
-                {orderDetails.deliveryAgent && (
+                {orderDetails.billingAddress && (
+                  <Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Billing Address
+                    </Typography>
+                    {/* Check if billing address is same as shipping address */}
+                    {orderDetails.billingAddress.address ===
+                      orderDetails.deliveryAddress.address &&
+                    orderDetails.billingAddress.name ===
+                      orderDetails.deliveryAddress.name &&
+                    orderDetails.billingAddress.pincode ===
+                      orderDetails.deliveryAddress.pincode ? (
+                      <Box>
+                        {/* Show actual shipping address data */}
+                        <Typography variant="body2" fontWeight="500">
+                          {orderDetails.deliveryAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.deliveryAddress.city},{" "}
+                          {orderDetails.deliveryAddress.state} -{" "}
+                          {orderDetails.deliveryAddress.pincode}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <>
+                        <Typography variant="body2">
+                          {orderDetails.billingAddress.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.address}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {orderDetails.billingAddress.city},{" "}
+                          {orderDetails.billingAddress.state} -{" "}
+                          {orderDetails.billingAddress.pincode}
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                )}
+
+                {/* {orderDetails.deliveryAgent && (
                   <Box>
                     <Typography
                       variant="body2"
@@ -2217,9 +2559,9 @@ const OrderDetailsContent: React.FC = () => {
                       </Typography>
                     )}
                   </Box>
-                )}
+                )} */}
 
-                {orderDetails.deliveryInstructions && (
+                {/* {orderDetails.deliveryInstructions && (
                   <Box>
                     <Typography
                       variant="body2"
@@ -2240,7 +2582,7 @@ const OrderDetailsContent: React.FC = () => {
                       &quot;{orderDetails.deliveryInstructions}&quot;
                     </Typography>
                   </Box>
-                )}
+                )} */}
               </Stack>
             </CardContent>
           </Card>
@@ -2354,54 +2696,6 @@ const OrderDetailsContent: React.FC = () => {
                     icon={<CheckCircle />}
                   />
                 </Box>
-
-                {orderDetails.billingAddress && (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Billing Address
-                    </Typography>
-                    {/* Check if billing address is same as shipping address */}
-                    {orderDetails.billingAddress.address ===
-                      orderDetails.deliveryAddress.address &&
-                    orderDetails.billingAddress.name ===
-                      orderDetails.deliveryAddress.name &&
-                    orderDetails.billingAddress.pincode ===
-                      orderDetails.deliveryAddress.pincode ? (
-                      <Box>
-                        {/* Show actual shipping address data */}
-                        <Typography variant="body2" fontWeight="500">
-                          {orderDetails.deliveryAddress.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.deliveryAddress.address}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.deliveryAddress.city},{" "}
-                          {orderDetails.deliveryAddress.state} -{" "}
-                          {orderDetails.deliveryAddress.pincode}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <>
-                        <Typography variant="body2">
-                          {orderDetails.billingAddress.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.billingAddress.address}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {orderDetails.billingAddress.city},{" "}
-                          {orderDetails.billingAddress.state} -{" "}
-                          {orderDetails.billingAddress.pincode}
-                        </Typography>
-                      </>
-                    )}
-                  </Box>
-                )}
               </Stack>
             </CardContent>
           </Card>
