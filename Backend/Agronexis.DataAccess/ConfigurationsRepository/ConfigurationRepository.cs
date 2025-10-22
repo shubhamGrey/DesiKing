@@ -1615,6 +1615,104 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
         }
 
+        public List<OrderByUserResponseModel> GetAllOrders(string xCorrelationId)
+        {
+            try
+            {
+                var orders = _dbContext.Orders
+                    .OrderByDescending(o => o.CreatedDate)
+                    .Select(o => new OrderByUserResponseModel
+                    {
+                        Id = o.Id,
+                        UserId = o.UserId,
+                        RazorpayOrderId = o.RazorpayOrderId,
+                        ReceiptId = o.ReceiptId,
+                        Status = o.Status,
+                        TotalAmount = o.TotalAmount,
+                        Currency = o.Currency,
+                        CreatedDate = o.CreatedDate,
+                        DocketNumber = o.DocketNumber,
+
+                        OrderItems = o.OrderItems
+                            .OrderByDescending(oi => oi.CreatedDate)
+                            .Select(oi => new OrderItemResponseModel
+                            {
+                                Id = oi.Id,
+                                OrderId = oi.OrderId,
+                                ProductId = oi.ProductId,
+                                Quantity = oi.Quantity,
+                                Price = oi.Price,
+                                CreatedDate = oi.CreatedDate
+                            })
+                            .ToList(),
+
+                        Transaction = _dbContext.Transactions
+                            .Where(t => t.RazorpayOrderId == o.RazorpayOrderId)
+                            .Select(t => new TransactionResponseModel
+                            {
+                                Id = t.Id,
+                                RazorpayPaymentId = t.RazorpayPaymentId,
+                                RazorpayOrderId = t.RazorpayOrderId,
+                                UserId = t.UserId,
+                                Signature = t.Signature,
+                                TotalAmount = t.TotalAmount,
+                                Currency = t.Currency,
+                                Status = t.Status,
+                                PaymentMethod = t.PaymentMethod,
+                                BrandId = t.BrandId,
+                                PaidAt = t.PaidAt,
+                                CreatedDate = t.CreatedDate
+                            })
+                            .FirstOrDefault(),
+
+                        ShippingAddress = _dbContext.Addresses
+                            .Where(a => a.Id == o.ShippingAddressId && a.IsDeleted == false)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault(),
+
+                        BillingAddress = _dbContext.Addresses
+                            .Where(a => a.Id == o.BillingAddressId && a.IsDeleted == false)
+                            .Select(a => new DetailedAddressResponseModel
+                            {
+                                Id = a.Id,
+                                UserId = a.UserId,
+                                FullName = a.FullName,
+                                PhoneNumber = a.PhoneNumber,
+                                AddressLine = a.AddressLine,
+                                City = a.City,
+                                LandMark = a.LandMark,
+                                PinCode = a.PinCode,
+                                StateCode = a.StateCode,
+                                CountryCode = a.CountryCode,
+                                AddressType = a.AddressType,
+                                CreatedDate = a.CreatedDate
+                            })
+                            .FirstOrDefault()
+                    })
+                    .ToList();
+
+                return orders;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while fetching all orders", xCorrelationId, ex);
+            }
+        }
+
         public async Task<AnalyticsResponseModel> ProcessAnalyticsEvents(AnalyticsPayloadRequest payload, string xCorrelationId)
         {
             try

@@ -198,5 +198,40 @@ namespace Agronexis.Api.Controllers
                 return HandleException(ex, "Failed to fetch orders", correlationId);
             }
         }
+
+        [HttpGet("all-orders")]
+        public ActionResult<ApiResponseModel> GetAllOrders()
+        {
+            var correlationId = string.Empty;
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel()
+            };
+
+            try
+            {
+                correlationId = GetCorrelationId();
+
+                var orders = _configService.GetAllOrders(XCorrelationID);
+                if (orders == null || !orders.Any())
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                }
+                else
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+                    response.Info.Message = ApiResponseMessage.SUCCESS;
+                    response.Data = orders;
+                }
+                response.Id = correlationId;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching all orders, correlation ID: {CorrelationId}", correlationId);
+                return HandleException(ex, "Failed to fetch all orders", correlationId);
+            }
+        }
     }
 }
