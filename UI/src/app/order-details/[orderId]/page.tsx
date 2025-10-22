@@ -60,7 +60,7 @@ import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { isLoggedIn, getUserId, isAdmin } from "@/utils/auth";
+import { isLoggedIn, getUserId } from "@/utils/auth";
 import { processApiResponse } from "@/utils/apiErrorHandling";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
