@@ -279,7 +279,7 @@ const ProductDetails = ({
               </Typography>
 
               <Stack direction="row" spacing={1} alignItems="center">
-                <StyledRating name="rating" defaultValue={2} readOnly />
+                <StyledRating name="rating" defaultValue={5} readOnly />
                 <Typography
                   variant="body2"
                   sx={{ color: "text.secondary", mt: 1 }}

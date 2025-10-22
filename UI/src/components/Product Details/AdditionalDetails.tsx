@@ -64,7 +64,7 @@ const AdditionalDetails = ({
     <Box
       sx={{
         p: 1.5,
-        maxHeight: "400px", // Limit height to approximately 3 rows
+        maxHeight: "250px", // Limit height to approximately 3 rows
         overflowY: "auto", // Add vertical scroll
         "&::-webkit-scrollbar": {
           width: "4px",
