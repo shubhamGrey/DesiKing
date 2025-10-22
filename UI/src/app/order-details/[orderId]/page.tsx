@@ -54,12 +54,13 @@ import {
   ShoppingCart,
   Receipt,
   Savings,
+  Label,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
-import { isLoggedIn, getUserId } from "@/utils/auth";
+import { isLoggedIn, getUserId, isAdmin } from "@/utils/auth";
 import { processApiResponse } from "@/utils/apiErrorHandling";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
@@ -1292,6 +1293,152 @@ const OrderDetailsContent: React.FC = () => {
     }
   };
 
+  const handleDownloadShipmentLabel = async () => {
+    if (!orderDetails?.trackingNumber) {
+      showError("Tracking number not available for this order");
+      return;
+    }
+
+    try {
+      // Show loading state
+      showSuccess("Generating shipment label...");
+
+      // Get access token
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        showError("Authentication token not found. Please log in again.");
+        return;
+      }
+
+      // Call the existing shipment label API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Shipment/label/${orderDetails.trackingNumber}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(`Shipment label API response status: ${response.status}`);
+
+      if (!response.ok) {
+        console.error(`API returned status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Parse the API response
+      const apiResponse = await response.json();
+      console.log("Shipment label API response:", apiResponse);
+
+      // Check if the API call was successful
+      if (apiResponse.info?.code === "200" && apiResponse.data) {
+        console.log("Shipment label data received successfully");
+
+        // Check if the response contains label data
+        if (apiResponse.data.labelUrl) {
+          // Open label URL in new window
+          const newWindow = window.open(apiResponse.data.labelUrl, "_blank");
+          if (!newWindow) {
+            showError(
+              "Popup blocked. Please allow popups for this site to view the label."
+            );
+          } else {
+            showSuccess("Shipment label opened in new window!");
+          }
+          return;
+        } else if (
+          apiResponse.data.labelBase64 ||
+          apiResponse.data.fileContents
+        ) {
+          // Convert base64 to blob and open
+          const base64Data =
+            apiResponse.data.labelBase64 || apiResponse.data.fileContents;
+          const fileName =
+            apiResponse.data.fileName ||
+            `Shipment_Label_${orderDetails.trackingNumber}.pdf`;
+
+          try {
+            const binaryString = atob(base64Data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+
+            const newWindow = window.open(url, "_blank");
+            if (!newWindow) {
+              // Fallback: download the file
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = fileName;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              showSuccess("Shipment label downloaded successfully!");
+            } else {
+              showSuccess("Shipment label opened in new window!");
+            }
+
+            // Clean up the blob URL after a delay
+            setTimeout(() => {
+              window.URL.revokeObjectURL(url);
+            }, 1000);
+            return;
+          } catch {
+            throw new Error(
+              "Failed to decode label data. The file may be corrupted."
+            );
+          }
+        } else {
+          throw new Error(
+            "Label data not found in response. Please contact support."
+          );
+        }
+      } else {
+        console.error("API returned non-success response:", apiResponse.info);
+        showError("No shipment label available for this tracking number.");
+        return;
+      }
+    } catch (error) {
+      console.error("Error generating shipment label:", error);
+
+      // Provide more specific error messages based on error type
+      let errorMessage = "Failed to generate shipment label. Please try again.";
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP 401")) {
+          errorMessage =
+            "Authentication expired. Please log in again and try downloading the label.";
+        } else if (error.message.includes("HTTP 403")) {
+          errorMessage =
+            "You don't have permission to access this shipment label.";
+        } else if (error.message.includes("HTTP 404")) {
+          errorMessage =
+            "Shipment label not found. This order may not have a label available yet.";
+        } else if (error.message.includes("HTTP 500")) {
+          errorMessage =
+            "Server error while generating label. Please try again in a few minutes.";
+        } else if (
+          error.message.includes("Network") ||
+          error.message.includes("fetch")
+        ) {
+          errorMessage =
+            "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = `Label generation failed: ${error.message}`;
+        }
+      }
+
+      showError(errorMessage);
+    }
+  };
+
   // Helper function to determine if transaction is intra-state
   const isIntraState = (customerState?: string): boolean => {
     const companyState = "Maharashtra"; // Your company's state
@@ -1486,6 +1633,21 @@ const OrderDetailsContent: React.FC = () => {
             >
               View Invoice
             </Button>
+            {(() => {
+              const userRole = Cookies.get("user_role");
+              const isAdminRole = userRole === "admin" || userRole === "Admin";
+              return isAdminRole && orderDetails?.trackingNumber;
+            })() && (
+              <Button
+                variant="outlined"
+                startIcon={<Label />}
+                onClick={handleDownloadShipmentLabel}
+                sx={{ display: { xs: "none", sm: "flex" } }}
+                color="secondary"
+              >
+                Shipment Label
+              </Button>
+            )}
           </Box>
         </Box>
 
@@ -1535,6 +1697,40 @@ const OrderDetailsContent: React.FC = () => {
                 </Typography>
               </Box>
             )}
+        </Box>
+
+        {/* Mobile Action Buttons */}
+        <Box
+          sx={{
+            display: { xs: "flex", sm: "none" },
+            gap: 1,
+            mt: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={handleDownloadInvoice}
+            sx={{ flex: 1, minWidth: "140px" }}
+          >
+            View Invoice
+          </Button>
+          {(() => {
+            const userRole = Cookies.get("user_role");
+            const isAdminRole = userRole === "admin" || userRole === "Admin";
+            return isAdminRole && orderDetails?.trackingNumber;
+          })() && (
+            <Button
+              variant="outlined"
+              startIcon={<Label />}
+              onClick={handleDownloadShipmentLabel}
+              color="secondary"
+              sx={{ flex: 1, minWidth: "140px" }}
+            >
+              Shipment Label
+            </Button>
+          )}
         </Box>
       </Box>
 
