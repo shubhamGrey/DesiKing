@@ -29,7 +29,7 @@ export function middleware(request) {
   ];
 
   // Admin-only routes (for managing content)
-  const adminRoutes = ["/add-category", "/add-product"];
+  const adminRoutes = ["/add-category", "/add-product", "/admin"];
 
   // Allow access to public assets and Next.js internals
   if (
