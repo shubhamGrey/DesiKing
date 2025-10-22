@@ -44,8 +44,6 @@ import {
   CheckCircle,
   Schedule,
   Download,
-  Star,
-  ArrowBack,
   ContentCopy,
   Phone,
   Email,
@@ -1032,7 +1030,7 @@ const OrderDetailsContent: React.FC = () => {
             );
           }
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        } catch (parseError) {
+        } catch {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
       }
@@ -1111,7 +1109,7 @@ const OrderDetailsContent: React.FC = () => {
                 window.URL.revokeObjectURL(url);
               }, 1000);
               return;
-            } catch (base64Error) {
+            } catch {
               throw new Error(
                 "Failed to decode PDF data. The file may be corrupted."
               );
@@ -1606,7 +1604,7 @@ const OrderDetailsContent: React.FC = () => {
             <Grid container spacing={4}>
               {/* First Column - Product Details */}
               <Grid size={{ xs: 12, lg: 8 }}>
-                {orderDetails.items.map((item, index) => (
+                {orderDetails.items.map((item) => (
                   <Box
                     key={item.id}
                     sx={{
