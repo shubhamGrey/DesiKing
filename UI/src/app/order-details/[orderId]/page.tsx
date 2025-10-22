@@ -57,12 +57,16 @@ import {
   AccessTime,
   CreditCard,
   DeliveryDining,
+  ShoppingCart,
+  Receipt,
+  Savings,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
 import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { isLoggedIn, getUserId } from "@/utils/auth";
+import { processApiResponse } from "@/utils/apiErrorHandling";
 import Cookies from "js-cookie";
 import { Product } from "@/types/product";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
@@ -423,7 +427,7 @@ const OrderDetailsContent: React.FC = () => {
 
   const orderId = params?.orderId as string;
 
-  // Fetch product details function (similar to profile page)
+  // Fetch product details function with enhanced error handling
   const fetchProductDetails = async (
     productId: string
   ): Promise<Product | null> => {
@@ -438,12 +442,8 @@ const OrderDetailsContent: React.FC = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch product details");
-      }
-
-      const rawData = await response.json();
-      const data: Product = rawData.data ? rawData.data : rawData;
+      // Use our enhanced API response processing
+      const data = await processApiResponse<Product>(response);
       return data;
     } catch (error) {
       console.error(`Error fetching product ${productId}:`, error);
@@ -491,23 +491,12 @@ const OrderDetailsContent: React.FC = () => {
           }
         );
 
-        if (!orderResponse.ok) {
-          if (orderResponse.status === 401) {
-            showError("Session expired. Please log in again.");
-            Cookies.remove("access_token");
-            Cookies.remove("refresh_token");
-            Cookies.remove("user_role");
-            router.push("/login");
-            return;
-          }
-          throw new Error(`HTTP error! status: ${orderResponse.status}`);
-        }
+        // Use our enhanced API response processing
+        const ordersResult = await processApiResponse<any>(orderResponse);
 
-        const ordersResult = await orderResponse.json();
-
-        if (ordersResult.info?.isSuccess && ordersResult.data) {
-          // We now get a single order directly, not an array
-          const specificOrder = ordersResult.data;
+        if (ordersResult) {
+          // We now get the order data directly from processApiResponse
+          const specificOrder = ordersResult;
 
           // Fetch product details for all order items
           const uniqueProductIds: string[] = Array.from(
@@ -730,13 +719,48 @@ const OrderDetailsContent: React.FC = () => {
 
           setOrderDetails(mappedOrderDetails);
         } else {
-          throw new Error(
-            ordersResult.info?.message || "Failed to fetch order data"
-          );
+          throw new Error("No order data received from server");
         }
       } catch (error) {
         console.error("Error fetching order details:", error);
-        showError("Failed to load order details");
+
+        // Provide more specific error messages
+        let errorMessage = "Failed to load order details";
+
+        if (error instanceof Error) {
+          if (
+            error.message.includes("401") ||
+            error.message.includes("Authentication")
+          ) {
+            errorMessage = "Session expired. Please log in again.";
+            Cookies.remove("access_token");
+            Cookies.remove("refresh_token");
+            Cookies.remove("user_role");
+            router.push("/login");
+            return;
+          } else if (
+            error.message.includes("404") ||
+            error.message.includes("Not Found")
+          ) {
+            errorMessage =
+              "Order not found. Please check the order ID and try again.";
+          } else if (
+            error.message.includes("403") ||
+            error.message.includes("Forbidden")
+          ) {
+            errorMessage = "You don't have permission to view this order.";
+          } else if (
+            error.message.includes("Network") ||
+            error.message.includes("fetch")
+          ) {
+            errorMessage =
+              "Network error. Please check your connection and try again.";
+          } else if (error.message !== "Failed to load order details") {
+            errorMessage = `Error: ${error.message}`;
+          }
+        }
+
+        showError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -991,44 +1015,183 @@ const OrderDetailsContent: React.FC = () => {
         }
       );
 
+      // First check if response is ok
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to parse error response in the new API format
+        try {
+          const errorData = await response.json();
+          if (
+            errorData &&
+            typeof errorData === "object" &&
+            "info" in errorData
+          ) {
+            // Handle the new API error format
+            throw new Error(
+              errorData.info.message ||
+                `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        } catch (parseError) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       }
 
-      // Handle PDF by opening in new window
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // Check content type to determine how to handle the response
+      const contentType = response.headers.get("content-type");
 
-      // Open PDF in new window/tab
-      const newWindow = window.open(url, "_blank");
+      if (contentType && contentType.includes("application/json")) {
+        // Handle JSON response (new API format)
+        const jsonResponse = await response.json();
 
-      if (!newWindow) {
-        // Fallback: If popup is blocked, download the file
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
-          /\//g,
-          "_"
-        )}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showSuccess("GST-compliant invoice downloaded successfully!");
+        // Check if it's the new API response format
+        if (
+          jsonResponse &&
+          typeof jsonResponse === "object" &&
+          "info" in jsonResponse
+        ) {
+          if (!jsonResponse.info.isSuccess) {
+            throw new Error(
+              jsonResponse.info.message || "Failed to generate invoice"
+            );
+          }
+
+          // Check if the response contains a PDF URL or base64 data
+          if (jsonResponse.data && jsonResponse.data.pdfUrl) {
+            // Open PDF URL in new window
+            const newWindow = window.open(jsonResponse.data.pdfUrl, "_blank");
+            if (!newWindow) {
+              showError(
+                "Popup blocked. Please allow popups for this site to view the invoice."
+              );
+            } else {
+              showSuccess("GST-compliant invoice opened in new window!");
+            }
+            return;
+          } else if (
+            jsonResponse.data &&
+            (jsonResponse.data.pdfBase64 || jsonResponse.data.fileContents)
+          ) {
+            // Convert base64 to blob and open
+            // Handle both pdfBase64 and fileContents fields
+            const base64Data =
+              jsonResponse.data.pdfBase64 || jsonResponse.data.fileContents;
+            const fileName =
+              jsonResponse.data.fileDownloadName ||
+              `GST_Invoice_${invoiceData.invoice.number.replace(
+                /\//g,
+                "_"
+              )}.pdf`;
+
+            try {
+              const binaryString = atob(base64Data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              const blob = new Blob([bytes], { type: "application/pdf" });
+              const url = window.URL.createObjectURL(blob);
+
+              const newWindow = window.open(url, "_blank");
+              if (!newWindow) {
+                // Fallback: download the file
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showSuccess("GST-compliant invoice downloaded successfully!");
+              } else {
+                showSuccess("GST-compliant invoice opened in new window!");
+              }
+
+              // Clean up the blob URL after a delay
+              setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+              }, 1000);
+              return;
+            } catch (base64Error) {
+              throw new Error(
+                "Failed to decode PDF data. The file may be corrupted."
+              );
+            }
+          } else {
+            throw new Error(
+              "Invoice data not found in response. Please contact support."
+            );
+          }
+        }
+
+        // Handle legacy JSON response format
+        throw new Error(
+          "Invoice service is currently unavailable. Please try again later."
+        );
+      } else if (contentType && contentType.includes("application/pdf")) {
+        // Handle PDF blob response (legacy format)
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        // Open PDF in new window/tab
+        const newWindow = window.open(url, "_blank");
+
+        if (!newWindow) {
+          // Fallback: If popup is blocked, download the file
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
+            /\//g,
+            "_"
+          )}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showSuccess("GST-compliant invoice downloaded successfully!");
+        } else {
+          showSuccess("GST-compliant invoice opened in new window!");
+        }
+
+        // Clean up the blob URL after a delay
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 1000);
       } else {
-        showSuccess("GST-compliant invoice opened in new window!");
+        throw new Error(
+          `Unexpected response type: ${contentType}. Expected PDF or JSON.`
+        );
       }
-
-      // Clean up the blob URL after a delay
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 1000);
     } catch (error) {
       console.error("Error generating GST invoice:", error);
-      showError(
-        `Failed to generate GST invoice: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }. Please try again.`
-      );
+
+      // Provide more specific error messages based on error type
+      let errorMessage = "Failed to generate GST invoice. Please try again.";
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP 401")) {
+          errorMessage =
+            "Authentication expired. Please log in again and try downloading the invoice.";
+          // Optionally redirect to login
+          // router.push("/login");
+        } else if (error.message.includes("HTTP 403")) {
+          errorMessage = "You don't have permission to access this invoice.";
+        } else if (error.message.includes("HTTP 404")) {
+          errorMessage =
+            "Invoice not found. This order may not have an invoice available yet.";
+        } else if (error.message.includes("HTTP 500")) {
+          errorMessage =
+            "Server error while generating invoice. Please try again in a few minutes.";
+        } else if (
+          error.message.includes("Network") ||
+          error.message.includes("fetch")
+        ) {
+          errorMessage =
+            "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = `Invoice generation failed: ${error.message}`;
+        }
+      }
+
+      showError(errorMessage);
     }
   };
 
@@ -1143,20 +1306,7 @@ const OrderDetailsContent: React.FC = () => {
       sx={{ mt: isMobile ? 2 : 4, mb: 4, px: isMobile ? 2 : 3 }}
     >
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        {/* Back Button */}
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => router.back()}
-          sx={{
-            mb: 2,
-            color: "text.secondary",
-            "&:hover": { color: "primary.main" },
-          }}
-        >
-          Back to Orders
-        </Button>
-
+      <Box sx={{ mb: 4, mt: 7 }}>
         {/* Breadcrumbs */}
         <Breadcrumbs
           separator={<NavigateNext fontSize="small" />}
@@ -1423,9 +1573,19 @@ const OrderDetailsContent: React.FC = () => {
         </Accordion>
       </Card>
 
-      {/* Order Items */}
-      <Card sx={{ mb: 4, border: "1px solid", borderColor: "divider" }}>
+      {/* Order Items and Summary */}
+      <Card
+        sx={{
+          mb: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+          overflow: "hidden",
+        }}
+      >
         <CardContent sx={{ p: 0 }}>
+          {/* Standard Header */}
           <Box
             sx={{
               p: 3,
@@ -1434,232 +1594,431 @@ const OrderDetailsContent: React.FC = () => {
               borderColor: "divider",
             }}
           >
-            <Typography variant="h6" fontWeight="600" color="primary.main">
-              Order Items ({orderDetails.items.length})
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <ShoppingCart color="primary" />
+              <Typography variant="h6" fontWeight="600" color="primary.main">
+                Order Items & Summary
+              </Typography>
+            </Box>
           </Box>
 
-          {orderDetails.items.map((item, index) => (
-            <Box
-              key={item.id}
-              sx={{
-                p: 3,
-                borderBottom:
-                  index < orderDetails.items.length - 1 ? "1px solid" : "none",
-                borderColor: "divider",
-              }}
-            >
-              <Grid container spacing={3} alignItems="center">
-                {/* Product Image */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Avatar
-                    src={item.productImage}
-                    variant="rounded"
+          <Box sx={{ p: 3 }}>
+            <Grid container spacing={4}>
+              {/* First Column - Product Details */}
+              <Grid size={{ xs: 12, lg: 8 }}>
+                {orderDetails.items.map((item, index) => (
+                  <Box
+                    key={item.id}
                     sx={{
-                      width: { xs: 100, sm: 80 },
-                      height: { xs: 100, sm: 80 },
-                      bgcolor: "grey.100",
+                      p: { xs: 2, sm: 3 },
                       border: "1px solid",
-                      borderColor: "divider",
+                      borderColor: "grey.200",
+                      borderRadius: 2,
+                      mb: 2,
+                      backgroundColor: "white",
                     }}
                   >
-                    <Inventory2 />
-                  </Avatar>
-                </Grid>
+                    {/* Mobile Layout */}
+                    <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                      {/* Mobile Header with Quantity and Title */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 2,
+                          mb: 2,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            minWidth: 28,
+                            height: 28,
+                            borderRadius: "50%",
+                            backgroundColor: "primary.main",
+                            color: "white",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "bold",
+                            fontSize: "0.8rem",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {item.quantity}
+                        </Box>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="600"
+                          sx={{ lineHeight: 1.3, flex: 1 }}
+                        >
+                          {item.productName}
+                        </Typography>
+                      </Box>
 
-                {/* Product Details */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="h6" fontWeight="600" sx={{ mb: 1 }}>
-                    {item.productName}
-                  </Typography>
-                  <Stack spacing={0.5}>
-                    <Typography variant="body2" color="text.secondary">
-                      Brand: {item.brandName}
-                    </Typography>
-                    {item.weight && (
-                      <Typography variant="body2" color="text.secondary">
-                        Weight: {item.weight}
-                      </Typography>
-                    )}
-                    {item.sku && (
-                      <Typography variant="body2" color="text.secondary">
-                        SKU: {item.sku}
-                      </Typography>
-                    )}
-                    {item.categoryName && (
-                      <Chip
-                        label={item.categoryName}
-                        size="small"
-                        variant="outlined"
-                        sx={{ width: "fit-content", mt: 0.5 }}
-                      />
-                    )}
-                  </Stack>
-                </Grid>
+                      {/* Mobile Product Image and Basic Info */}
+                      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                        <Avatar
+                          src={item.productImage}
+                          variant="rounded"
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            bgcolor: "grey.100",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Inventory2 sx={{ fontSize: 24 }} />
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Stack spacing={0.5} sx={{ mb: 1 }}>
+                            <Chip
+                              label={item.brandName}
+                              size="small"
+                              sx={{
+                                fontSize: "0.7rem",
+                                alignSelf: "flex-start",
+                              }}
+                            />
+                            {item.weight && (
+                              <Chip
+                                label={item.weight}
+                                size="small"
+                                sx={{
+                                  fontSize: "0.7rem",
+                                  alignSelf: "flex-start",
+                                }}
+                              />
+                            )}
+                          </Stack>
+                          {item.sku && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              SKU: {item.sku}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
 
-                {/* Quantity and Price */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ textAlign: { xs: "left", sm: "center" } }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 0.5 }}
-                    >
-                      Quantity
-                    </Typography>
-                    <Typography variant="h6" fontWeight="600">
-                      {item.quantity}
-                    </Typography>
-                  </Box>
-                </Grid>
+                      {/* Mobile Price Information */}
+                      <Box
+                        sx={{
+                          backgroundColor: "grey.50",
+                          p: 1.5,
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mb: 1,
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Unit Price:
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              alignItems: "center",
+                            }}
+                          >
+                            {item.isDiscounted &&
+                              item.discountAmount &&
+                              item.discountAmount > 0 && (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ textDecoration: "line-through" }}
+                                >
+                                  {getCurrencySymbol(
+                                    orderDetails.currency || "INR"
+                                  )}
+                                  {(item.price + item.discountAmount).toFixed(
+                                    2
+                                  )}
+                                </Typography>
+                              )}
+                            <Typography variant="body2" fontWeight="600">
+                              {getCurrencySymbol(
+                                orderDetails.currency || "INR"
+                              )}
+                              {item.price.toFixed(2)}
+                            </Typography>
+                          </Box>
+                        </Box>
 
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ textAlign: { xs: "left", sm: "right" } }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 0.5 }}
-                    >
-                      Price
-                    </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Quantity: {item.quantity}
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            fontWeight="600"
+                            color="primary.main"
+                          >
+                            {getCurrencySymbol(orderDetails.currency || "INR")}
+                            {item.totalPrice.toFixed(2)}
+                          </Typography>
+                        </Box>
 
-                    {/* Total Price Only - Simplified Display */}
+                        {item.isDiscounted &&
+                          item.discountAmount &&
+                          item.discountAmount > 0 && (
+                            <Box
+                              sx={{
+                                mt: 1,
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Chip
+                                label={`You saved ${getCurrencySymbol(
+                                  orderDetails.currency || "INR"
+                                )}${(
+                                  item.discountAmount * item.quantity
+                                ).toFixed(2)}`}
+                                size="small"
+                                color="success"
+                                sx={{ fontSize: "0.65rem" }}
+                              />
+                            </Box>
+                          )}
+                      </Box>
+                    </Box>
+
+                    {/* Desktop Layout */}
                     <Box
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: { xs: "flex-start", sm: "flex-end" },
-                        gap: 1,
+                        display: { xs: "none", sm: "flex" },
+                        gap: 2,
+                        alignItems: "flex-start",
                       }}
                     >
-                      {/* Final Total Price */}
-                      <Typography
-                        variant="h6"
-                        fontWeight="600"
-                        color={
-                          item.isDiscounted ? "success.main" : "primary.main"
-                        }
+                      {/* Quantity Badge */}
+                      <Box
+                        sx={{
+                          minWidth: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          backgroundColor: "primary.main",
+                          color: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "bold",
+                          fontSize: "0.875rem",
+                        }}
                       >
-                        {getCurrencySymbol(orderDetails.currency || "INR")}
-                        {item.totalPrice.toFixed(2)}
-                      </Typography>
+                        {item.quantity}
+                      </Box>
 
-                      {/* Discount Badge */}
-                      {item.isDiscounted &&
-                        item.discountAmount &&
-                        item.discountAmount > 0 && (
+                      {/* Product Image */}
+                      <Avatar
+                        src={item.productImage}
+                        variant="rounded"
+                        sx={{
+                          width: 80,
+                          height: 80,
+                          bgcolor: "grey.100",
+                          border: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Inventory2 sx={{ fontSize: 30 }} />
+                      </Avatar>
+
+                      {/* Product Details */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="h6"
+                          fontWeight="600"
+                          sx={{ mb: 1 }}
+                        >
+                          {item.productName}
+                        </Typography>
+
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          flexWrap="wrap"
+                          sx={{ mb: 2 }}
+                        >
                           <Chip
-                            label={`Saved ${getCurrencySymbol(
-                              orderDetails.currency || "INR"
-                            )}${item.discountAmount.toFixed(2)}`}
+                            label={item.brandName}
                             size="small"
-                            color="success"
-                            sx={{
-                              fontSize: "0.75rem",
-                              height: "20px",
-                            }}
+                            sx={{ fontSize: "0.75rem" }}
                           />
-                        )}
+                          {item.weight && (
+                            <Chip
+                              label={item.weight}
+                              size="small"
+                              sx={{ fontSize: "0.75rem" }}
+                            />
+                          )}
+                          {item.sku && (
+                            <Chip
+                              label={`SKU: ${item.sku}`}
+                              size="small"
+                              sx={{ fontSize: "0.75rem" }}
+                            />
+                          )}
+                        </Stack>
+
+                        {/* Price Information */}
+                        <Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 2,
+                              alignItems: "center",
+                              mb: 1,
+                            }}
+                          >
+                            <Typography variant="body2" color="text.secondary">
+                              Unit Price:
+                            </Typography>
+                            <Typography variant="body1" fontWeight="600">
+                              {getCurrencySymbol(
+                                orderDetails.currency || "INR"
+                              )}
+                              {item.price.toFixed(2)}
+                            </Typography>
+                            {item.isDiscounted &&
+                              item.discountAmount &&
+                              item.discountAmount > 0 && (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ textDecoration: "line-through" }}
+                                >
+                                  {getCurrencySymbol(
+                                    orderDetails.currency || "INR"
+                                  )}
+                                  {(item.price + item.discountAmount).toFixed(
+                                    2
+                                  )}
+                                </Typography>
+                              )}
+                          </Box>
+
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Typography variant="body2" color="text.secondary">
+                              Quantity: {item.quantity}
+                            </Typography>
+                            <Box sx={{ textAlign: "right" }}>
+                              <Typography
+                                variant="h6"
+                                fontWeight="600"
+                                color="primary.main"
+                              >
+                                {getCurrencySymbol(
+                                  orderDetails.currency || "INR"
+                                )}
+                                {item.totalPrice.toFixed(2)}
+                              </Typography>
+                              {item.isDiscounted &&
+                                item.discountAmount &&
+                                item.discountAmount > 0 && (
+                                  <Chip
+                                    label={`You saved ${getCurrencySymbol(
+                                      orderDetails.currency || "INR"
+                                    )}${(
+                                      item.discountAmount * item.quantity
+                                    ).toFixed(2)}`}
+                                    size="small"
+                                    color="success"
+                                    sx={{ fontSize: "0.7rem", mt: 0.5 }}
+                                  />
+                                )}
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Box>
                     </Box>
                   </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          ))}
-
-          {/* Order Total Summary */}
-          <Box sx={{ p: 3, mx: 3, backgroundColor: "background.default" }}>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Stack spacing={2}>
-                  {/* Return Policy Notice */}
-                  {orderDetails.returnPolicyEndDate && (
-                    <Alert severity="info" variant="outlined">
-                      <Typography variant="body2">
-                        Return window expires on{" "}
-                        {(() => {
-                          const formatted = formatDateTime(
-                            orderDetails.returnPolicyEndDate
-                          );
-                          return typeof formatted === "object"
-                            ? formatted.date
-                            : formatted;
-                        })()}
-                      </Typography>
-                    </Alert>
-                  )}
-
-                  {/* Action Buttons */}
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<Download />}
-                      onClick={handleDownloadInvoice}
-                    >
-                      Invoice
-                    </Button>
-                    {orderDetails.status === "Delivered" && (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        startIcon={<Star />}
-                        onClick={() =>
-                          showSuccess("Rating feature coming soon!")
-                        }
-                      >
-                        Rate
-                      </Button>
-                    )}
-                  </Stack>
-                </Stack>
+                ))}
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              {/* Second Column - Order Summary */}
+              <Grid size={{ xs: 12, lg: 4 }}>
                 <Box
                   sx={{
                     border: "1px solid",
                     borderColor: "divider",
-                    borderRadius: 1,
-                    p: 2,
+                    borderRadius: 2,
+                    p: { xs: 2, sm: 3 },
+                    position: { xs: "static", lg: "sticky" },
+                    top: 20,
+                    backgroundColor: "white",
+                    mt: { xs: 2, lg: 0 },
                   }}
                 >
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="600"
-                    sx={{ mb: 2 }}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 3,
+                    }}
                   >
-                    Order Summary
-                  </Typography>
-                  <Stack spacing={1}>
+                    <Receipt color="primary" />
+                    <Typography variant="h6" fontWeight="600">
+                      Order Summary
+                    </Typography>
+                  </Box>
+
+                  <Stack spacing={2}>
                     <Box
                       sx={{ display: "flex", justifyContent: "space-between" }}
                     >
-                      <Typography variant="body2">Subtotal:</Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" color="text.secondary">
+                        Subtotal ({orderDetails.items.length} items)
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600">
                         {getCurrencySymbol(orderDetails.currency || "INR")}
                         {orderDetails.subtotal}
                       </Typography>
                     </Box>
+
                     <Box
                       sx={{ display: "flex", justifyContent: "space-between" }}
                     >
-                      <Typography variant="body2">Shipping:</Typography>
-                      <Typography
-                        variant="body2"
-                        color={
-                          orderDetails.shippingCharges === 0
-                            ? "success.main"
-                            : "text.primary"
-                        }
-                      >
-                        {orderDetails.shippingCharges === 0
-                          ? "FREE"
-                          : `${getCurrencySymbol(
-                              orderDetails.currency || "INR"
-                            )}${orderDetails.shippingCharges}`}
+                      <Typography variant="body2" color="text.secondary">
+                        Shipping & Handling
                       </Typography>
+                      {orderDetails.shippingCharges === 0 ? (
+                        <Chip
+                          label="FREE"
+                          size="small"
+                          color="success"
+                          sx={{ fontWeight: "bold" }}
+                        />
+                      ) : (
+                        <Typography variant="body1" fontWeight="600">
+                          {getCurrencySymbol(orderDetails.currency || "INR")}
+                          {orderDetails.shippingCharges}
+                        </Typography>
+                      )}
                     </Box>
+
                     {orderDetails.discount > 0 && (
                       <Box
                         sx={{
@@ -1667,9 +2026,11 @@ const OrderDetailsContent: React.FC = () => {
                           justifyContent: "space-between",
                         }}
                       >
-                        <Typography variant="body2">Discount:</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Discount Applied
+                        </Typography>
                         <Typography
-                          variant="body2"
+                          variant="body1"
                           color="success.main"
                           fontWeight="600"
                         >
@@ -1678,21 +2039,34 @@ const OrderDetailsContent: React.FC = () => {
                         </Typography>
                       </Box>
                     )}
+
                     <Box
                       sx={{ display: "flex", justifyContent: "space-between" }}
                     >
-                      <Typography variant="body2">Tax:</Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" color="text.secondary">
+                        Tax & Fees
+                      </Typography>
+                      <Typography variant="body1" fontWeight="600">
                         {getCurrencySymbol(orderDetails.currency || "INR")}
                         {orderDetails.tax}
                       </Typography>
                     </Box>
+
                     <Divider />
+
                     <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        p: 2,
+                        border: "1px solid",
+                        borderColor: "primary.main",
+                        borderRadius: 1,
+                        backgroundColor: "primary.50",
+                      }}
                     >
                       <Typography variant="h6" fontWeight="600">
-                        Total:
+                        Order Total
                       </Typography>
                       <Typography
                         variant="h6"
@@ -1703,33 +2077,24 @@ const OrderDetailsContent: React.FC = () => {
                         {orderDetails.totalAmount.toFixed(2)}
                       </Typography>
                     </Box>
+
                     {orderDetails.discount > 0 && (
                       <Box
                         sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          mt: 1,
-                          p: 1,
-                          backgroundColor: "success.50",
+                          p: 2,
+                          backgroundColor: "success.main",
                           borderRadius: 1,
-                          border: "1px solid",
-                          borderColor: "success.200",
+                          color: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
                         }}
                       >
-                        <Typography
-                          variant="body2"
-                          color="success.main"
-                          fontWeight="600"
-                        >
-                          🎉 You saved:
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="success.main"
-                          fontWeight="600"
-                        >
+                        <Savings />
+                        <Typography variant="body2" fontWeight="600">
+                          You saved{" "}
                           {getCurrencySymbol(orderDetails.currency || "INR")}
-                          {orderDetails.discount.toFixed(2)}
+                          {orderDetails.discount.toFixed(2)} on this order!
                         </Typography>
                       </Box>
                     )}
