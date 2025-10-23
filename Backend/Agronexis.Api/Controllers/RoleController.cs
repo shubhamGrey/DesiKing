@@ -23,7 +23,7 @@ namespace Agronexis.Api.Controllers
         }
 
         // GET api/Role
-        [Authorize]
+        // [Authorize]
         [HttpGet]
         public ActionResult<IEnumerable<RoleResponseModel>> GetRoles()
         {
@@ -49,7 +49,7 @@ namespace Agronexis.Api.Controllers
 
         // GET api/Role/{id}
         [HttpGet("{id}")]
-        [Authorize]
+        // [Authorize]
         public ActionResult<RoleResponseModel> GetRoleById(string id)
         {
             try

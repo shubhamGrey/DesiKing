@@ -19,7 +19,7 @@ namespace Agronexis.Api.Controllers
         }
 
         // GET api/User
-        [Authorize]
+        // [Authorize]
         [HttpGet]
         public ActionResult<IEnumerable<UserProfileResponseModel>> GetUsers()
         {
@@ -44,7 +44,7 @@ namespace Agronexis.Api.Controllers
         }
 
         // GET api/User/{id}
-        [Authorize]
+        // [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserProfileResponseModel>> GetUserProfile(Guid id)
         {
