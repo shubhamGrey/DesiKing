@@ -1074,6 +1074,39 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             };
         }
 
+        public List<UserProfileResponseModel> GetUsers(string xCorrelationId)
+        {
+            try
+            {
+                var users = _dbContext.Users
+                    .Include(u => u.Roles)
+                    .Where(u => !u.IsDeleted)
+                    .OrderByDescending(u => u.CreatedDate)
+                    .Select(u => new UserProfileResponseModel
+                    {
+                        Id = u.Id,
+                        FirstName = u.FirstName,
+                        LastName = u.LastName,
+                        UserName = u.UserName,
+                        Email = u.Email,
+                        MobileNumber = u.MobileNumber,
+                        RoleId = u.RoleId,
+                        RoleName = u.Roles != null ? u.Roles.Name : null,
+                        CreatedDate = u.CreatedDate,
+                        ModifiedDate = u.ModifiedDate,
+                        BrandId = u.BrandId,
+                        IsActive = u.IsActive
+                    })
+                    .ToList();
+
+                return users;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error retrieving users: {ex.Message}", xCorrelationId, ex);
+            }
+        }
+
         public async Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
         {
             // Call Razorpay to initiate refund

@@ -218,6 +218,21 @@ interface Role {
   isDeleted: boolean;
 }
 
+// User interface for user management
+interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber?: string;
+  roleId: string;
+  roleName?: string;
+  isActive: boolean;
+  isDeleted: boolean;
+  createdDate: string;
+  modifiedDate?: string;
+  lastLoginDate?: string;
+}
+
 const AdminDashboardContent: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -248,6 +263,11 @@ const AdminDashboardContent: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [rolesError, setRolesError] = useState<string | null>(null);
+
+  // Users state
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState<any>(null);
@@ -285,7 +305,7 @@ const AdminDashboardContent: React.FC = () => {
         return;
       }
 
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/checkout/all-orders`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/checkout/all-orders`;
       console.log("Fetching orders from:", apiUrl);
 
       const response = await fetch(apiUrl, {
@@ -313,9 +333,9 @@ const AdminDashboardContent: React.FC = () => {
       const result = await processApiResponse<ApiResponse<Order[]>>(response);
       console.log("Processed orders response:", result);
 
-      if (result && result.data) {
-        console.log("Setting orders data:", result.data.length, "items");
-        setOrders(result.data);
+      if (result && Array.isArray(result)) {
+        console.log("Setting orders data:", result.length, "items");
+        setOrders(result);
       } else {
         console.log("No orders data found");
         setOrdersError("No orders found");
@@ -474,9 +494,9 @@ const AdminDashboardContent: React.FC = () => {
       const result = await processApiResponse<ApiResponse<Brand[]>>(response);
       console.log("Processed brands response:", result);
 
-      if (result && result.data && Array.isArray(result.data)) {
-        console.log("Setting brands data:", result.data.length, "items");
-        setBrands(result.data);
+      if (result && Array.isArray(result)) {
+        console.log("Setting brands data:", result.length, "items");
+        setBrands(result);
       } else {
         console.log("No brands data found or invalid format");
         setBrands([]);
@@ -529,7 +549,7 @@ const AdminDashboardContent: React.FC = () => {
         return;
       }
 
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/role`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/role`;
       console.log("Fetching roles from:", apiUrl);
 
       const response = await fetch(apiUrl, {
@@ -597,6 +617,102 @@ const AdminDashboardContent: React.FC = () => {
     }
   };
 
+  // Fetch users function
+  const fetchAllUsers = async () => {
+    try {
+      setUsersLoading(true);
+      setUsersError(null);
+
+      const accessToken = Cookies.get("access_token");
+      if (!accessToken) {
+        setUsersError("Authentication required");
+        return;
+      }
+
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/user`;
+      console.log("Fetching users from:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log(
+        "Users API response status:",
+        response.status,
+        response.statusText
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Users API error response:", errorText);
+        setUsersError(`API Error: ${response.status} ${response.statusText}`);
+        setUsers([]);
+        return;
+      }
+
+      const result = await processApiResponse<ApiResponse<User[]>>(response);
+      console.log("Processed users response:", result);
+
+      if (result && result.data && Array.isArray(result.data)) {
+        console.log("Setting users data:", result.data.length, "items");
+        setUsers(result.data);
+      } else {
+        console.log("No users data found or invalid format");
+        setUsers([]);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setUsersError("Failed to fetch users");
+
+      // Fallback mock data for development
+      const mockUsers: User[] = [
+        {
+          id: "1",
+          fullName: "John Doe",
+          email: "john.doe@example.com",
+          phoneNumber: "+91 9876543210",
+          roleId: "1",
+          roleName: "Admin",
+          isActive: true,
+          isDeleted: false,
+          createdDate: new Date().toISOString(),
+          lastLoginDate: new Date().toISOString(),
+        },
+        {
+          id: "2",
+          fullName: "Jane Smith",
+          email: "jane.smith@example.com",
+          phoneNumber: "+91 8765432109",
+          roleId: "2",
+          roleName: "Customer",
+          isActive: true,
+          isDeleted: false,
+          createdDate: new Date().toISOString(),
+          lastLoginDate: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        },
+        {
+          id: "3",
+          fullName: "Mike Johnson",
+          email: "mike.johnson@example.com",
+          phoneNumber: "+91 7654321098",
+          roleId: "2",
+          roleName: "Customer",
+          isActive: false,
+          isDeleted: false,
+          createdDate: new Date(Date.now() - 7 * 86400000).toISOString(), // 7 days ago
+        },
+      ];
+      console.log("Using mock users data:", mockUsers);
+      setUsers(mockUsers);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   // Fetch analytics data
   const fetchAnalyticsData = async () => {
     try {
@@ -609,6 +725,7 @@ const AdminDashboardContent: React.FC = () => {
         totalCategories: categories.length,
         totalBrands: brands.length,
         totalOrders: orders.length,
+        totalUsers: users.length,
         totalRevenue: orders.reduce((sum, order) => sum + order.totalAmount, 0),
         recentOrders: orders
           .sort(
@@ -652,6 +769,7 @@ const AdminDashboardContent: React.FC = () => {
         break;
       case "users":
         fetchAllRoles();
+        fetchAllUsers();
         break;
       case "analytics":
         fetchAnalyticsData();
@@ -673,7 +791,7 @@ const AdminDashboardContent: React.FC = () => {
       fetchAnalyticsData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, categories, brands, orders, selectedTab]);
+  }, [products, categories, brands, orders, users, selectedTab]);
 
   // Helper functions
   const formatCurrency = (amount: number, currency: string = "INR") => {
@@ -1645,8 +1763,13 @@ const AdminDashboardContent: React.FC = () => {
             Quick Actions
           </Typography>
           <Box display="flex" gap={2} flexWrap="wrap">
-            <Button variant="outlined" startIcon={<People />}>
-              View All Users
+            <Button
+              variant="outlined"
+              startIcon={<People />}
+              onClick={fetchAllUsers}
+              disabled={usersLoading}
+            >
+              {usersLoading ? <CircularProgress size={16} /> : "Refresh Users"}
             </Button>
             <Button variant="outlined" startIcon={<Add />}>
               Add New User
@@ -1659,6 +1782,101 @@ const AdminDashboardContent: React.FC = () => {
             </Button>
           </Box>
         </Box>
+
+        {/* Users List */}
+        <Typography variant="h6" gutterBottom>
+          All Users
+        </Typography>
+
+        {usersError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {usersError}
+          </Alert>
+        )}
+
+        {usersLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : users.length === 0 ? (
+          <Alert severity="info" sx={{ mb: 4 }}>
+            No users found
+          </Alert>
+        ) : (
+          <TableContainer component={Paper} sx={{ mb: 4, maxHeight: 400 }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Last Login</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Avatar
+                          sx={{ width: 32, height: 32, mr: 2, fontSize: 14 }}
+                        >
+                          {user.fullName?.charAt(0) || "?"}
+                        </Avatar>
+                        <Typography variant="body2" fontWeight="medium">
+                          {user.fullName}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{user.email}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {user.phoneNumber || "N/A"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.roleName || "Unknown"}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.isActive ? "Active" : "Inactive"}
+                        color={user.isActive ? "success" : "default"}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {user.lastLoginDate
+                          ? formatDate(user.lastLoginDate)
+                          : "Never"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", gap: 0.5 }}>
+                        <IconButton size="small" color="primary">
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" color="secondary">
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         {/* Roles Management */}
         <Typography variant="h6" gutterBottom>
@@ -1741,7 +1959,7 @@ const AdminDashboardContent: React.FC = () => {
               <Card>
                 <CardContent sx={{ textAlign: "center" }}>
                   <Typography variant="h4" color="primary.main">
-                    {orders ? new Set(orders.map((o) => o.userId)).size : 0}
+                    {users.length}
                   </Typography>
                   <Typography variant="body2">Total Users</Typography>
                 </CardContent>
@@ -1751,9 +1969,9 @@ const AdminDashboardContent: React.FC = () => {
               <Card>
                 <CardContent sx={{ textAlign: "center" }}>
                   <Typography variant="h4" color="success.main">
-                    {roles.filter((r) => r.isActive).length}
+                    {users.filter((u) => u.isActive).length}
                   </Typography>
-                  <Typography variant="body2">Active Roles</Typography>
+                  <Typography variant="body2">Active Users</Typography>
                 </CardContent>
               </Card>
             </Grid>
@@ -1762,9 +1980,9 @@ const AdminDashboardContent: React.FC = () => {
                 <CardContent sx={{ textAlign: "center" }}>
                   <Typography variant="h4" color="info.main">
                     {
-                      orders.filter(
-                        (o) =>
-                          new Date(o.createdDate) >
+                      users.filter(
+                        (u) =>
+                          new Date(u.createdDate) >
                           new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
                       ).length
                     }

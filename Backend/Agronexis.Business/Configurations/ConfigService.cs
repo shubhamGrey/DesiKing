@@ -123,6 +123,11 @@ namespace Agronexis.Business.Configurations
             return await _repository.GetUserProfile(userId, xCorrelationId);
         }
 
+        public List<UserProfileResponseModel> GetUsers(string xCorrelationId)
+        {
+            return _repository.GetUsers(xCorrelationId);
+        }
+
         public async Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
         {
             return await _repository.RefundPayment(refund, xCorrelationId);

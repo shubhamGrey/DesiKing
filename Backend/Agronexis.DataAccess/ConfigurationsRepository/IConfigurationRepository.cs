@@ -33,6 +33,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<OrderResponseModel> CreateOrder(OrderRequestModel order, string xCorrelationId);
         Task<bool> VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId);
         Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId);
+        List<UserProfileResponseModel> GetUsers(string xCorrelationId);
         Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId);
         List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId);
         string DeleteCartById(string id, string xCorrelationId);

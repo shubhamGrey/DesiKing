@@ -69,7 +69,7 @@ export default function Contact() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/contact`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/contact`,
         {
           method: "POST",
           headers: {
