@@ -1,85 +1,65 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import { processApiResponse } from "@/utils/apiErrorHandling";
+import { isAdmin, isLoggedIn } from "@/utils/auth";
 import {
+  Add,
+  Analytics,
+  Category,
+  ChevronLeft,
+  Dashboard,
+  Edit as EditIcon,
+  ExpandLess,
+  ExpandMore,
+  FileDownload,
+  Inventory,
+  LocalShipping,
+  Menu as MenuIcon,
+  NavigateNext,
+  Notifications,
+  People,
+  Refresh,
+  Search,
+  Settings,
+  ShoppingCart,
+  TrendingUp,
+  Visibility,
+} from "@mui/icons-material";
+import {
+  Alert,
+  Avatar,
   Box,
-  Container,
-  Paper,
-  Typography,
-  Grid,
+  Button,
   Card,
   CardContent,
+  Chip,
+  CircularProgress,
+  Collapse,
+  Container,
+  Divider,
+  Grid,
+  IconButton,
+  InputAdornment,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
-  ListItemButton,
-  Divider,
-  Button,
-  Chip,
+  Paper,
   Skeleton,
-  Alert,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  CircularProgress,
-  Avatar,
-  IconButton,
-  Collapse,
-  Drawer,
-  AppBar,
-  Toolbar,
-  Badge,
   TextField,
-  InputAdornment,
-  Breadcrumbs,
-  Checkbox,
-  Pagination,
-  Menu,
-  MenuItem,
-  Tab,
-  Tabs,
+  Typography,
 } from "@mui/material";
-import {
-  Dashboard,
-  Inventory,
-  Category,
-  People,
-  ShoppingCart,
-  Analytics,
-  Settings,
-  TrendingUp,
-  LocalShipping,
-  NavigateNext,
-  Visibility,
-  ExpandMore,
-  ExpandLess,
-  Refresh,
-  Notifications,
-  FileDownload,
-  Add,
-  MoreVert,
-  ArrowBack,
-  Menu as MenuIcon,
-  Search,
-  FilterList,
-  Assignment,
-  Message,
-  Close,
-  ChevronLeft,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
-import { useRouter } from "next/navigation";
-import { isLoggedIn, isAdmin } from "@/utils/auth";
 import Cookies from "js-cookie";
-import { processApiResponse } from "@/utils/apiErrorHandling";
 import Link from "next/link";
-import Image from "next/image";
-import BrandLogo from "../../../public/AgroNexisGreen.png";
+import { useRouter } from "next/navigation";
+import React, { Suspense, useEffect, useState } from "react";
 
 // Backend API Response Interfaces
 interface ApiResponseInfo {
@@ -275,10 +255,9 @@ const AdminDashboardContent: React.FC = () => {
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
 
   // Modern dashboard states
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [orderFilter, setOrderFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -484,12 +463,6 @@ const AdminDashboardContent: React.FC = () => {
         },
       });
 
-      console.log(
-        "Brands API response status:",
-        response.status,
-        response.statusText
-      );
-
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Brands API error response:", errorText);
@@ -691,6 +664,7 @@ const AdminDashboardContent: React.FC = () => {
         if (orders.length === 0) fetchAllOrders();
         break;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTab]);
 
   // Fetch analytics when data changes
@@ -698,6 +672,7 @@ const AdminDashboardContent: React.FC = () => {
     if (selectedTab === "analytics" || selectedTab === "overview") {
       fetchAnalyticsData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products, categories, brands, orders, selectedTab]);
 
   // Helper functions
@@ -733,6 +708,7 @@ const AdminDashboardContent: React.FC = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderOrdersTable = () => {
     return (
       <TableContainer component={Paper}>
@@ -822,17 +798,6 @@ const AdminDashboardContent: React.FC = () => {
       </TableContainer>
     );
   };
-
-  const menuItems = [
-    { id: "overview", label: "Dashboard Overview", icon: <Dashboard /> },
-    { id: "products", label: "Product Management", icon: <Inventory /> },
-    { id: "categories", label: "Category Management", icon: <Category /> },
-    { id: "brands", label: "Brand Management", icon: <LocalShipping /> },
-    { id: "orders", label: "Order Management", icon: <ShoppingCart /> },
-    { id: "users", label: "User Management", icon: <People /> },
-    { id: "analytics", label: "Analytics", icon: <Analytics /> },
-    { id: "settings", label: "Settings", icon: <Settings /> },
-  ];
 
   // Calculate real-time statistics
   const totalProducts = products.length;
@@ -2191,8 +2156,6 @@ const AdminDashboardContent: React.FC = () => {
         return renderOverview();
     }
   };
-
-  const DRAWER_WIDTH = 280;
 
   return (
     <Box

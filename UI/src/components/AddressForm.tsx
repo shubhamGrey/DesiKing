@@ -142,6 +142,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   // Load countries when component mounts
   useEffect(() => {
     fetchCountries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load states when country changes
@@ -149,6 +150,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     if (formData.countryCode) {
       fetchStates(formData.countryCode);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.countryCode]);
 
   const validateForm = (): boolean => {

@@ -867,6 +867,7 @@ const OrderDetailsContent: React.FC = () => {
     if (orderId) {
       fetchOrderDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, showError, router]);
 
   // Helper functions

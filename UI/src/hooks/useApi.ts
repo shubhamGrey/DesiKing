@@ -139,6 +139,7 @@ export const useApi = (defaultOptions: UseApiOptions = {}): UseApiReturn => {
         defaultOptions.onError(processedError);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [handleAuthError, showError, defaultOptions.onError]
   );
 
