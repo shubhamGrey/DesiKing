@@ -12,6 +12,8 @@ import {
   EventCategory,
   EventAction,
 } from "@/config/analytics";
+import Cookies from "js-cookie";
+import { isLoggedIn, isAdmin, getUserId } from "@/utils/auth";
 
 class BeaconAnalytics {
   private eventQueue: AnalyticsEvent[] = [];
@@ -43,7 +45,15 @@ class BeaconAnalytics {
    * Initialize beacon analytics service
    */
   private initializeBeaconAnalytics(): void {
-    if (typeof window === "undefined" || !analyticsConfig.isEnabled) {
+    if (typeof window === "undefined") {
+      console.log(
+        "[BeaconAnalytics] Skipping initialization - window is undefined (SSR)"
+      );
+      return;
+    }
+
+    if (!analyticsConfig.isEnabled) {
+      console.log("[BeaconAnalytics] Analytics disabled by configuration");
       return;
     }
 
@@ -273,8 +283,17 @@ class BeaconAnalytics {
   private addToQueue(event: AnalyticsEvent): void {
     this.eventQueue.push(event);
 
+    if (analyticsConfig.enableDebugMode) {
+      console.log(
+        `[BeaconAnalytics] Event added to queue. Queue size: ${this.eventQueue.length}/${DEFAULT_CONFIG.batchSize}`
+      );
+    }
+
     // Flush if queue is full
     if (this.eventQueue.length >= DEFAULT_CONFIG.batchSize) {
+      if (analyticsConfig.enableDebugMode) {
+        console.log("[BeaconAnalytics] Queue full, flushing events");
+      }
       this.flushEvents();
     }
   }
@@ -283,8 +302,19 @@ class BeaconAnalytics {
    * Start periodic flush timer
    */
   private startPeriodicFlush(): void {
+    if (analyticsConfig.enableDebugMode) {
+      console.log(
+        `[BeaconAnalytics] Starting periodic flush timer (${DEFAULT_CONFIG.flushInterval}ms)`
+      );
+    }
+
     this.flushTimer = setInterval(() => {
       if (this.eventQueue.length > 0) {
+        if (analyticsConfig.enableDebugMode) {
+          console.log(
+            `[BeaconAnalytics] Periodic flush triggered. Queue size: ${this.eventQueue.length}`
+          );
+        }
         this.flushEvents();
       }
     }, DEFAULT_CONFIG.flushInterval);
@@ -360,12 +390,28 @@ class BeaconAnalytics {
     if (typeof window === "undefined") return null;
 
     try {
-      // Since we no longer store user profile data, return minimal info
+      // Use existing auth utility functions
+      const userIsLoggedIn = isLoggedIn();
+      const userIsAdmin = isAdmin();
+
+      // Extract user ID from cookies if not set via setUserId
+      let userId = this.userId;
+      if (!userId && userIsLoggedIn) {
+        const userIdFromCookie = getUserId();
+        if (userIdFromCookie) {
+          userId = userIdFromCookie;
+          // Update the instance userId if we found it in cookies
+          this.userId = userId;
+        }
+      }
+
+      const userType = userIsLoggedIn ? "registered" : "guest";
+
       return {
-        userId: this.userId,
-        userType: this.userId ? "registered" : "guest",
-        isLoggedIn: document.cookie.includes("access_token="),
-        isAdmin: document.cookie.includes("user_role=admin"),
+        userId,
+        userType,
+        isLoggedIn: userIsLoggedIn,
+        isAdmin: userIsAdmin,
         preferredLanguage: navigator.language,
       };
     } catch (error) {
@@ -375,6 +421,8 @@ class BeaconAnalytics {
     return {
       userId: this.userId,
       userType: this.userId ? "registered" : "guest",
+      isLoggedIn: false,
+      isAdmin: false,
       preferredLanguage: navigator.language,
     };
   }
@@ -524,41 +572,126 @@ class BeaconAnalytics {
   }
 
   /**
+   * Transform events to match backend API format
+   */
+  private transformEventsForBackend(events: AnalyticsEvent[]): any[] {
+    return events.map((event) => ({
+      Event: event.event,
+      Category: event.category,
+      Action: event.action,
+      Label: event.label,
+      Value: event.value,
+      Timestamp: event.timestamp,
+      SessionId: event.sessionId,
+      UserId: event.userId,
+      CustomData: event.customData,
+      PageReferrer: event.pageReferrer,
+      ScrollDepth: event.scrollDepth,
+      TimeOnPage: event.timeOnPage,
+      InteractionTarget: event.interactionTarget,
+      EventSource: event.eventSource,
+      ElementAttributes: event.elementAttributes,
+      PerformanceData: event.performanceData
+        ? {
+            PageLoadTime: event.performanceData.pageLoadTime,
+            DOMLoadTime: event.performanceData.domLoadTime,
+            FirstContentfulPaint: event.performanceData.firstContentfulPaint,
+            LargestContentfulPaint:
+              event.performanceData.largestContentfulPaint,
+            FirstInputDelay: event.performanceData.firstInputDelay,
+            CumulativeLayoutShift: event.performanceData.cumulativeLayoutShift,
+            TimeToInteractive: event.performanceData.timeToInteractive,
+            ResourceCount: event.performanceData.resourceCount,
+            TotalResourceSize: event.performanceData.totalResourceSize,
+          }
+        : undefined,
+    }));
+  }
+
+  /**
    * Send events to custom analytics endpoint
    */
   private async sendToCustomEndpoint(
     events: AnalyticsEvent[],
     useBeacon = false
   ): Promise<void> {
-    if (!analyticsConfig.customEndpoint) return;
+    if (!analyticsConfig.customEndpoint) {
+      if (analyticsConfig.enableDebugMode) {
+        console.warn("[BeaconAnalytics] No custom endpoint configured");
+      }
+      return;
+    }
+
+    if (analyticsConfig.enableDebugMode) {
+      console.log(
+        `[BeaconAnalytics] Sending ${events.length} events to ${analyticsConfig.customEndpoint}`
+      );
+      console.log("[BeaconAnalytics] Events:", events);
+    }
+
+    const transformedEvents = this.transformEventsForBackend(events);
 
     const payload = JSON.stringify({
-      events,
-      timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
+      Events: transformedEvents, // Transformed and capitalized to match backend model
+      Timestamp: Date.now(), // Capitalized to match backend model
+      UserAgent: navigator.userAgent, // Capitalized to match backend model
+      Url: window.location.href, // Capitalized to match backend model
       // Enhanced user details
-      language: navigator.language,
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      deviceInfo: this.getDeviceInfo(),
-      sessionInfo: this.getSessionInfo(),
-      userProfile: this.getUserProfile(),
+      Language: navigator.language, // Capitalized to match backend model
+      TimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Capitalized to match backend model
+      DeviceInfo: this.getDeviceInfo(), // Capitalized to match backend model
+      SessionInfo: this.getSessionInfo(), // Capitalized to match backend model
+      UserProfile: this.getUserProfile(), // Capitalized to match backend model
     });
+
+    if (analyticsConfig.enableDebugMode) {
+      console.log("[BeaconAnalytics] Payload:", JSON.parse(payload));
+    }
 
     if (useBeacon && navigator.sendBeacon) {
       // Use beacon API for reliable delivery
       const blob = new Blob([payload], { type: "application/json" });
-      navigator.sendBeacon(analyticsConfig.customEndpoint, blob);
+      const success = navigator.sendBeacon(
+        analyticsConfig.customEndpoint,
+        blob
+      );
+
+      if (analyticsConfig.enableDebugMode) {
+        console.log(`[BeaconAnalytics] Beacon API result:`, success);
+      }
     } else {
-      // Use fetch for regular requests
-      await fetch(analyticsConfig.customEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: payload,
-        keepalive: true,
-      });
+      try {
+        // Use fetch for regular requests
+        const response = await fetch(analyticsConfig.customEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: payload,
+          keepalive: true,
+        });
+
+        if (analyticsConfig.enableDebugMode) {
+          console.log(
+            `[BeaconAnalytics] Fetch response:`,
+            response.status,
+            response.statusText
+          );
+
+          if (!response.ok) {
+            const responseText = await response.text();
+            console.error(
+              "[BeaconAnalytics] API Error Response:",
+              responseText
+            );
+          }
+        }
+      } catch (error) {
+        if (analyticsConfig.enableDebugMode) {
+          console.error("[BeaconAnalytics] Fetch error:", error);
+        }
+        throw error;
+      }
     }
   }
 
