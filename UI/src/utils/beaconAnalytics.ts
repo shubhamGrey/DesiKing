@@ -12,7 +12,6 @@ import {
   EventCategory,
   EventAction,
 } from "@/config/analytics";
-import Cookies from "js-cookie";
 import { isLoggedIn, isAdmin, getUserId } from "@/utils/auth";
 
 class BeaconAnalytics {
