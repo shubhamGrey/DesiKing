@@ -2123,8 +2123,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 <td>
                     <strong>" + invoiceData.Customer.Name + @"</strong><br>
                     " + invoiceData.Customer.Address + @"<br>
-                    GSTIN/UIN: " + (invoiceData.Customer.Gstin ?? "N/A") + @"<br>
-                    State Name: " + invoiceData.Customer.State + @", Code: " + invoiceData.Customer.StateCode + @"<br>
+                    State Name: " + invoiceData.Customer.State + @", State Code: " + invoiceData.Customer.StateCode + @"<br>
                     Place of Supply: " + invoiceData.Customer.State + @"
                 </td>
                 <td class='label'>Dated</td>
@@ -2135,8 +2134,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 <td>
                     <strong>" + invoiceData.Customer.Name + @"</strong><br>
                     " + invoiceData.Customer.Address + @"<br>
-                    GSTIN/UIN: " + (invoiceData.Customer.Gstin ?? "N/A") + @"<br>
-                    State Name: " + invoiceData.Customer.State + @", Code: " + invoiceData.Customer.StateCode + @"<br>
+                    State Name: " + invoiceData.Customer.State + @", State Code: " + invoiceData.Customer.StateCode + @"<br>
                     Place of Supply: " + invoiceData.Customer.State + @"
                 </td>
                 <td class='label'>Delivery Note</td>

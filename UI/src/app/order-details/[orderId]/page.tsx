@@ -899,7 +899,7 @@ const OrderDetailsContent: React.FC = () => {
     const categoryNameLower = category?.toLowerCase() ?? "";
 
     // Use category information if available and relevant
-    if (!categoryNameLower) {
+    if (categoryNameLower) {
       if (
         categoryNameLower.includes("spice") ||
         categoryNameLower.includes("masala")
@@ -956,8 +956,7 @@ const OrderDetailsContent: React.FC = () => {
         supplier: {
           name: "Agro Nexis India Overseas Pvt. Ltd.",
           address: "Plot G29/1 Mehrauli, New Delhi - 110030",
-          gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
-          panNumber: "AABCD1234E",
+          gstin: "07ABCCA5210G1Z6", // Replace with actual GSTIN
           email: "vijay@agronexis.com",
           phone: "+91-9582222963",
           website: "www.agronexis.com",
