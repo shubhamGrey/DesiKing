@@ -891,6 +891,33 @@ const OrderDetailsContent: React.FC = () => {
     return { statuses, currentStatusIndex };
   };
 
+  const getHSNCode = (product: string, category: string) => {
+    // Map products to HSN codes based on the invoice image and GST guidelines
+    // This method can be enhanced to use category or dedicated HSN table in future
+
+    var productNameLower = product.toLowerCase();
+    var categoryNameLower = category?.toLowerCase() ?? "";
+
+    // Use category information if available and relevant
+    if (!categoryNameLower) {
+      if (
+        categoryNameLower.includes("spice") ||
+        categoryNameLower.includes("masala")
+      ) {
+        // Return spice-specific HSN based on product name
+        if (productNameLower.includes("cinnamon")) return "0906";
+        if (productNameLower.includes("turmeric")) return "091030";
+        if (productNameLower.includes("pepper")) return "0904";
+        if (productNameLower.includes("cardamom")) return "0908";
+        if (productNameLower.includes("clove")) return "0907";
+        return "0906"; // Default for spices
+      }
+    }
+
+    // Default HSN for spices and condiments
+    return "0906";
+  };
+
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -927,18 +954,18 @@ const OrderDetailsContent: React.FC = () => {
       const invoiceData = {
         // Supplier Details (Rule 46 compliance)
         supplier: {
-          name: "DesiKing Private Limited",
-          address: "Premium Spices District, Mumbai, Maharashtra, 400001",
+          name: "Agro Nexis India Overseas Pvt. Ltd.",
+          address: "Plot G29/1 Mehrauli, New Delhi - 110030",
           gstin: "27AABCD1234E1Z5", // Replace with actual GSTIN
           panNumber: "AABCD1234E",
-          email: "invoices@desiking.com",
-          phone: "+91-1800-DESI-KING",
-          website: "www.desiking.com",
+          email: "vijay@agronexis.com",
+          phone: "+91-9582222963",
+          website: "www.agronexis.com",
         },
 
         // Invoice Details (Rule 46 compliance)
         invoice: {
-          number: `DK/${new Date().getFullYear()}-${(
+          number: `ANIOPL/${new Date().getFullYear()}-${(
             new Date().getFullYear() + 1
           )
             .toString()
@@ -1012,9 +1039,8 @@ const OrderDetailsContent: React.FC = () => {
         items: orderDetails.items.map((item, index) => ({
           slNo: index + 1,
           description: item.productName,
-          hsnCode: "09109990", // HSN for spices - replace with actual HSN per product
+          hsnCode: getHSNCode(item.productName, "powdered spices"),
           quantity: item.quantity,
-          unit: "KG", // or appropriate unit
           rate: item.price,
           taxableValue: item.price * item.quantity,
           discountAmount: item.discountAmount

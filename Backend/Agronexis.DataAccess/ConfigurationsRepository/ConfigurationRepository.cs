@@ -2059,7 +2059,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
     <title>Tax Invoice</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; font-size: 12px; line-height: 1.4; }
-        .invoice-container { max-width: 800px; margin: 0 auto; border: 2px solid #000; }
+        .invoice-container { max-width: 800px; margin: 0 auto; }
         
         /* Header styles */
         .header { background: #f5f5f5; padding: 10px; border-bottom: 1px solid #000; text-align: center; }
@@ -2190,22 +2190,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 </tr>");
             }
 
-            // Add empty rows to match the structure (minimum 4 rows as per image)
-            // for (int i = invoiceData.Items.Count; i < 4; i++)
-            // {
-            //     html.Append(@"
-            //     <tr>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //         <td>&nbsp;</td>
-            //     </tr>");
-            // }
-
             var totalQuantity = invoiceData.Items.Sum(x => x.Quantity);
             var totalTaxableValue = invoiceData.TaxSummary.TotalTaxableValue;
             var totalIgst = invoiceData.TaxSummary.TotalIGST;
@@ -2288,16 +2272,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         </table>
 
         <!-- Footer Section -->
-        <div class='footer-section'>
-            <div class='bank-details'>
-                <strong>Company's Bank Details</strong><br>
-                A/c Holder's Name: " + invoiceData.Supplier.Name + @"<br>
-                Bank Name: State Bank of India<br>
-                A/c No.: 41093425442<br>
-                Branch & IFS Code: Meghalaya Sectt, Shillong & SBIN0008320<br>
-                SWIFT Code: SBININBB320
-            </div>
-            
+        <div class='footer-section'>            
             <div class='declaration'>
                 <strong>Declaration</strong><br>
                 We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
