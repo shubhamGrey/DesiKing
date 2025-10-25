@@ -2158,34 +2158,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 <td class='label'>Dated</td>
                 <td>" + invoiceData.Invoice.OrderDate + @"</td>
             </tr>
-            <tr>
-                <td class='label'>Dispatch Doc No.</td>
-                <td>" + (invoiceData.Invoice.Number ?? "") + @"</td>
-                <td class='label'>Delivery Note Date</td>
-                <td>" + invoiceData.Invoice.Date + @"</td>
-            </tr>
-            <tr>
-                <td class='label'>Dispatched through</td>
-                <td>SAFE EXPRESS</td>
-                <td class='label'>Destination</td>
-                <td>" + invoiceData.Customer.City + @"</td>
-            </tr>
-            <tr>
-                <td class='label'>Vessel/Flight No.</td>
-                <td>AS01RC2556</td>
-                <td class='label'>Place of receipt by shipper</td>
-                <td>" + invoiceData.Supplier.Address.Split(',')[0] + @"</td>
-            </tr>
-            <tr>
-                <td class='label'>City/Port of Loading</td>
-                <td>Shillong</td>
-                <td class='label'>City/Port of Discharge</td>
-                <td>" + invoiceData.Customer.City + @"</td>
-            </tr>
-            <tr>
-                <td class='label'>Terms of Delivery</td>
-                <td colspan='3'>Standard delivery terms as per agreement</td>
-            </tr>
         </table>
 
         <!-- Items Table -->
@@ -2197,8 +2169,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     <th>HSN/SAC</th>
                     <th>GST Rate</th>
                     <th>Quantity</th>
-                    <th>Rate</th>
-                    <th>Rate per</th>
+                    <th>Rate (100 gm)</th>
                     <th>Amount</th>
                 </tr>
             </thead>
@@ -2209,31 +2180,31 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 html.Append($@"
                 <tr>
                     <td>{item.SlNo}</td>
+
                     <td class='desc'>{item.Description}</td>
                     <td>{item.HsnCode}</td>
                     <td>{item.IgstRate}%</td>
-                    <td>{item.Quantity:F2} {item.Unit}</td>
+                    <td>{item.Quantity}</td>
                     <td>{item.Rate:F2}</td>
-                    <td>{item.Rate:F2} per {item.Unit}</td>
                     <td class='amount'>{item.TaxableValue:F2}</td>
                 </tr>");
             }
 
             // Add empty rows to match the structure (minimum 4 rows as per image)
-            for (int i = invoiceData.Items.Count; i < 4; i++)
-            {
-                html.Append(@"
-                <tr>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>");
-            }
+            // for (int i = invoiceData.Items.Count; i < 4; i++)
+            // {
+            //     html.Append(@"
+            //     <tr>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //         <td>&nbsp;</td>
+            //     </tr>");
+            // }
 
             var totalQuantity = invoiceData.Items.Sum(x => x.Quantity);
             var totalTaxableValue = invoiceData.TaxSummary.TotalTaxableValue;
