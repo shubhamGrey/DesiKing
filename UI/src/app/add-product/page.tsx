@@ -205,8 +205,6 @@ const AddProduct: React.FC = () => {
             }));
           }
 
-          console.log("Final pricesAndSkus array:", pricesAndSkus);
-
           // Use field array to properly populate data
           replaceVariants(pricesAndSkus);
 
