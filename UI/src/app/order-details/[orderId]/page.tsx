@@ -895,8 +895,8 @@ const OrderDetailsContent: React.FC = () => {
     // Map products to HSN codes based on the invoice image and GST guidelines
     // This method can be enhanced to use category or dedicated HSN table in future
 
-    var productNameLower = product.toLowerCase();
-    var categoryNameLower = category?.toLowerCase() ?? "";
+    const productNameLower = product.toLowerCase();
+    const categoryNameLower = category?.toLowerCase() ?? "";
 
     // Use category information if available and relevant
     if (!categoryNameLower) {
