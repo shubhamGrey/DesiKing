@@ -73,7 +73,6 @@ const AddProduct: React.FC = () => {
   const [keyFeatures, setKeyFeatures] = useState<string[]>([""]);
   const [uses, setUses] = useState<string[]>([""]);
   const [manufacturingDate, setManufacturingDate] = useState<Date | null>(null);
-  const [hsnCode, setHsnCode] = useState<string>("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
@@ -239,7 +238,7 @@ const AddProduct: React.FC = () => {
           setManufacturingDate(
             data.manufacturingDate ? new Date(data.manufacturingDate) : null
           );
-          setHsnCode(data.hsnCode);
+          setValue("hsnCode", data.hsnCode);
           setUploadedImages(data.imageUrls || []);
           setThumbnailImage(data.thumbnailUrl || null);
           setSelectedCertifications(data.certifications || []);
@@ -583,8 +582,6 @@ const AddProduct: React.FC = () => {
                 control={control}
                 manufacturingDate={manufacturingDate}
                 setManufacturingDate={setManufacturingDate}
-                hsnCode={hsnCode}
-                setHsnCode={setHsnCode}
               />
               <KeyFeatures
                 keyFeatures={keyFeatures}

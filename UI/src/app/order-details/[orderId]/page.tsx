@@ -892,33 +892,6 @@ const OrderDetailsContent: React.FC = () => {
     return { statuses, currentStatusIndex };
   };
 
-  const getHSNCode = (product: string, category: string) => {
-    // Map products to HSN codes based on the invoice image and GST guidelines
-    // This method can be enhanced to use category or dedicated HSN table in future
-
-    const productNameLower = product.toLowerCase();
-    const categoryNameLower = category?.toLowerCase() ?? "";
-
-    // Use category information if available and relevant
-    if (categoryNameLower) {
-      if (
-        categoryNameLower.includes("spice") ||
-        categoryNameLower.includes("masala")
-      ) {
-        // Return spice-specific HSN based on product name
-        if (productNameLower.includes("cinnamon")) return "0906";
-        if (productNameLower.includes("turmeric")) return "091030";
-        if (productNameLower.includes("pepper")) return "0904";
-        if (productNameLower.includes("cardamom")) return "0908";
-        if (productNameLower.includes("clove")) return "0907";
-        return "0906"; // Default for spices
-      }
-    }
-
-    // Default HSN for spices and condiments
-    return "0906";
-  };
-
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);

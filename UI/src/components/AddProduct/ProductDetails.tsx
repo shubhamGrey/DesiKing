@@ -9,14 +9,10 @@ const ProductDetails = ({
   control,
   manufacturingDate,
   setManufacturingDate,
-  hsnCode,
-  setHsnCode,
 }: {
   control: Control<ProductFormData>;
   manufacturingDate: Date | null;
   setManufacturingDate: (date: Date | null) => void;
-  hsnCode: string;
-  setHsnCode: (hsnCode: string) => void;
 }) => (
   <Card
     sx={{
@@ -80,13 +76,18 @@ const ProductDetails = ({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <DatePicker
-            label="HSN Code"
-            value={hsnCode}
-            onChange={(newValue) => setHsnCode(newValue)}
-            slotProps={{
-              textField: { fullWidth: true, size: "small" },
-            }}
+          <Controller
+            name="hsnCode"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="HSN Code"
+                size="small"
+                placeholder="Enter product hsn code"
+              />
+            )}
           />
         </Grid>
         <Grid size={12}>
