@@ -25,6 +25,7 @@ export interface Product {
   categoryId: string;
   categoryName: string;
   manufacturingDate: string;
+  hsnCode: string;
   createdDate: string;
   modifiedDate: string | null;
   isActive: boolean;
@@ -56,6 +57,7 @@ export interface ProductFormData {
   category?: string;
   categoryName?: string;
   manufacturingDate?: string;
+  hsnCode?: string;
   createdDate?: string;
   modifiedDate?: string | null;
   isActive?: boolean;

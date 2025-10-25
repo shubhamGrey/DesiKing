@@ -145,6 +145,7 @@ interface OrderItem {
   weight?: string;
   sku?: string;
   categoryName?: string;
+  hsnCode?: string;
 }
 
 interface DeliveryAddress {
@@ -1038,7 +1039,7 @@ const OrderDetailsContent: React.FC = () => {
         items: orderDetails.items.map((item, index) => ({
           slNo: index + 1,
           description: item.productName,
-          hsnCode: getHSNCode(item.productName, "powdered spices"),
+          hsnCode: item.hsnCode, //getHSNCode(item.productName, "powdered spices"),
           quantity: item.quantity,
           rate: item.price,
           taxableValue: item.price * item.quantity,

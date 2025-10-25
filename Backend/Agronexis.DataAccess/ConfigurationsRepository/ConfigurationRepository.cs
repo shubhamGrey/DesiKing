@@ -2113,7 +2113,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     <strong>" + invoiceData.Supplier.Name + @"</strong><br>
                     " + invoiceData.Supplier.Address + @"<br>
                     GSTIN/UIN: " + invoiceData.Supplier.Gstin + @"<br>
-                    State Name: Meghalaya, Code: 17
+                    State/UT Name: New Delhi, State/UT Code: 07
                 </td>
                 <td class='label'>Invoice No.</td>
                 <td>" + invoiceData.Invoice.Number + @"</td>
@@ -2123,8 +2123,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 <td>
                     <strong>" + invoiceData.Customer.Name + @"</strong><br>
                     " + invoiceData.Customer.Address + @"<br>
-                    State Name: " + invoiceData.Customer.State + @", State Code: " + invoiceData.Customer.StateCode + @"<br>
-                    Place of Supply: " + invoiceData.Customer.State + @"
+                    State/UT Name: " + invoiceData.Customer.State + @", State/UT Code: " + invoiceData.Customer.StateCode + @"<br>
                 </td>
                 <td class='label'>Dated</td>
                 <td>" + invoiceData.Invoice.Date + @"</td>
@@ -2134,8 +2133,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 <td>
                     <strong>" + invoiceData.Customer.Name + @"</strong><br>
                     " + invoiceData.Customer.Address + @"<br>
-                    State Name: " + invoiceData.Customer.State + @", State Code: " + invoiceData.Customer.StateCode + @"<br>
-                    Place of Supply: " + invoiceData.Customer.State + @"
+                    State/UT Name: " + invoiceData.Customer.State + @", State/UT Code: " + invoiceData.Customer.StateCode + @"<br>
                 </td>
                 <td class='label'>Delivery Note</td>
                 <td>" + (invoiceData.Payment?.Method ?? "Online Payment") + @"</td>
@@ -2144,12 +2142,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         <!-- Additional Invoice Details -->
         <table class='invoice-details'>
-            <tr>
-                <td class='label'>Reference No. & Date</td>
-                <td>dt. " + invoiceData.Invoice.Date + @"</td>
-                <td class='label'>Other References</td>
-                <td>" + (invoiceData.Invoice.OrderNumber ?? "") + @"</td>
-            </tr>
             <tr>
                 <td class='label'>Buyer's Order No.</td>
                 <td>" + invoiceData.Invoice.OrderNumber + @"</td>

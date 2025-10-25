@@ -73,15 +73,16 @@ const AddProduct: React.FC = () => {
   const [keyFeatures, setKeyFeatures] = useState<string[]>([""]);
   const [uses, setUses] = useState<string[]>([""]);
   const [manufacturingDate, setManufacturingDate] = useState<Date | null>(null);
+  const [hsnCode, setHsnCode] = useState<string>("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
-    // return () => {
-    //   sessionStorage.removeItem("productId"); // Clear productId on unmount
-    // };
+    return () => {
+      sessionStorage.removeItem("productId");
+    };
   }, []);
 
   const {
@@ -126,6 +127,7 @@ const AddProduct: React.FC = () => {
       isPremium: false,
       isFeatured: false,
       manufacturingDate: "",
+      hsnCode: "",
       isActive: true,
       metaTitle: "",
       metaDescription: "",
@@ -154,12 +156,6 @@ const AddProduct: React.FC = () => {
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log("=== PRODUCT DATA LOADING DEBUG ===");
-          console.log("Raw product data from API:", data);
-          console.log("Price data:", data.price);
-          console.log("SKU data:", data.sku);
-          console.log("PricesAndSkus data:", data.pricesAndSkus);
-
           setValue("name", data.name);
           setValue("description", data.description);
           setValue("category", data.categoryId);
@@ -243,6 +239,7 @@ const AddProduct: React.FC = () => {
           setManufacturingDate(
             data.manufacturingDate ? new Date(data.manufacturingDate) : null
           );
+          setHsnCode(data.hsnCode);
           setUploadedImages(data.imageUrls || []);
           setThumbnailImage(data.thumbnailUrl || null);
           setSelectedCertifications(data.certifications || []);
@@ -449,6 +446,7 @@ const AddProduct: React.FC = () => {
       manufacturingDate: manufacturingDate
         ? new Date(manufacturingDate).toISOString()
         : new Date().toISOString(),
+      hsnCode: data.hsnCode,
       categoryId: data.category,
       brandId: data.brand,
       metaTitle: data.metaTitle || "",
@@ -585,6 +583,8 @@ const AddProduct: React.FC = () => {
                 control={control}
                 manufacturingDate={manufacturingDate}
                 setManufacturingDate={setManufacturingDate}
+                hsnCode={hsnCode}
+                setHsnCode={setHsnCode}
               />
               <KeyFeatures
                 keyFeatures={keyFeatures}
