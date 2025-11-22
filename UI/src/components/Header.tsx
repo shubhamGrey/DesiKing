@@ -47,16 +47,25 @@ export default function Header() {
     setUserLoggedIn(isLoggedIn());
   }, []);
 
-  // Track scroll position
+  // Track scroll position with wide hysteresis to prevent flickering
   useEffect(() => {
+    const scrollToCollapsedThreshold = 250; // Must scroll past 250px to collapse
+    const scrollToExpandedThreshold = 50; // Must scroll above 50px to expand
     let ticking = false;
 
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
           const scrollTop = window.scrollY;
-          const scrollThreshold = 80; // Adjusted threshold for better UX
-          setIsScrolled(scrollTop > scrollThreshold);
+          
+          // Only change state if we're clearly above or below the zone
+          if (scrollTop > scrollToCollapsedThreshold) {
+            setIsScrolled(true);
+          } else if (scrollTop < scrollToExpandedThreshold) {
+            setIsScrolled(false);
+          }
+          // If between 50-250px, maintain current state (no change)
+          
           ticking = false;
         });
         ticking = true;
@@ -64,10 +73,13 @@ export default function Header() {
     };
 
     // Initial check
-    handleScroll();
+    const initialScrollTop = window.scrollY;
+    setIsScrolled(initialScrollTop > scrollToCollapsedThreshold);
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const leftNavLinks = [
@@ -145,8 +157,8 @@ export default function Header() {
                       src={BrandLogoWhite}
                       alt="AGRO NEXIS Logo"
                       priority
-                      height={85}
-                      width={85}
+                      height={35}
+                      width={35}
                     />
                   ) : (
                     <Image
@@ -264,8 +276,8 @@ export default function Header() {
                       src={BrandLogoWhite}
                       alt="AGRO NEXIS Logo"
                       priority
-                      height={85}
-                      width={85}
+                      height={35}
+                      width={35}
                     />
                   ) : (
                     <Image

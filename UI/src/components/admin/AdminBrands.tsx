@@ -1,6 +1,6 @@
 "use client";
 
-import { Refresh, Visibility } from "@mui/icons-material";
+import { Delete, Refresh, Visibility } from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -9,6 +9,11 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
   Table,
@@ -19,7 +24,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import React from "react";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import type { Brand, AdminComponentProps } from "@/types/admin";
 
 interface AdminBrandsProps extends AdminComponentProps {
@@ -37,6 +44,60 @@ const AdminBrands: React.FC<AdminBrandsProps> = ({
   onRefreshBrands,
   formatDate,
 }) => {
+  const router = useRouter();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [brandToDelete, setBrandToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleViewBrand = (brandId: string) => {
+    sessionStorage.setItem("brandId", brandId);
+    router.push("/add-brand");
+  };
+
+  const handleDeleteClick = (brandId: string) => {
+    setBrandToDelete(brandId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!brandToDelete) return;
+
+    try {
+      setDeleting(true);
+      const token = Cookies.get("access_token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/brand/${brandToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete brand");
+      }
+
+      onRefreshBrands();
+      setDeleteDialogOpen(false);
+      setBrandToDelete(null);
+    } catch (error) {
+      console.error("Error deleting brand:", error);
+      alert("Failed to delete brand. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setBrandToDelete(null);
+  };
   return (
     <Card>
       <CardContent>
@@ -51,16 +112,27 @@ const AdminBrands: React.FC<AdminBrandsProps> = ({
           <Typography variant="h5" fontWeight="bold" color="primary.main">
             Brand Management
           </Typography>
-          <Button
-            variant="outlined"
-            onClick={onRefreshBrands}
-            disabled={brandsLoading}
-            startIcon={
-              brandsLoading ? <CircularProgress size={20} /> : <Refresh />
-            }
-          >
-            Refresh Brands
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                sessionStorage.removeItem("brandId");
+                router.push("/add-brand");
+              }}
+            >
+              Add Brand
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={onRefreshBrands}
+              disabled={brandsLoading}
+              startIcon={
+                brandsLoading ? <CircularProgress size={20} /> : <Refresh />
+              }
+            >
+              Refresh Brands
+            </Button>
+          </Box>
         </Box>
 
         {brandsError && (
@@ -128,9 +200,22 @@ const AdminBrands: React.FC<AdminBrandsProps> = ({
                       />
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton size="small" color="primary">
-                        <Visibility />
-                      </IconButton>
+                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleViewBrand(brand.id)}
+                        >
+                          <Visibility />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteClick(brand.id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -138,6 +223,34 @@ const AdminBrands: React.FC<AdminBrandsProps> = ({
             </Table>
           </TableContainer>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={handleDeleteCancel}
+          aria-labelledby="delete-dialog-title"
+        >
+          <DialogTitle id="delete-dialog-title">Delete Brand</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this brand? This action cannot
+              be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteCancel} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              color="error"
+              variant="contained"
+              disabled={deleting}
+            >
+              {deleting ? <CircularProgress size={20} /> : "Delete"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </CardContent>
     </Card>
   );

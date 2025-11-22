@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { Product, ProductFormData } from "@/types/product";
 import { usePageTracking, useErrorTracking } from "@/hooks/useAnalytics";
 import { useCallback } from "react";
-import { isAdmin } from "@/utils/auth";
 
 interface CategorizedProducts {
   [key: string]: {
@@ -258,20 +257,6 @@ const ProductsClient = () => {
           onProductDeleted={fetchProducts}
         />
       ))}
-      {isAdmin() && (
-        <Fab
-          color="primary"
-          aria-label="add"
-          sx={{
-            position: "fixed",
-            bottom: 16,
-            right: 16,
-          }}
-          onClick={() => router.push("/add-product")}
-        >
-          <AddIcon />
-        </Fab>
-      )}
     </>
   );
 };

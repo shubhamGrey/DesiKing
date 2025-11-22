@@ -109,7 +109,7 @@ export default function ProductShowcase({
             sx={{
               width: "100%",
               borderRadius: 2,
-              objectFit: "cover",
+              objectFit: "contain",
               height: { xs: 300, md: 400 },
             }}
           />

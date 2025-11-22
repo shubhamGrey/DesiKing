@@ -317,19 +317,11 @@ const ProductDetails = ({
                       </span>
                     </Typography>
                     {"  "}
-                    {"( "}
-                    <Typography variant="h5" sx={{ color: "primary.main" }}>
-                      <span>
-                        {getCurrencySymbol(selectedSKU?.currencyCode || "")}
-                        {selectedSKU?.discountPercentage}
-                      </span>
-                    </Typography>
-                    {" )"}
                     <Typography
                       variant="body2"
                       sx={{ color: "text.secondary", my: "8px !important" }}
                     >
-                      ({selectedPacket})
+                      ({selectedSKU?.discountPercentage}% OFF)
                     </Typography>
                   </Stack>
                 );

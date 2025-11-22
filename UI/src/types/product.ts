@@ -147,6 +147,16 @@ export interface CategoryFormData {
   imageUrl?: string;
 }
 
+export interface BrandFormData {
+  name: string;
+  code?: string;
+  description?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  isActive?: boolean;
+  logoUrl?: string;
+}
+
 export interface FormattedCategory {
   id: string;
   title: string;
