@@ -337,8 +337,8 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                                   <Box key={item.id} sx={{ mb: 1, pl: 2 }}>
                                     <Typography variant="body2">
                                       • Product:{" "}
-                                      {item.productId.substring(0, 8)}... (Qty:{" "}
-                                      {item.quantity}, Price:{" "}
+                                      {item.productName.substring(0, 8)}...
+                                      (Qty: {item.quantity}, Price:{" "}
                                       {formatCurrency(item.price)})
                                     </Typography>
                                   </Box>

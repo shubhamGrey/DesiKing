@@ -144,7 +144,6 @@ export default function Header() {
                     <Image
                       src={BrandLogoWhite}
                       alt="AGRO NEXIS Logo"
-                      layout="intrinsic"
                       priority
                       height={85}
                       width={85}
@@ -153,7 +152,6 @@ export default function Header() {
                     <Image
                       src={BrandLogo}
                       alt="AGRO NEXIS Logo"
-                      layout="intrinsic"
                       priority
                       height={85}
                       width={85}
@@ -265,7 +263,6 @@ export default function Header() {
                     <Image
                       src={BrandLogoWhite}
                       alt="AGRO NEXIS Logo"
-                      layout="intrinsic"
                       priority
                       height={85}
                       width={85}
@@ -274,7 +271,6 @@ export default function Header() {
                     <Image
                       src={BrandLogo}
                       alt="AGRO NEXIS Logo"
-                      layout="intrinsic"
                       priority
                       height={85}
                       width={85}

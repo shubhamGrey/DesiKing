@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { Product } from "@/types/product";
 
 interface UseSEOOptions {
@@ -12,10 +12,10 @@ interface UseSEOOptions {
 }
 
 export const useSEO = (options: UseSEOOptions = {}) => {
-  const router = useRouter();
+  const pathname = usePathname();
   const currentUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}${router.asPath}`
+      ? `${window.location.origin}${pathname}`
       : undefined;
 
   return {

@@ -87,7 +87,9 @@ const AdminProducts: React.FC<AdminProductsProps> = ({
                   <TableCell>Name</TableCell>
                   <TableCell>Category</TableCell>
                   <TableCell>Brand</TableCell>
-                  <TableCell>Price</TableCell>
+                  <TableCell>MRP</TableCell>
+                  <TableCell>Discount</TableCell>
+                  <TableCell>Final price</TableCell>
                   <TableCell>Stock</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell align="center">Actions</TableCell>
@@ -122,6 +124,26 @@ const AdminProducts: React.FC<AdminProductsProps> = ({
                         {product.pricesAndSkus &&
                         product.pricesAndSkus.length > 0
                           ? formatCurrency(product.pricesAndSkus[0].price)
+                          : "N/A"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        {product.pricesAndSkus &&
+                        product.pricesAndSkus.length > 0
+                          ? formatCurrency(
+                              product.pricesAndSkus[0].discountPercentage
+                            )
+                          : "N/A"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        {product.pricesAndSkus &&
+                        product.pricesAndSkus.length > 0
+                          ? formatCurrency(
+                              product.pricesAndSkus[0].discountedAmount
+                            )
                           : "N/A"}
                       </Typography>
                     </TableCell>

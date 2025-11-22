@@ -194,6 +194,15 @@ const AdminDashboardContent: React.FC = () => {
       );
 
       const result = (await processApiResponse(response)) as any;
+
+      result.forEach(
+        (item: { productName: string | undefined; id: string }) => {
+          item.productName = products.find((x) => x.id === item.id)?.name;
+        }
+      );
+
+      console.log(result);
+
       setOrders(result || []);
     } catch (error: any) {
       console.error("Error fetching orders:", error);

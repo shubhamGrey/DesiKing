@@ -67,7 +67,7 @@ const ProductDetails = ({
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <DatePicker
-            label="Manufacturing Date"
+            label="Packing Date"
             value={manufacturingDate}
             onChange={(newValue) => setManufacturingDate(newValue)}
             slotProps={{
