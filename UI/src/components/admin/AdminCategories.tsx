@@ -42,7 +42,6 @@ const AdminCategories: React.FC<AdminCategoriesProps> = ({
   categories,
   categoriesLoading,
   categoriesError,
-  brands,
   onRefreshCategories,
   formatDate,
 }) => {

@@ -9,7 +9,6 @@ import {
   Grid,
   Typography,
   useMediaQuery,
-  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,7 +18,6 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
 import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -58,13 +56,6 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
-
-  // Function to handle delete confirmation
-  const handleDeleteClick = (productId: string, productName: string) => {
-    setProductToDelete(productId);
-    setProductNameToDelete(productName);
-    setDeleteDialogOpen(true);
-  };
 
   // Function to handle actual deletion
   const handleDeleteConfirm = async () => {

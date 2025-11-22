@@ -12,7 +12,6 @@ import {
   Stack,
   Typography,
   useMediaQuery,
-  IconButton,
   Skeleton,
   Tooltip,
 } from "@mui/material";
@@ -24,9 +23,6 @@ import {
   HandshakeOutlined,
   HealthAndSafetyOutlined,
   SoupKitchenOutlined,
-  Edit,
-  Delete,
-  Add,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
 import { michroma } from "@/styles/fonts";

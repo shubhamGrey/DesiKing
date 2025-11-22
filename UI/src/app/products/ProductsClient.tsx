@@ -1,11 +1,9 @@
 "use client";
 import ProductSection from "@/components/ProductSection";
-import { Box, Typography, useMediaQuery, Fab, Skeleton } from "@mui/material";
+import { Box, Typography, useMediaQuery, Skeleton } from "@mui/material";
 import Image from "next/image";
 import DesiKing from "../../../public/DesiKing.png";
 import theme from "@/styles/theme";
-import AddIcon from "@mui/icons-material/Add";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Product, ProductFormData } from "@/types/product";
 import { usePageTracking, useErrorTracking } from "@/hooks/useAnalytics";
@@ -21,7 +19,6 @@ interface CategorizedProducts {
 
 const ProductsClient = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const router = useRouter();
 
   const [productsList, setProductsList] = useState<
     CategorizedProducts[keyof CategorizedProducts][]
