@@ -316,11 +316,12 @@ const ProductDetails = ({
                         {selectedSKU?.discountedAmount}
                       </span>
                     </Typography>
+                    {"  "}
                     <Typography
                       variant="body2"
                       sx={{ color: "text.secondary", my: "8px !important" }}
                     >
-                      ({selectedPacket})
+                      ({selectedSKU?.discountPercentage}% OFF)
                     </Typography>
                   </Stack>
                 );

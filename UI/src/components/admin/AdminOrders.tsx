@@ -132,16 +132,16 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               }}
             >
-              <CardContent>
+              <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                 <Box
                   sx={{ display: "flex", alignItems: "center", color: "white" }}
                 >
-                  <ShoppingCart sx={{ fontSize: 32, mr: 2 }} />
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
+                  <ShoppingCart sx={{ fontSize: 28, mr: 2 }} />
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
                       {totalOrders}
                     </Typography>
-                    <Typography variant="body2">Total Orders</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>Total Orders</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -154,16 +154,16 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                 background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
               }}
             >
-              <CardContent>
+              <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                 <Box
                   sx={{ display: "flex", alignItems: "center", color: "white" }}
                 >
-                  <TrendingUp sx={{ fontSize: 32, mr: 2 }} />
-                  <Box>
-                    <Typography variant="h5" fontWeight="bold">
+                  <TrendingUp sx={{ fontSize: 28, mr: 2 }} />
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ wordBreak: 'break-word', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                       {formatCurrency(totalRevenue)}
                     </Typography>
-                    <Typography variant="body2">Total Revenue</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>Total Revenue</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -176,16 +176,16 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                 background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
               }}
             >
-              <CardContent>
+              <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                 <Box
                   sx={{ display: "flex", alignItems: "center", color: "white" }}
                 >
-                  <People sx={{ fontSize: 32, mr: 2 }} />
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
+                  <People sx={{ fontSize: 28, mr: 2 }} />
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
                       {uniqueCustomers}
                     </Typography>
-                    <Typography variant="body2">Customers</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>Customers</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -198,16 +198,16 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                 background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
               }}
             >
-              <CardContent>
+              <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                 <Box
                   sx={{ display: "flex", alignItems: "center", color: "white" }}
                 >
-                  <LocalShipping sx={{ fontSize: 32, mr: 2 }} />
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
+                  <LocalShipping sx={{ fontSize: 28, mr: 2 }} />
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
                       {pendingOrders}
                     </Typography>
-                    <Typography variant="body2">Pending</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>Pending</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -337,8 +337,8 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                                   <Box key={item.id} sx={{ mb: 1, pl: 2 }}>
                                     <Typography variant="body2">
                                       • Product:{" "}
-                                      {item.productId.substring(0, 8)}... (Qty:{" "}
-                                      {item.quantity}, Price:{" "}
+                                      {item.productName}{" "}
+                                      (Qty: {item.quantity}, Price:{" "}
                                       {formatCurrency(item.price)})
                                     </Typography>
                                   </Box>

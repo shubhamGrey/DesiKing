@@ -111,31 +111,75 @@ const AdminDashboardContent: React.FC = () => {
     switch (selectedTab) {
       case "overview":
         // Load all data for overview page
-        if (orders.length === 0 && !ordersLoading) {
+        if (brands.length === 0 && !brandsLoading) {
+          fetchAllBrands().then((brandsData) => {
+            if (products.length === 0 && !productsLoading) {
+              fetchAllProducts(brandsData).then((productsData) => {
+                if (orders.length === 0 && !ordersLoading) {
+                  fetchAllOrders(productsData);
+                }
+              });
+            }
+          });
+        } else if (products.length === 0 && !productsLoading) {
+          fetchAllProducts().then((productsData) => {
+            if (orders.length === 0 && !ordersLoading) {
+              fetchAllOrders(productsData);
+            }
+          });
+        } else if (orders.length === 0 && !ordersLoading) {
           fetchAllOrders();
         }
-        if (products.length === 0 && !productsLoading) {
-          fetchAllProducts();
-        }
         if (categories.length === 0 && !categoriesLoading) {
-          fetchAllCategories();
-        }
-        if (brands.length === 0 && !brandsLoading) {
-          fetchAllBrands();
+          if (brands.length === 0 && !brandsLoading) {
+            fetchAllBrands().then((brandsData) => {
+              fetchAllCategories(brandsData);
+            });
+          } else {
+            fetchAllCategories();
+          }
         }
         break;
       case "orders":
-        if (orders.length === 0 && !ordersLoading) {
+        if (brands.length === 0 && !brandsLoading) {
+          fetchAllBrands().then((brandsData) => {
+            if (products.length === 0 && !productsLoading) {
+              fetchAllProducts(brandsData).then((productsData) => {
+                if (orders.length === 0 && !ordersLoading) {
+                  fetchAllOrders(productsData);
+                }
+              });
+            }
+          });
+        } else if (products.length === 0 && !productsLoading) {
+          fetchAllProducts().then((productsData) => {
+            if (orders.length === 0 && !ordersLoading) {
+              fetchAllOrders(productsData);
+            }
+          });
+        } else if (orders.length === 0 && !ordersLoading) {
           fetchAllOrders();
         }
         break;
       case "products":
-        if (products.length === 0 && !productsLoading) {
+        if (brands.length === 0 && !brandsLoading) {
+          fetchAllBrands().then((brandsData) => {
+            if (products.length === 0 && !productsLoading) {
+              fetchAllProducts(brandsData);
+            }
+          });
+        } else if (products.length === 0 && !productsLoading) {
           fetchAllProducts();
         }
         break;
       case "categories":
-        if (categories.length === 0 && !categoriesLoading) {
+        if (brands.length === 0 && !brandsLoading) {
+          fetchAllBrands().then((brandsData) => {
+            if (categories.length === 0 && !categoriesLoading) {
+              fetchAllCategories(brandsData);
+            }
+          });
+        } else if (categories.length === 0 && !categoriesLoading) {
           fetchAllCategories();
         }
         break;
@@ -173,37 +217,7 @@ const AdminDashboardContent: React.FC = () => {
     });
   };
 
-  // Fetch functions
-  const fetchAllOrders = useCallback(async () => {
-    try {
-      setOrdersLoading(true);
-      setOrdersError(null);
-
-      const token = Cookies.get("access_token");
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/checkout/all-orders`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const result = (await processApiResponse(response)) as any;
-      setOrders(result || []);
-    } catch (error: any) {
-      console.error("Error fetching orders:", error);
-      setOrdersError(error.message || "Failed to fetch orders");
-    } finally {
-      setOrdersLoading(false);
-    }
-  }, []);
-
-  const fetchAllProducts = useCallback(async () => {
+  const fetchAllProducts = useCallback(async (brandsData?: Brand[]) => {
     try {
       setProductsLoading(true);
       setProductsError(null);
@@ -223,16 +237,83 @@ const AdminDashboardContent: React.FC = () => {
       );
 
       const result = (await processApiResponse(response)) as any;
+      
+      // Use provided brands data or fall back to state
+      const brandsToUse = brandsData || brands;
+      
+      console.log("Fetching products - brands available:", brandsToUse.length);
+      console.log("Sample product brandId:", result[0]?.brandId);
+      
+      // Add brand names to products
+      result.forEach((product: any) => {
+        const brand = brandsToUse.find((b) => b.id === product.brandId);
+        product.brandName = brand?.name || "Unknown Brand";
+        if (!brand) {
+          console.log(`No brand found for product ${product.name} with brandId: ${product.brandId}`);
+        }
+      });
+      
+      console.log("Products with brand names:", result.slice(0, 2));
+      
       setProducts(result || []);
+      return result || []; // Return the products for chaining
     } catch (error: any) {
       console.error("Error fetching products:", error);
       setProductsError(error.message || "Failed to fetch products");
+      return [];
     } finally {
       setProductsLoading(false);
     }
-  }, []);
+  }, [brands]);
 
-  const fetchAllCategories = useCallback(async () => {
+  // Fetch functions
+  const fetchAllOrders = useCallback(async (productsData?: Product[]) => {
+    try {
+      setOrdersLoading(true);
+      setOrdersError(null);
+
+      const token = Cookies.get("access_token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/checkout/all-orders`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = (await processApiResponse(response)) as any;
+
+      // Use provided products data or fall back to state
+      const productsToUse = productsData || products;
+
+      // Add product names to order items
+      result.forEach((order: any) => {
+        if (order.orderItems && Array.isArray(order.orderItems)) {
+          order.orderItems.forEach((item: any) => {
+            const product = productsToUse.find((p) => p.id === item.productId);
+            item.productName = product?.name || "Unknown Product";
+          });
+        }
+      });
+
+      console.log("Orders with products:", result);
+      console.log("Products used:", productsToUse.length);
+
+      setOrders(result || []);
+    } catch (error: any) {
+      console.error("Error fetching orders:", error);
+      setOrdersError(error.message || "Failed to fetch orders");
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [products]);
+
+  const fetchAllCategories = useCallback(async (brandsData?: Brand[]) => {
     try {
       setCategoriesLoading(true);
       setCategoriesError(null);
@@ -252,14 +333,26 @@ const AdminDashboardContent: React.FC = () => {
       );
 
       const result = (await processApiResponse(response)) as any;
+      
+      // Use provided brands data or fall back to state
+      const brandsToUse = brandsData || brands;
+      
+      // Add brand names to categories
+      result.forEach((category: any) => {
+        const brand = brandsToUse.find((b) => b.id === category.brandId);
+        category.brandName = brand?.name || "Unknown Brand";
+      });
+      
       setCategories(result || []);
+      return result || [];
     } catch (error: any) {
       console.error("Error fetching categories:", error);
       setCategoriesError(error.message || "Failed to fetch categories");
+      return [];
     } finally {
       setCategoriesLoading(false);
     }
-  }, []);
+  }, [brands]);
 
   const fetchAllBrands = useCallback(async () => {
     try {
@@ -279,9 +372,11 @@ const AdminDashboardContent: React.FC = () => {
 
       const result = (await processApiResponse(response)) as any;
       setBrands(result || []);
+      return result || []; // Return the brands for chaining
     } catch (error: any) {
       console.error("Error fetching brands:", error);
       setBrandsError(error.message || "Failed to fetch brands");
+      return [];
     } finally {
       setBrandsLoading(false);
     }
@@ -339,6 +434,26 @@ const AdminDashboardContent: React.FC = () => {
     }
   }, []);
 
+  // Wrapper function to ensure brands are loaded before fetching products
+  const refreshProducts = useCallback(async () => {
+    if (brands.length === 0) {
+      const brandsData = await fetchAllBrands();
+      await fetchAllProducts(brandsData);
+    } else {
+      await fetchAllProducts();
+    }
+  }, [brands, fetchAllBrands, fetchAllProducts]);
+
+  // Wrapper function to ensure brands are loaded before fetching categories
+  const refreshCategories = useCallback(async () => {
+    if (brands.length === 0) {
+      const brandsData = await fetchAllBrands();
+      await fetchAllCategories(brandsData);
+    } else {
+      await fetchAllCategories();
+    }
+  }, [brands, fetchAllBrands, fetchAllCategories]);
+
   // Navigation menu items
   const menuItems = [
     { id: "overview", label: "Overview", icon: Dashboard },
@@ -379,7 +494,7 @@ const AdminDashboardContent: React.FC = () => {
             products={products}
             productsLoading={productsLoading}
             productsError={productsError}
-            onRefreshProducts={fetchAllProducts}
+            onRefreshProducts={refreshProducts}
             formatCurrency={formatCurrency}
           />
         );
@@ -389,7 +504,8 @@ const AdminDashboardContent: React.FC = () => {
             categories={categories}
             categoriesLoading={categoriesLoading}
             categoriesError={categoriesError}
-            onRefreshCategories={fetchAllCategories}
+            brands={brands}
+            onRefreshCategories={refreshCategories}
             formatDate={formatDate}
           />
         );

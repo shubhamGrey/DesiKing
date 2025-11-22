@@ -44,7 +44,6 @@ import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
-import { isAdmin } from "@/utils/auth";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
@@ -799,25 +798,6 @@ const Home: React.FC = () => {
             >
               Product Categories
             </Typography>
-            {isAdmin() && (
-              <IconButton
-                color="primary"
-                onClick={() => router.push("/add-category")}
-                sx={{
-                  border: "2px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "50%",
-                  transition: "all 0.3s ease-in-out",
-                  "&:hover": {
-                    backgroundColor: "primary.main",
-                    color: "primary.contrastText",
-                    borderColor: "primary.main",
-                  },
-                }}
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            )}
           </Box>
           <Box
             sx={{
@@ -844,62 +824,6 @@ const Home: React.FC = () => {
                   router.push("/products");
                 }}
               >
-                {isAdmin() && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      display: "flex",
-                      gap: 2,
-                      zIndex: 1,
-                    }}
-                  >
-                    <IconButton
-                      color="primary"
-                      size="small"
-                      sx={{
-                        border: "2px solid",
-                        borderColor: "primary.main",
-                        borderRadius: "50%",
-                        transition: "all 0.3s ease-in-out",
-                        "&:hover": {
-                          backgroundColor: "primary.main",
-                          color: "primary.contrastText",
-                          borderColor: "primary.main",
-                        },
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent card click
-                        sessionStorage.setItem("categoryId", category.id);
-                        router.push("/add-category");
-                      }}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      size="small"
-                      sx={{
-                        border: "2px solid",
-                        borderColor: "error.main",
-                        borderRadius: "50%",
-                        transition: "all 0.3s ease-in-out",
-                        "&:hover": {
-                          backgroundColor: "error.main",
-                          color: "error.contrastText",
-                          borderColor: "error.main",
-                        },
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent card click
-                        handleDeleteCategoryByType(category.id);
-                      }}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Box>
-                )}
                 <CardMedia
                   component="img"
                   height={isMobile ? 178 : 394}

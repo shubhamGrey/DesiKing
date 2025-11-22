@@ -35,6 +35,7 @@ export interface Product {
   name: string;
   description: string;
   brandId: string;
+  brandName?: string;
   categoryId: string;
   categoryName: string;
   manufacturingDate: string;
@@ -66,6 +67,7 @@ export interface Category {
   description?: string;
   imageUrl?: string;
   brandId: string;
+  brandName?: string;
   createdDate: string;
   modifiedDate?: string;
   isActive: boolean;
@@ -97,6 +99,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   createdDate: string;
+  productName?: string;
 }
 
 export interface Transaction {

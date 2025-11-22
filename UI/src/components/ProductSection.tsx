@@ -32,7 +32,6 @@ const michroma = Michroma({
 });
 
 import { ProductFormData } from "@/types/product";
-import { isAdmin } from "@/utils/auth";
 
 interface ProductSectionProps {
   item: {
@@ -163,66 +162,6 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                 }}
                 elevation={0}
               >
-                {isAdmin() && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      display: "flex",
-                      gap: 2,
-                      zIndex: 1,
-                    }}
-                  >
-                    <IconButton
-                      color="primary"
-                      size="small"
-                      sx={{
-                        border: "2px solid",
-                        borderColor: "primary.main",
-                        borderRadius: "50%",
-                        transition: "all 0.3s ease-in-out",
-                        "&:hover": {
-                          backgroundColor: "primary.main",
-                          color: "primary.contrastText",
-                          borderColor: "primary.main",
-                        },
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (product.id) {
-                          sessionStorage.setItem("productId", product.id);
-                        }
-                        router.push("/add-product");
-                      }}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      size="small"
-                      sx={{
-                        border: "2px solid",
-                        borderColor: "error.main",
-                        borderRadius: "50%",
-                        transition: "all 0.3s ease-in-out",
-                        "&:hover": {
-                          backgroundColor: "error.main",
-                          color: "error.contrastText",
-                          borderColor: "error.main",
-                        },
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (product.id) {
-                          handleDeleteClick(product.id, product.name);
-                        }
-                      }}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Box>
-                )}
 
                 {/* Premium Badge */}
                 {product.isPremium && (
