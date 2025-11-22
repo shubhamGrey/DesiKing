@@ -1,25 +1,14 @@
 "use client";
 
-import {
-  Add,
-  Edit as EditIcon,
-  FileDownload,
-  People,
-  Refresh,
-  Settings,
-  Visibility,
-} from "@mui/icons-material";
+import {} from "@mui/icons-material";
 import {
   Alert,
-  Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
   CircularProgress,
   Grid,
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -49,12 +38,8 @@ const AdminUsers: React.FC<AdminUsersProps> = ({
   users,
   usersLoading,
   usersError,
-  roles,
-  rolesLoading,
   rolesError,
   orders,
-  onRefreshUsers,
-  onRefreshRoles,
   formatDate,
 }) => {
   return (

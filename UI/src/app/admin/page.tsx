@@ -42,6 +42,7 @@ import type {
   Role,
   User,
 } from "@/types/admin";
+import type { AnalyticsEvent } from "@/config/analytics";
 
 // Import components
 import AdminOverview from "@/components/admin/AdminOverview";
@@ -89,6 +90,11 @@ const AdminDashboardContent: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
+
+  // Analytics events state
+  const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -194,6 +200,11 @@ const AdminDashboardContent: React.FC = () => {
         }
         if (roles.length === 0 && !rolesLoading) {
           fetchAllRoles();
+        }
+        break;
+      case "analytics":
+        if (analyticsEvents.length === 0 && !analyticsLoading) {
+          fetchAnalyticsEvents();
         }
         break;
     }
@@ -434,6 +445,35 @@ const AdminDashboardContent: React.FC = () => {
     }
   }, []);
 
+  const fetchAnalyticsEvents = useCallback(async () => {
+    try {
+      setAnalyticsLoading(true);
+      setAnalyticsError(null);
+
+      const token = Cookies.get("access_token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/analytics/events`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = (await processApiResponse(response)) as any;
+      setAnalyticsEvents(result || []);
+    } catch (error: any) {
+      console.error("Error fetching analytics events:", error);
+      setAnalyticsError(error.message || "Failed to fetch analytics events");
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, []);
+
   // Wrapper function to ensure brands are loaded before fetching products
   const refreshProducts = useCallback(async () => {
     if (brands.length === 0) {
@@ -535,7 +575,14 @@ const AdminDashboardContent: React.FC = () => {
           />
         );
       case "analytics":
-        return <AdminAnalytics />;
+        return (
+          <AdminAnalytics
+            analyticsEvents={analyticsEvents}
+            analyticsLoading={analyticsLoading}
+            analyticsError={analyticsError}
+            onRefreshAnalytics={fetchAnalyticsEvents}
+          />
+        );
       case "settings":
         return <AdminSettings />;
       default:
