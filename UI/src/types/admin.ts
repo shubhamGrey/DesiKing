@@ -162,8 +162,11 @@ export interface Role {
 export interface User {
   id: string;
   fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber?: string;
+  mobileNumber?: string;
   roleId: string;
   roleName?: string;
   isActive: boolean;

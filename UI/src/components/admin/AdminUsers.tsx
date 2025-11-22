@@ -71,16 +71,6 @@ const AdminUsers: React.FC<AdminUsersProps> = ({
           <Typography variant="h5" fontWeight="bold" color="primary.main">
             User Management & Roles
           </Typography>
-          <Button
-            variant="outlined"
-            onClick={onRefreshRoles}
-            disabled={rolesLoading}
-            startIcon={
-              rolesLoading ? <CircularProgress size={20} /> : <Refresh />
-            }
-          >
-            Refresh Roles
-          </Button>
         </Box>
 
         {rolesError && (
@@ -88,32 +78,6 @@ const AdminUsers: React.FC<AdminUsersProps> = ({
             {rolesError}
           </Alert>
         )}
-
-        {/* User Management Actions */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Quick Actions
-          </Typography>
-          <Box display="flex" gap={2} flexWrap="wrap">
-            <Button
-              variant="outlined"
-              startIcon={<People />}
-              onClick={onRefreshUsers}
-              disabled={usersLoading}
-            >
-              {usersLoading ? <CircularProgress size={16} /> : "Refresh Users"}
-            </Button>
-            <Button variant="outlined" startIcon={<Add />}>
-              Add New User
-            </Button>
-            <Button variant="outlined" startIcon={<Settings />}>
-              Manage Permissions
-            </Button>
-            <Button variant="outlined" startIcon={<FileDownload />}>
-              Export Users
-            </Button>
-          </Box>
-        </Box>
 
         {/* Users List */}
         <Typography variant="h6" gutterBottom>
@@ -145,30 +109,22 @@ const AdminUsers: React.FC<AdminUsersProps> = ({
                   <TableCell>Role</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Last Login</TableCell>
-                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id} hover>
                     <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar
-                          sx={{ width: 32, height: 32, mr: 2, fontSize: 14 }}
-                        >
-                          {user.fullName?.charAt(0) || "?"}
-                        </Avatar>
-                        <Typography variant="body2" fontWeight="medium">
-                          {user.fullName}
-                        </Typography>
-                      </Box>
+                      <Typography variant="body2" fontWeight="medium">
+                        {user.firstName} {user.lastName}
+                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">{user.email}</Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {user.phoneNumber || "N/A"}
+                        {user.mobileNumber || "N/A"}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -193,92 +149,11 @@ const AdminUsers: React.FC<AdminUsersProps> = ({
                           : "Never"}
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", gap: 0.5 }}>
-                        <IconButton size="small" color="primary">
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" color="secondary">
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
-        )}
-
-        {/* Roles Management */}
-        <Typography variant="h6" gutterBottom>
-          System Roles
-        </Typography>
-        {rolesLoading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : roles.length === 0 ? (
-          <Alert severity="info">No roles found</Alert>
-        ) : (
-          <Grid container spacing={3}>
-            {roles.map((role) => (
-              <Grid key={role.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card sx={{ height: "100%" }}>
-                  <CardContent>
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                      <Avatar
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          mr: 2,
-                          bgcolor: "secondary.main",
-                        }}
-                      >
-                        {role.name?.charAt(0) || "?"}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="bold">
-                          {role.name || "N/A"}
-                        </Typography>
-                        <Chip
-                          label={role.isActive ? "Active" : "Inactive"}
-                          color={role.isActive ? "success" : "default"}
-                          size="small"
-                        />
-                      </Box>
-                    </Box>
-                    {role.description && (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 2 }}
-                      >
-                        {role.description}
-                      </Typography>
-                    )}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        Created:{" "}
-                        {role.createdDate
-                          ? formatDate(role.createdDate)
-                          : "N/A"}
-                      </Typography>
-                      <IconButton size="small" color="primary">
-                        <Settings />
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
         )}
 
         {/* User Statistics */}
