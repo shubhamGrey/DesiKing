@@ -288,7 +288,7 @@ function LoginPageContent() {
         try {
           const errorData = await response.json();
           showError(errorData.message ?? "Login failed");
-        } catch (error) {
+        } catch {
           showError("Login failed - server error");
         }
       }
