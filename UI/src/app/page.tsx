@@ -14,6 +14,7 @@ import {
   useMediaQuery,
   Skeleton,
   Tooltip,
+  IconButton,
 } from "@mui/material";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
@@ -23,6 +24,8 @@ import {
   HandshakeOutlined,
   HealthAndSafetyOutlined,
   SoupKitchenOutlined,
+  Add,
+  Remove,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
 import { michroma } from "@/styles/fonts";
@@ -40,6 +43,7 @@ import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
+import { getCurrencySymbol } from "@/utils/currencyUtils";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
@@ -50,9 +54,18 @@ const shouldUnoptimizeImage = (imageSrc: string): boolean => {
 interface FeaturedProduct {
   id: string;
   title: string;
-  image: string;
+  imageUrls: string[];
   description: string;
-  basePrice: number;
+  pricesAndSkus: Array<{
+    id: string;
+    price: number;
+    discountedAmount?: number;
+    weightValue?: number;
+    weightUnit?: string;
+    skuNumber: string;
+    currencyCode?: string;
+  }>;
+  brandId: string;
 }
 
 const achievements = [
@@ -152,6 +165,11 @@ const Home: React.FC = () => {
     FeaturedProduct[]
   >([]);
 
+  // Track selected packet size and image for each product
+  const [selectedPackets, setSelectedPackets] = React.useState<Record<string, number>>({});
+  const [currentImages, setCurrentImages] = React.useState<Record<string, number>>({});
+  const [quantities, setQuantities] = React.useState<Record<string, number>>({});
+
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
     string | null
@@ -163,7 +181,7 @@ const Home: React.FC = () => {
     setIsModalOpen(true);
   }, []);
 
-  const handleOrderNow = React.useCallback(
+  const handleAddToCart = React.useCallback(
     (product: FeaturedProduct) => {
       // Check if user is logged in using simple cookie check
       const accessToken = Cookies.get("access_token");
@@ -176,23 +194,27 @@ const Home: React.FC = () => {
         return;
       }
 
+      // Get selected packet index or default to 0
+      const selectedIndex = selectedPackets[product.id] || 0;
+      const selectedSku = product.pricesAndSkus[selectedIndex];
+      const weightLabel = `${selectedSku.weightValue}${selectedSku.weightUnit}`;
+      const quantity = quantities[product.id] || 1;
+
       // Add item to cart
       const cartItem = {
         id: crypto.randomUUID(), // Generate a proper GUID
-        name: `${product.title} - 250g`,
-        price: product.basePrice ?? 149,
+        name: `${product.title} - ${weightLabel}`,
+        price: selectedSku.discountedAmount || selectedSku.price,
         productId: product.id.toString(),
-        brandId: "default-brand-id",
-        image: product.image,
-        quantity: 1,
+        brandId: product.brandId,
+        image: product.imageUrls[currentImages[product.id] || 0],
+        quantity: quantity,
+        sku: selectedSku.skuNumber,
       };
 
       addItem(cartItem);
-
-      // Redirect to cart page
-      router.push("/cart");
     },
-    [router, addItem]
+    [router, addItem, selectedPackets, currentImages]
   );
 
   const confirmDelete = React.useCallback(() => {
@@ -250,12 +272,26 @@ const Home: React.FC = () => {
           .map((product) => ({
             id: product.id,
             title: product.name,
-            image: product.imageUrls?.[0] ?? "/placeholder-image.jpg",
+            imageUrls: product.imageUrls || ["/placeholder-image.jpg"],
             description: product.description,
-            basePrice: product.pricesAndSkus?.[0]?.price ?? 149,
+            pricesAndSkus: product.pricesAndSkus || [],
+            brandId: product.brandId,
           }));
 
         setFeaturedProducts(featured);
+        
+        // Initialize selected packets, images, and quantities
+        const initialPackets: Record<string, number> = {};
+        const initialImages: Record<string, number> = {};
+        const initialQuantities: Record<string, number> = {};
+        featured.forEach(product => {
+          initialPackets[product.id] = 0;
+          initialImages[product.id] = 0;
+          initialQuantities[product.id] = 1;
+        });
+        setSelectedPackets(initialPackets);
+        setCurrentImages(initialImages);
+        setQuantities(initialQuantities);
       } catch (error) {
         console.error("Error fetching featured products:", error);
         // Keep empty array on error
@@ -527,6 +563,7 @@ const Home: React.FC = () => {
               mx: "auto",
               justifyContent: "center",
               alignItems: "stretch",
+              mb: 4,
             }}
           >
             {!isMobile ? (
@@ -534,11 +571,12 @@ const Home: React.FC = () => {
                 featuredProducts.map((product) => (
                   <Grid
                     key={product.id}
-                    size={{ xs: 6, sm: 4, md: 4 }}
+                    size={{ xs: 12, sm: 6, md: 4 }}
                     sx={{
                       display: "flex",
                       alignItems: "stretch",
                       justifyContent: "center",
+                      mb: 3,
                     }}
                   >
                     <Box
@@ -546,61 +584,180 @@ const Home: React.FC = () => {
                         height: "100%",
                         width: "100%",
                         display: "flex",
-                        flexDirection: "column",
-                        transition: "transform 0.3s ease-in-out",
+                        flexDirection: "row",
+                        gap: 2,
+                        transition: "box-shadow 0.3s ease-in-out",
                         borderRadius: "8px",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        p: 2,
                         "&:hover": {
-                          transform: "scale(1.02)",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
                         },
                       }}
                     >
+                      {/* Left Side - Image */}
                       <Box
                         sx={{
                           position: "relative",
-                          width: "100%",
-                          height: "250px",
-                          mb: 2,
+                          width: "45%",
+                          minHeight: "200px",
                           overflow: "hidden",
                           borderRadius: "8px",
                           backgroundColor: "#f5f5f5",
                         }}
                       >
                         <Image
-                          src={product.image}
+                          src={product.imageUrls[currentImages[product.id] || 0]}
                           alt={product.title}
                           fill
-                          unoptimized={shouldUnoptimizeImage(product.image)}
+                          unoptimized={shouldUnoptimizeImage(product.imageUrls[currentImages[product.id] || 0])}
                           style={{
                             objectFit: "contain",
                             borderRadius: "8px",
                           }}
                         />
                       </Box>
-                      <Button
-                        variant="outlined"
-                        size="large"
+
+                      {/* Right Side - Product Details */}
+                      <Box
                         sx={{
-                          color: "primary.main",
-                          border: "1px solid",
-                          borderColor: "primary.main",
-                          width: "100%",
-                          py: 1,
-                          cursor: "pointer",
-                          "&:hover": {
-                            color: "primary.contrastText",
-                            border: "1px solid",
-                            borderColor: "primary.main",
-                            backgroundColor: "primary.main",
-                          },
-                        }}
-                        onClick={() => {
-                          handleOrderNow(product);
+                          width: "55%",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
                         }}
                       >
-                        <Typography variant="body2" fontWeight={600}>
-                          Order Now
+                        {/* Product Title */}
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: 600,
+                            mb: 1.5,
+                            color: "text.primary",
+                          }}
+                        >
+                          {product.title}
                         </Typography>
-                      </Button>
+
+                        {/* Packet Size Selector */}
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary" }}>
+                            Select Size:
+                          </Typography>
+                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                            {product.pricesAndSkus.slice(0, 4).map((sku, index) => (
+                              <Button
+                                key={sku.id}
+                                size="small"
+                                variant={selectedPackets[product.id] === index ? "contained" : "outlined"}
+                                onClick={() => {
+                                  setSelectedPackets(prev => ({ ...prev, [product.id]: index }));
+                                  setCurrentImages(prev => ({ ...prev, [product.id]: index % product.imageUrls.length }));
+                                }}
+                                sx={{
+                                  minWidth: "55px",
+                                  fontSize: "0.7rem",
+                                  py: 0.5,
+                                }}
+                              >
+                                {sku.weightValue}{sku.weightUnit}
+                              </Button>
+                            ))}
+                          </Box>
+                        </Box>
+
+                        {/* Price Display */}
+                        <Box sx={{ mb: 1.5 }}>
+                          {(() => {
+                            const selectedSku = product.pricesAndSkus[selectedPackets[product.id] || 0];
+                            return (
+                              <Box>
+                                {selectedSku?.discountedAmount ? (
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    <Typography variant="body2" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
+                                      {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
+                                    </Typography>
+                                    <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                      {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
+                                    </Typography>
+                                  </Box>
+                                ) : (
+                                  <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                    {getCurrencySymbol(selectedSku?.currencyCode || "INR")}{selectedSku?.price || 0}
+                                  </Typography>
+                                )}
+                              </Box>
+                            );
+                          })()}
+                        </Box>
+
+                        {/* Quantity Selector */}
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary" }}>
+                            Quantity:
+                          </Typography>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "flex-end" }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setQuantities(prev => ({
+                                  ...prev,
+                                  [product.id]: Math.max(1, (prev[product.id] || 1) - 1)
+                                }));
+                              }}
+                              sx={{
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              <Remove fontSize="small" />
+                            </IconButton>
+                            <Typography variant="body2" sx={{ minWidth: "40px", textAlign: "center", fontWeight: 600 }}>
+                              {quantities[product.id] || 1}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setQuantities(prev => ({
+                                  ...prev,
+                                  [product.id]: (prev[product.id] || 1) + 1
+                                }));
+                              }}
+                              sx={{
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              <Add fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+
+                        {/* Add to Cart Button */}
+                        <Button
+                          variant="contained"
+                          size="medium"
+                          fullWidth
+                          sx={{
+                            backgroundColor: "primary.main",
+                            color: "primary.contrastText",
+                            py: 0.75,
+                            "&:hover": {
+                              backgroundColor: "primary.dark",
+                            },
+                          }}
+                          onClick={() => {
+                            handleAddToCart(product);
+                          }}
+                        >
+                          <Typography variant="body2" fontWeight={600}>
+                            Add to Cart
+                          </Typography>
+                        </Button>
+                      </Box>
                     </Box>
                   </Grid>
                 ))
@@ -650,7 +807,7 @@ const Home: React.FC = () => {
                           padding: 2,
                           borderRadius: "8px",
                           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                          minHeight: "120px",
+                          minHeight: "140px",
                         }}
                       >
                         <Grid
@@ -670,11 +827,11 @@ const Home: React.FC = () => {
                               }}
                             >
                               <Image
-                                src={product.image}
+                                src={product.imageUrls[currentImages[product.id] || 0]}
                                 alt={product.title}
                                 fill
                                 unoptimized={shouldUnoptimizeImage(
-                                  product.image
+                                  product.imageUrls[currentImages[product.id] || 0]
                                 )}
                                 style={{
                                   objectFit: "contain",
@@ -715,9 +872,9 @@ const Home: React.FC = () => {
                                     variant="caption"
                                     color="text.secondary"
                                     sx={{
-                                      mb: 2,
+                                      mb: 1,
                                       display: "-webkit-box",
-                                      WebkitLineClamp: 2,
+                                      WebkitLineClamp: 1,
                                       WebkitBoxOrient: "vertical",
                                       overflow: "hidden",
                                       textOverflow: "ellipsis",
@@ -729,26 +886,116 @@ const Home: React.FC = () => {
                                   </Typography>
                                 </Tooltip>
                               </Box>
+                              
+                              {/* Packet Size Selector - Mobile */}
+                              <Box sx={{ mb: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                                {product.pricesAndSkus.slice(0, 4).map((sku, index) => (
+                                  <Button
+                                    key={sku.id}
+                                    size="small"
+                                    variant={selectedPackets[product.id] === index ? "contained" : "outlined"}
+                                    onClick={() => {
+                                      setSelectedPackets(prev => ({ ...prev, [product.id]: index }));
+                                      setCurrentImages(prev => ({ ...prev, [product.id]: index % product.imageUrls.length }));
+                                    }}
+                                    sx={{
+                                      minWidth: "50px",
+                                      fontSize: "0.65rem",
+                                      py: 0.25,
+                                      px: 1,
+                                    }}
+                                  >
+                                    {sku.weightValue}{sku.weightUnit}
+                                  </Button>
+                                ))}
+                              </Box>
+
+                              {/* Price Display - Mobile */}
+                              <Box sx={{ mb: 1 }}>
+                                {(() => {
+                                  const selectedSku = product.pricesAndSkus[selectedPackets[product.id] || 0];
+                                  return (
+                                    <Box>
+                                      {selectedSku?.discountedAmount ? (
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                          <Typography variant="caption" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
+                                            {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
+                                          </Typography>
+                                          <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                            {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
+                                          </Typography>
+                                        </Box>
+                                      ) : (
+                                        <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                          {getCurrencySymbol(selectedSku?.currencyCode || "INR")}{selectedSku?.price || 0}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  );
+                                })()}
+                              </Box>
+
+                              {/* Quantity Selector - Mobile */}
+                              <Box sx={{ mb: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 1 }}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setQuantities(prev => ({
+                                      ...prev,
+                                      [product.id]: Math.max(1, (prev[product.id] || 1) - 1)
+                                    }));
+                                  }}
+                                  sx={{
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    borderRadius: "4px",
+                                    p: 0.5,
+                                  }}
+                                >
+                                  <Remove sx={{ fontSize: "0.9rem" }} />
+                                </IconButton>
+                                <Typography variant="caption" sx={{ minWidth: "30px", textAlign: "center", fontWeight: 600 }}>
+                                  {quantities[product.id] || 1}
+                                </Typography>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setQuantities(prev => ({
+                                      ...prev,
+                                      [product.id]: (prev[product.id] || 1) + 1
+                                    }));
+                                  }}
+                                  sx={{
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    borderRadius: "4px",
+                                    p: 0.5,
+                                  }}
+                                >
+                                  <Add sx={{ fontSize: "0.9rem" }} />
+                                </IconButton>
+                              </Box>
+
                               <Box>
                                 <Button
                                   variant="contained"
                                   size="small"
+                                  fullWidth
                                   sx={{
                                     backgroundColor: "primary.main",
                                     color: "primary.contrastText",
-                                    fontSize: "0.75rem",
+                                    fontSize: "0.7rem",
                                     py: 0.5,
-                                    px: 3,
                                     boxShadow: "none",
                                     "&:hover": {
                                       backgroundColor: "primary.dark",
                                     },
                                   }}
                                   onClick={() => {
-                                    handleOrderNow(product);
+                                    handleAddToCart(product);
                                   }}
                                 >
-                                  Order Now
+                                  Add to Cart
                                 </Button>
                               </Box>
                             </Box>

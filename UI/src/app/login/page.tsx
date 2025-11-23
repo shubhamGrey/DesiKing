@@ -31,6 +31,7 @@ type UserProfile = {
 
 interface LoginCredentials {
   username: string;
+  email: string;
   password: string;
 }
 
@@ -278,6 +279,8 @@ function LoginPageContent() {
         }
       );
 
+      console.log("Login response status:", response);
+
       if (response.ok) {
         const data = await response.json();
         await handleSuccessfulLogin(data.data);
@@ -285,7 +288,7 @@ function LoginPageContent() {
         try {
           const errorData = await response.json();
           showError(errorData.message ?? "Login failed");
-        } catch {
+        } catch (error) {
           showError("Login failed - server error");
         }
       }

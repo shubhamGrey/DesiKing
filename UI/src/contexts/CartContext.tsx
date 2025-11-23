@@ -394,7 +394,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       }
 
       const existingItem = state.items.find(
-        (item) => item.productId === action.payload.productId
+        (item) => item.productId === action.payload.productId && item.sku === action.payload.sku
       );
       const quantityToAdd = action.payload.quantity ?? 1;
 
@@ -403,14 +403,14 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         const maxQty = existingItem.maxQuantity ?? 99;
         const updatedQuantity = Math.min(newQuantity, maxQty);
         const updatedItems = state.items.map((item) =>
-          item.productId === action.payload.productId
+          item.productId === action.payload.productId && item.sku === action.payload.sku
             ? { ...item, quantity: updatedQuantity }
             : item
         );
 
         // Update existing item in database
         const updatedItem = updatedItems.find(
-          (item) => item.productId === action.payload.productId
+          (item) => item.productId === action.payload.productId && item.sku === action.payload.sku
         );
         if (updatedItem) {
           updateCartItemToDatabase(updatedItem);

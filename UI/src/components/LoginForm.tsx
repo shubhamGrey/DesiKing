@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 interface LoginFormProps {
-  handleLogin: (credentials: { username: string; password: string }) => void;
+  handleLogin: (credentials: { username: string; email: string, password: string }) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
@@ -81,6 +81,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
     try {
       handleLogin({
         username: formData.email,
+        email: formData.email,
         password: formData.password,
       });
     } catch (error) {
