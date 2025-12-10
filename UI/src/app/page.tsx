@@ -28,7 +28,7 @@ import {
   Remove,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
-import { michroma } from "@/styles/fonts";
+import { michroma, lato } from "@/styles/fonts";
 import Testimonials from "@/components/Testimonials";
 import Chef from "../../public/Chef.jpg";
 import Cook from "../../public/Home Cook.jpg";
@@ -36,7 +36,7 @@ import Blogger from "../../public/Food Blogger.jpg";
 import theme from "@/styles/theme";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
-import HomeGrid from "@/components/HomeGrid";
+import HeroSection from "@/components/HeroSection";
 import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { useCart } from "@/contexts/CartContext";
@@ -520,7 +520,7 @@ const Home: React.FC = () => {
   if (isLoading) {
     return (
       <>
-        <HomeGrid />
+        <HeroSection />
         <SkeletonLoader />
       </>
     );
@@ -528,7 +528,7 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <HomeGrid />
+      <HeroSection />
       <Container
         sx={{
           mt: 3,
@@ -541,15 +541,32 @@ const Home: React.FC = () => {
       >
         <Box
           sx={{
-            mt: isMobile ? 4 : 8,
+            mt: isMobile ? 6 : 10,
           }}
         >
           <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 2 : 4, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
+            variant={isMobile ? "h4" : "h3"}
+            sx={{ 
+              mb: isMobile ? 5 : 8, 
+              color: "primary.main",
+              textAlign: "center",
+              position: "relative",
+              display: "inline-block",
+              width: "100%",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: "-12px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "80px",
+                height: "4px",
+                background: "linear-gradient(90deg, rgba(255, 140, 0, 0) 0%, rgba(255, 140, 0, 1) 50%, rgba(255, 140, 0, 0) 100%)",
+                borderRadius: "2px",
+              },
+            }}
+            fontFamily={lato.style.fontFamily}
+            fontWeight={900}
           >
             Featured Products
           </Typography>
@@ -584,68 +601,101 @@ const Home: React.FC = () => {
                         height: "100%",
                         width: "100%",
                         display: "flex",
-                        flexDirection: "row",
+                        flexDirection: "column",
                         gap: 2,
-                        transition: "box-shadow 0.3s ease-in-out",
-                        borderRadius: "8px",
+                        position: "relative",
+                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        borderRadius: "16px",
                         border: "1px solid",
                         borderColor: "divider",
-                        p: 2,
+                        backgroundColor: "rgba(255, 255, 255, 0.98)",
+                        backdropFilter: "blur(10px)",
+                        overflow: "hidden",
+                        boxShadow: "0 4px 16px rgba(31, 79, 64, 0.08)",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          borderRadius: "inherit",
+                          background: "linear-gradient(135deg, rgba(31, 79, 64, 0.05) 0%, rgba(255, 140, 0, 0.05) 100%)",
+                          opacity: 0,
+                          transition: "opacity 0.4s ease",
+                          pointerEvents: "none",
+                          zIndex: 1,
+                        },
                         "&:hover": {
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          boxShadow: "0 20px 40px rgba(31, 79, 64, 0.15), 0 0 0 1px rgba(255, 140, 0, 0.1)",
+                          transform: "translateY(-8px)",
+                          borderColor: "rgba(255, 140, 0, 0.3)",
+                        },
+                        "&:hover::before": {
+                          opacity: 1,
+                          "& .product-image": {
+                            transform: "scale(1.05)",
+                          },
                         },
                       }}
                     >
-                      {/* Left Side - Image */}
+                      {/* Image Section */}
                       <Box
                         sx={{
                           position: "relative",
-                          width: "45%",
-                          minHeight: "200px",
+                          width: "100%",
+                          paddingTop: "100%", // Square aspect ratio
                           overflow: "hidden",
-                          borderRadius: "8px",
-                          backgroundColor: "#f5f5f5",
+                          backgroundColor: "#f9f9f9",
                         }}
                       >
                         <Image
                           src={product.imageUrls[currentImages[product.id] || 0]}
                           alt={product.title}
                           fill
+                          loading="lazy"
                           unoptimized={shouldUnoptimizeImage(product.imageUrls[currentImages[product.id] || 0])}
+                          className="product-image"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                           style={{
-                            objectFit: "contain",
-                            borderRadius: "8px",
+                            objectFit: "cover",
+                            transition: "transform 0.3s ease",
                           }}
                         />
                       </Box>
 
-                      {/* Right Side - Product Details */}
+                      {/* Product Details Section */}
                       <Box
                         sx={{
-                          width: "55%",
+                          p: 2.5,
                           display: "flex",
                           flexDirection: "column",
-                          justifyContent: "space-between",
+                          gap: 1.5,
                         }}
                       >
                         {/* Product Title */}
                         <Typography
-                          variant="subtitle1"
+                          variant="h6"
                           sx={{
                             fontWeight: 600,
-                            mb: 1.5,
                             color: "text.primary",
+                            fontSize: "1.1rem",
+                            minHeight: "2.2em",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
                           }}
                         >
                           {product.title}
                         </Typography>
 
                         {/* Packet Size Selector */}
-                        <Box sx={{ mb: 1.5 }}>
-                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary" }}>
+                        <Box>
+                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary", fontWeight: 500 }}>
                             Select Size:
                           </Typography>
-                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                          <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                             {product.pricesAndSkus.slice(0, 4).map((sku, index) => (
                               <Button
                                 key={sku.id}
@@ -656,9 +706,12 @@ const Home: React.FC = () => {
                                   setCurrentImages(prev => ({ ...prev, [product.id]: index % product.imageUrls.length }));
                                 }}
                                 sx={{
-                                  minWidth: "55px",
-                                  fontSize: "0.7rem",
-                                  py: 0.5,
+                                  minWidth: "60px",
+                                  fontSize: "0.75rem",
+                                  py: 0.75,
+                                  fontWeight: 600,
+                                  borderRadius: "8px",
+                                  transition: "all 0.2s ease",
                                 }}
                               >
                                 {sku.weightValue}{sku.weightUnit}
@@ -668,22 +721,40 @@ const Home: React.FC = () => {
                         </Box>
 
                         {/* Price Display */}
-                        <Box sx={{ mb: 1.5 }}>
+                        <Box>
                           {(() => {
                             const selectedSku = product.pricesAndSkus[selectedPackets[product.id] || 0];
                             return (
                               <Box>
                                 {selectedSku?.discountedAmount ? (
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <Typography variant="body2" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
-                                      {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
-                                    </Typography>
-                                    <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                    <Typography 
+                                      variant="h5" 
+                                      sx={{ 
+                                        color: "primary.main", 
+                                        fontWeight: 700,
+                                      }}
+                                    >
                                       {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
+                                    </Typography>
+                                    <Typography 
+                                      variant="body2" 
+                                      sx={{ 
+                                        textDecoration: "line-through", 
+                                        color: "text.secondary",
+                                      }}
+                                    >
+                                      {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
                                     </Typography>
                                   </Box>
                                 ) : (
-                                  <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                  <Typography 
+                                    variant="h5" 
+                                    sx={{ 
+                                      color: "primary.main", 
+                                      fontWeight: 700,
+                                    }}
+                                  >
                                     {getCurrencySymbol(selectedSku?.currencyCode || "INR")}{selectedSku?.price || 0}
                                   </Typography>
                                 )}
@@ -693,11 +764,11 @@ const Home: React.FC = () => {
                         </Box>
 
                         {/* Quantity Selector */}
-                        <Box sx={{ mb: 1.5 }}>
-                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary" }}>
+                        <Box>
+                          <Typography variant="caption" sx={{ mb: 0.75, display: "block", color: "text.secondary", fontWeight: 500 }}>
                             Quantity:
                           </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "flex-end" }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                             <IconButton
                               size="small"
                               onClick={() => {
@@ -707,14 +778,20 @@ const Home: React.FC = () => {
                                 }));
                               }}
                               sx={{
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: "4px",
+                                border: "2px solid",
+                                borderColor: "primary.main",
+                                borderRadius: "8px",
+                                color: "primary.main",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  backgroundColor: "primary.main",
+                                  color: "white",
+                                },
                               }}
                             >
                               <Remove fontSize="small" />
                             </IconButton>
-                            <Typography variant="body2" sx={{ minWidth: "40px", textAlign: "center", fontWeight: 600 }}>
+                            <Typography variant="h6" sx={{ minWidth: "40px", textAlign: "center", fontWeight: 600 }}>
                               {quantities[product.id] || 1}
                             </Typography>
                             <IconButton
@@ -726,9 +803,15 @@ const Home: React.FC = () => {
                                 }));
                               }}
                               sx={{
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: "4px",
+                                border: "2px solid",
+                                borderColor: "primary.main",
+                                borderRadius: "8px",
+                                color: "primary.main",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  backgroundColor: "primary.main",
+                                  color: "white",
+                                },
                               }}
                             >
                               <Add fontSize="small" />
@@ -739,23 +822,46 @@ const Home: React.FC = () => {
                         {/* Add to Cart Button */}
                         <Button
                           variant="contained"
-                          size="medium"
+                          size="large"
                           fullWidth
                           sx={{
-                            backgroundColor: "primary.main",
+                            background: "linear-gradient(135deg, #1f4f40 0%, #2d7055 100%)",
                             color: "primary.contrastText",
-                            py: 0.75,
+                            py: 1.5,
+                            fontSize: "1rem",
+                            fontWeight: 700,
+                            borderRadius: "12px",
+                            textTransform: "none",
+                            mt: 1,
+                            position: "relative",
+                            overflow: "hidden",
+                            boxShadow: "0 4px 12px rgba(31, 79, 64, 0.2)",
+                            "&::before": {
+                              content: '""',
+                              position: "absolute",
+                              top: "50%",
+                              left: "50%",
+                              width: 0,
+                              height: 0,
+                              borderRadius: "50%",
+                              background: "rgba(255, 255, 255, 0.2)",
+                              transform: "translate(-50%, -50%)",
+                              transition: "width 0.6s, height 0.6s",
+                            },
+                            "&:hover::before": {
+                              width: "300px",
+                              height: "300px",
+                            },
                             "&:hover": {
-                              backgroundColor: "primary.dark",
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 8px 20px rgba(31, 79, 64, 0.3)",
                             },
                           }}
                           onClick={() => {
                             handleAddToCart(product);
                           }}
                         >
-                          <Typography variant="body2" fontWeight={600}>
-                            Add to Cart
-                          </Typography>
+                          Add to Cart
                         </Button>
                       </Box>
                     </Box>
@@ -830,9 +936,11 @@ const Home: React.FC = () => {
                                 src={product.imageUrls[currentImages[product.id] || 0]}
                                 alt={product.title}
                                 fill
+                                loading="lazy"
                                 unoptimized={shouldUnoptimizeImage(
                                   product.imageUrls[currentImages[product.id] || 0]
                                 )}
+                                sizes="(max-width: 768px) 30vw, 20vw"
                                 style={{
                                   objectFit: "contain",
                                   borderRadius: "8px",
@@ -887,22 +995,26 @@ const Home: React.FC = () => {
                                 </Tooltip>
                               </Box>
                               
-                              {/* Packet Size Selector - Mobile */}
-                              <Box sx={{ mb: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                              {/* Packet Size Selector - Mobile (Touch-friendly) */}
+                              <Box sx={{ mb: 1, display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                                 {product.pricesAndSkus.slice(0, 4).map((sku, index) => (
                                   <Button
                                     key={sku.id}
                                     size="small"
                                     variant={selectedPackets[product.id] === index ? "contained" : "outlined"}
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       setSelectedPackets(prev => ({ ...prev, [product.id]: index }));
                                       setCurrentImages(prev => ({ ...prev, [product.id]: index % product.imageUrls.length }));
                                     }}
                                     sx={{
-                                      minWidth: "50px",
-                                      fontSize: "0.65rem",
-                                      py: 0.25,
-                                      px: 1,
+                                      minWidth: "55px",
+                                      minHeight: "36px", // Touch-friendly height (min 44x44px recommended)
+                                      fontSize: "0.75rem",
+                                      py: 0.5,
+                                      px: 1.5,
+                                      fontWeight: 600,
+                                      borderRadius: "8px",
                                     }}
                                   >
                                     {sku.weightValue}{sku.weightUnit}
@@ -918,15 +1030,15 @@ const Home: React.FC = () => {
                                     <Box>
                                       {selectedSku?.discountedAmount ? (
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 700 }}>
+                                            {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
+                                          </Typography>
                                           <Typography variant="caption" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
                                             {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
                                           </Typography>
-                                          <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 600 }}>
-                                            {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
-                                          </Typography>
                                         </Box>
                                       ) : (
-                                        <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 600 }}>
+                                        <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 700 }}>
                                           {getCurrencySymbol(selectedSku?.currencyCode || "INR")}{selectedSku?.price || 0}
                                         </Typography>
                                       )}
@@ -935,63 +1047,100 @@ const Home: React.FC = () => {
                                 })()}
                               </Box>
 
-                              {/* Quantity Selector - Mobile */}
-                              <Box sx={{ mb: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 1 }}>
+                              {/* Quantity Selector - Mobile (Touch-friendly) */}
+                              <Box sx={{ mb: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 1.5 }}>
                                 <IconButton
-                                  size="small"
-                                  onClick={() => {
+                                  size="medium"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setQuantities(prev => ({
                                       ...prev,
                                       [product.id]: Math.max(1, (prev[product.id] || 1) - 1)
                                     }));
                                   }}
                                   sx={{
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: "4px",
-                                    p: 0.5,
+                                    border: "2px solid",
+                                    borderColor: "primary.main",
+                                    borderRadius: "8px",
+                                    color: "primary.main",
+                                    minWidth: "44px", // Touch-friendly size
+                                    minHeight: "44px",
+                                    "&:hover": {
+                                      backgroundColor: "primary.main",
+                                      color: "white",
+                                    },
                                   }}
                                 >
-                                  <Remove sx={{ fontSize: "0.9rem" }} />
+                                  <Remove />
                                 </IconButton>
-                                <Typography variant="caption" sx={{ minWidth: "30px", textAlign: "center", fontWeight: 600 }}>
+                                <Typography variant="h6" sx={{ minWidth: "40px", textAlign: "center", fontWeight: 700 }}>
                                   {quantities[product.id] || 1}
                                 </Typography>
                                 <IconButton
-                                  size="small"
-                                  onClick={() => {
+                                  size="medium"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setQuantities(prev => ({
                                       ...prev,
                                       [product.id]: (prev[product.id] || 1) + 1
                                     }));
                                   }}
                                   sx={{
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: "4px",
-                                    p: 0.5,
+                                    border: "2px solid",
+                                    borderColor: "primary.main",
+                                    borderRadius: "8px",
+                                    color: "primary.main",
+                                    minWidth: "44px", // Touch-friendly size
+                                    minHeight: "44px",
+                                    "&:hover": {
+                                      backgroundColor: "primary.main",
+                                      color: "white",
+                                    },
                                   }}
                                 >
-                                  <Add sx={{ fontSize: "0.9rem" }} />
+                                  <Add />
                                 </IconButton>
                               </Box>
 
                               <Box>
                                 <Button
                                   variant="contained"
-                                  size="small"
+                                  size="large"
                                   fullWidth
                                   sx={{
                                     backgroundColor: "primary.main",
                                     color: "primary.contrastText",
-                                    fontSize: "0.7rem",
-                                    py: 0.5,
-                                    boxShadow: "none",
+                                    fontSize: "0.9rem",
+                                    fontWeight: 700,
+                                    minHeight: "48px", // Touch-friendly height
+                                    borderRadius: "12px",
+                                    textTransform: "none",
+                                    background: "linear-gradient(135deg, #1f4f40 0%, #2d7055 100%)",
+                                    boxShadow: "0 4px 12px rgba(31, 79, 64, 0.2)",
+                                    position: "relative",
+                                    overflow: "hidden",
+                                    "&::before": {
+                                      content: '""',
+                                      position: "absolute",
+                                      top: "50%",
+                                      left: "50%",
+                                      width: 0,
+                                      height: 0,
+                                      borderRadius: "50%",
+                                      background: "rgba(255, 255, 255, 0.2)",
+                                      transform: "translate(-50%, -50%)",
+                                      transition: "width 0.6s, height 0.6s",
+                                    },
+                                    "&:hover::before": {
+                                      width: "300px",
+                                      height: "300px",
+                                    },
                                     "&:hover": {
-                                      backgroundColor: "primary.dark",
+                                      boxShadow: "0 8px 20px rgba(31, 79, 64, 0.3)",
                                     },
                                   }}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     handleAddToCart(product);
                                   }}
                                 >
@@ -1020,24 +1169,39 @@ const Home: React.FC = () => {
         </Box>
         <Box
           sx={{
-            mt: isMobile ? 8 : 15,
+            mt: isMobile ? 10 : 16,
           }}
         >
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              mb: isMobile ? 3 : 8,
+              justifyContent: "center",
+              mb: isMobile ? 4 : 8,
             }}
           >
             <Typography
-              variant={isMobile ? "h5" : "h4"}
-              sx={{ color: "primary.main" }}
-              fontFamily={michroma.style.fontFamily}
-              fontWeight={600}
-              textAlign="center"
-              flexGrow={1}
+              variant={isMobile ? "h4" : "h3"}
+              sx={{ 
+                color: "primary.main",
+                textAlign: "center",
+                position: "relative",
+                display: "inline-block",
+                width: "100%",
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  bottom: "-12px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "80px",
+                  height: "4px",
+                  background: "linear-gradient(90deg, rgba(255, 140, 0, 0) 0%, rgba(255, 140, 0, 1) 50%, rgba(255, 140, 0, 0) 100%)",
+                  borderRadius: "2px",
+                },
+              }}
+              fontFamily={lato.style.fontFamily}
+              fontWeight={900}
             >
               Product Categories
             </Typography>
@@ -1047,6 +1211,7 @@ const Home: React.FC = () => {
               display: "flex",
               width: "100%",
               pb: 1,
+              gap: 2,
             }}
           >
             {productCategories.map((category, index) => (
@@ -1055,44 +1220,97 @@ const Home: React.FC = () => {
                 role="group"
                 aria-label={`${category.title} category`}
                 sx={{
-                  position: "relative", // Added for positioning buttons
-                  borderRadius: "8px",
+                  position: "relative",
+                  borderRadius: "16px",
                   cursor: "pointer",
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   width: "100%",
                   height: isMobile ? "230px" : "450px",
-                  mr: index === productCategories.length - 1 ? 0 : 2,
+                  overflow: "hidden",
+                  transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: "0 8px 20px rgba(31, 79, 64, 0.12)",
+                  border: "1px solid rgba(255, 140, 0, 0.1)",
+                  "&:hover": {
+                    transform: "translateY(-12px)",
+                    boxShadow: "0 20px 40px rgba(31, 79, 64, 0.2)",
+                    border: "1px solid rgba(255, 140, 0, 0.3)",
+                    "& .category-image": {
+                      transform: "scale(1.15)",
+                    },
+                    "& .category-overlay": {
+                      opacity: 1,
+                    },
+                  },
                 }}
                 onClick={() => {
                   router.push("/products");
                 }}
               >
-                <CardMedia
-                  component="img"
-                  height={isMobile ? 178 : 394}
-                  image={encodeURI(category.image)}
-                  alt={category.title}
-                  sx={{
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      transition: "transform 0.3s ease-in-out",
-                    },
-                  }}
-                />
+                <Box sx={{ position: "relative", height: isMobile ? 178 : 394, overflow: "hidden" }}>
+                  <CardMedia
+                    component="img"
+                    height={isMobile ? 178 : 394}
+                    image={encodeURI(category.image)}
+                    alt={category.title}
+                    className="category-image"
+                    sx={{
+                      transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}
+                  />
+                  {/* Hover overlay with glassmorphism */}
+                  <Box
+                    className="category-overlay"
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "linear-gradient(180deg, rgba(31, 79, 64, 0.4) 0%, rgba(31, 79, 64, 0.8) 100%)",
+                      backdropFilter: "blur(4px)",
+                      WebkitBackdropFilter: "blur(4px)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: 0,
+                      transition: "opacity 0.4s ease",
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: "white",
+                        fontWeight: 700,
+                        background: "rgba(255, 255, 255, 0.2)",
+                        backdropFilter: "blur(10px)",
+                        WebkitBackdropFilter: "blur(10px)",
+                        border: "2px solid rgba(255, 255, 255, 0.3)",
+                        px: 4,
+                        py: 1.5,
+                        borderRadius: "50px",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                      }}
+                    >
+                      Explore
+                    </Typography>
+                  </Box>
+                </Box>
                 <CardContent
                   sx={{
-                    backgroundColor: "#f8f3ea",
+                    background: "linear-gradient(135deg, rgba(248, 243, 234, 0.98) 0%, rgba(255, 251, 245, 0.98) 100%)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    pb: "16px !important", // Ensure padding is consistent
+                    pb: "16px !important",
+                    borderTop: "1px solid rgba(255, 140, 0, 0.1)",
                   }}
                 >
                   <Typography
-                    variant={isMobile ? "body2" : "body1"}
+                    variant={isMobile ? "body1" : "h6"}
                     gutterBottom
-                    sx={{ mb: 0 }}
+                    sx={{ mb: 0, fontWeight: 600 }}
                     color="text.primary"
                   >
                     {category.title}
@@ -1109,28 +1327,10 @@ const Home: React.FC = () => {
           title="Delete Category"
           message="Are you sure you want to delete this category?"
         />
+        {/* Moved Upcoming Categories to end - reducing prominence as suggested */}
         <Box
           sx={{
-            mt: isMobile ? 8 : 15,
-          }}
-        >
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
-          >
-            Upcoming Categories
-          </Typography>
-          <AllProducts
-            items={upcomingpProductCategories}
-            onDelete={(categoryId) => handleDeleteCategoryByType(categoryId)}
-          />
-        </Box>
-        <Box
-          sx={{
-            mt: isMobile ? 8 : 15,
+            mt: isMobile ? 10 : 16,
           }}
         >
           <Box
@@ -1144,11 +1344,28 @@ const Home: React.FC = () => {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Stack direction={"column"} alignItems="center" spacing={15}>
                   <Typography
-                    variant={isMobile ? "h5" : "h4"}
-                    sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-                    fontFamily={michroma.style.fontFamily}
-                    fontWeight={600}
-                    textAlign={isMobile ? "left" : "center"}
+                    variant={isMobile ? "h4" : "h3"}
+                    sx={{ 
+                      mb: isMobile ? 4 : 10, 
+                      color: "primary.main",
+                      textAlign: "center",
+                      position: "relative",
+                      display: "inline-block",
+                      width: "100%",
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        bottom: "-12px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "80px",
+                        height: "4px",
+                        background: "linear-gradient(90deg, rgba(255, 140, 0, 0) 0%, rgba(255, 140, 0, 1) 50%, rgba(255, 140, 0, 0) 100%)",
+                        borderRadius: "2px",
+                      },
+                    }}
+                    fontFamily={lato.style.fontFamily}
+                    fontWeight={900}
                   >
                     From India to The World
                   </Typography>
@@ -1197,15 +1414,32 @@ const Home: React.FC = () => {
         </Box>
         <Box
           sx={{
-            mt: isMobile ? 8 : 15,
+            mt: isMobile ? 10 : 16,
           }}
         >
           <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
+            variant={isMobile ? "h4" : "h3"}
+            sx={{ 
+              mb: isMobile ? 5 : 8, 
+              color: "primary.main",
+              textAlign: "center",
+              position: "relative",
+              display: "inline-block",
+              width: "100%",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: "-12px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "80px",
+                height: "4px",
+                background: "linear-gradient(90deg, rgba(255, 140, 0, 0) 0%, rgba(255, 140, 0, 1) 50%, rgba(255, 140, 0, 0) 100%)",
+                borderRadius: "2px",
+              },
+            }}
+            fontFamily={lato.style.fontFamily}
+            fontWeight={900}
           >
             Our Story
           </Typography>
@@ -1262,11 +1496,28 @@ const Home: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
-                variant={isMobile ? "h5" : "h4"}
-                sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-                fontFamily={michroma.style.fontFamily}
-                fontWeight={600}
-                textAlign={isMobile ? "left" : "center"}
+                variant={isMobile ? "h4" : "h3"}
+                sx={{ 
+                  mb: isMobile ? 5 : 8, 
+                  color: "primary.main",
+                  textAlign: "center",
+                  position: "relative",
+                  display: "inline-block",
+                  width: "100%",
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    bottom: "-12px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "80px",
+                    height: "4px",
+                    background: "linear-gradient(90deg, rgba(255, 140, 0, 0) 0%, rgba(255, 140, 0, 1) 50%, rgba(255, 140, 0, 0) 100%)",
+                    borderRadius: "2px",
+                  },
+                }}
+                fontFamily={lato.style.fontFamily}
+                fontWeight={900}
               >
                 Why Choose Us
               </Typography>
@@ -1297,17 +1548,72 @@ const Home: React.FC = () => {
             </Grid>
           </Grid>
         </Box>
+        {upcomingpProductCategories.length > 0 && (
+          <Box
+            sx={{
+              mt: isMobile ? 10 : 16,
+            }}
+          >
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              sx={{ 
+                mb: isMobile ? 4 : 7, 
+                color: "text.secondary",
+                textAlign: "center",
+                position: "relative",
+                display: "inline-block",
+                width: "100%",
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  bottom: "-10px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "60px",
+                  height: "3px",
+                  background: "linear-gradient(90deg, rgba(158, 158, 158, 0) 0%, rgba(158, 158, 158, 1) 50%, rgba(158, 158, 158, 0) 100%)",
+                  borderRadius: "2px",
+                },
+              }}
+              fontFamily={lato.style.fontFamily}
+              fontWeight={700}
+            >
+              Upcoming Categories
+            </Typography>
+            <AllProducts
+              items={upcomingpProductCategories}
+              onDelete={(categoryId) => handleDeleteCategoryByType(categoryId)}
+            />
+          </Box>
+        )}
         <Box
           sx={{
-            mt: isMobile ? 8 : 15,
+            mt: isMobile ? 10 : 16,
           }}
         >
           <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
+            variant={isMobile ? "h4" : "h3"}
+            sx={{ 
+              mb: isMobile ? 5 : 8, 
+              color: "primary.main",
+              textAlign: "center",
+              position: "relative",
+              display: "inline-block",
+              width: "100%",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: "-12px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "80px",
+                height: "4px",
+                background: "linear-gradient(90deg, rgba(255, 140, 0, 0) 0%, rgba(255, 140, 0, 1) 50%, rgba(255, 140, 0, 0) 100%)",
+                borderRadius: "2px",
+              },
+            }}
+            fontFamily={lato.style.fontFamily}
+            fontWeight={900}
           >
             Our Testimonials
           </Typography>

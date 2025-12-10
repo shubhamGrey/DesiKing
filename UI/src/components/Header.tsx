@@ -32,12 +32,14 @@ import { michroma } from "@/styles/fonts";
 import { useCart } from "@/contexts/CartContext";
 import SearchAutocomplete from "./SearchAutocomplete";
 import { isLoggedIn, isAdmin } from "@/utils/auth";
+import AnimatedCartPanel from "./AnimatedCartPanel";
 
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [cartPanelOpen, setCartPanelOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const { itemCount } = useCart();
@@ -90,12 +92,21 @@ export default function Header() {
     ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
+  const handleCartClick = () => {
+    if (userLoggedIn) {
+      setCartPanelOpen(true);
+    } else {
+      router.push("/login");
+    }
+  };
+
   const rightNavLinks = [
     {
       icon: <PermIdentityOutlined />,
       key: "profile",
       label: userLoggedIn ? "Profile" : "Login",
       getHref: () => (userLoggedIn ? "/profile" : "/login"),
+      onClick: undefined,
     },
     {
       icon: (
@@ -106,6 +117,7 @@ export default function Header() {
       key: "cart",
       label: userLoggedIn ? "Cart" : "Login",
       getHref: () => (userLoggedIn ? "/cart" : "/login"),
+      onClick: handleCartClick,
     },
   ];
 
@@ -115,7 +127,22 @@ export default function Header() {
 
   return (
     <>
-      <AppBar position="sticky" color="inherit" elevation={0}>
+      <AppBar 
+        position="sticky" 
+        color="inherit" 
+        elevation={0}
+        sx={{
+          background: isScrolled 
+            ? 'rgba(31, 79, 64, 0.95)'
+            : 'linear-gradient(135deg, rgba(31, 79, 64, 1) 0%, rgba(45, 112, 85, 1) 100%)',
+          backdropFilter: isScrolled ? 'blur(10px)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(10px)' : 'none',
+          boxShadow: isScrolled 
+            ? '0 8px 32px 0 rgba(31, 38, 135, 0.15)' 
+            : 'none',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         <Toolbar
           sx={{
             justifyContent: "start",
@@ -137,7 +164,7 @@ export default function Header() {
                   borderRadius: isScrolled ? 0 : 5,
                   boxShadow: isScrolled
                     ? "none"
-                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                    : "0px 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 140, 0, 0.1)",
                   p: isScrolled ? 0.5 : 1,
                   pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
@@ -148,7 +175,11 @@ export default function Header() {
                   cursor: "pointer",
                   ml: 1,
                   mt: isScrolled ? 1 : 3,
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: isScrolled ? 'none' : '0px 12px 32px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 140, 0, 0.2)',
+                  }
                 }}
               >
                 <Link href="/" passHref>
@@ -217,7 +248,7 @@ export default function Header() {
                     <Box sx={{ minWidth: isMobile ? 200 : 250 }}>
                       <SearchAutocomplete />
                     </Box>
-                    {rightNavLinks.map(({ icon, getHref, key }) => {
+                    {rightNavLinks.map(({ icon, getHref, key, onClick }) => {
                       const href = getHref();
                       const isActive = pathname === href;
                       return (
@@ -231,8 +262,12 @@ export default function Header() {
                               : "primary.contrastText",
                           }}
                           onClick={() => {
-                            const targetHref = userLoggedIn ? href : "/login";
-                            router.push(targetHref);
+                            if (onClick) {
+                              onClick();
+                            } else {
+                              const targetHref = userLoggedIn ? href : "/login";
+                              router.push(targetHref);
+                            }
                           }}
                         >
                           {icon}
@@ -256,7 +291,7 @@ export default function Header() {
                   borderRadius: isScrolled ? 0 : 5,
                   boxShadow: isScrolled
                     ? "none"
-                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
+                    : "0px 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 140, 0, 0.1)",
                   p: isScrolled ? 0.5 : 1,
                   pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
@@ -267,7 +302,11 @@ export default function Header() {
                   cursor: "pointer",
                   ml: 1,
                   mt: isScrolled ? 1 : 3,
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: isScrolled ? 'none' : '0px 12px 32px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 140, 0, 0.2)',
+                  }
                 }}
               >
                 <Link href="/" passHref>
@@ -291,7 +330,7 @@ export default function Header() {
                 </Link>
               </Box>
               <Box>
-                {rightNavLinks.map(({ icon, getHref, key }) => {
+                {rightNavLinks.map(({ icon, getHref, key, onClick }) => {
                   const href = getHref();
                   const isActive = pathname === href;
                   return (
@@ -307,8 +346,12 @@ export default function Header() {
                         mr: 1,
                       }}
                       onClick={() => {
-                        const targetHref = userLoggedIn ? href : "/login";
-                        router.push(targetHref);
+                        if (onClick) {
+                          onClick();
+                        } else {
+                          const targetHref = userLoggedIn ? href : "/login";
+                          router.push(targetHref);
+                        }
                       }}
                     >
                       {icon}
@@ -338,8 +381,9 @@ export default function Header() {
         <Box
           sx={{
             width: "100%",
-            backgroundColor:
-              pathname != "/contact" ? "primary.main" : "primary.contrastText",
+            background: pathname != "/contact" 
+              ? 'linear-gradient(135deg, rgba(31, 79, 64, 1) 0%, rgba(45, 112, 85, 1) 100%)'
+              : "primary.contrastText",
             color:
               pathname != "/contact" ? "primary.contrastText" : "primary.main",
           }}
@@ -385,6 +429,9 @@ export default function Header() {
           </List>
         </Box>
       </Drawer>
+
+      {/* Animated Cart Panel */}
+      <AnimatedCartPanel open={cartPanelOpen} onClose={() => setCartPanelOpen(false)} />
     </>
   );
 }

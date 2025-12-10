@@ -23,9 +23,32 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>
-          Agro Nexis - Top Brand of Spices &amp; Processed Foods in India
+          Agronexis - Premium Indian Spices &amp; Authentic Flavors
         </title>
+        <meta 
+          name="description" 
+          content="Experience the rich heritage of premium Indian spices. Sourced directly from finest farms with uncompromised purity. 100% natural, authentic flavors for your kitchen." 
+        />
+        <meta 
+          name="keywords" 
+          content="indian spices, premium spices, organic spices, turmeric, red chili, garam masala, authentic spices, spice store, agronexis" 
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="theme-color" content="hsl(24, 88%, 52%)" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Agronexis - Premium Indian Spices" />
+        <meta property="og:description" content="Experience authentic Indian spices with uncompromised purity" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="/AgroNexisGreen.png" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Agronexis - Premium Indian Spices" />
+        <meta name="twitter:description" content="Experience authentic Indian spices with uncompromised purity" />
+        
         <link rel="icon" href="/AgroNexisGreen.png" />
+        <link rel="apple-touch-icon" href="/AgroNexisGreen.png" />
       </head>
       <body
         className={poppins.className}

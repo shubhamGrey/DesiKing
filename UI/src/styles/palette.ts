@@ -3,15 +3,21 @@ import { PaletteOptions } from "@mui/material/styles";
 const lightPalette: PaletteOptions = {
   mode: "light",
   primary: {
-    main: "#1f4f40",
+    main: "#1f4f40", // Original green - natural & organic
     light: "#63a4ff",
     dark: "#000000",
     contrastText: "#fef9f3",
   },
   secondary: {
-    main: "#FF8C00",
+    main: "#FF8C00", // Orange accent
     light: "#d05ce3",
     dark: "#6a0080",
+    contrastText: "#fff",
+  },
+  warning: {
+    main: "#ed6c02", // Golden orange for highlights
+    light: "#ff9800",
+    dark: "#e65100",
     contrastText: "#fff",
   },
   error: {
