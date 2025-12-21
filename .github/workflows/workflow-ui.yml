@@ -31,11 +31,21 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
+          command_timeout: 45m
           script: |
+            set -e
             cd /var/www/agronexis
             docker compose down || true
-            docker system prune -af
-            docker compose up -d --build
+
+            # Pull images for image-based services (fast if unchanged)
+            docker compose pull || true
+
+            # Build only your local Dockerfile services (nextjs/backend)
+            # docker compose up -d --build
+            docker compose up -d --build nextjs backend
+            docker compose up -d nginx app db backend-db
+
+
             sudo systemctl daemon-reload
             sudo systemctl enable docker-compose-app
             sudo systemctl restart docker-compose-app
