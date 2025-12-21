@@ -102,3 +102,4 @@ export const generateOrganizationStructuredData = (baseUrl: string = "") => {
     ],
   };
 };
+
