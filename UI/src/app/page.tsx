@@ -30,6 +30,7 @@ import {
 import ChooseUs from "@/components/ChooseUs";
 import { michroma } from "@/styles/fonts";
 import Testimonials from "@/components/Testimonials";
+import CertificateScroll from "@/components/CertificateScroll";
 import Chef from "../../public/Chef.jpg";
 import Cook from "../../public/Home Cook.jpg";
 import Blogger from "../../public/Food Blogger.jpg";
@@ -1195,6 +1196,7 @@ const Home: React.FC = () => {
             </Grid>
           </Box>
         </Box>
+        <CertificateScroll />
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
@@ -1207,7 +1209,7 @@ const Home: React.FC = () => {
             fontWeight={600}
             textAlign={isMobile ? "left" : "center"}
           >
-            Our Story
+            Product Catelog
           </Typography>
           <Box
             style={{
@@ -1221,8 +1223,8 @@ const Home: React.FC = () => {
             }}
           >
             <iframe
-              src="https://www.youtube.com/embed/vwXHoR_T2EU?autoplay=1&mute=1&controls=0&loop=1&playlist=vwXHoR_T2EU"
-              title="Agro Nexis - Our Story"
+              src="https://www.youtube.com/embed/bPThecBVp-A?autoplay=1&mute=1&controls=0&loop=1&playlist=bPThecBVp-A"
+              title="Agro Nexis - Product Catelog"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               style={{

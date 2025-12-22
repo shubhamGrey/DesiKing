@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      .hand-drawn { stroke: #333; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .text { font-family: 'Segoe UI', Arial, sans-serif; fill: #333; }
+    </style>
+  </defs>
+  <!-- Outer circle -->
+  <circle cx="100" cy="100" r="95" class="hand-drawn"/>
+  <!-- CE letters -->
+  <text x="68" y="120" font-size="48" font-weight="bold" fill="#333">C</text>
+  <text x="108" y="120" font-size="48" font-weight="bold" fill="#333">E</text>
+  <!-- Decorative marks -->
+  <circle cx="60" cy="65" r="8" class="hand-drawn"/>
+  <circle cx="140" cy="65" r="8" class="hand-drawn"/>
+  <!-- Text -->
+  <text x="100" y="165" text-anchor="middle" class="text" font-size="14" font-weight="bold">MARK</text>
+</svg>

@@ -24,7 +24,7 @@ import LinkedIn from "@mui/icons-material/LinkedIn";
 import Spices from "../../../public/Spices.png";
 import Founder from "../../../public/Founder.jpg";
 import CoFounder from "../../../public/Co Founder.jpg";
-import CoFounderOld from "../../../public/CoFounderOld.png";
+import CoFounderOld from "../../../public/Co Founder Old.PNG";
 import Image from "next/image";
 import { Michroma } from "next/font/google";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
