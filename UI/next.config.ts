@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@mui/material", "@mui/icons-material"],
   },
+  // Turbopack configuration for Next.js 16
+  turbopack: {
+    resolveAlias: {
+      "@": "./src",
+    },
+  },
+  // Use proxy configuration instead of deprecated middleware
+  skipProxyUrlNormalize: true,
 };
 
 export default nextConfig;
