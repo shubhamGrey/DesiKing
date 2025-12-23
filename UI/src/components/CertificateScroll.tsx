@@ -11,13 +11,13 @@ interface Certificate {
 }
 
 const certificates: Certificate[] = [
+  { name: "APEDA", image: "/certificates/APEDA.png" },
+  { name: "HACCP", image: "/certificates/HACCP.png" },
   { name: "FSSAI", image: "/certificates/FSSAI.jpg" },
-  { name: "HACCP", image: "/certificates/HACCP.webp" },
-  { name: "CE", image: "/certificates/CE.svg" },
-  { name: "ORGANIC", image: "/certificates/ORGANIC.svg" },
+  { name: "IIA", image: "/certificates/IIA.png" },
   { name: "HALAL", image: "/certificates/HALAL.avif" },
-  { name: "KOSHER", image: "/certificates/KOSHER.svg" },
-  { name: "ISO", image: "/certificates/ISO.svg" },
+  { name: "SPICE_BOARD", image: "/certificates/SpiceBoard.png" },
+  { name: "ISO", image: "/certificates/ISO.png" },
 ];
 
 const CertificateScroll: React.FC = () => {
