@@ -6,15 +6,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "cloud.agronexis.com",
-        port: "",
-        pathname: "/s/**",
-      },
-      {
-        protocol: "https",
-        hostname: "cloud.agronexis.com",
-        port: "",
-        pathname: "/s/**",
-      },
+      }
     ],
     // Allow optimization for supported formats
     formats: ["image/webp", "image/avif"],

@@ -275,6 +275,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                     src={(product.imageUrls?.[currentImages[productId] || 0] as string) || product.thumbnailUrl || "/placeholder-image.jpg"}
                     alt={product.name}
                     fill
+                    unoptimized={true}
                     style={{
                       objectFit: "contain",
                       borderRadius: "8px",

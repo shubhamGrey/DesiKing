@@ -1197,7 +1197,7 @@ const Home: React.FC = () => {
           </Box>
         </Box>
         <CertificateScroll />
-        <Box
+        {/* <Box
           sx={{
             mt: isMobile ? 8 : 15,
           }}
@@ -1236,7 +1236,7 @@ const Home: React.FC = () => {
               }}
             ></iframe>
           </Box>
-        </Box>
+        </Box> */}
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
