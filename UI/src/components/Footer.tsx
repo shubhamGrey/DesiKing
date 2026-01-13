@@ -254,7 +254,7 @@ export default function Footer() {
       {/* Copyright */}
       <Box textAlign="center" borderTop="1px solid #333" mt={6} pt={2}>
         <Typography variant="body2" sx={{ color: "primary.contrastText" }}>
-          Copyright © 2025 AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED. All rights
+          Copyright © 2026 AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED. All rights
           reserved.
         </Typography>
       </Box>
