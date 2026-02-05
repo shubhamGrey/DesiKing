@@ -91,50 +91,154 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        //[HttpPost("pickup-booking")]
-        //public async Task<ActionResult<ApiResponseModel>> CreatePickupBooking([FromBody] PickupBookingRequestModel request)
-        //{
-        //    var correlationId = GetCorrelationId();
-        //    ApiResponseModel response = new()
-        //    {
-        //        Info = new ApiResponseInfoModel(),
-        //        Id = correlationId
-        //    };
+        [HttpPost("generate-token")]
+        public async Task<ActionResult<ApiResponseModel>> GenerateDtdcToken([FromBody] DtdcTokenRequestModel request)
+        {
+            var correlationId = GetCorrelationId();
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel(),
+                Id = correlationId
+            };
 
-        //    try
-        //    {
-        //        // optional: basic server-side validation and normalize request
-        //        if (request == null)
-        //        {
-        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.BadRequest).ToString();
-        //            response.Info.Message = "Request body is required.";
-        //            return BadRequest(response);
-        //        }
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
+                {
+                    response.Info.Code = "400";
+                    response.Info.Message = "Invalid request. Username and password are required.";
+                    return BadRequest(response);
+                }
 
-        //        var result = await _configService.CreatePickupBooking(request, correlationId);
+                var tokenResult = await _configService.GenerateDtdcToken(request, correlationId);
 
-        //        if (result == null)
-        //        {
-        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
-        //            response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-        //        }
-        //        else
-        //        {
-        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
-        //            response.Info.Message = ApiResponseMessage.SUCCESS;
-        //            response.Data = result;
-        //        }
+                if (tokenResult == null)
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                }
+                else
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+                    response.Info.Message = ApiResponseMessage.SUCCESS;
+                    response.Data = tokenResult;
+                }
 
-        //        return Ok(response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error occurred while creating pickup booking. Correlation ID: {CorrelationId}", correlationId);
-        //        return HandleException(ex, "Failed to create pickup booking", correlationId);
-        //    }
-        //}
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while generating DTDC token. Correlation ID: {CorrelationId}", correlationId);
+                return HandleException(ex, "Failed to generate DTDC token", correlationId);
+            }
+        }
 
+        [HttpPost("validate-pincode")]
+        public async Task<ActionResult<ApiResponseModel>> ValidatePincode([FromBody] ValidatePincodeRequest request)
+        {
+            var correlationId = GetCorrelationId();
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel(),
+                Id = correlationId
+            };
+
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.ToPincode))
+                {
+                    response.Info.Code = "400";
+                    response.Info.Message = "Invalid request.";
+                    return BadRequest(response);
+                }
+
+                // Call service method
+                var result = await _configService.ValidatePincode(request, correlationId);
+
+                if (result.ZipcodeResponses[0].Message.ToLower() != "success")
+                {
+                    response.Info.Code = "400";
+                    response.Info.Message = "Pincode not serviceable.";
+                    response.Data = result;
+                    return BadRequest(response);
+                }
+
+                response.Info.Code = "200";
+                response.Info.Message = "Pincode is serviceable.";
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Pincode validation failed. Correlation ID: {CorrelationId}", correlationId);
+                return HandleException(ex, "Failed to validate pincode", correlationId);
+            }
+        }
+
+        [HttpGet("dtdc/label/{awbNo}")]
+        public async Task<ActionResult<ApiResponseModel>> PrintDtdcShipmentLabel(string awbNo, [FromQuery] string labelCode = "SHIP_LABEL_4X6", [FromQuery] string labelFormat = "pdf")
+        {
+            var correlationId = GetCorrelationId();
+
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel(),
+                Id = correlationId
+            };
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(awbNo))
+                {
+                    response.Info.Code = "400";
+                    response.Info.Message = "AWB number is required.";
+                    return BadRequest(response);
+                }
+
+                var request = new DTDC_ShipmentLabelRequestModel
+                {
+                    AwbNo = awbNo,
+                    LabelCode = labelCode,
+                    LabelFormat = labelFormat
+                };
+
+                var result = await _configService.PrintDtdcShipmentLabel(request, correlationId);
+
+                if (result == null)
+                {
+                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                    return NotFound(response);
+                }
+
+                response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+                response.Info.Message = ApiResponseMessage.SUCCESS;
+                response.Data = result;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "DTDC label printing failed for AWB {AwbNo}, CorrelationId {CorrelationId}",
+                    awbNo,
+                    correlationId);
+
+                return HandleException(ex, "Failed to print DTDC shipment label", correlationId);
+            }
+        }
+
+        [HttpPost("dtdc/cancel-consignment")]
+        public async Task<IActionResult> CancelConsignment( [FromBody] DTDC_CancelConsignmentRequestModel request, [FromHeader(Name = "x-correlation-id")] string xCorrelationId)
+        {
+            if (request == null || request.AWBNo == null || !request.AWBNo.Any())
+                return BadRequest("AWB numbers are required.");
+
+            var result = await _configService.CancelConsignment(request, xCorrelationId);
+            return Ok(result);
+        }
 
     }
 }
- 

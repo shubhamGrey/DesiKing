@@ -203,10 +203,7 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.GenerateShipmentLabel(awbNo, xCorrelationId);
         }
-        //public async Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId)
-        //{
-        //    return await _repository.CreatePickupBooking(request, xCorrelationId);
-        //}
+
         public async Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel request, string xCorrelationId)
         {
             return await _repository.GenerateInvoicePdf(request, xCorrelationId);
@@ -215,6 +212,23 @@ namespace Agronexis.Business.Configurations
         public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId)
         {
             return await _repository.GetInvoiceDataByOrder(request, xCorrelationId);
+        }
+
+        public async Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string xCorrelationId)
+        {
+            return await _repository.GenerateDtdcToken(request, xCorrelationId);
+        }
+        public async Task<DTDC_PincodeResponseModel> ValidatePincode(ValidatePincodeRequest request, string xCorrelationId)
+        {
+            return await _repository.ValidatePincode(request, xCorrelationId);
+        }
+        public async Task<ShipmentLabelResponseModel> PrintDtdcShipmentLabel(DTDC_ShipmentLabelRequestModel request, string xCorrelationId)
+        {
+            return await _repository.PrintDtdcShipmentLabel(request, xCorrelationId);
+        }
+        public async Task<DTDC_CancelConsignmentResponseModel> CancelConsignment( DTDC_CancelConsignmentRequestModel request, string xCorrelationId)
+        {
+            return await _repository.CancelConsignment(request, xCorrelationId);
         }
     }
 }

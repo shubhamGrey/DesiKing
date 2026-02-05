@@ -52,8 +52,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId);
         Task<ShipmentTrackingResponseModel> TrackShipment(string awbNo, string xCorrelationId);
         Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId);
-        //Task<PickupBookingResponseModel> CreatePickupBooking(PickupBookingRequestModel request, string xCorrelationId);
         Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel invoiceData, string xCorrelationId);
         Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId);
+        Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string correlationId);
+        Task<DTDC_PincodeResponseModel> ValidatePincode(ValidatePincodeRequest request, string correlationId);
+        Task<ShipmentLabelResponseModel> PrintDtdcShipmentLabel(DTDC_ShipmentLabelRequestModel request, string correlationId);
+        Task<DTDC_CancelConsignmentResponseModel> CancelConsignment( DTDC_CancelConsignmentRequestModel request, string xCorrelationId);
     }
 }

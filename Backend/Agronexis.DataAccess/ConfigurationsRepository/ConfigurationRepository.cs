@@ -7,6 +7,7 @@ using Agronexis.Model.ResponseModel;
 using iText.Html2pdf;
 using iText.Kernel.Pdf;
 using iText.Layout;
+using iText.Layout.Borders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -118,7 +119,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error in {nameof(GetProducts)}", xCorrelationId, ex);
             }
         }
-
         public ProductResponseModel GetProductById(string id, string xCorrelationId)
         {
             try
@@ -193,7 +193,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error in {nameof(GetProductById)}", xCorrelationId, ex);
             }
         }
-
         public List<ProductResponseModel> GetProductsByCategory(string categoryId, string xCorrelationId)
         {
             try
@@ -267,7 +266,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching products by category.", xCorrelationId, ex);
             }
         }
-
         public string SaveOrUpdateProduct(ProductRequestModel productReq, string xCorrelationId)
         {
             try
@@ -358,7 +356,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while saving/updating product.", xCorrelationId, ex);
             }
         }
-
         public string DeleteProductById(string id, string xCorrelationId)
         {
             try
@@ -395,7 +392,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while deleting product by Id.", xCorrelationId, ex);
             }
         }
-
         public List<CategoryResponseModel> GetCategories(string xCorrelationId)
         {
             try
@@ -422,7 +418,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error while fetching categories", xCorrelationId, ex);
             }
         }
-
         public CategoryResponseModel GetCategoryById(string id, string xCorrelationId)
         {
             try
@@ -451,7 +446,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while fetching category with Id {id}", xCorrelationId, ex);
             }
         }
-
         public string SaveOrUpdateCategory(CategoryRequestModel category, string xCorrelationId)
         {
             try
@@ -496,7 +490,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error while saving or updating category", xCorrelationId, ex);
             }
         }
-
         public string DeleteCategoryById(string id, string xCorrelationId)
         {
             try
@@ -524,7 +517,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while deleting category with Id {id}", xCorrelationId, ex);
             }
         }
-
         public List<BrandResponseModel> GetBrands(string xCorrelationId)
         {
             try
@@ -553,7 +545,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error while fetching brands", xCorrelationId, ex);
             }
         }
-
         public BrandResponseModel GetBrandById(string id, string xCorrelationId)
         {
             try
@@ -582,7 +573,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while fetching brand with Id {id}", xCorrelationId, ex);
             }
         }
-
         public string SaveOrUpdateBrand(BrandRequestModel brandReq, string xCorrelationId)
         {
             try
@@ -627,7 +617,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error while saving or updating brand", xCorrelationId, ex);
             }
         }
-
         public string DeleteBrandById(string id, string xCorrelationId)
         {
             try
@@ -655,7 +644,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while deleting brand with Id {id}", xCorrelationId, ex);
             }
         }
-
         public List<RoleResponseModel> GetRoles(string xCorrelationId)
         {
             try
@@ -680,7 +668,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error while fetching roles", xCorrelationId, ex);
             }
         }
-
         public RoleResponseModel GetRoleById(string id, string xCorrelationId)
         {
             try
@@ -705,7 +692,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while fetching role with Id {id}", xCorrelationId, ex);
             }
         }
-
         public string SaveOrUpdateRole(RoleRequestModel roleRequest, string xCorrelationId)
         {
             try
@@ -742,7 +728,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error while saving or updating role", xCorrelationId, ex);
             }
         }
-
         public string DeleteRoleById(string id, string xCorrelationId)
         {
             try
@@ -770,7 +755,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while deleting role with Id {id}", xCorrelationId, ex);
             }
         }
-
         public async Task<LoginResponseModel> UserLogin(LoginRequestModel model, string xCorrelationId)
         {
             try
@@ -788,7 +772,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred during user login", xCorrelationId, ex);
             }
         }
-
         public async Task<RegistrationResponseModel> UserRegistration(RegistrationRequestModel model, string xCorrelationId)
         {
             try
@@ -832,7 +815,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred during user registration", xCorrelationId, ex);
             }
         }
-
         private async Task<User> Authenticate(string email, string username, string password)
         {
             var user = await _dbContext.Users
@@ -843,7 +825,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             bool verified = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
             return verified ? user : null;
         }
-
         private LoginResponseModel GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -878,7 +859,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 RefreshToken = new JwtSecurityTokenHandler().WriteToken(refreshToken)
             };
         }
-
         public async Task<OrderResponseModel> CreateOrder(OrderRequestModel orderRequest, string xCorrelationId)
         {
             string razorpayOrderId = string.Empty;
@@ -928,7 +908,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 RazorpayOrderId = razorpayOrderId
             };
         }
-
         public async Task<bool> VerifyPayment(VerifyPaymentRequestModel verify, string xCorrelationId)
         {
             try
@@ -966,74 +945,19 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     try
                     {
                         var shippingAddress = await _dbContext.Addresses
-                            .FirstOrDefaultAsync(a => a.UserId == order.UserId && a.AddressType == "SHIPPING" && a.Id == order.ShippingAddressId);
+                            .FirstOrDefaultAsync(a => a.UserId == order.UserId &&
+                                                      a.AddressType == "SHIPPING" &&
+                                                      a.Id == order.ShippingAddressId);
 
                         if (shippingAddress != null)
                         {
-                            var defaultWeight = decimal.Parse(_configuration["PickupBooking:DefaultWeight"] ?? "0.5");
-                            var totalWeight = order.OrderItems.Sum(oi => oi.Quantity * defaultWeight);
-                            var totalPieces = order.OrderItems.Sum(oi => oi.Quantity);
+                            DtdcPickupBooking(verify, order, shippingAddress, xCorrelationId);
 
-                            var pickupBookingRequest = new PickupBookingRequestModel
-                            {
-                                SerialNo = Guid.NewGuid().ToString("N")[..10],
-                                RefNo = order.ReceiptId ?? order.Id.ToString(),
-                                ActionType = "Book",
-                                ClientName = shippingAddress.FullName,
-                                AddressLine1 = shippingAddress.AddressLine,
-                                AddressLine2 = shippingAddress.LandMark,
-                                City = shippingAddress.City,
-                                PinCode = shippingAddress.PinCode,
-                                MobileNo = shippingAddress.PhoneNumber,
-                                Email = _configuration["PickupBooking:Email"],
-                                DocType = "D",
-                                TypeOfService = "Surface",
-                                Weight = totalWeight.ToString("F2"),
-                                InvoiceValue = order.TotalAmount.ToString("F2"),
-                                NoOfPieces = totalPieces.ToString(),
-                                ItemName = "DesiKing Premium Spices",
-                                Remark = $"DesiKing Order: {order.ReceiptId}",
-                                PickupCustName = _configuration["PickupBooking:CompanyName"],
-                                PickupAddr = _configuration["PickupBooking:Address"],
-                                PickupCity = _configuration["PickupBooking:City"],
-                                PickupState = _configuration["PickupBooking:State"],
-                                PickupPincode = _configuration["PickupBooking:PinCode"],
-                                PickupPhone = _configuration["PickupBooking:Phone"],
-                                ServiceType = _configuration["PickupBooking:DefaultServiceType"]
-                            };
-
-                            var pickupResult = await _externalUtility.CreatePickupBooking(pickupBookingRequest, xCorrelationId);
-
-                            if (pickupResult == null || pickupResult.ErrorCode != 0 ||
-                                (!string.IsNullOrEmpty(pickupResult.Errors) && pickupResult.Errors.Equals("error", StringComparison.OrdinalIgnoreCase)))
-                            {
-                                _logger.LogWarning("Pickup booking failed for OrderId: {OrderId}, ErrorCode: {ErrorCode}, Errors: {Errors}",
-                                    verify.OrderId, pickupResult?.ErrorCode, pickupResult?.Errors);
-
-                                order.Status = "refund initiated";
-                                order.ModifiedDate = DateTime.UtcNow;
-                                await _dbContext.SaveChangesAsync();
-
-                                var refundRequest = new RefundPaymentRequestModel
-                                {
-                                    PaymentId = verify.PaymentId,
-                                    AmountInPaise = (int)(verify.TotalAmount * 100)
-                                };
-
-                                await RefundPayment(refundRequest, xCorrelationId);
-                            }
-                            else
-                            {
-                                var docketNo = pickupResult.Message?.Split(':').LastOrDefault()?.Trim();
-                                order.DocketNumber = docketNo;
-                                order.ModifiedDate = DateTime.UtcNow;
-                                await _dbContext.SaveChangesAsync();
-                            }
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error creating pickup booking for RazorpayOrderId: {RazorpayOrderId}", verify.OrderId);
+                        _logger.LogError(ex, "Error creating DTDC consignment for RazorpayOrderId: {RazorpayOrderId}", verify.OrderId);
                     }
                 }
 
@@ -1044,7 +968,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred during payment verification", xCorrelationId, ex);
             }
         }
-
 
         public async Task<UserProfileResponseModel> GetUserProfile(Guid userId, string xCorrelationId)
         {
@@ -1073,7 +996,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 IsActive = user.IsActive
             };
         }
-
         public List<UserProfileResponseModel> GetUsers(string xCorrelationId)
         {
             try
@@ -1106,15 +1028,22 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error retrieving users: {ex.Message}", xCorrelationId, ex);
             }
         }
-
         public async Task<RefundPaymentResponseModel> RefundPayment(RefundPaymentRequestModel refund, string xCorrelationId)
         {
             // Call Razorpay to initiate refund
             var refundPaymentResponse = _externalUtility.RazorPayRefundPayment(refund.PaymentId, refund.AmountInPaise);
-
+            Transaction existingTransaction = new();
             // Fetch existing transaction based on PaymentId
-            var existingTransaction = await _dbContext.Transactions
-                .FirstOrDefaultAsync(t => t.RazorpayPaymentId == refund.PaymentId);
+            try
+            {
+                existingTransaction = await _dbContext.Transactions
+               .FirstOrDefaultAsync(t => t.RazorpayPaymentId == refund.PaymentId);
+
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while fetching existing transaction for refund", xCorrelationId, ex);
+            }
 
             if (existingTransaction == null)
             {
@@ -1155,7 +1084,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return refundPaymentResponse;
         }
-
         public List<CartResponseModel> GetCartItemsByUserId(string id, string xCorrelationId)
         {
             try
@@ -1182,7 +1110,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching cart items ", xCorrelationId, ex);
             }
         }
-
         public string DeleteCartById(string id, string xCorrelationId)
         {
             try
@@ -1204,7 +1131,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while deleting cart item", xCorrelationId, ex);
             }
         }
-
         public string SaveOrUpdateCart(CartRequestModel cartRequest, string xCorrelationId)
         {
             var existingCartItem = _dbContext.Carts.FirstOrDefault(x =>
@@ -1234,7 +1160,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 return newCartItem.Id.ToString();
             }
         }
-
         public List<CurrencyResponseModel> GetCurrencies(string xCorrelationId)
         {
             try
@@ -1259,7 +1184,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching active currencies.", xCorrelationId, ex);
             }
         }
-
         public List<WeightResponseModel> GetWeights(string xCorrelationId)
         {
             try
@@ -1278,7 +1202,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching weights.", xCorrelationId, ex);
             }
         }
-
         public async Task<List<StateResponseModel>> GetStates(string countryCode, string xCorrelationId)
         {
             try
@@ -1298,7 +1221,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching states.", xCorrelationId, ex);
             }
         }
-
         public async Task<List<CountryResponseModel>> GetCountries(string xCorrelationId)
         {
             try
@@ -1316,25 +1238,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching countries.", xCorrelationId, ex);
             }
         }
-
-        private async Task<string> SendOrderPlacementEmail(string xCorrelationId)
-        {
-            try
-            {
-                string to = "hkv1295@gmail.com";
-                string subject = "Your Order Has Shipped!";
-                string body = "Hi there, your order is on its way!";
-
-                await _externalUtility.SendEmailAsync(to, subject, body);
-                return "Email Sent";
-            }
-            catch (Exception ex)
-            {
-                throw new RepositoryException("Error occurred while sending order placement email.", xCorrelationId, ex);
-            }
-        }
-
-
         public List<AddressResponseModel> GetAddressesByUserId(string id, string xCorrelationId)
         {
             try
@@ -1367,8 +1270,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching addresses", xCorrelationId, ex);
             }
         }
-
-
         public string SaveOrUpdateAddress(AddressRequestModel request, string xCorrelationId)
         {
             try
@@ -1426,7 +1327,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while saving/updating address", xCorrelationId, ex);
             }
         }
-
         public string DeleteAddressById(string id, string xCorrelationId)
         {
             try
@@ -1547,7 +1447,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching orders by user id", xCorrelationId, ex);
             }
         }
-
         public OrderByUserResponseModel GetOrderId(string orderId, string xCorrelationId)
         {
             try
@@ -1647,7 +1546,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching order by order id", xCorrelationId, ex);
             }
         }
-
         public List<OrderByUserResponseModel> GetAllOrders(string xCorrelationId)
         {
             try
@@ -1745,7 +1643,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while fetching all orders", xCorrelationId, ex);
             }
         }
-
         public async Task<AnalyticsResponseModel> ProcessAnalyticsEvents(AnalyticsPayloadRequest payload, string xCorrelationId)
         {
             try
@@ -1836,7 +1733,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while processing analytics events", xCorrelationId, ex);
             }
         }
-
         public async Task<UserProfileResponseModel> UpdateUserProfile(RegistrationRequestModel model, string xCorrelationId)
         {
             try
@@ -1892,7 +1788,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException("Error occurred while updating user profile", xCorrelationId, ex);
             }
         }
-
         public async Task<ShipmentTrackingResponseModel> TrackShipment(string awbNo, string xCorrelationId)
         {
             try
@@ -1931,7 +1826,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new RepositoryException($"Error while fetching shipment tracking for AWB: {awbNo}", xCorrelationId, ex);
             }
         }
-
         public async Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId)
         {
             ShipmentLabelResponseModel shipmentLabelResponse = new();
@@ -1945,7 +1839,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
             return shipmentLabelResponse;
         }
-
         public async Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel invoiceData, string xCorrelationId)
         {
             try
@@ -1999,7 +1892,217 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw new Exception($"PDF generation failed: {ex.Message}", ex);
             }
         }
+        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId)
+        {
+            try
+            {
+                //Get order with related items
+                var order = await _dbContext.Orders
+                    .Include(o => o.OrderItems)
+                    .FirstOrDefaultAsync(o => o.Id == request.OrderId);
 
+                var productIds = order.OrderItems.Select(oi => oi.ProductId).ToList();
+
+                //var products = await _dbContext.Products
+                //    .Include(p => p.Category)
+                //    .Where(p => productIds.Contains(p.Id))
+                //    .ToListAsync();
+
+                //Get shipping address
+                var address = await _dbContext.Addresses
+                    .Include(a => a.State)
+                    .Include(a => a.Country)
+                    .FirstOrDefaultAsync(a =>
+                        (a.UserId == order.UserId && a.AddressType == "SHIPPING" && a.IsActive && !a.IsDeleted)
+                    );
+
+                if (order == null)
+                    return null;
+
+                // Build the invoice request model based on the Tax Invoice structure
+                var invoiceRequest = new GenerateInvoiceRequestModel
+                {
+                    OrderId = request.OrderId.ToString(),
+                    InvoiceData = new InvoiceDataModel
+                    {
+                        Supplier = new InvoiceSupplierModel
+                        {
+                            Name = "Braves Enterprise",
+                            Address = "Munilanq Village, West Jamila Hills",
+                            Gstin = "17MEZPS7848B1ZD",
+                            PanNumber = "MEZPS7848B",
+                            Email = "braves@enterprise.com",
+                            Phone = "+91-9876543210",
+                            Website = "www.bravesenterprise.com"
+                        },
+
+                        Invoice = new InvoiceDetailsModel
+                        {
+                            //Number = "220",
+                            //Date = DateTime.Now.ToString("dd-MMM-yy"),
+                            //DueDate = DateTime.Now.AddDays(30).ToString("dd-MMM-yy"),
+                            FinancialYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
+                            OrderNumber = order.Id.ToString(),
+                            OrderDate = order.CreatedDate?.ToString("dd-MMM-yy")
+                        },
+
+                        Customer = new InvoiceCustomerModel
+                        {
+                            Name = address.FullName ?? "",
+                            Address = address.AddressLine ?? "",
+                            City = address.City ?? "",
+                            State = address.State?.StateName ?? address.StateCode ?? "",
+                            StateCode = address.StateCode ?? "",
+                            Pincode = address.PinCode ?? "",
+                            Phone = address.PhoneNumber ?? "",
+                            Gstin = "07ABCDE2100G1Z6"
+                        },
+
+                        Items = new List<InvoiceItemModel>(),
+                        TaxSummary = new InvoiceTaxSummaryModel(),
+                        Payment = new InvoicePaymentModel
+                        {
+                            Method = "Online Payment",
+                            Status = "Paid",
+                            AmountPaid = order.TotalAmount,
+                            PaymentDate = order.CreatedDate?.ToString("dd-MMM-yy")
+                        },
+                        Terms = new List<string>
+                        {
+                            "This is a Computer Generated Invoice"
+                        },
+                        EInvoice = new InvoiceEInvoiceModel()
+                    }
+                };
+
+                // Process order items using LINQ
+                decimal totalTaxableValue = 0;
+                decimal totalTax = 0;
+                int slNo = 1;
+
+                foreach (var orderItem in order.OrderItems)
+                {
+
+
+                    var product = await _dbContext.Products
+                        .Include(p => p.Category)
+                        .Where(p => p.Id == orderItem.ProductId)
+                        .FirstOrDefaultAsync();
+
+
+                    var rate = orderItem.Price;
+                    var quantity = orderItem.Quantity;
+                    var taxableValue = rate * quantity;
+
+                    // Calculate GST (5% as shown in the image)
+                    var gstRate = 5m;
+                    var gstAmount = (taxableValue * gstRate) / 100;
+                    var totalAmount = taxableValue + gstAmount;
+
+                    // Get HSN code from product or use default
+                    var hsnCode = GetHsnCodeForProduct(product?.Name ?? "", product?.Category?.Name);
+
+                    var invoiceItem = new InvoiceItemModel
+                    {
+                        SlNo = slNo++,
+                        //Description = orderItem.Product?.Name ?? "Product",
+                        HsnCode = hsnCode,
+                        Quantity = quantity,
+                        //Unit = orderItem.Product?.ProductPrices?.FirstOrDefault()?.Weight?.Unit ?? "kgs",
+                        Rate = rate,
+                        TaxableValue = taxableValue,
+                        DiscountAmount = 0,
+                        CgstRate = 0, // IGST only for interstate
+                        SgstRate = 0, // IGST only for interstate  
+                        IgstRate = gstRate,
+                        CgstAmount = 0,
+                        SgstAmount = 0,
+                        IgstAmount = gstAmount,
+                        TotalAmount = totalAmount
+                    };
+
+                    invoiceRequest.InvoiceData.Items.Add(invoiceItem);
+                    totalTaxableValue += taxableValue;
+                    totalTax += gstAmount;
+                }
+
+                // Update tax summary
+                invoiceRequest.InvoiceData.TaxSummary = new InvoiceTaxSummaryModel
+                {
+                    TotalTaxableValue = totalTaxableValue,
+                    TotalDiscount = 0,
+                    TotalCGST = 0,
+                    TotalSGST = 0,
+                    TotalIGST = totalTax,
+                    TotalTax = totalTax,
+                    ShippingCharges = 0,
+                    GrandTotal = totalTaxableValue + totalTax,
+                    PlaceOfSupply = invoiceRequest.InvoiceData.Customer.State
+                };
+
+                return invoiceRequest;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+        public async Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string correlationId)
+        {
+            var tokenResponse = await _externalUtility.DTDC_GenerateToken(
+                request.Username,
+                request.Password,
+                correlationId
+            );
+
+            var response = new DtdcTokenResponseModel
+            {
+                RawResponse = tokenResponse
+            };
+
+            if (tokenResponse == null)
+            {
+                response.IsSuccess = false;
+                response.Token = null;
+                response.Message = "No response from DTDC token service.";
+                return response;
+            }
+
+            // DTDC returns statusCode == 200 on success
+            if (response.Token != null) //need to change this condition.
+            {
+                response.IsSuccess = true;
+                //response.Token = tokenResponse.Token;
+                response.Message = "Token generated successfully.";
+            }
+            else
+            {
+                response.IsSuccess = false;
+                response.Token = null;
+                //response.Message = tokenResponse.Message ?? "Failed to generate DTDC token.";
+            }
+
+            return response;
+        }
+        public async Task<DTDC_PincodeResponseModel> ValidatePincode(ValidatePincodeRequest request, string correlationId)
+        {
+            var dtdcResponse = await _externalUtility.DTDC_CheckPincode(request, correlationId);
+            return dtdcResponse;
+        }
+
+        public async Task<ShipmentLabelResponseModel> PrintDtdcShipmentLabel(DTDC_ShipmentLabelRequestModel request, string correlationId)
+        {
+            var dtdcResponse = await _externalUtility.DTDC_GenerateShipmentLabel(request, correlationId);
+            return new ShipmentLabelResponseModel();
+        }
+
+        public async Task<DTDC_CancelConsignmentResponseModel> CancelConsignment(DTDC_CancelConsignmentRequestModel request, string correlationId)
+        {
+            var dtdcResponse = await _externalUtility.DTDC_CancelShipment(request, correlationId);
+            return new DTDC_CancelConsignmentResponseModel();
+        }
+
+        #region private methods
         private List<string> ValidateInvoiceData(InvoiceDataModel invoiceData)
         {
             var errors = new List<string>();
@@ -2283,7 +2386,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return html.ToString();
         }
-
         private string ConvertToWords(int number)
         {
             if (number == 0) return "Zero Only";
@@ -2331,163 +2433,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return words.Trim() + " Only";
         }
-
-        public async Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId)
-        {
-            try
-            {
-                //Get order with related items
-                var order = await _dbContext.Orders
-                    .Include(o => o.OrderItems)
-                    .FirstOrDefaultAsync(o => o.Id == request.OrderId);
-
-                var productIds = order.OrderItems.Select(oi => oi.ProductId).ToList();
-
-                //var products = await _dbContext.Products
-                //    .Include(p => p.Category)
-                //    .Where(p => productIds.Contains(p.Id))
-                //    .ToListAsync();
-
-                //Get shipping address
-                var address = await _dbContext.Addresses
-                    .Include(a => a.State)
-                    .Include(a => a.Country)
-                    .FirstOrDefaultAsync(a =>
-                        (a.UserId == order.UserId && a.AddressType == "SHIPPING" && a.IsActive && !a.IsDeleted)
-                    );
-
-                if (order == null)
-                    return null;
-
-                // Build the invoice request model based on the Tax Invoice structure
-                var invoiceRequest = new GenerateInvoiceRequestModel
-                {
-                    OrderId = request.OrderId.ToString(),
-                    InvoiceData = new InvoiceDataModel
-                    {
-                        Supplier = new InvoiceSupplierModel
-                        {
-                            Name = "Braves Enterprise",
-                            Address = "Munilanq Village, West Jamila Hills",
-                            Gstin = "17MEZPS7848B1ZD",
-                            PanNumber = "MEZPS7848B",
-                            Email = "braves@enterprise.com",
-                            Phone = "+91-9876543210",
-                            Website = "www.bravesenterprise.com"
-                        },
-
-                        Invoice = new InvoiceDetailsModel
-                        {
-                            //Number = "220",
-                            //Date = DateTime.Now.ToString("dd-MMM-yy"),
-                            //DueDate = DateTime.Now.AddDays(30).ToString("dd-MMM-yy"),
-                            FinancialYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
-                            OrderNumber = order.Id.ToString(),
-                            OrderDate = order.CreatedDate?.ToString("dd-MMM-yy")
-                        },
-
-                        Customer = new InvoiceCustomerModel
-                        {
-                            Name = address.FullName ?? "",
-                            Address = address.AddressLine ?? "",
-                            City = address.City ?? "",
-                            State = address.State?.StateName ?? address.StateCode ?? "",
-                            StateCode = address.StateCode ?? "",
-                            Pincode = address.PinCode ?? "",
-                            Phone = address.PhoneNumber ?? "",
-                            Gstin = "07ABCDE2100G1Z6"
-                        },
-
-                        Items = new List<InvoiceItemModel>(),
-                        TaxSummary = new InvoiceTaxSummaryModel(),
-                        Payment = new InvoicePaymentModel
-                        {
-                            Method = "Online Payment",
-                            Status = "Paid",
-                            AmountPaid = order.TotalAmount,
-                            PaymentDate = order.CreatedDate?.ToString("dd-MMM-yy")
-                        },
-                        Terms = new List<string>
-                        {
-                            "This is a Computer Generated Invoice"
-                        },
-                        EInvoice = new InvoiceEInvoiceModel()
-                    }
-                };
-
-                // Process order items using LINQ
-                decimal totalTaxableValue = 0;
-                decimal totalTax = 0;
-                int slNo = 1;
-
-                foreach (var orderItem in order.OrderItems)
-                {
-
-
-                    var product = await _dbContext.Products
-                        .Include(p => p.Category)
-                        .Where(p => p.Id == orderItem.ProductId)
-                        .FirstOrDefaultAsync();
-
-
-                    var rate = orderItem.Price;
-                    var quantity = orderItem.Quantity;
-                    var taxableValue = rate * quantity;
-
-                    // Calculate GST (5% as shown in the image)
-                    var gstRate = 5m;
-                    var gstAmount = (taxableValue * gstRate) / 100;
-                    var totalAmount = taxableValue + gstAmount;
-
-                    // Get HSN code from product or use default
-                    var hsnCode = GetHsnCodeForProduct(product?.Name ?? "", product?.Category?.Name);
-
-                    var invoiceItem = new InvoiceItemModel
-                    {
-                        SlNo = slNo++,
-                        //Description = orderItem.Product?.Name ?? "Product",
-                        HsnCode = hsnCode,
-                        Quantity = quantity,
-                        //Unit = orderItem.Product?.ProductPrices?.FirstOrDefault()?.Weight?.Unit ?? "kgs",
-                        Rate = rate,
-                        TaxableValue = taxableValue,
-                        DiscountAmount = 0,
-                        CgstRate = 0, // IGST only for interstate
-                        SgstRate = 0, // IGST only for interstate  
-                        IgstRate = gstRate,
-                        CgstAmount = 0,
-                        SgstAmount = 0,
-                        IgstAmount = gstAmount,
-                        TotalAmount = totalAmount
-                    };
-
-                    invoiceRequest.InvoiceData.Items.Add(invoiceItem);
-                    totalTaxableValue += taxableValue;
-                    totalTax += gstAmount;
-                }
-
-                // Update tax summary
-                invoiceRequest.InvoiceData.TaxSummary = new InvoiceTaxSummaryModel
-                {
-                    TotalTaxableValue = totalTaxableValue,
-                    TotalDiscount = 0,
-                    TotalCGST = 0,
-                    TotalSGST = 0,
-                    TotalIGST = totalTax,
-                    TotalTax = totalTax,
-                    ShippingCharges = 0,
-                    GrandTotal = totalTaxableValue + totalTax,
-                    PlaceOfSupply = invoiceRequest.InvoiceData.Customer.State
-                };
-
-                return invoiceRequest;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
         private string GetHsnCodeForProduct(string productName, string categoryName = null)
         {
             // Map products to HSN codes based on the invoice image and GST guidelines
@@ -2547,7 +2492,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             // Default HSN for spices and condiments
             return "0906";
         }
-
         private string GetStateCode(string stateName)
         {
             try
@@ -2574,5 +2518,237 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 return "07"; // Default to Delhi on error
             }
         }
+        private async Task<string> SendOrderPlacementEmail(string xCorrelationId)
+        {
+            try
+            {
+                string to = "hkv1295@gmail.com";
+                string subject = "Your Order Has Shipped!";
+                string body = "Hi there, your order is on its way!";
+
+                await _externalUtility.SendEmailAsync(to, subject, body);
+                return "Email Sent";
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("Error occurred while sending order placement email.", xCorrelationId, ex);
+            }
+        }
+        private async Task TrackonPickupBooking(VerifyPaymentRequestModel verify, Agronexis.Model.EntityModel.Order order, Address shippingAddress, string xCorrelationId)
+        {
+            // Calculate weight & pieces
+            var defaultWeight = decimal.Parse(_configuration["PickupBooking:DefaultWeight"] ?? "0.5");
+            var totalWeight = order.OrderItems.Sum(oi => oi.Quantity * defaultWeight);
+            var totalPieces = order.OrderItems.Sum(oi => oi.Quantity);
+
+            var pickupBookingRequest = new PickupBookingRequestModel
+            {
+                SerialNo = Guid.NewGuid().ToString("N")[..10],
+                RefNo = order.ReceiptId ?? order.Id.ToString(),
+                ActionType = "Book",
+                ClientName = shippingAddress.FullName,
+                AddressLine1 = shippingAddress.AddressLine,
+                AddressLine2 = shippingAddress.LandMark,
+                City = shippingAddress.City,
+                PinCode = shippingAddress.PinCode,
+                MobileNo = shippingAddress.PhoneNumber,
+                Email = _configuration["PickupBooking:Email"],
+                DocType = "D",
+                TypeOfService = "Surface",
+                Weight = totalWeight.ToString("F2"),
+                InvoiceValue = order.TotalAmount.ToString("F2"),
+                NoOfPieces = totalPieces.ToString(),
+                ItemName = "DesiKing Premium Spices",
+                Remark = $"DesiKing Order: {order.ReceiptId}",
+                PickupCustName = _configuration["PickupBooking:CompanyName"],
+                PickupAddr = _configuration["PickupBooking:Address"],
+                PickupCity = _configuration["PickupBooking:City"],
+                PickupState = _configuration["PickupBooking:State"],
+                PickupPincode = _configuration["PickupBooking:PinCode"],
+                PickupPhone = _configuration["PickupBooking:Phone"],
+                ServiceType = _configuration["PickupBooking:DefaultServiceType"]
+            };
+
+            var pickupResult = await _externalUtility.CreatePickupBooking(pickupBookingRequest, xCorrelationId);
+
+            if (pickupResult == null || pickupResult.ErrorCode != 0 ||
+                (!string.IsNullOrEmpty(pickupResult.Errors) && pickupResult.Errors.Equals("error", StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogWarning("Pickup booking failed for OrderId: {OrderId}, ErrorCode: {ErrorCode}, Errors: {Errors}",
+                    verify.OrderId, pickupResult?.ErrorCode, pickupResult?.Errors);
+
+                order.Status = "refund initiated";
+                order.ModifiedDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+
+                var refundRequest = new RefundPaymentRequestModel
+                {
+                    PaymentId = verify.PaymentId,
+                    AmountInPaise = (int)(verify.TotalAmount * 100)
+                };
+
+                await RefundPayment(refundRequest, xCorrelationId);
+            }
+            else
+            {
+                var docketNo = pickupResult.Message?.Split(':').LastOrDefault()?.Trim();
+                order.DocketNumber = docketNo;
+                order.ModifiedDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+        private async Task<bool> DtdcPickupBooking(VerifyPaymentRequestModel verify, Agronexis.Model.EntityModel.Order order, Address shippingAddress, string xCorrelationId)
+        {
+            var defaultWeight = decimal.Parse(_configuration["PickupBooking:DefaultWeight"] ?? "0.5");
+
+            var pieces = new List<DtdcPieceDetail>();
+
+            foreach (var item in order.OrderItems)
+            {
+                for (int i = 0; i < item.Quantity; i++)
+                {
+                    pieces.Add(new DtdcPieceDetail
+                    {
+                        description = "Order Item",
+                        declared_value = item.Price.ToString("F2"),
+                        weight = defaultWeight.ToString("F2"),
+                        length = "10",
+                        width = "10",
+                        height = "10"
+                    });
+                }
+            }
+
+            var totalWeight = pieces.Sum(p => decimal.Parse(p.weight));
+            var totalPieces = pieces.Count;
+
+            var consignment = new DtdcConsignment
+            {
+                customer_code = _configuration["DTDC:CustomerCode"],
+                service_type_id = "GROUND EXPRESS", // GROUND EXPRESS B2C PREMIUM
+                load_type = "NON-DOCUMENT",
+                consignment_type = "Forward",
+                description = "Customer Order Shipment",
+                dimension_unit = "CM",
+                length = "10",
+                width = "10",
+                height = "10",
+                weight_unit = "KG",
+                weight = totalWeight.ToString("F2"),
+                declared_value = order.TotalAmount.ToString("F2"),
+                num_pieces = totalPieces.ToString(),
+
+                origin_details = new DtdcOriginDetails
+                {
+                    name = _configuration["PickupBooking:CompanyName"],
+                    phone = _configuration["PickupBooking:Phone"],
+                    alternate_phone = _configuration["PickupBooking:Phone"],
+                    address_line_1 = _configuration["PickupBooking:Address"],
+                    address_line_2 = "",
+                    pincode = _configuration["PickupBooking:PinCode"],
+                    city = _configuration["PickupBooking:City"],
+                    state = _configuration["PickupBooking:State"]
+                },
+
+                destination_details = new DtdcDestinationDetails
+                {
+                    name = shippingAddress.FullName,
+                    phone = shippingAddress.PhoneNumber,
+                    alternate_phone = shippingAddress.PhoneNumber,
+                    address_line_1 = shippingAddress.AddressLine,
+                    address_line_2 = shippingAddress.LandMark,
+                    pincode = shippingAddress.PinCode,
+                    city = shippingAddress.City,
+                    state = shippingAddress.StateCode
+                },
+
+                customer_reference_number = order.ReceiptId ?? order.Id.ToString(),
+                commodity_id = "SPICES",
+                is_risk_surcharge_applicable = false,
+                invoice_date = DateTime.UtcNow.ToString("dd MMM yyyy"),
+
+                // Add only when MPS
+                pieces_detail = totalPieces > 1 ? pieces : null
+            };
+
+            var request = new DtdcSoftDataOrderRequestModel
+            {
+                consignments = new List<DtdcConsignment> { consignment }
+            };
+
+            var responseJson = await _externalUtility.DTDC_CreateShipment(request, xCorrelationId);
+
+            if (string.IsNullOrEmpty(responseJson))
+            {
+                await TriggerRefund(order, verify, xCorrelationId);
+                return false;
+            }
+
+            var dtdcResponse = JsonSerializer.Deserialize<DTDC_CreateShipmentResponseModel>(responseJson);
+
+            bool refundRequired = ShouldTriggerRefund(dtdcResponse);
+
+            if (refundRequired)
+            {
+                await TriggerRefund(order, verify, xCorrelationId);
+                return false;
+            }
+
+            // SUCCESS or idempotent case
+            var successItem = dtdcResponse.data.FirstOrDefault(d => d.success);
+
+            if (successItem != null)
+            {
+                order.DocketNumber = successItem.reference_number;
+                order.Status = "shipment booked";
+            }
+            else
+            {
+                // CONSIGNMENT_ALREADY_EXISTS
+                order.Status = "shipment already booked";
+            }
+
+            order.ModifiedDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+
+        }
+        private bool ShouldTriggerRefund(DTDC_CreateShipmentResponseModel response)
+        {
+            // No data → hard failure
+            if (response?.data == null || !response.data.Any())
+                return true;
+
+            // If any success exists → do NOT refund
+            if (response.data.Any(d => d.success))
+                return false;
+
+            // All failed → check reasons
+            foreach (var item in response.data)
+            {
+                // Already exists = idempotent success
+                if (item.reason == "CONSIGNMENT_ALREADY_EXISTS")
+                    return false;
+            }
+
+            // Otherwise refund
+            return true;
+        }
+        private async Task TriggerRefund(Agronexis.Model.EntityModel.Order order, VerifyPaymentRequestModel verify, string xCorrelationId)
+        {
+            order.Status = "refund initiated";
+            order.ModifiedDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            await RefundPayment(new RefundPaymentRequestModel
+            {
+                PaymentId = verify.PaymentId,
+                AmountInPaise = (int)(verify.TotalAmount * 100)
+            }, xCorrelationId);
+        }
+
+
+        #endregion
     }
 }
