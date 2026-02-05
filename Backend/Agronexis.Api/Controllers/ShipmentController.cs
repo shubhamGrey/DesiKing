@@ -133,7 +133,7 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpPost("validate-pincode")]
+        [HttpPost("dtdc/validate-pincode")]
         public async Task<ActionResult<ApiResponseModel>> ValidatePincode([FromBody] ValidatePincodeRequest request)
         {
             var correlationId = GetCorrelationId();
