@@ -2121,9 +2121,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             <tr>
                 <td class='label'>Consignee (Ship to)</td>
                 <td>
-                    <strong>" + invoiceData.Customer.Name + @"</strong><br>
-                    " + invoiceData.Customer.Address + @"<br>
-                    State/UT Name: " + invoiceData.Customer.State + @", State/UT Code: " + invoiceData.Customer.StateCode + @"<br>
+                    <strong>" + invoiceData.DeliveryAddress.Name + @"</strong><br>
+                    " + invoiceData.DeliveryAddress.Address + @"<br>
+                    State/UT Name: " + invoiceData.DeliveryAddress.State + @", State/UT Code: " + invoiceData.DeliveryAddress.StateCode + @"<br>
                 </td>
                 <td class='label'>Dated</td>
                 <td>" + invoiceData.Invoice.Date + @"</td>

@@ -998,11 +998,11 @@ const OrderDetailsContent: React.FC = () => {
           city:
             orderDetails.billingAddress?.city ||
             orderDetails.deliveryAddress?.city ||
-            "City",
+            "New Delhi",
           state:
             orderDetails.billingAddress?.state ||
             orderDetails.deliveryAddress?.state ||
-            "State",
+            "New Delhi",
           pincode:
             orderDetails.billingAddress?.pincode ||
             orderDetails.deliveryAddress?.pincode ||
@@ -1016,7 +1016,7 @@ const OrderDetailsContent: React.FC = () => {
           stateCode: getStateCode(
             orderDetails.billingAddress?.state ||
               orderDetails.deliveryAddress?.state ||
-              "Maharashtra",
+              "New Delhi",
           ),
         },
 
@@ -1030,7 +1030,7 @@ const OrderDetailsContent: React.FC = () => {
               pincode: orderDetails.deliveryAddress.pincode,
               phone: orderDetails.deliveryAddress.phone,
               stateCode: getStateCode(
-                orderDetails.deliveryAddress.state || "Maharashtra",
+                orderDetails.deliveryAddress.state || "New Delhi",
               ),
             }
           : null,
