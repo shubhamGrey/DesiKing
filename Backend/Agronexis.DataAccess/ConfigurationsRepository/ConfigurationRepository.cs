@@ -2184,11 +2184,16 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var totalTaxableValue = invoiceData.TaxSummary.TotalTaxableValue;
             var totalIgst = invoiceData.TaxSummary.TotalIGST;
             var grandTotal = invoiceData.TaxSummary.GrandTotal;
+            var shippingCost = invoiceData.TaxSummary.ShippingCharges;
 
             html.Append($@"
                 <tr>
                     <td colspan='4'><strong>IGST</strong></td>
                     <td colspan='4' class='amount'><strong>{totalIgst:F2}</strong></td>
+                </tr>
+                <tr>
+                    <td colspan='4'><strong>Shipping</strong></td>
+                    <td colspan='4' class='amount'><strong>{shippingCost:F2}</strong></td>
                 </tr>
                 <tr>
                     <td colspan='4'><strong>Total</strong></td>
