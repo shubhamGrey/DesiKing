@@ -2185,6 +2185,13 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var totalIgst = invoiceData.TaxSummary.TotalIGST;
             var grandTotal = invoiceData.TaxSummary.GrandTotal;
             var shippingCost = invoiceData.TaxSummary.ShippingCharges;
+            
+            // Convert quantity from units (100 gm per unit) to grams
+            var totalQuantityInGrams = totalQuantity * 100;
+            // Format: show in grams if less than 1000, otherwise in kg
+            var quantityDisplay = totalQuantityInGrams < 1000 
+                ? $"{totalQuantityInGrams:F0} gms" 
+                : $"{(totalQuantityInGrams / 1000):F2} kgs";
 
             html.Append($@"
                 <tr>
@@ -2197,7 +2204,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 </tr>
                 <tr>
                     <td colspan='4'><strong>Total</strong></td>
-                    <td><strong>{totalQuantity:F2} kgs</strong></td>
+                    <td><strong>{quantityDisplay}</strong></td>
                     <td colspan='3' class='amount'><strong>₹ {grandTotal:F2}</strong></td>
                 </tr>
             </tbody>
