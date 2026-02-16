@@ -45,16 +45,19 @@ const AddCategory: React.FC = () => {
   const categoryId =
     typeof window !== "undefined" ? sessionStorage.getItem("categoryId") : null;
   const [uploadedImage, setuploadedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
   const [brands, setBrands] = useState<FormattedBrand[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // State to force re-render
 
   useEffect(() => {
     return () => {
       sessionStorage.removeItem("categoryId"); // Clear categoryId on unmount
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl); // Clean up blob URL
+      }
     };
-  }, []);
+  }, [previewUrl]);
 
   const {
     control,
@@ -126,15 +129,24 @@ const AddCategory: React.FC = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      setuploadedImage(files[0]);
+      const file = files[0];
+      setuploadedImage(file);
+      
+      // Create preview URL and store in state
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      
       setValue("imageUrl", ""); // Clear imageUrl when a new image is uploaded
     }
   };
 
   const removeImage = () => {
     setuploadedImage(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl); // Clean up blob URL
+    }
+    setPreviewUrl(null);
     setValue("imageUrl", ""); // Clear imageUrl when the image is removed
-    setRefreshKey((prev) => prev + 1); // Increment refreshKey to trigger re-render
   };
 
   const uploadViaApi = async (file: File): Promise<string> => {
@@ -460,7 +472,7 @@ const AddCategory: React.FC = () => {
                     Category Image
                   </Typography>
                   {uploadedImage || getValues("imageUrl") ? (
-                    <Box key={refreshKey}>
+                    <Box>
                       <Box
                         sx={{
                           width: "100%",
@@ -475,16 +487,12 @@ const AddCategory: React.FC = () => {
                         }}
                       >
                         <Image
-                          src={
-                            uploadedImage
-                              ? URL.createObjectURL(uploadedImage)
-                              : getValues("imageUrl") ?? "" // Ensure fallback to an empty string
-                          }
+                          src={previewUrl || getValues("imageUrl") || ""}
                           alt="Category Image"
                           width={400}
                           height={312}
                           unoptimized={
-                            !uploadedImage && getValues("imageUrl")
+                            !previewUrl && getValues("imageUrl")
                               ? shouldUnoptimizeImage(getValues("imageUrl")!)
                               : false
                           }

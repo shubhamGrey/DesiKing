@@ -47,7 +47,8 @@ import { usePageTracking } from "@/hooks/useAnalytics";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 
 // Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+const shouldUnoptimizeImage = (imageSrc: string | undefined | null): boolean => {
+  if (!imageSrc) return false;
   return imageSrc.includes("cloud.agronexis.com");
 };
 
