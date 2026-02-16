@@ -59,7 +59,7 @@ const AddProduct: React.FC = () => {
   const router = useRouter();
   const [uploadedImages, setUploadedImages] = useState<(File | string)[]>([]);
   const [thumbnailImage, setThumbnailImage] = useState<File | string | null>(
-    null
+    null,
   );
   const [selectedCertifications, setSelectedCertifications] = useState<
     string[]
@@ -234,7 +234,7 @@ const AddProduct: React.FC = () => {
           setValue("metaTitle", data.metaTitle);
           setValue("metaDescription", data.metaDescription);
           setManufacturingDate(
-            data.manufacturingDate ? new Date(data.manufacturingDate) : null
+            data.manufacturingDate ? new Date(data.manufacturingDate) : null,
           );
           setValue("hsnCode", data.hsnCode);
           setUploadedImages(data.imageUrls || []);
@@ -325,7 +325,7 @@ const AddProduct: React.FC = () => {
           (currency) => ({
             label: currency.code,
             value: currency.id,
-          })
+          }),
         );
         setCurrencies(formattedCurrencies);
       })
@@ -364,7 +364,7 @@ const AddProduct: React.FC = () => {
   };
 
   const handleThumbnailUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0] || null;
     setThumbnailImage(file);
@@ -380,7 +380,7 @@ const AddProduct: React.FC = () => {
     setSelectedImageIndex(
       selectedImageIndex >= index
         ? Math.max(0, selectedImageIndex - 1)
-        : selectedImageIndex
+        : selectedImageIndex,
     );
   };
 
@@ -388,7 +388,7 @@ const AddProduct: React.FC = () => {
     setSelectedCertifications((prev) =>
       prev.includes(certification)
         ? prev.filter((item) => item !== certification)
-        : [...prev, certification]
+        : [...prev, certification],
     );
   };
 
@@ -399,7 +399,7 @@ const AddProduct: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/api/upload", {
+    const res = await fetch("/app/upload", {
       method: "POST",
       body: formData,
     });
@@ -411,7 +411,7 @@ const AddProduct: React.FC = () => {
   };
 
   const uploadAllImages = async (
-    files: (File | string)[]
+    files: (File | string)[],
   ): Promise<string[]> => {
     const uploadPromises = files.map((file) => uploadViaApi(file));
     return Promise.all(uploadPromises);

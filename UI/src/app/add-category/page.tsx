@@ -34,7 +34,9 @@ import { michroma } from "@/styles/fonts";
 import { Brand, CategoryFormData, FormattedBrand } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (imageSrc: string | undefined | null): boolean => {
+const shouldUnoptimizeImage = (
+  imageSrc: string | undefined | null,
+): boolean => {
   if (!imageSrc) return false;
   return imageSrc.includes("cloud.agronexis.com");
 };
@@ -131,11 +133,11 @@ const AddCategory: React.FC = () => {
     if (files) {
       const file = files[0];
       setuploadedImage(file);
-      
+
       // Create preview URL and store in state
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      
+
       setValue("imageUrl", ""); // Clear imageUrl when a new image is uploaded
     }
   };
@@ -153,7 +155,7 @@ const AddCategory: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/api/upload", {
+    const res = await fetch("/app/upload", {
       method: "POST",
       body: formData,
     });
@@ -192,7 +194,7 @@ const AddCategory: React.FC = () => {
 
       if (!response.ok) {
         throw new Error(
-          categoryId ? "Failed to update category" : "Failed to add category"
+          categoryId ? "Failed to update category" : "Failed to add category",
         );
       }
 
@@ -201,12 +203,12 @@ const AddCategory: React.FC = () => {
     } catch (error) {
       console.error(
         categoryId ? "Error updating category:" : "Error adding category:",
-        error
+        error,
       );
       alert(
         categoryId
           ? "An error occurred while updating the category. Please try again."
-          : "An error occurred while adding the category. Please try again."
+          : "An error occurred while adding the category. Please try again.",
       );
     } finally {
       sessionStorage.removeItem("categoryId"); // Clear categoryId after submission
