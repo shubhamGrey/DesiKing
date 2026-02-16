@@ -84,6 +84,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
   };
 
   const handleViewOrderDetails = (orderId: string) => {
+    sessionStorage.setItem("orderId", orderId);
     router.push(`/order-details/${orderId}`);
   };
 

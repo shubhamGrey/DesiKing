@@ -77,6 +77,7 @@ const AddProduct: React.FC = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [productId, setProductId] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -144,10 +145,11 @@ const AddProduct: React.FC = () => {
   });
 
   useEffect(() => {
-    const productId = sessionStorage.getItem("productId");
-    if (productId) {
+    const productIdFromSession = sessionStorage.getItem("productId");
+    if (productIdFromSession) {
+      setProductId(productIdFromSession);
       setIsEditMode(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${productId}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${productIdFromSession}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -399,7 +401,7 @@ const AddProduct: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/app/upload", {
+    const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
     });
@@ -433,7 +435,7 @@ const AddProduct: React.FC = () => {
 
     // Use pricesAndSkus directly from form data
     const finalData = {
-      id: isEditMode ? sessionStorage.getItem("productId") : undefined,
+      id: isEditMode ? productId : undefined,
       name: data.name,
       description: data.description,
       pricesAndSkus: data.pricesAndSkus,
