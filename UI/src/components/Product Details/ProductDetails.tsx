@@ -58,7 +58,7 @@ const ProductDetails = ({
   // Helper function to get selected SKU data
   const getSelectedSkuData = () => {
     const selectedSku = selectedProduct?.pricesAndSkus.find(
-      (sku) => sku.weightValue + sku.weightUnit === selectedPacket
+      (sku) => sku.weightValue + sku.weightUnit === selectedPacket,
     );
     return {
       price: selectedSku?.price || 0,
@@ -187,7 +187,7 @@ const ProductDetails = ({
                 typeof selectedProduct?.imageUrls?.[currentImage] ===
                   "string" &&
                 selectedProduct.imageUrls[currentImage].includes(
-                  "cloud.agronexis.com"
+                  "cloud.agronexis.com",
                 )
               }
               style={{
@@ -297,10 +297,10 @@ const ProductDetails = ({
               </Typography>
               {/* Move selectedSKU declaration above JSX */}
               {(() => {
-                const selectedSKU = selectedProduct?.pricesAndSkus.find(
-                  (sku) => sku.weightValue + sku.weightUnit === selectedPacket
-                );
-
+                // const selectedSKU = selectedProduct?.pricesAndSkus.find(
+                //   (sku) => sku.weightValue + sku.weightUnit === selectedPacket,
+                // );
+                const selectedSKU = selectedProduct?.pricesAndSkus[0];
                 return (
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="h5" sx={{ color: "secondary.main" }}>
@@ -332,7 +332,7 @@ const ProductDetails = ({
         <Box>
           <Box>
             {/* Packets section */}
-            <Typography
+            {/* <Typography
               variant="body2"
               sx={{ color: "primary.main", mb: 1, mr: 16.4 }}
               textAlign={"right"}
@@ -351,7 +351,7 @@ const ProductDetails = ({
                 width: "100%",
               }}
             >
-              {["100gm", "500gm", "1Kg"].map((size, ind) => (
+              {["50gm", "100gm", "500gm", "1Kg"].map((size, ind) => (
                 <Button
                   key={size}
                   onClick={() => {
@@ -375,7 +375,7 @@ const ProductDetails = ({
                   {size}
                 </Button>
               ))}
-            </ButtonGroup>
+            </ButtonGroup> */}
 
             {/* Quantity section */}
             <Typography
