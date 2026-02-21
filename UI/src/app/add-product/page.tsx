@@ -59,7 +59,7 @@ const AddProduct: React.FC = () => {
   const router = useRouter();
   const [uploadedImages, setUploadedImages] = useState<(File | string)[]>([]);
   const [thumbnailImage, setThumbnailImage] = useState<File | string | null>(
-    null
+    null,
   );
   const [selectedCertifications, setSelectedCertifications] = useState<
     string[]
@@ -77,6 +77,7 @@ const AddProduct: React.FC = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [productId, setProductId] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -144,10 +145,11 @@ const AddProduct: React.FC = () => {
   });
 
   useEffect(() => {
-    const productId = sessionStorage.getItem("productId");
-    if (productId) {
+    const productIdFromSession = sessionStorage.getItem("productId");
+    if (productIdFromSession) {
+      setProductId(productIdFromSession);
       setIsEditMode(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${productId}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${productIdFromSession}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -234,7 +236,7 @@ const AddProduct: React.FC = () => {
           setValue("metaTitle", data.metaTitle);
           setValue("metaDescription", data.metaDescription);
           setManufacturingDate(
-            data.manufacturingDate ? new Date(data.manufacturingDate) : null
+            data.manufacturingDate ? new Date(data.manufacturingDate) : null,
           );
           setValue("hsnCode", data.hsnCode);
           setUploadedImages(data.imageUrls || []);
@@ -325,7 +327,7 @@ const AddProduct: React.FC = () => {
           (currency) => ({
             label: currency.code,
             value: currency.id,
-          })
+          }),
         );
         setCurrencies(formattedCurrencies);
       })
@@ -364,7 +366,7 @@ const AddProduct: React.FC = () => {
   };
 
   const handleThumbnailUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0] || null;
     setThumbnailImage(file);
@@ -380,7 +382,7 @@ const AddProduct: React.FC = () => {
     setSelectedImageIndex(
       selectedImageIndex >= index
         ? Math.max(0, selectedImageIndex - 1)
-        : selectedImageIndex
+        : selectedImageIndex,
     );
   };
 
@@ -388,7 +390,7 @@ const AddProduct: React.FC = () => {
     setSelectedCertifications((prev) =>
       prev.includes(certification)
         ? prev.filter((item) => item !== certification)
-        : [...prev, certification]
+        : [...prev, certification],
     );
   };
 
@@ -411,7 +413,7 @@ const AddProduct: React.FC = () => {
   };
 
   const uploadAllImages = async (
-    files: (File | string)[]
+    files: (File | string)[],
   ): Promise<string[]> => {
     const uploadPromises = files.map((file) => uploadViaApi(file));
     return Promise.all(uploadPromises);
@@ -433,7 +435,7 @@ const AddProduct: React.FC = () => {
 
     // Use pricesAndSkus directly from form data
     const finalData = {
-      id: isEditMode ? sessionStorage.getItem("productId") : undefined,
+      id: isEditMode ? productId : undefined,
       name: data.name,
       description: data.description,
       pricesAndSkus: data.pricesAndSkus,

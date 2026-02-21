@@ -21,7 +21,8 @@ interface ProductImagesProps {
 }
 
 // Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+const shouldUnoptimizeImage = (imageSrc: string | undefined | null): boolean => {
+  if (!imageSrc) return false;
   return imageSrc.includes("cloud.agronexis.com");
 };
 
@@ -72,21 +73,22 @@ const ProductImages: React.FC<ProductImagesProps> = ({
                   overflow: "hidden",
                 }}
               >
-                {uploadedImages.length > 0 && (
+                {uploadedImages.length > 0 && uploadedImages[selectedImageIndex] && (
                   <Image
                     src={
                       typeof uploadedImages[selectedImageIndex] === "string"
-                        ? uploadedImages[selectedImageIndex]
+                        ? (uploadedImages[selectedImageIndex] as string)
                         : URL.createObjectURL(
-                            uploadedImages[selectedImageIndex]
+                            uploadedImages[selectedImageIndex] as File
                           )
                     }
                     alt={`Product ${selectedImageIndex + 1}`}
                     width={400}
                     height={300}
                     unoptimized={
-                      typeof uploadedImages[selectedImageIndex] === "string" &&
-                      shouldUnoptimizeImage(uploadedImages[selectedImageIndex])
+                      typeof uploadedImages[selectedImageIndex] === "string"
+                        ? shouldUnoptimizeImage(uploadedImages[selectedImageIndex] as string)
+                        : false
                     }
                     style={{
                       width: "100%",
@@ -174,50 +176,54 @@ const ProductImages: React.FC<ProductImagesProps> = ({
                   width: "100%",
                 }}
               >
-                {uploadedImages.map((image, index) => (
-                  <Box
-                    key={`thumbnail-${index}-${
-                      typeof image === "string" ? image : image.name
-                    }`}
-                    sx={{
-                      position: "relative",
-                      border: "2px solid",
-                      borderColor:
-                        selectedImageIndex === index
-                          ? "primary.main"
-                          : "#e0e0e0",
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      width: "100%",
-                      aspectRatio: "1 / 1", // Ensures square thumbnails
-                      "&:hover": {
-                        borderColor: "primary.main",
-                      },
-                    }}
-                    onClick={() => setSelectedImageIndex(index)}
-                  >
-                    <Image
-                      src={
-                        typeof image === "string"
-                          ? image
-                          : URL.createObjectURL(image)
-                      }
-                      alt={`Thumbnail ${index + 1}`}
-                      width={100}
-                      height={100}
-                      unoptimized={
-                        typeof image === "string" &&
-                        shouldUnoptimizeImage(image)
-                      }
-                      style={{
+                {uploadedImages.map((image, index) => {
+                  if (!image) return null;
+                  return (
+                    <Box
+                      key={`thumbnail-${index}-${
+                        typeof image === "string" ? image : (image as File).name
+                      }`}
+                      sx={{
+                        position: "relative",
+                        border: "2px solid",
+                        borderColor:
+                          selectedImageIndex === index
+                            ? "primary.main"
+                            : "#e0e0e0",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        cursor: "pointer",
                         width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
+                        aspectRatio: "1 / 1", // Ensures square thumbnails
+                        "&:hover": {
+                          borderColor: "primary.main",
+                        },
                       }}
-                    />
-                  </Box>
-                ))}
+                      onClick={() => setSelectedImageIndex(index)}
+                    >
+                      <Image
+                        src={
+                          typeof image === "string"
+                            ? (image as string)
+                            : URL.createObjectURL(image as File)
+                        }
+                        alt={`Thumbnail ${index + 1}`}
+                        width={100}
+                        height={100}
+                        unoptimized={
+                          typeof image === "string"
+                            ? shouldUnoptimizeImage(image as string)
+                            : false
+                        }
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </Box>
+                  );
+                })}
               </Box>
             </Box>
           ) : (

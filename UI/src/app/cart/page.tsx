@@ -76,7 +76,7 @@ interface AddressFormData {
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
-  imageSrc: string | undefined | null
+  imageSrc: string | undefined | null,
 ): boolean => {
   if (!imageSrc || typeof imageSrc !== "string") {
     return false;
@@ -100,7 +100,7 @@ const Cart = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
 
   // Form data state
@@ -177,6 +177,7 @@ const Cart = () => {
 
   // Calculate taxes - 5% of final subtotal (after discount)
   const taxes = subtotal * 0.05;
+  const shippingFee = 100;
 
   // Calculate total discount from enhanced items
   const totalDiscount = useMemo(() => {
@@ -195,7 +196,7 @@ const Cart = () => {
     return 0;
   }, [enhancedItems]);
 
-  const orderTotal = subtotal + taxes;
+  const orderTotal = subtotal + taxes + shippingFee;
 
   // Helper function to save address
   const saveAddress = async (addressData: AddressFormData): Promise<any> => {
@@ -224,14 +225,14 @@ const Cart = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error("❌ Address save API error:", errorText);
         throw new Error(
-          `HTTP error! status: ${response.status}, response: ${errorText}`
+          `HTTP error! status: ${response.status}, response: ${errorText}`,
         );
       }
 
@@ -252,7 +253,7 @@ const Cart = () => {
   // Helper function to format form data to AddressFormData
   const formatAddressData = (
     formData: any,
-    addressType: "SHIPPING" | "BILLING"
+    addressType: "SHIPPING" | "BILLING",
   ): AddressFormData => {
     return {
       fullName: formData.name || "",
@@ -337,7 +338,8 @@ const Cart = () => {
     try {
       setIsProcessing(true);
       const shippingAddress = formatAddressData(formData, "SHIPPING");
-      await saveAddress(shippingAddress);
+      const res = await saveAddress(shippingAddress);
+      setSelectedAddress(res);
       setAlertMessage("Shipping address saved successfully!");
       setAlertSeverity("success");
       setShowAlert(true);
@@ -345,7 +347,7 @@ const Cart = () => {
       setAlertMessage(
         `Failed to save shipping address: ${
           error.message || "Please try again."
-        }`
+        }`,
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -366,7 +368,8 @@ const Cart = () => {
     try {
       setIsProcessing(true);
       const billingAddress = formatAddressData(billingData, "BILLING");
-      await saveAddress(billingAddress);
+      const res = await saveAddress(billingAddress);
+      setSelectedBillingAddress(res);
       setAlertMessage("Billing address saved successfully!");
       setAlertSeverity("success");
       setShowAlert(true);
@@ -374,7 +377,7 @@ const Cart = () => {
       setAlertMessage(
         `Failed to save billing address: ${
           error.message || "Please try again."
-        }`
+        }`,
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -448,7 +451,7 @@ const Cart = () => {
   // Handle billing input changes
   const handleBillingInputChange = (
     field: keyof PaymentFormData,
-    value: string
+    value: string,
   ) => {
     setBillingData((prev) => ({ ...prev, [field]: value }));
     if (billingErrors[field]) {
@@ -467,7 +470,7 @@ const Cart = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -503,7 +506,7 @@ const Cart = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -539,7 +542,7 @@ const Cart = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -622,7 +625,7 @@ const Cart = () => {
         (item) =>
           "productDetails" in item &&
           item.productDetails?.pricesAndSkus &&
-          item.productDetails.pricesAndSkus.length > 0
+          item.productDetails.pricesAndSkus.length > 0,
       );
 
       if (firstItemWithPricing && "productDetails" in firstItemWithPricing) {
@@ -668,19 +671,19 @@ const Cart = () => {
       // Validate that we have cart items
       if (!cartItems || cartItems.length === 0) {
         throw new Error(
-          "Your cart is empty. Please add items before checkout."
+          "Your cart is empty. Please add items before checkout.",
         );
       }
 
       // Validate that all cart items have required fields
       const invalidItems = cartItems.filter(
-        (item) => !item.productId || !item.quantity || !item.price
+        (item) => !item.productId || !item.quantity || !item.price,
       );
 
       if (invalidItems.length > 0) {
         console.error("Invalid cart items:", invalidItems);
         throw new Error(
-          "Some cart items are missing required information. Please refresh and try again."
+          "Some cart items are missing required information. Please refresh and try again.",
         );
       }
 
@@ -765,12 +768,12 @@ const Cart = () => {
         paymentFormData,
         (paymentData: RazorpayPaymentData) =>
           handlePaymentSuccess(paymentData, databaseOrderId), // Pass database order ID
-        handlePaymentError
+        handlePaymentError,
       );
     } catch (error: any) {
       console.error("Razorpay order error:", error);
       setAlertMessage(
-        `Failed to create order: ${error.message || "Please try again."}`
+        `Failed to create order: ${error.message || "Please try again."}`,
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -795,7 +798,7 @@ const Cart = () => {
   // Handle successful payment
   const handlePaymentSuccess = async (
     paymentData: RazorpayPaymentData,
-    internalOrderId?: string
+    internalOrderId?: string,
   ) => {
     try {
       setIsPaymentProcessing(true); // Start payment processing
@@ -813,7 +816,7 @@ const Cart = () => {
         paymentData,
         currentUserId,
         orderTotal,
-        "INR"
+        "INR",
       );
 
       if (!isPaymentValid) {
@@ -834,7 +837,7 @@ const Cart = () => {
             paymentData.razorpay_order_id
           }&payment_id=${paymentData.razorpay_payment_id}&signature=${
             paymentData.razorpay_signature
-          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR&payment_method=RAZORPAY&internal_order_id=${internalOrderId}`
+          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR&payment_method=RAZORPAY&internal_order_id=${internalOrderId}`,
         );
       }, 2000);
     } catch (error) {
@@ -847,7 +850,7 @@ const Cart = () => {
       setAlertMessage(
         `Payment verification failed: ${
           error instanceof Error ? error.message : "Please contact support."
-        }`
+        }`,
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -1067,7 +1070,7 @@ const Cart = () => {
                               >
                                 Total: {getCurrencySymbol(displayCurrency)}{" "}
                                 {((displayPrice || 0) * item.quantity).toFixed(
-                                  2
+                                  2,
                                 )}
                               </Typography>
                             )}
@@ -1104,7 +1107,7 @@ const Cart = () => {
                               onClick={() =>
                                 handleQuantityUpdate(
                                   item.id,
-                                  Math.max(1, item.quantity - 1)
+                                  Math.max(1, item.quantity - 1),
                                 )
                               }
                               disabled={item.quantity <= 1}
@@ -1149,7 +1152,7 @@ const Cart = () => {
                               <Typography fontWeight={600}>
                                 {getCurrencySymbol(displayCurrency)}
                                 {((displayPrice || 0) * item.quantity).toFixed(
-                                  2
+                                  2,
                                 )}
                               </Typography>
                             </Box>
@@ -1173,7 +1176,7 @@ const Cart = () => {
                         </Box>
                       </Box>
                     );
-                  }
+                  },
                 )}
               </Stack>
             </Paper>
@@ -1917,7 +1920,10 @@ const Cart = () => {
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography color="#84a897">Shipping</Typography>
-                  <Typography>Free</Typography>
+                  <Typography>
+                    {getCurrencySymbol(displayCurrency)}
+                    {shippingFee.toFixed(2)}
+                  </Typography>
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>

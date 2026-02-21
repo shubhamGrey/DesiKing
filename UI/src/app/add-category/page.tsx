@@ -34,7 +34,10 @@ import { michroma } from "@/styles/fonts";
 import { Brand, CategoryFormData, FormattedBrand } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (imageSrc: string): boolean => {
+const shouldUnoptimizeImage = (
+  imageSrc: string | undefined | null,
+): boolean => {
+  if (!imageSrc) return false;
   return imageSrc.includes("cloud.agronexis.com");
 };
 
@@ -44,16 +47,19 @@ const AddCategory: React.FC = () => {
   const categoryId =
     typeof window !== "undefined" ? sessionStorage.getItem("categoryId") : null;
   const [uploadedImage, setuploadedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
   const [brands, setBrands] = useState<FormattedBrand[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // State to force re-render
 
   useEffect(() => {
     return () => {
       sessionStorage.removeItem("categoryId"); // Clear categoryId on unmount
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl); // Clean up blob URL
+      }
     };
-  }, []);
+  }, [previewUrl]);
 
   const {
     control,
@@ -125,15 +131,24 @@ const AddCategory: React.FC = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      setuploadedImage(files[0]);
+      const file = files[0];
+      setuploadedImage(file);
+
+      // Create preview URL and store in state
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+
       setValue("imageUrl", ""); // Clear imageUrl when a new image is uploaded
     }
   };
 
   const removeImage = () => {
     setuploadedImage(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl); // Clean up blob URL
+    }
+    setPreviewUrl(null);
     setValue("imageUrl", ""); // Clear imageUrl when the image is removed
-    setRefreshKey((prev) => prev + 1); // Increment refreshKey to trigger re-render
   };
 
   const uploadViaApi = async (file: File): Promise<string> => {
@@ -179,7 +194,7 @@ const AddCategory: React.FC = () => {
 
       if (!response.ok) {
         throw new Error(
-          categoryId ? "Failed to update category" : "Failed to add category"
+          categoryId ? "Failed to update category" : "Failed to add category",
         );
       }
 
@@ -188,12 +203,12 @@ const AddCategory: React.FC = () => {
     } catch (error) {
       console.error(
         categoryId ? "Error updating category:" : "Error adding category:",
-        error
+        error,
       );
       alert(
         categoryId
           ? "An error occurred while updating the category. Please try again."
-          : "An error occurred while adding the category. Please try again."
+          : "An error occurred while adding the category. Please try again.",
       );
     } finally {
       sessionStorage.removeItem("categoryId"); // Clear categoryId after submission
@@ -459,7 +474,7 @@ const AddCategory: React.FC = () => {
                     Category Image
                   </Typography>
                   {uploadedImage || getValues("imageUrl") ? (
-                    <Box key={refreshKey}>
+                    <Box>
                       <Box
                         sx={{
                           width: "100%",
@@ -474,16 +489,12 @@ const AddCategory: React.FC = () => {
                         }}
                       >
                         <Image
-                          src={
-                            uploadedImage
-                              ? URL.createObjectURL(uploadedImage)
-                              : getValues("imageUrl") ?? "" // Ensure fallback to an empty string
-                          }
+                          src={previewUrl || getValues("imageUrl") || ""}
                           alt="Category Image"
                           width={400}
                           height={312}
                           unoptimized={
-                            !uploadedImage && getValues("imageUrl")
+                            !previewUrl && getValues("imageUrl")
                               ? shouldUnoptimizeImage(getValues("imageUrl")!)
                               : false
                           }

@@ -82,7 +82,7 @@ const AddBrand: React.FC = () => {
           // Handle both direct data and wrapped response
           const data = response.data || response;
           console.log("Brand data received:", data);
-          
+
           setValue("name", data.name || "");
           setValue("code", data.code || "");
           setValue("description", data.description || "");
@@ -158,7 +158,7 @@ const AddBrand: React.FC = () => {
 
       if (!response.ok) {
         throw new Error(
-          brandId ? "Failed to update brand" : "Failed to add brand"
+          brandId ? "Failed to update brand" : "Failed to add brand",
         );
       }
 
@@ -167,12 +167,12 @@ const AddBrand: React.FC = () => {
     } catch (error) {
       console.error(
         brandId ? "Error updating brand:" : "Error adding brand:",
-        error
+        error,
       );
       alert(
         brandId
           ? "An error occurred while updating the brand. Please try again."
-          : "An error occurred while adding the brand. Please try again."
+          : "An error occurred while adding the brand. Please try again.",
       );
     } finally {
       sessionStorage.removeItem("brandId"); // Clear brandId after submission
@@ -436,7 +436,7 @@ const AddBrand: React.FC = () => {
                           src={
                             uploadedImage
                               ? URL.createObjectURL(uploadedImage)
-                              : getValues("logoUrl") ?? "" // Ensure fallback to an empty string
+                              : (getValues("logoUrl") ?? "") // Ensure fallback to an empty string
                           }
                           alt="Brand Logo"
                           width={400}

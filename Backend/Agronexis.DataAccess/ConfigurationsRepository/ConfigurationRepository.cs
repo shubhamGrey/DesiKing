@@ -2224,9 +2224,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             <tr>
                 <td class='label'>Consignee (Ship to)</td>
                 <td>
-                    <strong>" + invoiceData.Customer.Name + @"</strong><br>
-                    " + invoiceData.Customer.Address + @"<br>
-                    State/UT Name: " + invoiceData.Customer.State + @", State/UT Code: " + invoiceData.Customer.StateCode + @"<br>
+                    <strong>" + invoiceData.DeliveryAddress.Name + @"</strong><br>
+                    " + invoiceData.DeliveryAddress.Address + @"<br>
+                    State/UT Name: " + invoiceData.DeliveryAddress.State + @", State/UT Code: " + invoiceData.DeliveryAddress.StateCode + @"<br>
                 </td>
                 <td class='label'>Dated</td>
                 <td>" + invoiceData.Invoice.Date + @"</td>
@@ -2287,6 +2287,14 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var totalTaxableValue = invoiceData.TaxSummary.TotalTaxableValue;
             var totalIgst = invoiceData.TaxSummary.TotalIGST;
             var grandTotal = invoiceData.TaxSummary.GrandTotal;
+            var shippingCost = invoiceData.TaxSummary.ShippingCharges;
+            
+            // Convert quantity from units (100 gm per unit) to grams
+            var totalQuantityInGrams = totalQuantity * 100;
+            // Format: show in grams if less than 1000, otherwise in kg
+            var quantityDisplay = totalQuantityInGrams < 1000 
+                ? $"{totalQuantityInGrams:F0} gms" 
+                : $"{(totalQuantityInGrams / 1000):F2} kgs";
 
             html.Append($@"
                 <tr>
@@ -2294,8 +2302,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     <td colspan='4' class='amount'><strong>{totalIgst:F2}</strong></td>
                 </tr>
                 <tr>
+                    <td colspan='4'><strong>Shipping</strong></td>
+                    <td colspan='4' class='amount'><strong>{shippingCost:F2}</strong></td>
+                </tr>
+                <tr>
                     <td colspan='4'><strong>Total</strong></td>
-                    <td><strong>{totalQuantity:F2} kgs</strong></td>
+                    <td><strong>{quantityDisplay}</strong></td>
                     <td colspan='3' class='amount'><strong>₹ {grandTotal:F2}</strong></td>
                 </tr>
             </tbody>
