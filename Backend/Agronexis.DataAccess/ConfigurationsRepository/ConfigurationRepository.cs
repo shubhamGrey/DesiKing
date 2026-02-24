@@ -935,7 +935,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 };
 
                 await _dbContext.Transactions.AddAsync(transaction);
-                await _dbContext.SaveChangesAsync();
 
                 if (order != null)
                 {
@@ -951,7 +950,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                         if (shippingAddress != null)
                         {
-                            DtdcPickupBooking(verify, order, shippingAddress, xCorrelationId);
+                            await DtdcPickupBooking(verify, order, shippingAddress, xCorrelationId);
 
                         }
                     }
@@ -961,6 +960,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     }
                 }
 
+                await _dbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -2721,8 +2721,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             }
 
             order.ModifiedDate = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
-
             return true;
 
         }
