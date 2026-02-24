@@ -17,12 +17,43 @@ export const loadRazorpayScript = (): Promise<boolean> => {
   });
 };
 
+// Validate pin code for delivery
+export const validatePinCode = async (data: {
+  fromPincode: string;
+  toPincode: string;
+}): Promise<boolean> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/shipment/dtdc/validate-pincode`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Correlation-ID": crypto.randomUUID(),
+        },
+        body: JSON.stringify(data),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to validate pin code: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result.info.isSuccess ?? false;
+  } catch (error) {
+    console.error("Error validating pin code:", error);
+    throw error;
+  }
+};
+
 // Create order (both COD and Razorpay)
 export const createOrder = async (
   orderData: OrderCreateRequest,
-  paymentMethod: "COD" | "RAZORPAY" = "COD"
+  paymentMethod: "COD" | "RAZORPAY" = "COD",
 ): Promise<any> => {
-  try {    
+  try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/Checkout/create-order`,
       {
@@ -35,14 +66,17 @@ export const createOrder = async (
           ...orderData,
           paymentMethod: paymentMethod,
         }),
-      }
+      },
     );
-    
+
     const result = await response.json();
 
     if (!response.ok) {
       console.error("Order creation failed:", result);
-      throw new Error(result.info?.message || `HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(
+        result.info?.message ||
+          `HTTP ${response.status}: ${response.statusText}`,
+      );
     }
 
     return result;
@@ -57,7 +91,7 @@ export const initializeRazorpayPayment = async (
   orderData: RazorpayOrderData,
   formData: PaymentFormData,
   onSuccess: (paymentData: RazorpayPaymentData) => void,
-  onError: (error: any) => void
+  onError: (error: any) => void,
 ): Promise<void> => {
   // Load Razorpay script
   const isLoaded = await loadRazorpayScript();
@@ -112,7 +146,7 @@ export const verifyPayment = async (
   paymentData: RazorpayPaymentData,
   userId: string,
   totalAmount: number,
-  currency: string = "INR"
+  currency: string = "INR",
 ): Promise<boolean> => {
   try {
     const response = await fetch(
@@ -132,7 +166,7 @@ export const verifyPayment = async (
           currency: currency,
           paymentMethod: "RAZORPAY",
         }),
-      }
+      },
     );
 
     if (!response.ok) {

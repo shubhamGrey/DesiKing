@@ -278,5 +278,208 @@ namespace Agronexis.ExternalApi
                 throw new RepositoryException($"Error while generating shipment label for AWB: {awbNo}", xCorrelationId, ex);
             }
         }
+
+        public async Task<string> DTDC_GenerateToken(string username, string password, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:TokenUrl"];
+
+                if (string.IsNullOrWhiteSpace(url))
+                    throw new RepositoryException("DTDC Token API URL missing in configuration.", xCorrelationId);
+
+                if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                    throw new RepositoryException("DTDC authentication credentials missing.", xCorrelationId);
+
+                // Construct API URL
+                var finalUrl = $"{url}?username={username}&password={password}";
+
+                using var httpClient = new HttpClient();
+
+                var response = await httpClient.GetAsync(finalUrl);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException(
+                        $"DTDC Token API returned {response.StatusCode}",
+                        xCorrelationId
+                    );
+
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (RepositoryException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("DTDC Token API error", xCorrelationId, ex);
+            }
+        }
+
+        public async Task<DTDC_PincodeResponseModel> DTDC_CheckPincode(ValidatePincodeRequest request, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:PincodeUrl"];
+
+                var payload = new DTDC_PincodeRequestModel
+                {
+                    OrgPincode = request.FromPincode,
+                    DesPincode = request.ToPincode
+                };
+
+                using var httpClient = new HttpClient();
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync(url, content);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException($"DTDC Pincode API returned {response.StatusCode}", xCorrelationId);
+
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<DTDC_PincodeResponseModel>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("DTDC Pincode API error", xCorrelationId, ex);
+            }
+        }
+        public async Task<string> DTDC_CreateShipment(DtdcSoftDataOrderRequestModel request, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:OrderUrl"];
+                var apiKey = _configuration["DTDC:ApiKey"];
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("api-key", apiKey);
+
+                var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException($"DTDC Order API returned {response.StatusCode}", xCorrelationId);
+
+                var json = await response.Content.ReadAsStringAsync();
+                return json;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("DTDC Order Upload error", xCorrelationId, ex);
+            }
+        }
+        public async Task<byte[]> DTDC_GenerateShipmentLabel(DTDC_ShipmentLabelRequestModel request, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:LabelUrl"];
+                var apiKey = _configuration["DTDC:ApiKey"];
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("api-key", apiKey);
+
+                var finalUrl = $"{url}?reference_number={request.AwbNo}&label_code={request.LabelCode}&label_format={request.LabelFormat}";
+
+                var response = await client.GetAsync(finalUrl);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException($"DTDC Label API returned {response.StatusCode}", xCorrelationId);
+
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error generating DTDC Label for {request.AwbNo}", xCorrelationId, ex);
+            }
+        }
+        public async Task<string> DTDC_CancelShipment(DTDC_CancelConsignmentRequestModel request, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:CancelUrl"];
+                var apiKey = _configuration["DTDC:ApiKey"];
+                var customerCode = _configuration["DTDC:CustomerCode"];
+
+                //var payload = new
+                //{
+                //    AWBNo = new[] { awbNo },
+                //    CustomerCode = customerCode
+                //};
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("api-key", apiKey);
+
+                var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException("DTDC Cancel API failed", xCorrelationId);
+
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"DTDC Cancel shipment error", xCorrelationId, ex);
+            }
+        }
+        public async Task<string> DTDC_GetTrackingToken(string username, string password, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:TrackingTokenUrl"];
+
+                var finalUrl = $"{url}?username={username}&password={password}";
+
+                using var client = new HttpClient();
+
+                var response = await client.GetAsync(finalUrl);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException("DTDC authentication failed", xCorrelationId);
+
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("DTDC token API error", xCorrelationId, ex);
+            }
+        }
+        public async Task<string> DTDC_GetTracking(string awbNo, string token, string xCorrelationId)
+        {
+            try
+            {
+                var url = _configuration["DTDC:TrackingUrl"];
+
+                var payload = new DTDC_TrackingRequestModel
+                {
+                    Strcnno = awbNo
+                };
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("X-Access-Token", token);
+
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new RepositoryException("DTDC tracking request failed", xCorrelationId);
+
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"DTDC tracking error for {awbNo}", xCorrelationId, ex);
+            }
+        }
+
+
     }
 }
