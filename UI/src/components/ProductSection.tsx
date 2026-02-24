@@ -56,29 +56,33 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // State for product selection (packet size, images, quantities)
-  const [selectedPackets, setSelectedPackets] = useState<Record<string, number>>({});
-  const [currentImages, setCurrentImages] = useState<Record<string, number>>({});
+  const [selectedPackets, setSelectedPackets] = useState<
+    Record<string, number>
+  >({});
+  const [currentImages, setCurrentImages] = useState<Record<string, number>>(
+    {},
+  );
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   // State for success/error messages
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
 
   // Initialize packet selections on component mount
   React.useEffect(() => {
     const initialPackets: Record<string, number> = {};
     const initialQuantities: Record<string, number> = {};
-    
+
     item.products.forEach((product) => {
       if (product.id) {
         initialPackets[product.id] = 0; // Select first packet by default
         initialQuantities[product.id] = 1;
       }
     });
-    
+
     setSelectedPackets(initialPackets);
     setQuantities(initialQuantities);
   }, [item.products]);
@@ -97,7 +101,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -141,7 +145,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
     if (!accessToken) {
       // Redirect to login page with return URL
       router.push(
-        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
       );
       return;
     }
@@ -175,7 +179,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
       price: selectedSku.discountedAmount || selectedSku.price,
       productId: productId,
       brandId: product.brandId || "",
-      image: product.imageUrls?.[currentImages[productId] || 0] || "/placeholder-image.jpg",
+      image:
+        product.imageUrls?.[currentImages[productId] || 0] ||
+        "/placeholder-image.jpg",
       quantity: quantity,
       sku: selectedSku.skuNumber,
     };
@@ -220,205 +226,296 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
           {item.products.map((product) => {
             const productId = product.id || "";
             return (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={productId}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  minHeight: "auto",
-                  transition: "box-shadow 0.3s ease-in-out",
-                  borderRadius: "8px",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  p: 2,
-                  backgroundColor: "#f8f3ea",
-                  "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                  },
-                }}
-              >
-                {/* Top Side - Image */}
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={productId}>
                 <Box
                   sx={{
-                    position: "relative",
-                    width: "100%",
-                    height: isMobile ? "150px" : "200px",
-                    overflow: "hidden",
-                    borderRadius: "8px",
-                    backgroundColor: "white",
-                    cursor: "pointer",
-                    marginBottom: 2,
-                  }}
-                  onClick={() => {
-                    router.push("/product/" + productId);
-                  }}
-                >
-                  {/* Premium Badge */}
-                  {product.isPremium && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        left: 8,
-                        zIndex: 1,
-                      }}
-                    >
-                      <Image
-                        src="/premium symbol.png"
-                        alt="Premium Quality"
-                        width={isMobile ? 50 : 60}
-                        height={isMobile ? 40 : 48}
-                      />
-                    </Box>
-                  )}
-                  <Image
-                    src={(product.imageUrls?.[currentImages[productId] || 0] as string) || product.thumbnailUrl || "/placeholder-image.jpg"}
-                    alt={product.name}
-                    fill
-                    unoptimized={true}
-                    style={{
-                      objectFit: "contain",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </Box>
-
-                {/* Bottom Side - Product Details */}
-                <Box
-                  sx={{
-                    width: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "space-between",
+                    minHeight: "auto",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    borderRadius: "8px",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    p: 2,
+                    backgroundColor: "#f8f3ea",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    },
                   }}
                 >
-                  {/* Product Title */}
-                  <Typography
-                    variant="subtitle1"
+                  {/* Top Side - Image */}
+                  <Box
                     sx={{
-                      fontWeight: 600,
-                      color: "text.primary",
-                      marginBottom: 1,
+                      position: "relative",
+                      width: "100%",
+                      height: isMobile ? "150px" : "200px",
+                      overflow: "hidden",
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                      cursor: "pointer",
+                      marginBottom: 2,
+                    }}
+                    onClick={() => {
+                      router.push("/product/" + productId);
                     }}
                   >
-                    {product.name}
-                  </Typography>
-
-                  {/* Packet Size & Quantity Side by Side */}
-                  <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start", marginBottom: 1, flexWrap: "wrap" }}>
-                    {/* Packet Size Selector */}
-                    {product.pricesAndSkus && product.pricesAndSkus.length > 0 && (
-                      <Box sx={{ flex: 1, minWidth: "140px" }}>
-                        <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary", fontWeight: 600 }}>
-                          Select Size:
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                          {product.pricesAndSkus.map((sku, index) => (
-                            <Chip
-                              key={index}
-                              label={`${sku.weightValue}${sku.weightUnit}`}
-                              onClick={() => {
-                                setSelectedPackets(prev => ({ ...prev, [productId]: index }));
-                                setCurrentImages(prev => ({ ...prev, [productId]: index % (product.imageUrls?.length || 1) }));
-                              }}
-                              variant={selectedPackets[productId] === index ? "filled" : "outlined"}
-                              size="small"
-                              sx={{
-                                cursor: "pointer",
-                                backgroundColor: selectedPackets[productId] === index ? "primary.main" : "transparent",
-                                color: selectedPackets[productId] === index ? "primary.contrastText" : "text.primary",
-                              }}
-                            />
-                          ))}
-                        </Box>
+                    {/* Premium Badge */}
+                    {product.isPremium && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          left: 8,
+                          zIndex: 1,
+                        }}
+                      >
+                        <Image
+                          src="/premium symbol.png"
+                          alt="Premium Quality"
+                          width={isMobile ? 50 : 60}
+                          height={isMobile ? 40 : 48}
+                        />
                       </Box>
                     )}
-
-                    {/* Quantity Selector */}
-                    <Box sx={{ flex: 1, minWidth: "120px" }}>
-                      <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary", fontWeight: 600 }}>
-                        Quantity:
-                      </Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                        <Button
-                          size="small"
-                          onClick={() => {
-                            const currentQty = quantities[productId] || 1;
-                            if (currentQty > 1) {
-                              setQuantities(prev => ({ ...prev, [productId]: currentQty - 1 }));
-                            }
-                          }}
-                          variant="outlined"
-                          sx={{ minWidth: "32px", p: 0.5 }}
-                        >
-                          −
-                        </Button>
-                        <Typography variant="body2" sx={{ minWidth: "30px", textAlign: "center", fontWeight: 600 }}>
-                          {quantities[productId] || 1}
-                        </Typography>
-                        <Button
-                          size="small"
-                          onClick={() => {
-                            const currentQty = quantities[productId] || 1;
-                            setQuantities(prev => ({ ...prev, [productId]: currentQty + 1 }));
-                          }}
-                          variant="outlined"
-                          sx={{ minWidth: "32px", p: 0.5 }}
-                        >
-                          +
-                        </Button>
-                      </Box>
-                    </Box>
+                    <Image
+                      // src={(product.imageUrls?.[currentImages[productId] || 0] as string) || product.thumbnailUrl || "/placeholder-image.jpg"}
+                      src={product.thumbnailUrl || "/placeholder-image.jpg"}
+                      alt={product.name}
+                      fill
+                      unoptimized={true}
+                      style={{
+                        objectFit: "contain",
+                        borderRadius: "8px",
+                      }}
+                    />
                   </Box>
 
-                  {/* Price Display */}
-                  {product.pricesAndSkus && product.pricesAndSkus.length > 0 && (
-                    <Box sx={{ marginBottom: 1.5 }}>
-                      {(() => {
-                        const selectedIndex = selectedPackets[productId] || 0;
-                        const selectedSku = product.pricesAndSkus[selectedIndex];
-                        const hasDiscount = selectedSku && selectedSku.discountedAmount;
-                        return (
-                          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
-                              ₹{hasDiscount ? selectedSku.discountedAmount : selectedSku?.price}
-                            </Typography>
-                            {hasDiscount && (
-                              <Typography
-                                variant="body2"
-                                sx={{ textDecoration: "line-through", color: "text.secondary" }}
-                              >
-                                ₹{selectedSku.price}
-                              </Typography>
-                            )}
-                          </Box>
-                        );
-                      })()}
-                    </Box>
-                  )}
-
-                  {/* Add to Cart Button */}
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    fullWidth
+                  {/* Bottom Side - Product Details */}
+                  <Box
                     sx={{
-                      backgroundColor: "primary.main",
-                      color: "primary.contrastText",
-                      py: 0.75,
-                      fontWeight: 600,
-                      mt: 1,
-                      "&:hover": {
-                        backgroundColor: "primary.dark",
-                      },
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
                     }}
-                    onClick={() => handleAddToCart(product)}
                   >
-                    Add to Cart
-                  </Button>
+                    {/* Product Title */}
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 600,
+                        color: "text.primary",
+                        marginBottom: 1,
+                      }}
+                    >
+                      {product.name}
+                    </Typography>
+
+                    {/* Packet Size & Quantity Side by Side */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        alignItems: "flex-start",
+                        marginBottom: 1,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {/* Packet Size Selector */}
+                      {product.pricesAndSkus &&
+                        product.pricesAndSkus.length > 0 && (
+                          <Box sx={{ flex: 1, minWidth: "140px" }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                mb: 0.5,
+                                display: "block",
+                                color: "text.secondary",
+                                fontWeight: 600,
+                              }}
+                            >
+                              Select Size:
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 0.5,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              {product.pricesAndSkus.map((sku, index) => (
+                                <Chip
+                                  key={index}
+                                  label={`${sku.weightValue}${sku.weightUnit}`}
+                                  onClick={() => {
+                                    setSelectedPackets((prev) => ({
+                                      ...prev,
+                                      [productId]: index,
+                                    }));
+                                    setCurrentImages((prev) => ({
+                                      ...prev,
+                                      [productId]:
+                                        index %
+                                        (product.imageUrls?.length || 1),
+                                    }));
+                                  }}
+                                  variant={
+                                    selectedPackets[productId] === index
+                                      ? "filled"
+                                      : "outlined"
+                                  }
+                                  size="small"
+                                  sx={{
+                                    cursor: "pointer",
+                                    backgroundColor:
+                                      selectedPackets[productId] === index
+                                        ? "primary.main"
+                                        : "transparent",
+                                    color:
+                                      selectedPackets[productId] === index
+                                        ? "primary.contrastText"
+                                        : "text.primary",
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+
+                      {/* Quantity Selector */}
+                      <Box sx={{ flex: 1, minWidth: "120px" }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            mb: 0.5,
+                            display: "block",
+                            color: "text.secondary",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Quantity:
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              const currentQty = quantities[productId] || 1;
+                              if (currentQty > 1) {
+                                setQuantities((prev) => ({
+                                  ...prev,
+                                  [productId]: currentQty - 1,
+                                }));
+                              }
+                            }}
+                            variant="outlined"
+                            sx={{ minWidth: "32px", p: 0.5 }}
+                          >
+                            −
+                          </Button>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              minWidth: "30px",
+                              textAlign: "center",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {quantities[productId] || 1}
+                          </Typography>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              const currentQty = quantities[productId] || 1;
+                              setQuantities((prev) => ({
+                                ...prev,
+                                [productId]: currentQty + 1,
+                              }));
+                            }}
+                            variant="outlined"
+                            sx={{ minWidth: "32px", p: 0.5 }}
+                          >
+                            +
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Box>
+
+                    {/* Price Display */}
+                    {product.pricesAndSkus &&
+                      product.pricesAndSkus.length > 0 && (
+                        <Box sx={{ marginBottom: 1.5 }}>
+                          {(() => {
+                            const selectedIndex =
+                              selectedPackets[productId] || 0;
+                            const selectedSku =
+                              product.pricesAndSkus[selectedIndex];
+                            const hasDiscount =
+                              selectedSku && selectedSku.discountedAmount;
+                            return (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  gap: 1,
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 600,
+                                    color: "primary.main",
+                                  }}
+                                >
+                                  ₹
+                                  {hasDiscount
+                                    ? selectedSku.discountedAmount
+                                    : selectedSku?.price}
+                                </Typography>
+                                {hasDiscount && (
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      textDecoration: "line-through",
+                                      color: "text.secondary",
+                                    }}
+                                  >
+                                    ₹{selectedSku.price}
+                                  </Typography>
+                                )}
+                              </Box>
+                            );
+                          })()}
+                        </Box>
+                      )}
+
+                    {/* Add to Cart Button */}
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      fullWidth
+                      sx={{
+                        backgroundColor: "primary.main",
+                        color: "primary.contrastText",
+                        py: 0.75,
+                        fontWeight: 600,
+                        mt: 1,
+                        "&:hover": {
+                          backgroundColor: "primary.dark",
+                        },
+                      }}
+                      onClick={() => handleAddToCart(product)}
+                    >
+                      Add to Cart
+                    </Button>
+                  </Box>
                 </Box>
-              </Box>
-            </Grid>
+              </Grid>
             );
           })}
         </Grid>

@@ -15,7 +15,6 @@ const certificates: Certificate[] = [
   { name: "HACCP", image: "/certificates/HACCP.png" },
   { name: "FSSAI", image: "/certificates/FSSAI.jpg" },
   { name: "IIA", image: "/certificates/IIA.png" },
-  { name: "HALAL", image: "/certificates/HALAL.avif" },
   { name: "SPICE_BOARD", image: "/certificates/SpiceBoard.png" },
   { name: "ISO", image: "/certificates/ISO.png" },
 ];
