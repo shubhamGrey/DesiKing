@@ -2680,7 +2680,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 invoice_date = DateTime.UtcNow.ToString("dd MMM yyyy"),
 
                 // Add only when MPS
-                pieces_detail = totalPieces > 1 ? pieces : null
+                pieces_detail = totalPieces > 0 ? pieces : null
             };
 
             var request = new DtdcSoftDataOrderRequestModel
