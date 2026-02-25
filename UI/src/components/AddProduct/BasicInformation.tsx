@@ -13,6 +13,7 @@ import {
   FormattedCategory,
   ProductFormData,
 } from "@/types/product";
+import theme from "@/styles/theme";
 
 interface BasicInformationProps {
   control: Control<ProductFormData>;
