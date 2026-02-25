@@ -1349,7 +1349,7 @@ const OrderDetailsContent: React.FC = () => {
 
       // Call the existing shipment label API
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/Shipment/label/${orderDetails.trackingNumber}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/shipment/dtdc/label/${orderDetails.trackingNumber}`,
         {
           method: "GET",
           headers: {

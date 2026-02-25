@@ -40,6 +40,7 @@ import {
 import {
   createOrder,
   initializeRazorpayPayment,
+  validatePinCode,
   verifyPayment,
 } from "@/utils/razorpayUtils";
 import { useEnhancedCart } from "@/hooks/useEnhancedCart";
@@ -688,14 +689,21 @@ const Cart = () => {
 
       // Get or save shipping address ID
       let shippingAddressId: string;
+
+      let shippingAddressPinCode: string;
+
       if (useManualAddress) {
         // Save new shipping address and get ID
         const shippingAddress = formatAddressData(formData, "SHIPPING");
         const savedShippingAddress = await saveAddress(shippingAddress);
         shippingAddressId = savedShippingAddress?.id || savedShippingAddress;
+        shippingAddressPinCode = formData.zipCode;
       } else if (selectedAddress) {
         // Use existing selected address ID
         shippingAddressId = selectedAddress.id;
+        shippingAddressPinCode = selectedAddress.fullAddress
+          .split("-")[1]
+          .trim();
       } else {
         throw new Error("Please select or enter a shipping address");
       }
@@ -717,6 +725,15 @@ const Cart = () => {
       } else {
         // Use same address ID as shipping
         billingAddressId = shippingAddressId;
+      }
+
+      const res = await validatePinCode({
+        fromPincode: "110030",
+        toPincode: shippingAddressPinCode,
+      });
+
+      if (!res) {
+        throw new Error("Invalid pin code");
       }
 
       // Generate a new GUID for the order (used as frontend reference)
