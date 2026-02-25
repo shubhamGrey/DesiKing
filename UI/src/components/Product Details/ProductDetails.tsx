@@ -304,14 +304,14 @@ const ProductDetails = ({
                     <Typography variant="h5" sx={{ color: "secondary.main" }}>
                       <span style={{ textDecoration: "line-through" }}>
                         {getCurrencySymbol(selectedSKU?.currencyCode || "")}
-                        {selectedSKU?.price}
+                        {(selectedSKU?.price || 0).toFixed(2)}
                       </span>
                     </Typography>
                     {"  "}
                     <Typography variant="h5" sx={{ color: "primary.main" }}>
                       <span>
                         {getCurrencySymbol(selectedSKU?.currencyCode || "")}
-                        {selectedSKU?.discountedAmount}
+                        {(selectedSKU?.discountedAmount || 0).toFixed(2)}
                       </span>
                     </Typography>
                     {"  "}

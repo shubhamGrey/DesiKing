@@ -433,7 +433,7 @@ const CheckoutContent: React.FC = () => {
 
         {paymentMethod === "cod" && (
           <Alert severity="info" sx={{ mt: 2 }}>
-            You will pay ₹{finalAmount} when your order is delivered.
+            You will pay ₹{finalAmount.toFixed(2)} when your order is delivered.
           </Alert>
         )}
 
@@ -585,7 +585,6 @@ const CheckoutContent: React.FC = () => {
 
         <Typography
           variant={isMobile ? "h5" : "h4"}
-          
           fontWeight={600}
           color="primary.main"
           sx={{ mb: 2 }}

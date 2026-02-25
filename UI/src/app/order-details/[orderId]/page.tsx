@@ -348,7 +348,9 @@ const generateOrderTimeline = (
     timeline.push({
       status: "Payment Confirmed",
       timestamp: order.createdDate,
-      description: `Payment of ₹${order.totalAmount} received and confirmed`,
+      description: `Payment of ₹${order.totalAmount.toFixed(
+        2
+      )} received and confirmed`,
       location: "Payment Gateway",
     });
   } else if (order.status === "failed") {

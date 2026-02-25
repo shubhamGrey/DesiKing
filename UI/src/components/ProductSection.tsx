@@ -478,8 +478,8 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                                 >
                                   ₹
                                   {hasDiscount
-                                    ? selectedSku.discountedAmount
-                                    : selectedSku?.price}
+                                    ? selectedSku.discountedAmount.toFixed(2)
+                                    : (selectedSku?.price || 0).toFixed(2)}
                                 </Typography>
                                 {hasDiscount && (
                                   <Typography
@@ -489,7 +489,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                                       color: "text.secondary",
                                     }}
                                   >
-                                    ₹{selectedSku.price}
+                                    ₹{selectedSku.price.toFixed(2)}
                                   </Typography>
                                 )}
                               </Box>

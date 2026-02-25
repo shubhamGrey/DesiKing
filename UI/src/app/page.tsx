@@ -749,7 +749,7 @@ const Home: React.FC = () => {
                                       {getCurrencySymbol(
                                         selectedSku.currencyCode || "INR"
                                       )}
-                                      {selectedSku.price}
+                                      {selectedSku.price.toFixed(2)}
                                     </Typography>
                                     <Typography
                                       variant="h6"
@@ -763,7 +763,7 @@ const Home: React.FC = () => {
                                       {getCurrencySymbol(
                                         selectedSku.currencyCode || "INR"
                                       )}
-                                      {selectedSku.discountedAmount}
+                                      {selectedSku.discountedAmount.toFixed(2)}
                                     </Typography>
                                   </Box>
                                 ) : (
@@ -777,7 +777,7 @@ const Home: React.FC = () => {
                                     {getCurrencySymbol(
                                       selectedSku?.currencyCode || "INR"
                                     )}
-                                    {selectedSku?.price || 0}
+                                    {(selectedSku?.price || 0).toFixed(2)}
                                   </Typography>
                                 )}
                               </Box>
@@ -1083,7 +1083,7 @@ const Home: React.FC = () => {
                                             {getCurrencySymbol(
                                               selectedSku.currencyCode || "INR"
                                             )}
-                                            {selectedSku.price}
+                                            {selectedSku.price.toFixed(2)}
                                           </Typography>
                                           <Typography
                                             variant="body2"
@@ -1095,7 +1095,9 @@ const Home: React.FC = () => {
                                             {getCurrencySymbol(
                                               selectedSku.currencyCode || "INR"
                                             )}
-                                            {selectedSku.discountedAmount}
+                                            {selectedSku.discountedAmount.toFixed(
+                                              2
+                                            )}
                                           </Typography>
                                         </Box>
                                       ) : (
@@ -1109,7 +1111,7 @@ const Home: React.FC = () => {
                                           {getCurrencySymbol(
                                             selectedSku?.currencyCode || "INR"
                                           )}
-                                          {selectedSku?.price || 0}
+                                          {(selectedSku?.price || 0).toFixed(2)}
                                         </Typography>
                                       )}
                                     </Box>
