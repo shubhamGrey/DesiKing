@@ -13,7 +13,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { CheckCircle, ErrorOutline, Home, Receipt } from "@mui/icons-material";
-import { michroma } from "@/styles/fonts";
 import { verifyPayment } from "@/utils/razorpayUtils";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 
@@ -173,7 +172,7 @@ const PaymentResultContent: React.FC = () => {
 
           <Typography
             variant="h5"
-            fontFamily={michroma.style.fontFamily}
+            
             fontWeight={600}
             color="primary.main"
             sx={{ mb: 2 }}
@@ -229,7 +228,7 @@ const PaymentResultContent: React.FC = () => {
             />
             <Typography
               variant="h4"
-              fontFamily={michroma.style.fontFamily}
+              
               fontWeight={600}
               color="success.main"
               gutterBottom
@@ -320,7 +319,7 @@ const PaymentResultContent: React.FC = () => {
             />
             <Typography
               variant="h4"
-              fontFamily={michroma.style.fontFamily}
+              
               fontWeight={600}
               color="error.main"
               gutterBottom

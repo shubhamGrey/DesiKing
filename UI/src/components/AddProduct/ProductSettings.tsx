@@ -9,7 +9,6 @@ import {
   CardContent,
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
-import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 interface ProductSettingsProps {
@@ -44,12 +43,7 @@ const ProductSettings: React.FC<ProductSettingsProps> = ({
   >
     <CardContent>
       <Box>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          sx={{ mb: 3 }}
-        >
+        <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
           Product Settings
         </Typography>
         <Stack spacing={2}>

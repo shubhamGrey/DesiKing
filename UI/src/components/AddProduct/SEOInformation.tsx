@@ -1,7 +1,6 @@
 import React from "react";
 import { Grid, TextField, Card, CardContent, Typography } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
-import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 const SEOInformation = ({ control }: { control: Control<ProductFormData> }) => (
@@ -16,12 +15,7 @@ const SEOInformation = ({ control }: { control: Control<ProductFormData> }) => (
     elevation={0}
   >
     <CardContent>
-      <Typography
-        variant="h6"
-        fontFamily={michroma.style.fontFamily}
-        color="primary.main"
-        sx={{ mb: 3 }}
-      >
+      <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
         SEO Information
       </Typography>
       <Grid container spacing={3}>

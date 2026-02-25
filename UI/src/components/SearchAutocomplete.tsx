@@ -28,7 +28,6 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import theme from "@/styles/theme";
-import { michroma } from "@/styles/fonts";
 
 import { Product, ProductFormData } from "@/types/product";
 
@@ -43,7 +42,9 @@ export default function SearchAutocomplete({
 }: SearchAutocompleteProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<ProductFormData[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<ProductFormData[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ProductFormData[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [allProductsLoaded, setAllProductsLoaded] = useState(false);
@@ -466,9 +467,15 @@ export default function SearchAutocomplete({
                     borderColor: "grey.100",
                   }}
                 >
-                  {typeof (product.thumbnailUrl ?? (product.imageUrls && product.imageUrls[0])) === "string" ? (
+                  {typeof (
+                    product.thumbnailUrl ??
+                    (product.imageUrls && product.imageUrls[0])
+                  ) === "string" ? (
                     <Image
-                      src={product.thumbnailUrl ?? (product.imageUrls && product.imageUrls[0]) as string}
+                      src={
+                        product.thumbnailUrl ??
+                        ((product.imageUrls && product.imageUrls[0]) as string)
+                      }
                       alt={product.name}
                       width={56}
                       height={56}
@@ -507,7 +514,6 @@ export default function SearchAutocomplete({
                     sx={{
                       fontWeight: 600,
                       color: "text.primary",
-                      fontFamily: michroma.style.fontFamily,
                       fontSize: "0.95rem",
                       overflow: "hidden",
                       textOverflow: "ellipsis",

@@ -21,7 +21,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import NextLink from "next/link";
 import Image from "next/image";
 import theme from "@/styles/theme";
-import { michroma } from "@/styles/fonts";
 
 interface Product {
   id: string;
@@ -125,21 +124,10 @@ function SearchResults() {
           aria-label="breadcrumb"
           sx={{ mb: 2 }}
         >
-          <Link
-            component={NextLink}
-            underline="hover"
-            color="inherit"
-            href="/"
-            sx={{ fontFamily: michroma.style.fontFamily }}
-          >
+          <Link component={NextLink} underline="hover" color="inherit" href="/">
             Home
           </Link>
-          <Typography
-            color="text.primary"
-            sx={{ fontFamily: michroma.style.fontFamily }}
-          >
-            Search Results
-          </Typography>
+          <Typography color="text.primary">Search Results</Typography>
         </Breadcrumbs>
 
         <Paper
@@ -157,7 +145,6 @@ function SearchResults() {
           <Typography
             variant={isMobile ? "h5" : "h4"}
             sx={{
-              fontFamily: michroma.style.fontFamily,
               fontWeight: 600,
               mb: 1,
             }}
@@ -196,7 +183,6 @@ function SearchResults() {
           <Typography
             variant="h6"
             sx={{
-              fontFamily: michroma.style.fontFamily,
               mb: 3,
               color: "text.secondary",
             }}
@@ -279,7 +265,6 @@ function SearchResults() {
                         variant="h6"
                         component="h3"
                         sx={{
-                          fontFamily: michroma.style.fontFamily,
                           fontSize: "1rem",
                           fontWeight: 600,
                           mb: 1,
@@ -321,7 +306,6 @@ function SearchResults() {
                         variant="outlined"
                         fullWidth
                         sx={{
-                          fontFamily: michroma.style.fontFamily,
                           textTransform: "none",
                           fontWeight: 600,
                         }}
@@ -357,7 +341,6 @@ function SearchResults() {
           <Typography
             variant="h5"
             sx={{
-              fontFamily: michroma.style.fontFamily,
               mb: 2,
               color: "text.secondary",
             }}
@@ -373,7 +356,6 @@ function SearchResults() {
             variant="contained"
             onClick={() => router.push("/products")}
             sx={{
-              fontFamily: michroma.style.fontFamily,
               textTransform: "none",
               fontWeight: 600,
             }}
@@ -398,7 +380,6 @@ function SearchResults() {
         <Typography
           variant="h5"
           sx={{
-            fontFamily: michroma.style.fontFamily,
             mb: 2,
             color: "text.secondary",
           }}
@@ -413,7 +394,6 @@ function SearchResults() {
           variant="contained"
           onClick={() => router.push("/products")}
           sx={{
-            fontFamily: michroma.style.fontFamily,
             textTransform: "none",
             fontWeight: 600,
           }}

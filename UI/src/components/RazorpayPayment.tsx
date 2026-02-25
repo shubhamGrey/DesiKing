@@ -18,7 +18,6 @@ import {
   initializeRazorpayPayment,
   formatAmountForRazorpay,
 } from "@/utils/razorpayUtils";
-import { michroma } from "@/styles/fonts";
 
 interface RazorpayPaymentProps {
   open: boolean;
@@ -98,7 +97,6 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
     >
       <DialogTitle
         sx={{
-          fontFamily: michroma.style.fontFamily,
           fontWeight: 600,
           color: "primary.main",
           fontSize: "1.25rem",
@@ -141,12 +139,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
               <Typography variant="body1" fontWeight={600} color="text.primary">
                 Total:
               </Typography>
-              <Typography
-                variant="body1"
-                fontWeight={600}
-                color="primary.main"
-                fontFamily={michroma.style.fontFamily}
-              >
+              <Typography variant="body1" fontWeight={600} color="primary.main">
                 ₹{orderAmount.toFixed(2)}
               </Typography>
             </Box>

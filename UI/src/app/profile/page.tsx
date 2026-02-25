@@ -50,7 +50,6 @@ type UserProfile = {
   roleName?: string;
   [key: string]: any;
 };
-import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { Order, OrdersApiResponse } from "@/types/order";
 import { Product } from "@/types/product";
@@ -371,29 +370,36 @@ const ProfileContent: React.FC = () => {
 
   const orderStatuses = [
     "All",
+    "Order Placed",
     "Confirmed",
     "Shipped",
     "Delivered",
+    "Failed",
     "Cancelled",
     "Returned",
+    "Out for Delivery",
   ];
 
   const getStatusFromOrderStatus = (status: string) => {
     switch (status.toLowerCase()) {
       case "created":
-        return "Confirmed";
+        return "Order Placed";
       case "shipped":
         return "Shipped";
       case "paid":
-        return "Delivered";
+        return "Confirmed";
       case "failed":
-        return "Cancelled";
+        return "Failed";
       case "cancelled":
         return "Cancelled";
       case "returned":
         return "Returned";
+      case "out_for_delivery":
+        return "Out for Delivery";
+      case "delivered":
+        return "Delivered";
       default:
-        return "Confirmed";
+        return "Order Placed";
     }
   };
 
@@ -573,11 +579,7 @@ const ProfileContent: React.FC = () => {
           alignItems="center"
           mb={3}
         >
-          <Typography
-            variant="h6"
-            color="primary.main"
-            fontFamily={michroma.style.fontFamily}
-          >
+          <Typography variant="h6" color="primary.main">
             Personal Information
           </Typography>
           {!isEditing ? (
@@ -691,12 +693,7 @@ const ProfileContent: React.FC = () => {
       elevation={0}
     >
       <CardContent>
-        <Typography
-          variant="h6"
-          color="primary.main"
-          fontFamily={michroma.style.fontFamily}
-          sx={{ mb: 3 }}
-        >
+        <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
           My Orders
         </Typography>
 
@@ -825,24 +822,28 @@ const ProfileContent: React.FC = () => {
                       >
                         <Chip
                           label={getStatusFromOrderStatus(order.status)}
-                          color={
-                            getStatusFromOrderStatus(order.status) ===
-                            "Delivered"
-                              ? "success"
-                              : getStatusFromOrderStatus(order.status) ===
-                                "Cancelled"
-                              ? "error"
-                              : getStatusFromOrderStatus(order.status) ===
-                                "Confirmed"
-                              ? "info"
-                              : getStatusFromOrderStatus(order.status) ===
-                                "Shipped"
-                              ? "warning"
-                              : getStatusFromOrderStatus(order.status) ===
-                                "Returned"
-                              ? "secondary"
-                              : "default"
-                          }
+                          color={(() => {
+                            const status = getStatusFromOrderStatus(
+                              order.status
+                            );
+                            switch (status) {
+                              case "Delivered":
+                              case "Confirmed":
+                                return "success";
+                              case "Failed":
+                              case "Cancelled":
+                                return "error";
+                              case "Shipped":
+                              case "Out for Delivery":
+                                return "warning";
+                              case "Returned":
+                                return "secondary";
+                              case "Order Placed":
+                                return "info";
+                              default:
+                                return "default";
+                            }
+                          })()}
                           size="small"
                           sx={{ fontWeight: "600" }}
                         />
@@ -1136,12 +1137,7 @@ const ProfileContent: React.FC = () => {
             elevation={0}
           >
             <CardContent>
-              <Typography
-                variant="h6"
-                color="primary.main"
-                fontFamily={michroma.style.fontFamily}
-                sx={{ mb: 3 }}
-              >
+              <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                 Saved Addresses
               </Typography>
               {getUserId() ? (
@@ -1200,7 +1196,6 @@ const ProfileContent: React.FC = () => {
         >
           <Typography
             variant={isMobile ? "h5" : "h4"}
-            fontFamily={michroma.style.fontFamily}
             fontWeight={600}
             color="primary.main"
           >

@@ -1,6 +1,5 @@
 import { Container, Typography, Box } from "@mui/material";
 import React from "react";
-import { michroma } from "@/styles/fonts";
 
 const Shipping: React.FC = () => {
   return (
@@ -8,7 +7,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -34,7 +33,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -54,7 +53,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -72,7 +71,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -80,7 +79,7 @@ const Shipping: React.FC = () => {
         </Typography>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -112,7 +111,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -151,7 +150,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -159,7 +158,7 @@ const Shipping: React.FC = () => {
         </Typography>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -172,7 +171,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -188,7 +187,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -205,7 +204,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -219,7 +218,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -233,7 +232,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -247,7 +246,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -262,7 +261,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -278,7 +277,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -294,7 +293,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -311,7 +310,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -319,7 +318,7 @@ const Shipping: React.FC = () => {
         </Typography>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -333,7 +332,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -350,7 +349,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -367,7 +366,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -380,7 +379,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -394,7 +393,7 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -410,7 +409,7 @@ const Shipping: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >

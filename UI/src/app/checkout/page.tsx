@@ -35,7 +35,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { isLoggedIn, getUserId } from "@/utils/auth";
-import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 
 interface ShippingDetails {
@@ -586,7 +585,7 @@ const CheckoutContent: React.FC = () => {
 
         <Typography
           variant={isMobile ? "h5" : "h4"}
-          fontFamily={michroma.style.fontFamily}
+          
           fontWeight={600}
           color="primary.main"
           sx={{ mb: 2 }}

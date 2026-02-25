@@ -19,7 +19,6 @@ import {
   Rating,
 } from "@mui/material";
 import React from "react";
-import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 const AdditionalDetails = ({
@@ -369,7 +368,7 @@ const AdditionalDetails = ({
                       <Typography
                         variant="h6"
                         sx={{
-                          fontFamily: michroma.style.fontFamily,
+                          
                           fontWeight: 600,
                           mb: isMobile ? 0 : 0.15,
                           fontSize: isMobile ? "0.95rem" : "1rem",

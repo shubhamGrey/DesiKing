@@ -2,7 +2,6 @@ import React from "react";
 import { Grid, TextField, Card, CardContent, Typography } from "@mui/material";
 import { Control, Controller } from "react-hook-form";
 import { DatePicker } from "@mui/x-date-pickers";
-import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 const ProductDetails = ({
@@ -26,12 +25,7 @@ const ProductDetails = ({
     elevation={0}
   >
     <CardContent>
-      <Typography
-        variant="h6"
-        fontFamily={michroma.style.fontFamily}
-        color="primary.main"
-        sx={{ mb: 3 }}
-      >
+      <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
         Product Details
       </Typography>
       <Grid container spacing={3}>

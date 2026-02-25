@@ -30,7 +30,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { michroma } from "@/styles/fonts";
 import { Brand, CategoryFormData, FormattedBrand } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
@@ -254,7 +253,7 @@ const AddCategory: React.FC = () => {
           >
             <Typography
               variant={isMobile ? "h5" : "h4"}
-              fontFamily={michroma.style.fontFamily}
+              
               fontWeight={600}
               color="primary.main"
             >
@@ -316,7 +315,7 @@ const AddCategory: React.FC = () => {
                 <CardContent>
                   <Typography
                     variant="h6"
-                    fontFamily={michroma.style.fontFamily}
+                    
                     color="primary.main"
                     sx={{ mb: 3 }}
                   >
@@ -409,7 +408,7 @@ const AddCategory: React.FC = () => {
                 <CardContent>
                   <Typography
                     variant="h6"
-                    fontFamily={michroma.style.fontFamily}
+                    
                     color="primary.main"
                     sx={{ mb: 3 }}
                   >
@@ -467,7 +466,7 @@ const AddCategory: React.FC = () => {
                 <CardContent>
                   <Typography
                     variant="h6"
-                    fontFamily={michroma.style.fontFamily}
+                    
                     color="primary.main"
                     sx={{ mb: 3 }}
                   >
@@ -636,7 +635,7 @@ const AddCategory: React.FC = () => {
                 <CardContent>
                   <Typography
                     variant="h6"
-                    fontFamily={michroma.style.fontFamily}
+                    
                     color="primary.main"
                     sx={{ mb: 3 }}
                   >

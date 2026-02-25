@@ -20,18 +20,11 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
-import { Michroma } from "next/font/google";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
-
-const michroma = Michroma({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-});
 
 import { ProductFormData } from "@/types/product";
 
@@ -60,7 +53,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
     Record<string, number>
   >({});
   const [currentImages, setCurrentImages] = useState<Record<string, number>>(
-    {},
+    {}
   );
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -68,7 +61,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success",
+    "success"
   );
 
   // Initialize packet selections on component mount
@@ -101,7 +94,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -145,7 +138,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
     if (!accessToken) {
       // Redirect to login page with return URL
       router.push(
-        `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
       );
       return;
     }
@@ -212,7 +205,6 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
           sx={{ color: "primary.main" }}
           fontWeight={600}
           textAlign={"center"}
-          fontFamily={michroma.style.fontFamily}
         >
           {item.categoryName}
         </Typography>
@@ -251,7 +243,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       height: isMobile ? "150px" : "200px",
                       overflow: "hidden",
                       borderRadius: "8px",
-                      backgroundColor: "white",
+                      backgroundColor: "transparent",
                       cursor: "pointer",
                       marginBottom: 2,
                     }}
@@ -277,17 +269,29 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                         />
                       </Box>
                     )}
-                    <Image
-                      // src={(product.imageUrls?.[currentImages[productId] || 0] as string) || product.thumbnailUrl || "/placeholder-image.jpg"}
-                      src={product.thumbnailUrl || "/placeholder-image.jpg"}
-                      alt={product.name}
-                      fill
-                      unoptimized={true}
-                      style={{
-                        objectFit: "contain",
-                        borderRadius: "8px",
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: isMobile ? "150px" : "200px",
+                        borderRadius: "16px",
+                        overflow: "hidden",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                        background: "transparent",
+                        position: "relative",
                       }}
-                    />
+                    >
+                      <Image
+                        src={product.thumbnailUrl || "/placeholder-image.jpg"}
+                        alt={product.name}
+                        fill
+                        unoptimized={true}
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "16px",
+                          background: "transparent",
+                        }}
+                      />
+                    </Box>
                   </Box>
 
                   {/* Bottom Side - Product Details */}

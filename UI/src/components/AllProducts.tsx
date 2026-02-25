@@ -58,6 +58,7 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
     <section
       style={{
         position: "relative",
+        fontFamily: theme.typography.body1.fontFamily,
         width: "100%",
         display: "flex",
         justifyContent: "center",

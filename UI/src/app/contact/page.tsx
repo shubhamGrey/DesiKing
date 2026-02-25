@@ -24,7 +24,6 @@ import {
   Phone,
   YouTube,
 } from "@mui/icons-material";
-import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -179,7 +178,7 @@ export default function Contact() {
               variant={isMobile ? "body1" : "h5"}
               color="primary.contrastText"
               sx={{ mb: 4, textAlign: "left", width: "100%" }}
-              fontFamily={michroma.style.fontFamily}
+              
               fontWeight={600}
               textAlign={"left"}
             >
@@ -233,7 +232,7 @@ export default function Contact() {
             variant="h4"
             sx={{ mb: 6 }}
             color="primary.main"
-            fontFamily={michroma.style.fontFamily}
+            
             fontWeight={600}
             textAlign={"center"}
           >

@@ -28,13 +28,12 @@ import {
   Remove,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
-import { michroma } from "@/styles/fonts";
+import theme from "@/styles/theme";
 import Testimonials from "@/components/Testimonials";
 import CertificateScroll from "@/components/CertificateScroll";
 import Chef from "../../public/Chef.jpg";
 import Cook from "../../public/Home Cook.jpg";
 import Blogger from "../../public/Food Blogger.jpg";
-import theme from "@/styles/theme";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
@@ -45,15 +44,22 @@ import Cookies from "js-cookie";
 import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
+import Carousal from "@/components/Carousal";
+import Purity from "../../public/GaramMasala5.jpg";
+import Quality from "../../public/GaramMasala4.webp";
+import Taste from "../../public/GaramMasala3.jpg";
+import Globe from "../../public/GaramMasala2.jpg";
 
 // Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (imageSrc: string | undefined | null): boolean => {
-  if (!imageSrc) return false;
-  return imageSrc.includes("cloud.agronexis.com");
+const shouldUnoptimizeImage = (
+  imageSrc: string | undefined | null
+): boolean => {
+  return imageSrc?.includes("cloud.agronexis.com") ?? false;
 };
 
 // Interface for featured products UI display
 interface FeaturedProduct {
+  thumbnailUrl: string;
   id: string;
   title: string;
   imageUrls: string[];
@@ -69,6 +75,13 @@ interface FeaturedProduct {
   }>;
   brandId: string;
 }
+
+const carousalImages = [
+  { image: Purity },
+  { image: Quality },
+  { image: Taste },
+  { image: Globe },
+];
 
 const achievements = [
   {
@@ -168,9 +181,15 @@ const Home: React.FC = () => {
   >([]);
 
   // Track selected packet size and image for each product
-  const [selectedPackets, setSelectedPackets] = React.useState<Record<string, number>>({});
-  const [currentImages, setCurrentImages] = React.useState<Record<string, number>>({});
-  const [quantities, setQuantities] = React.useState<Record<string, number>>({});
+  const [selectedPackets, setSelectedPackets] = React.useState<
+    Record<string, number>
+  >({});
+  const [currentImages, setCurrentImages] = React.useState<
+    Record<string, number>
+  >({});
+  const [quantities, setQuantities] = React.useState<Record<string, number>>(
+    {}
+  );
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
@@ -209,7 +228,7 @@ const Home: React.FC = () => {
         price: selectedSku.discountedAmount || selectedSku.price,
         productId: product.id.toString(),
         brandId: product.brandId,
-        image: product.imageUrls[currentImages[product.id] || 0],
+        image: product.thumbnailUrl || "/placeholder-image.jpg",
         quantity: quantity,
         sku: selectedSku.skuNumber,
       };
@@ -274,6 +293,7 @@ const Home: React.FC = () => {
           .map((product) => ({
             id: product.id,
             title: product.name,
+            thumbnailUrl: product.thumbnailUrl || "/placeholder-image.jpg",
             imageUrls: product.imageUrls || ["/placeholder-image.jpg"],
             description: product.description,
             pricesAndSkus: product.pricesAndSkus || [],
@@ -281,12 +301,12 @@ const Home: React.FC = () => {
           }));
 
         setFeaturedProducts(featured);
-        
+
         // Initialize selected packets, images, and quantities
         const initialPackets: Record<string, number> = {};
         const initialImages: Record<string, number> = {};
         const initialQuantities: Record<string, number> = {};
-        featured.forEach(product => {
+        featured.forEach((product) => {
           initialPackets[product.id] = 0;
           initialImages[product.id] = 0;
           initialQuantities[product.id] = 1;
@@ -531,6 +551,7 @@ const Home: React.FC = () => {
   return (
     <>
       <HomeGrid />
+      {/* <Carousal items={carousalImages} /> */}
       <Container
         sx={{
           mt: 3,
@@ -548,8 +569,11 @@ const Home: React.FC = () => {
         >
           <Typography
             variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 2 : 4, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
+            sx={{
+              mb: isMobile ? 2 : 4,
+              color: "primary.main",
+              fontFamily: theme.typography.h4.fontFamily,
+            }}
             fontWeight={600}
             textAlign={isMobile ? "left" : "center"}
           >
@@ -610,10 +634,15 @@ const Home: React.FC = () => {
                         }}
                       >
                         <Image
-                          src={product.imageUrls[currentImages[product.id] || 0]}
+                          src={
+                            // product.imageUrls[currentImages[product.id] || 0]
+                            product.thumbnailUrl || "/placeholder-image.jpg"
+                          }
                           alt={product.title}
                           fill
-                          unoptimized={shouldUnoptimizeImage(product.imageUrls[currentImages[product.id] || 0])}
+                          unoptimized={shouldUnoptimizeImage(
+                            product.thumbnailUrl || "/placeholder-image.jpg"
+                          )}
                           style={{
                             objectFit: "contain",
                             borderRadius: "8px",
@@ -637,6 +666,7 @@ const Home: React.FC = () => {
                             fontWeight: 600,
                             mb: 1.5,
                             color: "text.primary",
+                            fontFamily: theme.typography.subtitle1.fontFamily,
                           }}
                         >
                           {product.title}
@@ -644,49 +674,110 @@ const Home: React.FC = () => {
 
                         {/* Packet Size Selector */}
                         <Box sx={{ mb: 1.5 }}>
-                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              mb: 0.5,
+                              display: "block",
+                              color: "text.secondary",
+                            }}
+                          >
                             Select Size:
                           </Typography>
-                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                            {product.pricesAndSkus.slice(0, 4).map((sku, index) => (
-                              <Button
-                                key={sku.id}
-                                size="small"
-                                variant={selectedPackets[product.id] === index ? "contained" : "outlined"}
-                                onClick={() => {
-                                  setSelectedPackets(prev => ({ ...prev, [product.id]: index }));
-                                  setCurrentImages(prev => ({ ...prev, [product.id]: index % product.imageUrls.length }));
-                                }}
-                                sx={{
-                                  minWidth: "55px",
-                                  fontSize: "0.7rem",
-                                  py: 0.5,
-                                }}
-                              >
-                                {sku.weightValue}{sku.weightUnit}
-                              </Button>
-                            ))}
+                          <Box
+                            sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
+                          >
+                            {product.pricesAndSkus
+                              .slice(0, 4)
+                              .map((sku, index) => (
+                                <Button
+                                  key={sku.id}
+                                  size="small"
+                                  variant={
+                                    selectedPackets[product.id] === index
+                                      ? "contained"
+                                      : "outlined"
+                                  }
+                                  onClick={() => {
+                                    setSelectedPackets((prev) => ({
+                                      ...prev,
+                                      [product.id]: index,
+                                    }));
+                                    setCurrentImages((prev) => ({
+                                      ...prev,
+                                      [product.id]:
+                                        index % product.imageUrls.length,
+                                    }));
+                                  }}
+                                  sx={{
+                                    minWidth: "55px",
+                                    fontSize: "0.7rem",
+                                    py: 0.5,
+                                  }}
+                                >
+                                  {sku.weightValue}
+                                  {sku.weightUnit}
+                                </Button>
+                              ))}
                           </Box>
                         </Box>
 
                         {/* Price Display */}
                         <Box sx={{ mb: 1.5 }}>
                           {(() => {
-                            const selectedSku = product.pricesAndSkus[selectedPackets[product.id] || 0];
+                            const selectedSku =
+                              product.pricesAndSkus[
+                                selectedPackets[product.id] || 0
+                              ];
                             return (
                               <Box>
                                 {selectedSku?.discountedAmount ? (
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <Typography variant="body2" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
-                                      {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1,
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        textDecoration: "line-through",
+                                        color: "text.secondary",
+                                      }}
+                                    >
+                                      {getCurrencySymbol(
+                                        selectedSku.currencyCode || "INR"
+                                      )}
+                                      {selectedSku.price}
                                     </Typography>
-                                    <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
-                                      {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
+                                    <Typography
+                                      variant="h6"
+                                      sx={{
+                                        color: "primary.main",
+                                        fontWeight: 600,
+                                        fontFamily:
+                                          theme.typography.h6.fontFamily,
+                                      }}
+                                    >
+                                      {getCurrencySymbol(
+                                        selectedSku.currencyCode || "INR"
+                                      )}
+                                      {selectedSku.discountedAmount}
                                     </Typography>
                                   </Box>
                                 ) : (
-                                  <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
-                                    {getCurrencySymbol(selectedSku?.currencyCode || "INR")}{selectedSku?.price || 0}
+                                  <Typography
+                                    variant="h6"
+                                    sx={{
+                                      color: "primary.main",
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {getCurrencySymbol(
+                                      selectedSku?.currencyCode || "INR"
+                                    )}
+                                    {selectedSku?.price || 0}
                                   </Typography>
                                 )}
                               </Box>
@@ -696,16 +787,33 @@ const Home: React.FC = () => {
 
                         {/* Quantity Selector */}
                         <Box sx={{ mb: 1.5 }}>
-                          <Typography variant="caption" sx={{ mb: 0.5, display: "block", color: "text.secondary" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              mb: 0.5,
+                              display: "block",
+                              color: "text.secondary",
+                            }}
+                          >
                             Quantity:
                           </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "flex-end" }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              justifyContent: "flex-end",
+                            }}
+                          >
                             <IconButton
                               size="small"
                               onClick={() => {
-                                setQuantities(prev => ({
+                                setQuantities((prev) => ({
                                   ...prev,
-                                  [product.id]: Math.max(1, (prev[product.id] || 1) - 1)
+                                  [product.id]: Math.max(
+                                    1,
+                                    (prev[product.id] || 1) - 1
+                                  ),
                                 }));
                               }}
                               sx={{
@@ -716,15 +824,22 @@ const Home: React.FC = () => {
                             >
                               <Remove fontSize="small" />
                             </IconButton>
-                            <Typography variant="body2" sx={{ minWidth: "40px", textAlign: "center", fontWeight: 600 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                minWidth: "40px",
+                                textAlign: "center",
+                                fontWeight: 600,
+                              }}
+                            >
                               {quantities[product.id] || 1}
                             </Typography>
                             <IconButton
                               size="small"
                               onClick={() => {
-                                setQuantities(prev => ({
+                                setQuantities((prev) => ({
                                   ...prev,
-                                  [product.id]: (prev[product.id] || 1) + 1
+                                  [product.id]: (prev[product.id] || 1) + 1,
                                 }));
                               }}
                               sx={{
@@ -829,11 +944,17 @@ const Home: React.FC = () => {
                               }}
                             >
                               <Image
-                                src={product.imageUrls[currentImages[product.id] || 0]}
+                                src={
+                                  product.imageUrls[
+                                    currentImages[product.id] || 0
+                                  ]
+                                }
                                 alt={product.title}
                                 fill
                                 unoptimized={shouldUnoptimizeImage(
-                                  product.imageUrls[currentImages[product.id] || 0]
+                                  product.imageUrls[
+                                    currentImages[product.id] || 0
+                                  ]
                                 )}
                                 style={{
                                   objectFit: "contain",
@@ -860,6 +981,8 @@ const Home: React.FC = () => {
                                     mb: 0.5,
                                     fontWeight: 600,
                                     fontSize: "0.9rem",
+                                    fontFamily:
+                                      theme.typography.subtitle2.fontFamily,
                                   }}
                                 >
                                   {product.title}
@@ -888,48 +1011,105 @@ const Home: React.FC = () => {
                                   </Typography>
                                 </Tooltip>
                               </Box>
-                              
+
                               {/* Packet Size Selector - Mobile */}
-                              <Box sx={{ mb: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                                {product.pricesAndSkus.slice(0, 4).map((sku, index) => (
-                                  <Button
-                                    key={sku.id}
-                                    size="small"
-                                    variant={selectedPackets[product.id] === index ? "contained" : "outlined"}
-                                    onClick={() => {
-                                      setSelectedPackets(prev => ({ ...prev, [product.id]: index }));
-                                      setCurrentImages(prev => ({ ...prev, [product.id]: index % product.imageUrls.length }));
-                                    }}
-                                    sx={{
-                                      minWidth: "50px",
-                                      fontSize: "0.65rem",
-                                      py: 0.25,
-                                      px: 1,
-                                    }}
-                                  >
-                                    {sku.weightValue}{sku.weightUnit}
-                                  </Button>
-                                ))}
+                              <Box
+                                sx={{
+                                  mb: 1,
+                                  display: "flex",
+                                  gap: 0.5,
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                {product.pricesAndSkus
+                                  .slice(0, 4)
+                                  .map((sku, index) => (
+                                    <Button
+                                      key={sku.id}
+                                      size="small"
+                                      variant={
+                                        selectedPackets[product.id] === index
+                                          ? "contained"
+                                          : "outlined"
+                                      }
+                                      onClick={() => {
+                                        setSelectedPackets((prev) => ({
+                                          ...prev,
+                                          [product.id]: index,
+                                        }));
+                                        setCurrentImages((prev) => ({
+                                          ...prev,
+                                          [product.id]:
+                                            index % product.imageUrls.length,
+                                        }));
+                                      }}
+                                      sx={{
+                                        minWidth: "50px",
+                                        fontSize: "0.65rem",
+                                        py: 0.25,
+                                        px: 1,
+                                      }}
+                                    >
+                                      {sku.weightValue}
+                                      {sku.weightUnit}
+                                    </Button>
+                                  ))}
                               </Box>
 
                               {/* Price Display - Mobile */}
                               <Box sx={{ mb: 1 }}>
                                 {(() => {
-                                  const selectedSku = product.pricesAndSkus[selectedPackets[product.id] || 0];
+                                  const selectedSku =
+                                    product.pricesAndSkus[
+                                      selectedPackets[product.id] || 0
+                                    ];
                                   return (
                                     <Box>
                                       {selectedSku?.discountedAmount ? (
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                          <Typography variant="caption" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
-                                            {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.price}
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <Typography
+                                            variant="caption"
+                                            sx={{
+                                              textDecoration: "line-through",
+                                              color: "text.secondary",
+                                            }}
+                                          >
+                                            {getCurrencySymbol(
+                                              selectedSku.currencyCode || "INR"
+                                            )}
+                                            {selectedSku.price}
                                           </Typography>
-                                          <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 600 }}>
-                                            {getCurrencySymbol(selectedSku.currencyCode || "INR")}{selectedSku.discountedAmount}
+                                          <Typography
+                                            variant="body2"
+                                            sx={{
+                                              color: "primary.main",
+                                              fontWeight: 600,
+                                            }}
+                                          >
+                                            {getCurrencySymbol(
+                                              selectedSku.currencyCode || "INR"
+                                            )}
+                                            {selectedSku.discountedAmount}
                                           </Typography>
                                         </Box>
                                       ) : (
-                                        <Typography variant="body2" sx={{ color: "primary.main", fontWeight: 600 }}>
-                                          {getCurrencySymbol(selectedSku?.currencyCode || "INR")}{selectedSku?.price || 0}
+                                        <Typography
+                                          variant="body2"
+                                          sx={{
+                                            color: "primary.main",
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          {getCurrencySymbol(
+                                            selectedSku?.currencyCode || "INR"
+                                          )}
+                                          {selectedSku?.price || 0}
                                         </Typography>
                                       )}
                                     </Box>
@@ -938,13 +1118,24 @@ const Home: React.FC = () => {
                               </Box>
 
                               {/* Quantity Selector - Mobile */}
-                              <Box sx={{ mb: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 1 }}>
+                              <Box
+                                sx={{
+                                  mb: 1,
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
                                 <IconButton
                                   size="small"
                                   onClick={() => {
-                                    setQuantities(prev => ({
+                                    setQuantities((prev) => ({
                                       ...prev,
-                                      [product.id]: Math.max(1, (prev[product.id] || 1) - 1)
+                                      [product.id]: Math.max(
+                                        1,
+                                        (prev[product.id] || 1) - 1
+                                      ),
                                     }));
                                   }}
                                   sx={{
@@ -956,15 +1147,22 @@ const Home: React.FC = () => {
                                 >
                                   <Remove sx={{ fontSize: "0.9rem" }} />
                                 </IconButton>
-                                <Typography variant="caption" sx={{ minWidth: "30px", textAlign: "center", fontWeight: 600 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    minWidth: "30px",
+                                    textAlign: "center",
+                                    fontWeight: 600,
+                                  }}
+                                >
                                   {quantities[product.id] || 1}
                                 </Typography>
                                 <IconButton
                                   size="small"
                                   onClick={() => {
-                                    setQuantities(prev => ({
+                                    setQuantities((prev) => ({
                                       ...prev,
-                                      [product.id]: (prev[product.id] || 1) + 1
+                                      [product.id]: (prev[product.id] || 1) + 1,
                                     }));
                                   }}
                                   sx={{
@@ -1036,7 +1234,6 @@ const Home: React.FC = () => {
             <Typography
               variant={isMobile ? "h5" : "h4"}
               sx={{ color: "primary.main" }}
-              fontFamily={michroma.style.fontFamily}
               fontWeight={600}
               textAlign="center"
               flexGrow={1}
@@ -1119,7 +1316,6 @@ const Home: React.FC = () => {
           <Typography
             variant={isMobile ? "h5" : "h4"}
             sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
             fontWeight={600}
             textAlign={isMobile ? "left" : "center"}
           >
@@ -1148,7 +1344,6 @@ const Home: React.FC = () => {
                   <Typography
                     variant={isMobile ? "h5" : "h4"}
                     sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-                    fontFamily={michroma.style.fontFamily}
                     fontWeight={600}
                     textAlign={isMobile ? "left" : "center"}
                   >
@@ -1206,7 +1401,6 @@ const Home: React.FC = () => {
           <Typography
             variant={isMobile ? "h5" : "h4"}
             sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
             fontWeight={600}
             textAlign={isMobile ? "left" : "center"}
           >
@@ -1267,7 +1461,6 @@ const Home: React.FC = () => {
               <Typography
                 variant={isMobile ? "h5" : "h4"}
                 sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-                fontFamily={michroma.style.fontFamily}
                 fontWeight={600}
                 textAlign={isMobile ? "left" : "center"}
               >
@@ -1308,7 +1501,6 @@ const Home: React.FC = () => {
           <Typography
             variant={isMobile ? "h5" : "h4"}
             sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
             fontWeight={600}
             textAlign={isMobile ? "left" : "center"}
           >

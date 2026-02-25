@@ -1,5 +1,4 @@
 import React from "react";
-import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import {
   Box,
@@ -58,7 +57,7 @@ const ProductDetails = ({
   // Helper function to get selected SKU data
   const getSelectedSkuData = () => {
     const selectedSku = selectedProduct?.pricesAndSkus.find(
-      (sku) => sku.weightValue + sku.weightUnit === selectedPacket,
+      (sku) => sku.weightValue + sku.weightUnit === selectedPacket
     );
     return {
       price: selectedSku?.price || 0,
@@ -187,7 +186,7 @@ const ProductDetails = ({
                 typeof selectedProduct?.imageUrls?.[currentImage] ===
                   "string" &&
                 selectedProduct.imageUrls[currentImage].includes(
-                  "cloud.agronexis.com",
+                  "cloud.agronexis.com"
                 )
               }
               style={{
@@ -272,7 +271,6 @@ const ProductDetails = ({
                 variant="h5"
                 fontWeight={600}
                 sx={{ mb: 2 }}
-                fontFamily={michroma.style.fontFamily}
                 color="primary.main"
               >
                 {selectedProduct?.name}

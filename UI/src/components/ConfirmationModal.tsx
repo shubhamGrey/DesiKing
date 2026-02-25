@@ -8,7 +8,6 @@ import {
   Button,
   Typography,
 } from "@mui/material";
-import { michroma } from "@/styles/fonts";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -33,12 +32,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       aria-describedby="confirmation-dialog-description"
     >
       <DialogTitle id="confirmation-dialog-title">
-        <Typography
-          variant="h6"
-          color="primary.main"
-          fontWeight={600}
-          fontFamily={michroma.style.fontFamily}
-        >
+        <Typography variant="h6" color="primary.main" fontWeight={600}>
           {title}
         </Typography>
       </DialogTitle>

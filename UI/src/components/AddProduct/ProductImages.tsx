@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { CloudUpload, Delete } from "@mui/icons-material";
 import Image from "next/image";
-import { michroma } from "@/styles/fonts";
 
 interface ProductImagesProps {
   uploadedImages: (File | string)[];
@@ -21,7 +20,9 @@ interface ProductImagesProps {
 }
 
 // Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (imageSrc: string | undefined | null): boolean => {
+const shouldUnoptimizeImage = (
+  imageSrc: string | undefined | null
+): boolean => {
   if (!imageSrc) return false;
   return imageSrc.includes("cloud.agronexis.com");
 };
@@ -49,12 +50,7 @@ const ProductImages: React.FC<ProductImagesProps> = ({
     >
       <CardContent>
         <Box>
-          <Typography
-            variant="h6"
-            fontFamily={michroma.style.fontFamily}
-            color="primary.main"
-            sx={{ mb: 3 }}
-          >
+          <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
             Product Images
           </Typography>
           {uploadedImages.length > 0 ? (
@@ -73,31 +69,34 @@ const ProductImages: React.FC<ProductImagesProps> = ({
                   overflow: "hidden",
                 }}
               >
-                {uploadedImages.length > 0 && uploadedImages[selectedImageIndex] && (
-                  <Image
-                    src={
-                      typeof uploadedImages[selectedImageIndex] === "string"
-                        ? (uploadedImages[selectedImageIndex] as string)
-                        : URL.createObjectURL(
-                            uploadedImages[selectedImageIndex] as File
-                          )
-                    }
-                    alt={`Product ${selectedImageIndex + 1}`}
-                    width={400}
-                    height={300}
-                    unoptimized={
-                      typeof uploadedImages[selectedImageIndex] === "string"
-                        ? shouldUnoptimizeImage(uploadedImages[selectedImageIndex] as string)
-                        : false
-                    }
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      cursor: "pointer",
-                    }}
-                  />
-                )}
+                {uploadedImages.length > 0 &&
+                  uploadedImages[selectedImageIndex] && (
+                    <Image
+                      src={
+                        typeof uploadedImages[selectedImageIndex] === "string"
+                          ? (uploadedImages[selectedImageIndex] as string)
+                          : URL.createObjectURL(
+                              uploadedImages[selectedImageIndex] as File
+                            )
+                      }
+                      alt={`Product ${selectedImageIndex + 1}`}
+                      width={400}
+                      height={300}
+                      unoptimized={
+                        typeof uploadedImages[selectedImageIndex] === "string"
+                          ? shouldUnoptimizeImage(
+                              uploadedImages[selectedImageIndex] as string
+                            )
+                          : false
+                      }
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        cursor: "pointer",
+                      }}
+                    />
+                  )}
                 {uploadedImages.length > 0 && (
                   <IconButton
                     sx={{

@@ -20,7 +20,6 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { michroma } from "@/styles/fonts";
 import BasicInformation from "../../components/AddProduct/BasicInformation";
 import Certifications from "../../components/AddProduct/Certifications";
 import KeyFeatures from "../../components/AddProduct/KeyFeatures";
@@ -533,7 +532,7 @@ const AddProduct: React.FC = () => {
           >
             <Typography
               variant={isMobile ? "h5" : "h4"}
-              fontFamily={michroma.style.fontFamily}
+              
               fontWeight={600}
               color="primary.main"
             >

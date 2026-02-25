@@ -8,8 +8,11 @@ import {
   Typography,
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
-import { michroma } from "@/styles/fonts";
-import { FormattedBrand, FormattedCategory, ProductFormData } from "@/types/product";
+import {
+  FormattedBrand,
+  FormattedCategory,
+  ProductFormData,
+} from "@/types/product";
 
 interface BasicInformationProps {
   control: Control<ProductFormData>;
@@ -38,9 +41,8 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     <CardContent>
       <Typography
         variant="h6"
-        fontFamily={michroma.style.fontFamily}
         color="primary.main"
-        sx={{ mb: 3 }}
+        sx={{ mb: 3, fontFamily: theme.typography.h6.fontFamily }}
       >
         Basic Information
       </Typography>

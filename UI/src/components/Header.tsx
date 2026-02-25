@@ -28,7 +28,6 @@ import { usePathname, useRouter } from "next/navigation";
 import BrandLogo from "../../public/AgroNexisGreen.png";
 import BrandLogoWhite from "../../public/AgroNexisWhite.png";
 import theme from "@/styles/theme";
-import { michroma } from "@/styles/fonts";
 import { useCart } from "@/contexts/CartContext";
 import SearchAutocomplete from "./SearchAutocomplete";
 import { isLoggedIn, isAdmin } from "@/utils/auth";
@@ -57,7 +56,7 @@ export default function Header() {
       if (!ticking) {
         requestAnimationFrame(() => {
           const scrollTop = window.scrollY;
-          
+
           // Only change state if we're clearly above or below the zone
           if (scrollTop > scrollToCollapsedThreshold) {
             setIsScrolled(true);
@@ -65,7 +64,7 @@ export default function Header() {
             setIsScrolled(false);
           }
           // If between 50-250px, maintain current state (no change)
-          
+
           ticking = false;
         });
         ticking = true;
@@ -180,7 +179,7 @@ export default function Header() {
                     justifyContent: "left",
                   }}
                 >
-                  <Stack direction="row" spacing={4}>
+                  <Stack direction="row" spacing={5}>
                     {leftNavLinks.map(({ label, href }) => {
                       const isActive = pathname === href;
                       return (
@@ -195,8 +194,31 @@ export default function Header() {
                               : pathname === "/contact"
                               ? "primary.main"
                               : "primary.contrastText",
-                            fontFamily: michroma.style.fontFamily,
-                            fontSize: "14px",
+                            fontSize: "16px",
+                            fontWeight: isActive ? 600 : 500,
+                            letterSpacing: "1.5px",
+                            position: "relative",
+                            py: 0.5,
+                            transition: "all 0.3s ease",
+                            "&::after": {
+                              content: '""',
+                              position: "absolute",
+                              bottom: 0,
+                              left: "50%",
+                              transform: isActive
+                                ? "translateX(-50%) scaleX(1)"
+                                : "translateX(-50%) scaleX(0)",
+                              width: "100%",
+                              height: "2px",
+                              backgroundColor: "secondary.main",
+                              transition: "transform 0.3s ease",
+                            },
+                            "&:hover": {
+                              color: "secondary.main",
+                              "&::after": {
+                                transform: "translateX(-50%) scaleX(1)",
+                              },
+                            },
                           }}
                         >
                           {label.toUpperCase()}
@@ -373,11 +395,28 @@ export default function Header() {
                         : pathname === "/contact"
                         ? "primary.main"
                         : "primary.contrastText",
-                      fontFamily: michroma.style.fontFamily,
-                      fontSize: "14px",
+                      fontSize: "16px",
+                      fontWeight: isActive ? 600 : 500,
+                      letterSpacing: "1px",
+                      py: 1.5,
+                      transition: "all 0.3s ease",
+                      borderLeft: isActive
+                        ? "3px solid"
+                        : "3px solid transparent",
+                      borderColor: isActive ? "secondary.main" : "transparent",
+                      "&:hover": {
+                        backgroundColor: "rgba(255,255,255,0.1)",
+                        borderColor: "secondary.main",
+                      },
                     }}
                   >
-                    <ListItemText primary={label} />
+                    <ListItemText
+                      primary={label}
+                      primaryTypographyProps={{
+                        fontWeight: "inherit",
+                        letterSpacing: "inherit",
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
               );

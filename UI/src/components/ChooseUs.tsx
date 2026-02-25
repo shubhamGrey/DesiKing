@@ -1,4 +1,3 @@
-import { michroma } from "@/styles/fonts";
 import { Box, Stack, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -80,7 +79,6 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
             <Typography
               variant="h5"
               sx={{ width: "100%", mb: 2 }}
-              fontFamily={michroma.style.fontFamily}
               color={"primary.main"}
             >
               {name}

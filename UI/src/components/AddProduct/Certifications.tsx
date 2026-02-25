@@ -1,6 +1,5 @@
 import React from "react";
 import { Stack, Typography, Box, Chip, Card, CardContent } from "@mui/material";
-import { michroma } from "@/styles/fonts";
 
 interface CertificationsProps {
   certificationOptions: string[];
@@ -26,12 +25,7 @@ const Certifications: React.FC<CertificationsProps> = ({
       elevation={0}
     >
       <CardContent>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          sx={{ mb: 3 }}
-        >
+        <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
           Certifications
         </Typography>
         <Stack spacing={1}>

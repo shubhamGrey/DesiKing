@@ -1,17 +1,11 @@
 import { Container, Typography, Box } from "@mui/material";
 import React from "react";
-import { michroma } from "@/styles/fonts";
 
 const TermsOfServices: React.FC = () => {
   return (
     <Container sx={{ mt: 4, mx: 6, mb: 6, justifySelf: "center" }}>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Terms of Services
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -19,12 +13,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Privacy Commitment
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -37,12 +26,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           1. What Information Do We Collect?
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -90,12 +74,7 @@ const TermsOfServices: React.FC = () => {
         </ul>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           2. Cookies
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -127,12 +106,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           3. Using Your Personal Information
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -180,12 +154,7 @@ const TermsOfServices: React.FC = () => {
         </ul>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           4. Disclosures
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -216,12 +185,7 @@ const TermsOfServices: React.FC = () => {
         </ul>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           5. Security of Your Personal Information
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -243,12 +207,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           6. Your Rights
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -267,12 +226,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           7. Policy Amendments
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -283,12 +237,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           8. Your Rights
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -307,12 +256,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           9. Third Party Websites
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -321,12 +265,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           10. Updating Information
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -335,12 +274,7 @@ const TermsOfServices: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          fontFamily={michroma.style.fontFamily}
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           11. Contact Us
         </Typography>
         <Typography variant="body2" gutterBottom>

@@ -1,5 +1,4 @@
 "use client";
-import { michroma } from "@/styles/fonts";
 import AdditionalDetails from "@/components/Product Details/AdditionalDetails";
 import ProductDetails from "@/components/Product Details/ProductDetails";
 import ProductShowcase from "@/components/Product Details/ProductShowcase";
@@ -182,7 +181,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
             position: "relative",
             display: "inline-block",
           }}
-          fontFamily={michroma.style.fontFamily}
+          
         >
           Similar Products
           <Typography

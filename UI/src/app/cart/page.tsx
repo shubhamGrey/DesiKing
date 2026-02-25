@@ -31,7 +31,6 @@ import { Security, Add, Remove } from "@mui/icons-material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import theme from "@/styles/theme";
-import { michroma } from "@/styles/fonts";
 import EmptyCart from "@/components/EmptyCart";
 import {
   PaymentFormData,
@@ -903,7 +902,7 @@ const Cart = () => {
             />
             <Typography
               variant="h6"
-              fontFamily={michroma.style.fontFamily}
+              
               fontWeight={600}
               color="primary.main"
               textAlign="center"
@@ -934,7 +933,7 @@ const Cart = () => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
           <Typography
             variant={isMobile ? "h5" : "h4"}
-            fontFamily={michroma.style.fontFamily}
+            
             fontWeight={600}
             color="primary.main"
           >
@@ -968,7 +967,7 @@ const Cart = () => {
                 fontWeight={600}
                 color="primary.main"
                 sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
-                fontFamily={michroma.style.fontFamily}
+                
               >
                 Your Order ({cartItems.length}{" "}
                 {cartItems.length === 1 ? "item" : "items"})
@@ -1204,7 +1203,7 @@ const Cart = () => {
                 fontWeight={600}
                 color="primary.main"
                 sx={{ mb: 3 }}
-                fontFamily={michroma.style.fontFamily}
+                
               >
                 Shipping Address
               </Typography>
@@ -1550,7 +1549,7 @@ const Cart = () => {
                     variant="h6"
                     fontWeight={600}
                     color="primary.main"
-                    fontFamily={michroma.style.fontFamily}
+                    
                     sx={{ mb: 3 }}
                   >
                     Billing Address
@@ -1876,7 +1875,7 @@ const Cart = () => {
                 variant="h6"
                 fontWeight={600}
                 sx={{ mb: 4 }}
-                fontFamily={michroma.style.fontFamily}
+                
               >
                 Payment Summary
               </Typography>

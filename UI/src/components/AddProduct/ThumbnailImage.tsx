@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { CloudUpload, Delete } from "@mui/icons-material";
 import Image from "next/image";
-import { michroma } from "@/styles/fonts";
 
 interface ThumbnailImageProps {
   thumbnailImage: File | string | null;
@@ -41,12 +40,7 @@ const ThumbnailImage: React.FC<ThumbnailImageProps> = ({
     >
       <CardContent>
         <Box>
-          <Typography
-            variant="h6"
-            fontFamily={michroma.style.fontFamily}
-            color="primary.main"
-            sx={{ mb: 3 }}
-          >
+          <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
             Thumbnail Image
           </Typography>
           {thumbnailImage ? (

@@ -3,7 +3,6 @@
 import React from "react";
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import Image from "next/image";
-import { michroma } from "@/styles/fonts";
 
 interface Certificate {
   name: string;
@@ -36,7 +35,6 @@ const CertificateScroll: React.FC = () => {
           mb: isMobile ? 3 : 8,
           color: "primary.main",
         }}
-        fontFamily={michroma.style.fontFamily}
         fontWeight={600}
         textAlign="center"
       >

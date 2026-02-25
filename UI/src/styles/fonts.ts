@@ -1,4 +1,4 @@
-import { Poppins, Pacifico, Michroma } from "next/font/google";
+import { Poppins, Pacifico } from "next/font/google";
 
 export const poppins = Poppins({
   subsets: ["latin"],
@@ -7,12 +7,6 @@ export const poppins = Poppins({
 });
 
 export const pacifico = Pacifico({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-});
-
-export const michroma = Michroma({
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",

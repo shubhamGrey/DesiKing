@@ -25,7 +25,6 @@ import {
   Receipt,
   Schedule,
 } from "@mui/icons-material";
-import { michroma } from "@/styles/fonts";
 
 const OrderSuccessContent: React.FC = () => {
   const router = useRouter();
@@ -99,7 +98,7 @@ const OrderSuccessContent: React.FC = () => {
           variant="h3"
           gutterBottom
           sx={{
-            fontFamily: michroma.style.fontFamily,
+            
             color: "success.main",
             mb: 2,
           }}

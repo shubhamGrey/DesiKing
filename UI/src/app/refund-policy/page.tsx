@@ -1,6 +1,5 @@
 import { Container, Typography, Box } from "@mui/material";
 import React from "react";
-import { michroma } from "@/styles/fonts";
 
 const Refund: React.FC = () => {
   return (
@@ -8,7 +7,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -22,7 +21,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -55,7 +54,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -72,7 +71,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -117,7 +116,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -133,7 +132,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >
@@ -161,7 +160,7 @@ const Refund: React.FC = () => {
       <Box sx={{ mb: 5, p: 3 }}>
         <Typography
           variant="h6"
-          fontFamily={michroma.style.fontFamily}
+          
           color="primary.main"
           gutterBottom
         >

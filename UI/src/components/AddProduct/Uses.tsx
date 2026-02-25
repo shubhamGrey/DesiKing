@@ -10,7 +10,6 @@ import {
   CardContent,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
-import { michroma } from "@/styles/fonts";
 
 interface UsesProps {
   uses: string[];
@@ -46,11 +45,7 @@ const Uses: React.FC<UsesProps> = ({
             mb: 3,
           }}
         >
-          <Typography
-            variant="h6"
-            fontFamily={michroma.style.fontFamily}
-            color="primary.main"
-          >
+          <Typography variant="h6" color="primary.main">
             Product Uses
           </Typography>
           <Button startIcon={<Add />} onClick={handleAddUse} size="small">

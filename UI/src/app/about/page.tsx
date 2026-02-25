@@ -26,14 +26,7 @@ import Founder from "../../../public/Founder.jpg";
 import CoFounder from "../../../public/Co Founder.jpg";
 import CoFounderOld from "../../../public/CoFounderOld.png";
 import Image from "next/image";
-import { Michroma } from "next/font/google";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-
-const michroma = Michroma({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-});
 
 const highlights = [
   {
@@ -95,7 +88,6 @@ export default function About() {
           <Typography
             variant="h4"
             sx={{ mb: 3, color: "primary.main" }}
-            fontFamily={michroma.style.fontFamily}
             fontWeight={600}
           >
             Who we are
@@ -120,7 +112,6 @@ export default function About() {
                 ml: 1,
                 color: "primary.main",
               }}
-              fontFamily={michroma.style.fontFamily}
               fontWeight={600}
             >
               Our Roots
@@ -187,7 +178,6 @@ export default function About() {
                   mb: 3,
                   color: "primary.main",
                 }}
-                fontFamily={michroma.style.fontFamily}
                 fontWeight={600}
               >
                 Our Vision
@@ -241,7 +231,6 @@ export default function About() {
                   mb: 3,
                   color: "primary.main",
                 }}
-                fontFamily={michroma.style.fontFamily}
                 fontWeight={600}
               >
                 Core Values
@@ -301,7 +290,6 @@ export default function About() {
                   mb: 3,
                   color: "primary.main",
                 }}
-                fontFamily={michroma.style.fontFamily}
                 fontWeight={600}
               >
                 Our Mission
@@ -331,7 +319,6 @@ export default function About() {
       <Typography
         variant="h4"
         sx={{ mb: 6, mt: 15, color: "primary.main" }}
-        fontFamily={michroma.style.fontFamily}
         fontWeight={600}
         textAlign={"center"}
       >
@@ -384,7 +371,6 @@ export default function About() {
                 mb: 6,
                 color: "primary.main",
               }}
-              fontFamily={michroma.style.fontFamily}
               fontWeight={600}
               textAlign={"center"}
             >
@@ -439,7 +425,6 @@ export default function About() {
               mb: 6,
               color: "primary.main",
             }}
-            fontFamily={michroma.style.fontFamily}
             fontWeight={600}
           >
             Our Team (The best team)

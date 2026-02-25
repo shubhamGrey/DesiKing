@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
 import { Control, Controller, useWatch } from "react-hook-form";
-import { michroma } from "@/styles/fonts";
 import { ProductFormData } from "@/types/product";
 
 interface PricingAndSKUDetailsProps {
@@ -126,11 +125,7 @@ const PricingAndSKUDetails: React.FC<PricingAndSKUDetailsProps> = ({
               mb: 3,
             }}
           >
-            <Typography
-              variant="h6"
-              fontFamily={michroma.style.fontFamily}
-              color="primary.main"
-            >
+            <Typography variant="h6" color="primary.main">
               Pricing & SKU Details
             </Typography>
             <Button

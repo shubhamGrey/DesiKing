@@ -58,7 +58,6 @@ import {
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useNotification } from "@/components/NotificationProvider";
-import { michroma } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { isLoggedIn, getUserId, isAdmin } from "@/utils/auth";
 import { processApiResponse } from "@/utils/apiErrorHandling";
@@ -213,12 +212,13 @@ interface OrderDetails {
   orderNumber: string;
   status:
     | "Order Placed"
-    | "Processing"
-    | "Packed"
+    | "Confirmed"
     | "Shipped"
     | "Out for Delivery"
     | "Delivered"
-    | "Cancelled";
+    | "Failed"
+    | "Cancelled"
+    | "Returned";
   createdDate: string;
   processingDate?: string;
   packedDate?: string;
@@ -253,12 +253,22 @@ const mapOrderStatus = (status: string): OrderDetails["status"] => {
   switch (status.toLowerCase()) {
     case "created":
       return "Order Placed";
+    case "shipped":
+      return "Shipped";
     case "paid":
-      return "Delivered";
+      return "Confirmed";
     case "failed":
+      return "Failed";
+    case "cancelled":
       return "Cancelled";
+    case "returned":
+      return "Returned";
+    case "out_for_delivery":
+      return "Out for Delivery";
+    case "delivered":
+      return "Delivered";
     default:
-      return "Processing";
+      return "Order Placed";
   }
 };
 
@@ -270,7 +280,7 @@ const addDays = (date: string, days: number): string => {
 
 const getEstimatedProcessingDate = (
   createdDate: string,
-  status: string,
+  status: string
 ): string | undefined => {
   if (["paid", "failed"].includes(status)) {
     return addDays(createdDate, 1);
@@ -280,7 +290,7 @@ const getEstimatedProcessingDate = (
 
 const getEstimatedPackedDate = (
   createdDate: string,
-  status: string,
+  status: string
 ): string | undefined => {
   if (["paid", "failed"].includes(status)) {
     return addDays(createdDate, 2);
@@ -290,7 +300,7 @@ const getEstimatedPackedDate = (
 
 const getEstimatedShippedDate = (
   createdDate: string,
-  status: string,
+  status: string
 ): string | undefined => {
   if (["paid", "failed"].includes(status)) {
     return addDays(createdDate, 3);
@@ -300,7 +310,7 @@ const getEstimatedShippedDate = (
 
 const getEstimatedOutForDeliveryDate = (
   createdDate: string,
-  status: string,
+  status: string
 ): string | undefined => {
   if (status === "paid") {
     return addDays(createdDate, 5);
@@ -322,7 +332,7 @@ const getReturnPolicyEndDate = (createdDate: string): string => {
 
 const generateOrderTimeline = (
   order: any,
-  shipmentData?: ShipmentTrackingData,
+  shipmentData?: ShipmentTrackingData
 ) => {
   const timeline = [
     {
@@ -359,7 +369,7 @@ const generateOrderTimeline = (
       // Parse and format the date from DD/MM/YYYY to proper format
       const [day, month, year] = event.EVENTDATE.split("/");
       const eventDateTime = new Date(
-        `${year}-${month}-${day} ${event.EVENTTIME}`,
+        `${year}-${month}-${day} ${event.EVENTTIME}`
       );
 
       const trackingEvent = {
@@ -377,7 +387,7 @@ const generateOrderTimeline = (
   } else {
     console.log(
       "No LstDetails found or empty array:",
-      shipmentData?.LstDetails,
+      shipmentData?.LstDetails
     );
   }
 
@@ -399,7 +409,7 @@ const OrderDetailsContent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [trackingData, setTrackingData] = useState<ShipmentTrackingData | null>(
-    null,
+    null
   );
   const [trackingLoading, setTrackingLoading] = useState(false);
 
@@ -407,7 +417,7 @@ const OrderDetailsContent: React.FC = () => {
 
   // Fetch product details function with enhanced error handling
   const fetchProductDetails = async (
-    productId: string,
+    productId: string
   ): Promise<Product | null> => {
     try {
       const response = await fetch(
@@ -417,7 +427,7 @@ const OrderDetailsContent: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       // Use our enhanced API response processing
@@ -431,7 +441,7 @@ const OrderDetailsContent: React.FC = () => {
 
   // Fetch shipment tracking data function
   const fetchTrackingData = async (
-    trackingNumber: string,
+    trackingNumber: string
   ): Promise<ShipmentTrackingData | null> => {
     try {
       setTrackingLoading(true);
@@ -453,7 +463,7 @@ const OrderDetailsContent: React.FC = () => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       console.log(`Tracking API response status: ${response.status}`);
@@ -492,7 +502,7 @@ const OrderDetailsContent: React.FC = () => {
     } catch (error) {
       console.error(
         `Error fetching tracking data for ${trackingNumber}:`,
-        error,
+        error
       );
 
       // Show more specific error messages
@@ -503,11 +513,11 @@ const OrderDetailsContent: React.FC = () => {
           showError("Tracking information not found for this shipment.");
         } else if (error.message.includes("500")) {
           showError(
-            "Server error while fetching tracking data. Please try again later.",
+            "Server error while fetching tracking data. Please try again later."
           );
         } else {
           showError(
-            "Unable to fetch tracking information. Please check your internet connection and try again.",
+            "Unable to fetch tracking information. Please check your internet connection and try again."
           );
         }
       }
@@ -554,7 +564,7 @@ const OrderDetailsContent: React.FC = () => {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
-          },
+          }
         );
 
         // Use our enhanced API response processing
@@ -568,16 +578,16 @@ const OrderDetailsContent: React.FC = () => {
           const uniqueProductIds: string[] = Array.from(
             new Set(
               specificOrder.orderItems.map(
-                (item: any) => item.productId as string,
-              ),
-            ),
+                (item: any) => item.productId as string
+              )
+            )
           );
 
           const productPromises = uniqueProductIds.map(
             async (productId: string) => {
               const product = await fetchProductDetails(productId);
               return { productId, product };
-            },
+            }
           );
 
           const productResults = await Promise.all(productPromises);
@@ -625,18 +635,18 @@ const OrderDetailsContent: React.FC = () => {
                 sku: product?.pricesAndSkus?.[0]?.skuNumber || "N/A",
                 categoryName: product?.categoryName || "Spices",
               };
-            },
+            }
           );
 
           // Calculate totals using simplified logic
           const subtotal = itemsData.reduce(
             (sum: number, item: any) => sum + item.totalPrice,
-            0,
+            0
           );
           const totalDiscountAmount = itemsData.reduce(
             (sum: number, item: any) =>
               sum + item.discountAmount * item.quantity,
-            0,
+            0
           );
           const taxAmount = Math.round(subtotal * 0.05 * 100) / 100; // 5% tax on final subtotal
 
@@ -649,26 +659,26 @@ const OrderDetailsContent: React.FC = () => {
             // Add processing and delivery dates based on order status and created date
             processingDate: getEstimatedProcessingDate(
               specificOrder.createdDate,
-              specificOrder.status,
+              specificOrder.status
             ),
             packedDate: getEstimatedPackedDate(
               specificOrder.createdDate,
-              specificOrder.status,
+              specificOrder.status
             ),
             shippedDate: getEstimatedShippedDate(
               specificOrder.createdDate,
-              specificOrder.status,
+              specificOrder.status
             ),
             outForDeliveryDate: getEstimatedOutForDeliveryDate(
               specificOrder.createdDate,
-              specificOrder.status,
+              specificOrder.status
             ),
             deliveredDate:
               specificOrder.status === "paid"
                 ? getEstimatedDeliveredDate(specificOrder.createdDate)
                 : undefined,
             expectedDeliveryDate: getExpectedDeliveryDate(
-              specificOrder.createdDate,
+              specificOrder.createdDate
             ),
             trackingNumber:
               specificOrder.docketNumber ||
@@ -687,7 +697,7 @@ const OrderDetailsContent: React.FC = () => {
             totalAmount: subtotal + taxAmount + 100, // Final total (subtotal + tax + shipping)
             currency: specificOrder.currency || "INR",
             returnPolicyEndDate: getReturnPolicyEndDate(
-              specificOrder.createdDate,
+              specificOrder.createdDate
             ),
             helplineNumber: "+91-1800-DESI-KING",
             deliveryAddress: specificOrder.shippingAddress
@@ -735,38 +745,38 @@ const OrderDetailsContent: React.FC = () => {
                     "+91-0000000000",
                 }
               : specificOrder.shippingAddress
-                ? {
-                    name:
-                      specificOrder.shippingAddress.fullName || "Customer Name",
-                    address:
-                      [
-                        specificOrder.shippingAddress.addressLine,
-                        specificOrder.shippingAddress.landMark,
-                      ]
-                        .filter(Boolean)
-                        .join(", ") || "Address not available",
-                    city: specificOrder.shippingAddress.city || "City",
-                    state: specificOrder.shippingAddress.stateCode || "State",
-                    pincode: specificOrder.shippingAddress.pinCode || "000000",
-                    phone:
-                      specificOrder.shippingAddress.phoneNumber ||
-                      "+91-0000000000",
-                  }
-                : {
-                    name: "Customer Name",
-                    address: "Address not available",
-                    city: "City",
-                    state: "State",
-                    pincode: "000000",
-                    phone: "+91-0000000000",
-                  },
+              ? {
+                  name:
+                    specificOrder.shippingAddress.fullName || "Customer Name",
+                  address:
+                    [
+                      specificOrder.shippingAddress.addressLine,
+                      specificOrder.shippingAddress.landMark,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "Address not available",
+                  city: specificOrder.shippingAddress.city || "City",
+                  state: specificOrder.shippingAddress.stateCode || "State",
+                  pincode: specificOrder.shippingAddress.pinCode || "000000",
+                  phone:
+                    specificOrder.shippingAddress.phoneNumber ||
+                    "+91-0000000000",
+                }
+              : {
+                  name: "Customer Name",
+                  address: "Address not available",
+                  city: "City",
+                  state: "State",
+                  pincode: "000000",
+                  phone: "+91-0000000000",
+                },
             paymentInfo: {
               method: specificOrder.transaction?.paymentMethod
                 ? specificOrder.transaction.paymentMethod === "RAZORPAY"
                   ? "Online Payment (Razorpay)"
                   : specificOrder.transaction.paymentMethod === "COD"
-                    ? "Cash on Delivery"
-                    : specificOrder.transaction.paymentMethod
+                  ? "Cash on Delivery"
+                  : specificOrder.transaction.paymentMethod
                 : "Online Payment",
               transactionId:
                 specificOrder.transaction?.razorpayPaymentId ||
@@ -797,19 +807,19 @@ const OrderDetailsContent: React.FC = () => {
 
             if (trackingResult) {
               console.log(
-                "Successfully received tracking data, updating timeline",
+                "Successfully received tracking data, updating timeline"
               );
               setTrackingData(trackingResult);
 
               // Update order details with enhanced timeline including tracking data
               const enhancedTimeline = generateOrderTimeline(
                 specificOrder,
-                trackingResult,
+                trackingResult
               );
               setOrderDetails((prevDetails) =>
                 prevDetails
                   ? { ...prevDetails, timeline: enhancedTimeline }
-                  : null,
+                  : null
               );
             } else {
               console.log("No tracking data received or API call failed");
@@ -886,7 +896,7 @@ const OrderDetailsContent: React.FC = () => {
         (status.label === "Packed" && orderDetails?.packedDate) ||
         (status.label === "Shipped" &&
           (orderDetails?.shippedDate || orderDetails?.outForDeliveryDate)) ||
-        (status.label === "Delivered" && orderDetails?.deliveredDate),
+        (status.label === "Delivered" && orderDetails?.deliveredDate)
     );
 
     return { statuses, currentStatusIndex };
@@ -972,7 +982,7 @@ const OrderDetailsContent: React.FC = () => {
             .slice(-2)}/${orderDetails.orderNumber}`,
           date: new Date().toLocaleDateString("en-IN"),
           dueDate: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000,
+            Date.now() + 30 * 24 * 60 * 60 * 1000
           ).toLocaleDateString("en-IN"),
           financialYear: `${new Date().getFullYear()}-${(
             new Date().getFullYear() + 1
@@ -981,7 +991,7 @@ const OrderDetailsContent: React.FC = () => {
             .slice(-2)}`,
           orderNumber: orderDetails.orderNumber,
           orderDate: new Date(orderDetails.createdDate).toLocaleDateString(
-            "en-IN",
+            "en-IN"
           ),
         },
 
@@ -1016,7 +1026,7 @@ const OrderDetailsContent: React.FC = () => {
           stateCode: getStateCode(
             orderDetails.billingAddress?.state ||
               orderDetails.deliveryAddress?.state ||
-              "New Delhi",
+              "New Delhi"
           ),
         },
 
@@ -1030,7 +1040,7 @@ const OrderDetailsContent: React.FC = () => {
               pincode: orderDetails.deliveryAddress.pincode,
               phone: orderDetails.deliveryAddress.phone,
               stateCode: getStateCode(
-                orderDetails.deliveryAddress.state || "New Delhi",
+                orderDetails.deliveryAddress.state || "New Delhi"
               ),
             }
           : null,
@@ -1092,7 +1102,7 @@ const OrderDetailsContent: React.FC = () => {
           } (${getStateCode(
             orderDetails.billingAddress?.state ||
               orderDetails.deliveryAddress?.state ||
-              "Maharashtra",
+              "Maharashtra"
           )})`,
         },
 
@@ -1101,7 +1111,7 @@ const OrderDetailsContent: React.FC = () => {
           method: orderDetails.paymentInfo.method,
           transactionId: orderDetails.paymentInfo.transactionId,
           paymentDate: new Date(
-            orderDetails.paymentInfo.paymentDate,
+            orderDetails.paymentInfo.paymentDate
           ).toLocaleDateString("en-IN"),
           status: orderDetails.paymentInfo.status,
           amountPaid: orderDetails.paymentInfo.amount,
@@ -1137,7 +1147,7 @@ const OrderDetailsContent: React.FC = () => {
             orderId: orderDetails.id,
             invoiceData: invoiceData,
           }),
-        },
+        }
       );
 
       // First check if response is ok
@@ -1153,7 +1163,7 @@ const OrderDetailsContent: React.FC = () => {
             // Handle the new API error format
             throw new Error(
               errorData.info.message ||
-                `HTTP ${response.status}: ${response.statusText}`,
+                `HTTP ${response.status}: ${response.statusText}`
             );
           }
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1177,7 +1187,7 @@ const OrderDetailsContent: React.FC = () => {
         ) {
           if (!jsonResponse.info.isSuccess) {
             throw new Error(
-              jsonResponse.info.message || "Failed to generate invoice",
+              jsonResponse.info.message || "Failed to generate invoice"
             );
           }
 
@@ -1187,7 +1197,7 @@ const OrderDetailsContent: React.FC = () => {
             const newWindow = window.open(jsonResponse.data.pdfUrl, "_blank");
             if (!newWindow) {
               showError(
-                "Popup blocked. Please allow popups for this site to view the invoice.",
+                "Popup blocked. Please allow popups for this site to view the invoice."
               );
             } else {
               showSuccess("GST-compliant invoice opened in new window!");
@@ -1205,7 +1215,7 @@ const OrderDetailsContent: React.FC = () => {
               jsonResponse.data.fileDownloadName ||
               `GST_Invoice_${invoiceData.invoice.number.replace(
                 /\//g,
-                "_",
+                "_"
               )}.pdf`;
 
             try {
@@ -1238,19 +1248,19 @@ const OrderDetailsContent: React.FC = () => {
               return;
             } catch {
               throw new Error(
-                "Failed to decode PDF data. The file may be corrupted.",
+                "Failed to decode PDF data. The file may be corrupted."
               );
             }
           } else {
             throw new Error(
-              "Invoice data not found in response. Please contact support.",
+              "Invoice data not found in response. Please contact support."
             );
           }
         }
 
         // Handle legacy JSON response format
         throw new Error(
-          "Invoice service is currently unavailable. Please try again later.",
+          "Invoice service is currently unavailable. Please try again later."
         );
       } else if (contentType && contentType.includes("application/pdf")) {
         // Handle PDF blob response (legacy format)
@@ -1266,7 +1276,7 @@ const OrderDetailsContent: React.FC = () => {
           link.href = url;
           link.download = `GST_Invoice_${invoiceData.invoice.number.replace(
             /\//g,
-            "_",
+            "_"
           )}.pdf`;
           document.body.appendChild(link);
           link.click();
@@ -1282,7 +1292,7 @@ const OrderDetailsContent: React.FC = () => {
         }, 1000);
       } else {
         throw new Error(
-          `Unexpected response type: ${contentType}. Expected PDF or JSON.`,
+          `Unexpected response type: ${contentType}. Expected PDF or JSON.`
         );
       }
     } catch (error) {
@@ -1346,7 +1356,7 @@ const OrderDetailsContent: React.FC = () => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       console.log(`Shipment label API response status: ${response.status}`);
@@ -1372,7 +1382,7 @@ const OrderDetailsContent: React.FC = () => {
           const newWindow = window.open(apiResponse.data.labelUrl, "_blank");
           if (!newWindow) {
             showError(
-              "Popup blocked. Please allow popups for this site to view the label.",
+              "Popup blocked. Please allow popups for this site to view the label."
             );
           } else {
             showSuccess("Shipment label opened in new window!");
@@ -1419,12 +1429,12 @@ const OrderDetailsContent: React.FC = () => {
             return;
           } catch {
             throw new Error(
-              "Failed to decode label data. The file may be corrupted.",
+              "Failed to decode label data. The file may be corrupted."
             );
           }
         } else {
           throw new Error(
-            "Label data not found in response. Please contact support.",
+            "Label data not found in response. Please contact support."
           );
         }
       } else {
@@ -1627,7 +1637,6 @@ const OrderDetailsContent: React.FC = () => {
           <Box>
             <Typography
               variant={isMobile ? "h5" : "h4"}
-              fontFamily={michroma.style.fontFamily}
               color="primary.main"
               sx={{ mb: 1 }}
             >
@@ -1711,7 +1720,7 @@ const OrderDetailsContent: React.FC = () => {
                   Expected by{" "}
                   {(() => {
                     const formatted = formatDateTime(
-                      orderDetails.expectedDeliveryDate,
+                      orderDetails.expectedDeliveryDate
                     );
                     return typeof formatted === "object"
                       ? formatted.date
@@ -1798,7 +1807,7 @@ const OrderDetailsContent: React.FC = () => {
                 >
                   {(() => {
                     const formatted = formatDateTime(
-                      orderDetails.expectedDeliveryDate,
+                      orderDetails.expectedDeliveryDate
                     );
                     return typeof formatted === "object"
                       ? `${formatted.date} by ${formatted.time}`
@@ -2244,16 +2253,16 @@ const OrderDetailsContent: React.FC = () => {
                                   sx={{ textDecoration: "line-through" }}
                                 >
                                   {getCurrencySymbol(
-                                    orderDetails.currency || "INR",
+                                    orderDetails.currency || "INR"
                                   )}
                                   {(item.price + item.discountAmount).toFixed(
-                                    2,
+                                    2
                                   )}
                                 </Typography>
                               )}
                             <Typography variant="body2" fontWeight="600">
                               {getCurrencySymbol(
-                                orderDetails.currency || "INR",
+                                orderDetails.currency || "INR"
                               )}
                               {item.price.toFixed(2)}
                             </Typography>
@@ -2292,7 +2301,7 @@ const OrderDetailsContent: React.FC = () => {
                             >
                               <Chip
                                 label={`You saved ${getCurrencySymbol(
-                                  orderDetails.currency || "INR",
+                                  orderDetails.currency || "INR"
                                 )}${(
                                   item.discountAmount * item.quantity
                                 ).toFixed(2)}`}
@@ -2398,7 +2407,7 @@ const OrderDetailsContent: React.FC = () => {
                             </Typography>
                             <Typography variant="body1" fontWeight="600">
                               {getCurrencySymbol(
-                                orderDetails.currency || "INR",
+                                orderDetails.currency || "INR"
                               )}
                               {item.price.toFixed(2)}
                             </Typography>
@@ -2411,10 +2420,10 @@ const OrderDetailsContent: React.FC = () => {
                                   sx={{ textDecoration: "line-through" }}
                                 >
                                   {getCurrencySymbol(
-                                    orderDetails.currency || "INR",
+                                    orderDetails.currency || "INR"
                                   )}
                                   {(item.price + item.discountAmount).toFixed(
-                                    2,
+                                    2
                                   )}
                                 </Typography>
                               )}
@@ -2437,7 +2446,7 @@ const OrderDetailsContent: React.FC = () => {
                                 color="primary.main"
                               >
                                 {getCurrencySymbol(
-                                  orderDetails.currency || "INR",
+                                  orderDetails.currency || "INR"
                                 )}
                                 {item.totalPrice.toFixed(2)}
                               </Typography>
@@ -2446,7 +2455,7 @@ const OrderDetailsContent: React.FC = () => {
                                 item.discountAmount > 0 && (
                                   <Chip
                                     label={`You saved ${getCurrencySymbol(
-                                      orderDetails.currency || "INR",
+                                      orderDetails.currency || "INR"
                                     )}${(
                                       item.discountAmount * item.quantity
                                     ).toFixed(2)}`}
@@ -2678,7 +2687,7 @@ const OrderDetailsContent: React.FC = () => {
                       onClick={() =>
                         copyToClipboard(
                           orderDetails.trackingNumber || "",
-                          "Tracking number",
+                          "Tracking number"
                         )
                       }
                     >
@@ -2785,7 +2794,7 @@ const OrderDetailsContent: React.FC = () => {
                       onClick={() =>
                         copyToClipboard(
                           orderDetails.paymentInfo.transactionId,
-                          "Transaction ID",
+                          "Transaction ID"
                         )
                       }
                     >
@@ -2805,7 +2814,7 @@ const OrderDetailsContent: React.FC = () => {
                   <Typography variant="body2">
                     {(() => {
                       const formatted = formatDateTime(
-                        orderDetails.paymentInfo.paymentDate,
+                        orderDetails.paymentInfo.paymentDate
                       );
                       return typeof formatted === "object"
                         ? `${formatted.date} at ${formatted.time}`
