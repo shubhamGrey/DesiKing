@@ -123,22 +123,22 @@ const theme = createTheme({
           },
         },
         containedPrimary: {
-          background: "linear-gradient(135deg, #1f4f40 0%, #2d6a54 100%)",
+          background: "linear-gradient(135deg, #1B4D3E 0%, #2D6A4F 100%)",
           "&:hover": {
-            background: "linear-gradient(135deg, #2d6a54 0%, #1f4f40 100%)",
+            background: "linear-gradient(135deg, #2D6A4F 0%, #1B4D3E 100%)",
           },
         },
         containedSecondary: {
-          background: "linear-gradient(135deg, #FF8C00 0%, #FFA500 100%)",
+          background: "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
           "&:hover": {
-            background: "linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)",
+            background: "linear-gradient(135deg, #F48C06 0%, #E85D04 100%)",
           },
         },
         outlined: {
           borderWidth: 2,
           "&:hover": {
             borderWidth: 2,
-            backgroundColor: alpha("#1f4f40", 0.04),
+            backgroundColor: alpha("#1B4D3E", 0.04),
           },
         },
       },
@@ -192,10 +192,10 @@ const theme = createTheme({
             borderRadius: 10,
             transition: "all 0.3s ease",
             "&:hover": {
-              boxShadow: `0 0 0 4px ${alpha("#1f4f40", 0.08)}`,
+              boxShadow: `0 0 0 4px ${alpha("#1B4D3E", 0.08)}`,
             },
             "&.Mui-focused": {
-              boxShadow: `0 0 0 4px ${alpha("#1f4f40", 0.12)}`,
+              boxShadow: `0 0 0 4px ${alpha("#1B4D3E", 0.12)}`,
             },
           },
         },
@@ -207,7 +207,7 @@ const theme = createTheme({
           transition: "all 0.2s ease",
           "&:hover": {
             transform: "scale(1.1)",
-            backgroundColor: alpha("#1f4f40", 0.08),
+            backgroundColor: alpha("#1B4D3E", 0.08),
           },
         },
       },

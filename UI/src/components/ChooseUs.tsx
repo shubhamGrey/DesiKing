@@ -51,20 +51,22 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden", // Prevent horizontal scroll bar
+        width: "100%",
+        py: 1,
       }}
     >
       <Box
         sx={{
           transform: visibleSectionsRef.current.has("achievements")
             ? "translateX(0)"
-            : "translateX(100%)", // Changed from -100% to 100%
+            : "translateX(100%)",
           opacity: visibleSectionsRef.current.has("achievements") ? 1 : 0,
-          transition: "transform 0.8s ease, opacity 0.8s ease",
+          transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
         }}
         ref={sectionRefs.achievements}
       >
@@ -72,21 +74,25 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
           direction={"row"}
           alignItems="start"
           justifyContent="center"
-          color={"primary.main"}
           sx={{
             p: 3,
-            borderRadius: "16px",
-            background: "rgba(255, 255, 255, 0.7)",
+            width: "100%",
+            borderRadius: 3,
+            background:
+              "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.9) 100%)",
             backdropFilter: "blur(10px)",
-            border: "1px solid rgba(31, 79, 64, 0.1)",
-            boxShadow: "0 4px 20px rgba(31, 79, 64, 0.08)",
-            transition: "all 0.3s ease",
+            border: "1px solid rgba(232, 93, 4, 0.1)",
+            boxShadow: "0 4px 20px rgba(232, 93, 4, 0.08)",
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             "&:hover": {
-              transform: "translateY(-4px)",
-              boxShadow: "0 8px 30px rgba(31, 79, 64, 0.12)",
+              boxShadow: "0 8px 30px rgba(232, 93, 4, 0.15)",
+              borderColor: "rgba(232, 93, 4, 0.2)",
               "& .choose-icon": {
-                transform: "scale(1.1)",
-                color: "secondary.main",
+                transform: "scale(1.1) rotate(5deg)",
+                background: "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
+                "& svg": {
+                  color: "white",
+                },
               },
             },
           }}
@@ -94,31 +100,47 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
           <Box
             className="choose-icon"
             sx={{
-              transition: "all 0.3s ease",
+              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              p: 1.5,
-              borderRadius: "12px",
+              p: 2,
+              borderRadius: 2,
               background:
-                "linear-gradient(135deg, rgba(31, 79, 64, 0.1), rgba(255, 140, 0, 0.1))",
+                "linear-gradient(135deg, rgba(232, 93, 4, 0.1) 0%, rgba(27, 77, 62, 0.1) 100%)",
+              boxShadow: "0 2px 8px rgba(232, 93, 4, 0.1)",
+              "& svg": {
+                fontSize: "1.8rem",
+                color: "#E85D04",
+                transition: "color 0.4s ease",
+              },
             }}
           >
             {icon}
           </Box>
-          <Stack direction={"column"} alignItems="center" sx={{ ml: 3 }}>
+          <Stack
+            direction={"column"}
+            alignItems="flex-start"
+            sx={{ ml: 3, flex: 1 }}
+          >
             <Typography
-              variant="h5"
-              sx={{ width: "100%", mb: 2 }}
-              color={"primary.main"}
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: "primary.main",
+                mb: 1,
+              }}
             >
               {name}
             </Typography>
 
             <Typography
               variant="body2"
-              color={"text.primary"}
-              textAlign={"justify"}
+              sx={{
+                color: "text.secondary",
+                textAlign: "justify",
+                lineHeight: 1.7,
+              }}
             >
               {description}
             </Typography>

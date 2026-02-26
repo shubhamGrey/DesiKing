@@ -138,29 +138,29 @@ export default function Contact() {
   ];
 
   return (
-    <Grid container spacing={0} sx={{ m: isMobile ? 2 : 6 }}>
+    <Grid container spacing={0} sx={{ p: isMobile ? 2 : 6 }}>
       <Grid
         size={{ xs: 12, md: 6 }}
         sx={{
-          px: isMobile ? 4 : 12,
-          py: 4,
-          overflowY: "auto",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundImage: 'url("/Dark Spice Illustration.png")',
-          borderRadius: isMobile ? "8px" : "50%",
         }}
       >
         <Box
           sx={{
-            width: "100%",
-            height: "100%",
+            width: isMobile ? "100%" : "min(100%, 550px)",
+            aspectRatio: "1 / 1",
+            px: isMobile ? 4 : 8,
+            py: 4,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            backgroundImage: 'url("/Dark Spice Illustration.png")',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            borderRadius: isMobile ? 2 : "50%",
           }}
         >
           <Box
@@ -168,19 +168,17 @@ export default function Contact() {
               width: "100%",
               display: "flex",
               justifyContent: "center",
-              mb: 8,
+              mb: 4,
             }}
           >
-            <Image src={BrandLogo} alt="Brand Logo" height={316} width={300} />
+            <Image src={BrandLogo} alt="Brand Logo" height={200} width={190} />
           </Box>
-          <Stack direction={"column"} spacing={2} alignItems="center">
+          <Stack direction={"column"} spacing={1} alignItems="center">
             <Typography
-              variant={isMobile ? "body1" : "h5"}
+              variant={isMobile ? "body2" : "h6"}
               color="primary.contrastText"
-              sx={{ mb: 4, textAlign: "left", width: "100%" }}
-              
+              sx={{ mb: 2, textAlign: "left", width: "100%" }}
               fontWeight={600}
-              textAlign={"left"}
             >
               Let&apos;s Get In Touch
             </Typography>
@@ -191,7 +189,7 @@ export default function Contact() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "start",
-                  mb: 1.5,
+                  mb: 0.5,
                   cursor: item.href ? "pointer" : "default",
                   width: "100%",
                 }}
@@ -206,8 +204,12 @@ export default function Contact() {
                 {item.icon}
                 <Typography
                   key={item.label}
-                  variant={isMobile ? "body2" : "body1"}
-                  sx={{ ml: 1.5, color: "primary.contrastText" }}
+                  variant="body2"
+                  sx={{
+                    ml: 1,
+                    color: "primary.contrastText",
+                    fontSize: isMobile ? "0.7rem" : "0.85rem",
+                  }}
                 >
                   {item.label}
                 </Typography>
@@ -232,7 +234,6 @@ export default function Contact() {
             variant="h4"
             sx={{ mb: 6 }}
             color="primary.main"
-            
             fontWeight={600}
             textAlign={"center"}
           >

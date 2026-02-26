@@ -3,49 +3,49 @@ import { PaletteOptions } from "@mui/material/styles";
 const lightPalette: PaletteOptions = {
   mode: "light",
   primary: {
-    main: "#1f4f40",
-    light: "#63a4ff",
-    dark: "#000000",
-    contrastText: "#fef9f3",
+    main: "#1B4D3E", // Deep emerald - more saturated, modern
+    light: "#2D6A4F", // Lighter forest green
+    dark: "#0F2E24", // Very dark green for contrast
+    contrastText: "#FFFFFF",
   },
   secondary: {
-    main: "#FF8C00",
-    light: "#d05ce3",
-    dark: "#6a0080",
-    contrastText: "#fff",
+    main: "#E85D04", // Vibrant burnt orange - more contemporary
+    light: "#F48C06", // Warm golden orange
+    dark: "#D00000", // Deep red-orange for accents
+    contrastText: "#FFFFFF",
   },
   error: {
-    main: "#d32f2f",
-    light: "#ff6659",
-    dark: "#9a0007",
+    main: "#DC2626",
+    light: "#F87171",
+    dark: "#991B1B",
     contrastText: "#fff",
   },
   warning: {
-    main: "#ed6c02",
-    light: "#ff9800",
-    dark: "#e65100",
-    contrastText: "#fff",
+    main: "#F59E0B",
+    light: "#FCD34D",
+    dark: "#D97706",
+    contrastText: "#000",
   },
   info: {
-    main: "#0288d1",
-    light: "#03a9f4",
-    dark: "#01579b",
+    main: "#0EA5E9",
+    light: "#38BDF8",
+    dark: "#0369A1",
     contrastText: "#fff",
   },
   success: {
-    main: "#2e7d32",
-    light: "#4caf50",
-    dark: "#1b5e20",
+    main: "#059669",
+    light: "#34D399",
+    dark: "#047857",
     contrastText: "#fff",
   },
   background: {
-    default: "#fffaf0",
-    paper: "#fff",
+    default: "#FAFAF9", // Clean off-white (stone-50)
+    paper: "#FFFFFF",
   },
   text: {
-    primary: "#555555",
-    secondary: "#757575",
-    disabled: "#bdbdbd",
+    primary: "#1C1917", // Almost black for strong contrast
+    secondary: "#57534E", // Warm gray
+    disabled: "#A8A29E",
   },
 };
 
