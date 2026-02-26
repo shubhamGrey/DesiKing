@@ -1975,7 +1975,7 @@ const Cart = () => {
                     fontSize: "16px",
                     fontWeight: 600,
                     background: "#ffffff !important",
-                    color: "#1f4f40 !important",
+                    color: "#1B4D3E !important",
                     borderRadius: 2,
                     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
                     "&:hover": {

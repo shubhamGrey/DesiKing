@@ -110,7 +110,7 @@ export default function Footer() {
   return (
     <Box
       sx={{
-        background: "linear-gradient(180deg, #1f4f40 0%, #163830 100%)",
+        background: "linear-gradient(180deg, #1B4D3E 0%, #0F2E24 100%)",
         color: "primary.contrastText",
         px: { xs: 3, md: 8 },
         pt: 8,
@@ -125,7 +125,7 @@ export default function Footer() {
           right: 0,
           height: "1px",
           background:
-            "linear-gradient(90deg, transparent, #FF8C00, transparent)",
+            "linear-gradient(90deg, transparent, #E85D04, transparent)",
         },
       }}
     >
@@ -199,7 +199,7 @@ export default function Footer() {
                 width: 40,
                 height: 3,
                 borderRadius: 2,
-                background: "linear-gradient(90deg, #FF8C00, transparent)",
+                background: "linear-gradient(90deg, #E85D04, transparent)",
               },
             }}
           >
@@ -270,7 +270,7 @@ export default function Footer() {
                 width: 40,
                 height: 3,
                 borderRadius: 2,
-                background: "linear-gradient(90deg, #FF8C00, transparent)",
+                background: "linear-gradient(90deg, #E85D04, transparent)",
               },
             }}
           >

@@ -240,7 +240,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       left: 0,
                       right: 0,
                       height: "3px",
-                      background: "linear-gradient(90deg, #1f4f40, #FF8C00)",
+                      background: "linear-gradient(90deg, #1B4D3E, #E85D04)",
                       opacity: 0,
                       transition: "opacity 0.3s ease",
                     },

@@ -126,7 +126,7 @@ const Testimonials = ({ items }: TestimonialsProps) => {
                     height: { xs: 56, md: 64 },
                     borderRadius: "50%",
                     overflow: "hidden",
-                    border: "3px solid #1f4f40",
+                    border: "3px solid #1B4D3E",
                     boxShadow: "0 4px 12px rgba(31, 79, 64, 0.15)",
                   }}
                 >

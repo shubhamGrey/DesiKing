@@ -30,7 +30,7 @@ export default function RootLayout({
       </head>
       <body
         className={poppins.className}
-        style={{ backgroundColor: "#fffaf0", margin: "0px" }}
+        style={{ backgroundColor: "#FAFAF9", margin: "0px" }}
       >
         <ThemeProvider theme={theme}>
           <ErrorBoundary showDetails={process.env.NODE_ENV === "development"}>
