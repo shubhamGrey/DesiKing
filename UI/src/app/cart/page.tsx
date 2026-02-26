@@ -76,7 +76,7 @@ interface AddressFormData {
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
-  imageSrc: string | undefined | null,
+  imageSrc: string | undefined | null
 ): boolean => {
   if (!imageSrc || typeof imageSrc !== "string") {
     return false;
@@ -100,7 +100,7 @@ const Cart = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
-    "success",
+    "success"
   );
 
   // Form data state
@@ -225,14 +225,14 @@ const Cart = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error("❌ Address save API error:", errorText);
         throw new Error(
-          `HTTP error! status: ${response.status}, response: ${errorText}`,
+          `HTTP error! status: ${response.status}, response: ${errorText}`
         );
       }
 
@@ -253,7 +253,7 @@ const Cart = () => {
   // Helper function to format form data to AddressFormData
   const formatAddressData = (
     formData: any,
-    addressType: "SHIPPING" | "BILLING",
+    addressType: "SHIPPING" | "BILLING"
   ): AddressFormData => {
     return {
       fullName: formData.name || "",
@@ -347,7 +347,7 @@ const Cart = () => {
       setAlertMessage(
         `Failed to save shipping address: ${
           error.message || "Please try again."
-        }`,
+        }`
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -377,7 +377,7 @@ const Cart = () => {
       setAlertMessage(
         `Failed to save billing address: ${
           error.message || "Please try again."
-        }`,
+        }`
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -451,7 +451,7 @@ const Cart = () => {
   // Handle billing input changes
   const handleBillingInputChange = (
     field: keyof PaymentFormData,
-    value: string,
+    value: string
   ) => {
     setBillingData((prev) => ({ ...prev, [field]: value }));
     if (billingErrors[field]) {
@@ -470,7 +470,7 @@ const Cart = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -506,7 +506,7 @@ const Cart = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -542,7 +542,7 @@ const Cart = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -625,7 +625,7 @@ const Cart = () => {
         (item) =>
           "productDetails" in item &&
           item.productDetails?.pricesAndSkus &&
-          item.productDetails.pricesAndSkus.length > 0,
+          item.productDetails.pricesAndSkus.length > 0
       );
 
       if (firstItemWithPricing && "productDetails" in firstItemWithPricing) {
@@ -671,19 +671,19 @@ const Cart = () => {
       // Validate that we have cart items
       if (!cartItems || cartItems.length === 0) {
         throw new Error(
-          "Your cart is empty. Please add items before checkout.",
+          "Your cart is empty. Please add items before checkout."
         );
       }
 
       // Validate that all cart items have required fields
       const invalidItems = cartItems.filter(
-        (item) => !item.productId || !item.quantity || !item.price,
+        (item) => !item.productId || !item.quantity || !item.price
       );
 
       if (invalidItems.length > 0) {
         console.error("Invalid cart items:", invalidItems);
         throw new Error(
-          "Some cart items are missing required information. Please refresh and try again.",
+          "Some cart items are missing required information. Please refresh and try again."
         );
       }
 
@@ -784,12 +784,12 @@ const Cart = () => {
         paymentFormData,
         (paymentData: RazorpayPaymentData) =>
           handlePaymentSuccess(paymentData, databaseOrderId), // Pass database order ID
-        handlePaymentError,
+        handlePaymentError
       );
     } catch (error: any) {
       console.error("Razorpay order error:", error);
       setAlertMessage(
-        `Failed to create order: ${error.message || "Please try again."}`,
+        `Failed to create order: ${error.message || "Please try again."}`
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -814,7 +814,7 @@ const Cart = () => {
   // Handle successful payment
   const handlePaymentSuccess = async (
     paymentData: RazorpayPaymentData,
-    internalOrderId?: string,
+    internalOrderId?: string
   ) => {
     try {
       setIsPaymentProcessing(true); // Start payment processing
@@ -832,7 +832,7 @@ const Cart = () => {
         paymentData,
         currentUserId,
         orderTotal,
-        "INR",
+        "INR"
       );
 
       if (!isPaymentValid) {
@@ -853,7 +853,7 @@ const Cart = () => {
             paymentData.razorpay_order_id
           }&payment_id=${paymentData.razorpay_payment_id}&signature=${
             paymentData.razorpay_signature
-          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR&payment_method=RAZORPAY&internal_order_id=${internalOrderId}`,
+          }&user_id=${getUserId()}&total_amount=${orderTotal}&currency=INR&payment_method=RAZORPAY&internal_order_id=${internalOrderId}`
         );
       }, 2000);
     } catch (error) {
@@ -866,7 +866,7 @@ const Cart = () => {
       setAlertMessage(
         `Payment verification failed: ${
           error instanceof Error ? error.message : "Please contact support."
-        }`,
+        }`
       );
       setAlertSeverity("error");
       setShowAlert(true);
@@ -919,7 +919,6 @@ const Cart = () => {
             />
             <Typography
               variant="h6"
-              
               fontWeight={600}
               color="primary.main"
               textAlign="center"
@@ -950,7 +949,6 @@ const Cart = () => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
           <Typography
             variant={isMobile ? "h5" : "h4"}
-            
             fontWeight={600}
             color="primary.main"
           >
@@ -984,7 +982,6 @@ const Cart = () => {
                 fontWeight={600}
                 color="primary.main"
                 sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
-                
               >
                 Your Order ({cartItems.length}{" "}
                 {cartItems.length === 1 ? "item" : "items"})
@@ -1086,7 +1083,7 @@ const Cart = () => {
                               >
                                 Total: {getCurrencySymbol(displayCurrency)}{" "}
                                 {((displayPrice || 0) * item.quantity).toFixed(
-                                  2,
+                                  2
                                 )}
                               </Typography>
                             )}
@@ -1123,7 +1120,7 @@ const Cart = () => {
                               onClick={() =>
                                 handleQuantityUpdate(
                                   item.id,
-                                  Math.max(1, item.quantity - 1),
+                                  Math.max(1, item.quantity - 1)
                                 )
                               }
                               disabled={item.quantity <= 1}
@@ -1168,7 +1165,7 @@ const Cart = () => {
                               <Typography fontWeight={600}>
                                 {getCurrencySymbol(displayCurrency)}
                                 {((displayPrice || 0) * item.quantity).toFixed(
-                                  2,
+                                  2
                                 )}
                               </Typography>
                             </Box>
@@ -1192,7 +1189,7 @@ const Cart = () => {
                         </Box>
                       </Box>
                     );
-                  },
+                  }
                 )}
               </Stack>
             </Paper>
@@ -1220,7 +1217,6 @@ const Cart = () => {
                 fontWeight={600}
                 color="primary.main"
                 sx={{ mb: 3 }}
-                
               >
                 Shipping Address
               </Typography>
@@ -1566,7 +1562,6 @@ const Cart = () => {
                     variant="h6"
                     fontWeight={600}
                     color="primary.main"
-                    
                     sx={{ mb: 3 }}
                   >
                     Billing Address
@@ -1888,12 +1883,7 @@ const Cart = () => {
                 top: 20,
               }}
             >
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                sx={{ mb: 4 }}
-                
-              >
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 4 }}>
                 Payment Summary
               </Typography>
 
@@ -1981,17 +1971,20 @@ const Cart = () => {
                   size="medium"
                   sx={{
                     py: 2,
+                    px: 4,
                     fontSize: "16px",
                     fontWeight: 600,
-                    backgroundColor: "white",
-                    color: "#1a3d2e",
+                    background: "#ffffff !important",
+                    color: "#1f4f40 !important",
                     borderRadius: 2,
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
                     "&:hover": {
-                      backgroundColor: "grey.100",
+                      background: "#f0f0f0 !important",
+                      boxShadow: "0 6px 16px rgba(0, 0, 0, 0.2)",
                     },
                     "&:disabled": {
-                      backgroundColor: "grey.400",
-                      color: "grey.600",
+                      background: "rgba(255,255,255,0.5) !important",
+                      color: "rgba(31,79,64,0.5) !important",
                     },
                     height: 48,
                   }}

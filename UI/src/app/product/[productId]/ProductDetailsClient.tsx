@@ -96,11 +96,14 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
           ? similarRawData.data
           : similarRawData;
 
-        setSimilarProducts(
-          Array.isArray(similarData)
-            ? similarData.filter((product) => product.id !== productId)
-            : []
-        );
+        // Filter out current product and randomly select 5 suggestions
+        const filteredProducts = Array.isArray(similarData)
+          ? similarData.filter((product) => product.id !== productId)
+          : [];
+
+        // Shuffle and take 5 random products
+        const shuffled = [...filteredProducts].sort(() => Math.random() - 0.5);
+        setSimilarProducts(shuffled.slice(0, 5));
       } catch (error) {
         console.error("Failed to fetch product data:", error);
 
@@ -181,7 +184,6 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
             position: "relative",
             display: "inline-block",
           }}
-          
         >
           Similar Products
           <Typography
@@ -204,10 +206,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
               id: product.id as string,
               title: product.name,
               description: product.description,
-              image:
-                typeof product.imageUrls?.[0] === "string"
-                  ? product.imageUrls[0]
-                  : "",
+              image: product.thumbnailUrl || product.imageUrls?.[0],
             }))}
         />
       </Box>

@@ -394,7 +394,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       }
 
       const existingItem = state.items.find(
-        (item) => item.productId === action.payload.productId && item.sku === action.payload.sku
+        (item) =>
+          item.productId === action.payload.productId &&
+          item.sku === action.payload.sku
       );
       const quantityToAdd = action.payload.quantity ?? 1;
 
@@ -403,14 +405,17 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         const maxQty = existingItem.maxQuantity ?? 99;
         const updatedQuantity = Math.min(newQuantity, maxQty);
         const updatedItems = state.items.map((item) =>
-          item.productId === action.payload.productId && item.sku === action.payload.sku
+          item.productId === action.payload.productId &&
+          item.sku === action.payload.sku
             ? { ...item, quantity: updatedQuantity }
             : item
         );
 
         // Update existing item in database
         const updatedItem = updatedItems.find(
-          (item) => item.productId === action.payload.productId && item.sku === action.payload.sku
+          (item) =>
+            item.productId === action.payload.productId &&
+            item.sku === action.payload.sku
         );
         if (updatedItem) {
           updateCartItemToDatabase(updatedItem);
@@ -512,26 +517,72 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
 
     case "LOAD_CART": {
-      // If this is initial load (state is empty), just load the items
-      // If this is a merge operation, prevent duplicates by productId
-      let finalItems: CartItem[];
-
-      if (state.items.length === 0) {
-        // Initial load - just use the payload items directly
-        finalItems = action.payload.filter((item) => item.productId); // Filter out items without productId
-      } else {
-        // Merge operation - prevent duplicates
-        const currentItems = [...state.items];
-        const newItems: CartItem[] = [];
-
-        action.payload.forEach((newItem) => {
-          if (!newItem.productId) {
-            console.warn("⚠️ Item missing productId, skipping:", newItem);
+      // When skipSave is true (loading from database), use payload as-is without adding quantities
+      // The database is the source of truth
+      if (action.skipSave) {
+        // Deduplicate by productId + sku, taking the last occurrence (most recent)
+        const deduplicatedPayload: CartItem[] = [];
+        action.payload.forEach((item) => {
+          if (!item.productId) {
+            console.warn("⚠️ Item missing productId, skipping:", item);
             return;
           }
 
+          const existingIdx = deduplicatedPayload.findIndex(
+            (existing) =>
+              existing.productId === item.productId && existing.sku === item.sku
+          );
+
+          if (existingIdx !== -1) {
+            // Replace with the newer item (use item's quantity, don't add)
+            deduplicatedPayload[existingIdx] = { ...item };
+          } else {
+            deduplicatedPayload.push({ ...item });
+          }
+        });
+
+        return {
+          items: deduplicatedPayload,
+          total: calculateTotal(deduplicatedPayload),
+          itemCount: calculateItemCount(deduplicatedPayload),
+        };
+      }
+
+      // For non-skipSave operations (user adding items), deduplicate and merge
+      const deduplicatedPayload: CartItem[] = [];
+      action.payload.forEach((item) => {
+        if (!item.productId) {
+          console.warn("⚠️ Item missing productId, skipping:", item);
+          return;
+        }
+
+        const existingIdx = deduplicatedPayload.findIndex(
+          (existing) =>
+            existing.productId === item.productId && existing.sku === item.sku
+        );
+
+        if (existingIdx !== -1) {
+          // Merge quantities for duplicate items
+          deduplicatedPayload[existingIdx].quantity += item.quantity;
+        } else {
+          deduplicatedPayload.push({ ...item });
+        }
+      });
+
+      let finalItems: CartItem[];
+
+      if (state.items.length === 0) {
+        // Initial load - use deduplicated payload
+        finalItems = deduplicatedPayload;
+      } else {
+        // Merge operation - prevent duplicates by productId AND sku
+        const currentItems = [...state.items];
+        const newItems: CartItem[] = [];
+
+        deduplicatedPayload.forEach((newItem) => {
           const existingIndex = currentItems.findIndex(
-            (item) => item.productId === newItem.productId
+            (item) =>
+              item.productId === newItem.productId && item.sku === newItem.sku
           );
 
           if (existingIndex !== -1) {
@@ -546,17 +597,14 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         finalItems = [...currentItems, ...newItems];
       }
 
-      // Only save loaded items to database if not explicitly loading from database
-      if (!action.skipSave) {
-        finalItems.forEach((item: CartItem) => {
-          // For new loads, save all items; for merges, handle appropriately
-          if (state.items.length === 0) {
-            saveCartItemToDatabase(item);
-          } else {
-            updateCartItemToDatabase(item);
-          }
-        });
-      }
+      // Save items to database
+      finalItems.forEach((item: CartItem) => {
+        if (state.items.length === 0) {
+          saveCartItemToDatabase(item);
+        } else {
+          updateCartItemToDatabase(item);
+        }
+      });
 
       return {
         ...state,
@@ -737,7 +785,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           }
 
           const existingLocalIndex = mergedItems.findIndex(
-            (localItem) => localItem.productId === dbItem.productId
+            (localItem) =>
+              localItem.productId === dbItem.productId &&
+              localItem.sku === dbItem.sku
           );
 
           if (existingLocalIndex !== -1) {

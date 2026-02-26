@@ -73,9 +73,40 @@ const ChooseUs = ({ name, icon, description }: ChooseUsProps) => {
           alignItems="start"
           justifyContent="center"
           color={"primary.main"}
+          sx={{
+            p: 3,
+            borderRadius: "16px",
+            background: "rgba(255, 255, 255, 0.7)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(31, 79, 64, 0.1)",
+            boxShadow: "0 4px 20px rgba(31, 79, 64, 0.08)",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              transform: "translateY(-4px)",
+              boxShadow: "0 8px 30px rgba(31, 79, 64, 0.12)",
+              "& .choose-icon": {
+                transform: "scale(1.1)",
+                color: "secondary.main",
+              },
+            },
+          }}
         >
-          {icon}
-          <Stack direction={"column"} alignItems="center" sx={{ ml: 4 }}>
+          <Box
+            className="choose-icon"
+            sx={{
+              transition: "all 0.3s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              p: 1.5,
+              borderRadius: "12px",
+              background:
+                "linear-gradient(135deg, rgba(31, 79, 64, 0.1), rgba(255, 140, 0, 0.1))",
+            }}
+          >
+            {icon}
+          </Box>
+          <Stack direction={"column"} alignItems="center" sx={{ ml: 3 }}>
             <Typography
               variant="h5"
               sx={{ width: "100%", mb: 2 }}

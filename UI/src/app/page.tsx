@@ -235,7 +235,7 @@ const Home: React.FC = () => {
 
       addItem(cartItem);
     },
-    [router, addItem, selectedPackets, currentImages]
+    [router, addItem, selectedPackets, quantities]
   );
 
   const confirmDelete = React.useCallback(() => {
@@ -550,8 +550,8 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <HomeGrid />
-      {/* <Carousal items={carousalImages} /> */}
+      {/* <HomeGrid /> */}
+      <Carousal items={carousalImages} />
       <Container
         sx={{
           mt: 3,
@@ -607,7 +607,6 @@ const Home: React.FC = () => {
                   >
                     <Box
                       sx={{
-                        height: "100%",
                         width: "100%",
                         display: "flex",
                         flexDirection: "row",
@@ -626,7 +625,7 @@ const Home: React.FC = () => {
                       <Box
                         sx={{
                           position: "relative",
-                          width: "45%",
+                          width: "40%",
                           minHeight: "200px",
                           overflow: "hidden",
                           borderRadius: "8px",
@@ -644,7 +643,8 @@ const Home: React.FC = () => {
                             product.thumbnailUrl || "/placeholder-image.jpg"
                           )}
                           style={{
-                            objectFit: "contain",
+                            objectFit: "cover",
+                            objectPosition: "center",
                             borderRadius: "8px",
                           }}
                         />
@@ -653,7 +653,7 @@ const Home: React.FC = () => {
                       {/* Right Side - Product Details */}
                       <Box
                         sx={{
-                          width: "55%",
+                          width: "60%",
                           display: "flex",
                           flexDirection: "column",
                           justifyContent: "space-between",

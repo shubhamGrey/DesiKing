@@ -224,14 +224,37 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                     display: "flex",
                     flexDirection: "column",
                     minHeight: "auto",
-                    transition: "box-shadow 0.3s ease-in-out",
-                    borderRadius: "8px",
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    borderRadius: "16px",
                     border: "1px solid",
-                    borderColor: "divider",
+                    borderColor: "rgba(31, 79, 64, 0.1)",
                     p: 2,
-                    backgroundColor: "#f8f3ea",
+                    background:
+                      "linear-gradient(145deg, #faf5ed 0%, #f5efe5 100%)",
+                    position: "relative",
+                    overflow: "hidden",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: "3px",
+                      background: "linear-gradient(90deg, #1f4f40, #FF8C00)",
+                      opacity: 0,
+                      transition: "opacity 0.3s ease",
+                    },
                     "&:hover": {
-                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                      transform: "translateY(-8px)",
+                      boxShadow:
+                        "0 16px 40px rgba(31, 79, 64, 0.15), 0 8px 16px rgba(31, 79, 64, 0.1)",
+                      borderColor: "rgba(31, 79, 64, 0.2)",
+                      "&::before": {
+                        opacity: 1,
+                      },
+                      "& .product-image": {
+                        transform: "scale(1.05)",
+                      },
                     },
                   }}
                 >
@@ -273,9 +296,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       sx={{
                         width: "100%",
                         height: isMobile ? "150px" : "200px",
-                        borderRadius: "16px",
+                        borderRadius: "12px",
                         overflow: "hidden",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                         background: "transparent",
                         position: "relative",
                       }}
@@ -285,10 +308,13 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                         alt={product.name}
                         fill
                         unoptimized={true}
+                        className="product-image"
                         style={{
                           objectFit: "cover",
-                          borderRadius: "16px",
+                          borderRadius: "12px",
                           background: "transparent",
+                          transition:
+                            "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         }}
                       />
                     </Box>

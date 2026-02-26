@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CartProvider } from "@/contexts/CartContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { GlobalClickTracker } from "@/components/GlobalClickTracker";
+import "@/styles/globals.css";
 
 export default function RootLayout({
   children,
@@ -38,7 +39,7 @@ export default function RootLayout({
                 <GlobalClickTracker>
                   <CartProvider>
                     {!isAuthPage && <Header />}
-                    <main>{children}</main>
+                    <main className="page-transition">{children}</main>
                     {!isAuthPage && <Footer />}
                   </CartProvider>
                 </GlobalClickTracker>

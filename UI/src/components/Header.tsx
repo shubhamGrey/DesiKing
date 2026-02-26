@@ -120,11 +120,22 @@ export default function Header() {
             justifyContent: "start",
             height: isScrolled ? 64 : 80,
             backgroundColor:
-              pathname === "/contact" ? "primary.contrastText" : "primary.main",
+              pathname === "/contact"
+                ? isScrolled
+                  ? "rgba(254, 249, 243, 0.95)"
+                  : "primary.contrastText"
+                : isScrolled
+                ? "rgba(31, 79, 64, 0.95)"
+                : "primary.main",
+            backdropFilter: isScrolled ? "blur(12px)" : "none",
+            WebkitBackdropFilter: isScrolled ? "blur(12px)" : "none",
             color:
               pathname === "/contact" ? "primary.main" : "primary.contrastText",
-            borderBottom: "0.5px solid #b36a26",
-            transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design easing
+            borderBottom: isScrolled
+              ? "1px solid rgba(179, 106, 38, 0.3)"
+              : "0.5px solid #b36a26",
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            boxShadow: isScrolled ? "0 4px 20px rgba(31, 79, 64, 0.1)" : "none",
           }}
         >
           {/* Desktop Nav */}

@@ -110,13 +110,23 @@ export default function Footer() {
   return (
     <Box
       sx={{
-        backgroundColor: "primary.main",
+        background: "linear-gradient(180deg, #1f4f40 0%, #163830 100%)",
         color: "primary.contrastText",
         px: { xs: 3, md: 8 },
-        pt: 6,
-        pb: 2,
+        pt: 8,
+        pb: 3,
         position: "relative",
-        borderTop: "0.5px solid #b36a26",
+        borderTop: "1px solid rgba(179, 106, 38, 0.5)",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background:
+            "linear-gradient(90deg, transparent, #FF8C00, transparent)",
+        },
       }}
     >
       <Grid container spacing={4}>
@@ -143,17 +153,26 @@ export default function Footer() {
           >
             CIN No. - U47211DL2025PTC445306
           </Typography>
-          <Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
             {socialMedia.map((media) => (
               <IconButton
                 key={media.href}
-                sx={{ color: "primary.contrastText" }}
+                sx={{
+                  color: "primary.contrastText",
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "secondary.main",
+                    transform: "translateY(-3px)",
+                    boxShadow: "0 4px 12px rgba(255, 140, 0, 0.4)",
+                  },
+                }}
               >
                 <a
                   href={media.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "inherit" }}
+                  style={{ color: "inherit", display: "flex" }}
                 >
                   {media.icon}
                 </a>
@@ -167,7 +186,22 @@ export default function Footer() {
           <Typography
             variant="h6"
             gutterBottom
-            sx={{ mb: 3, color: "primary.contrastText" }}
+            sx={{
+              mb: 3,
+              color: "primary.contrastText",
+              position: "relative",
+              display: "inline-block",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: -8,
+                left: 0,
+                width: 40,
+                height: 3,
+                borderRadius: 2,
+                background: "linear-gradient(90deg, #FF8C00, transparent)",
+              },
+            }}
           >
             Quick Links
           </Typography>
@@ -179,6 +213,20 @@ export default function Footer() {
                 alignItems: "center",
                 mb: 1.5,
                 cursor: "pointer",
+                padding: "6px 8px",
+                marginLeft: "-8px",
+                borderRadius: 1,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  transform: "translateX(8px)",
+                  "& .MuiTypography-root": {
+                    color: "secondary.main",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    color: "secondary.main",
+                  },
+                },
               }}
               key={item.label}
               onClick={() => {
@@ -191,8 +239,12 @@ export default function Footer() {
               {item.icon}
               <Typography
                 key={item.label}
-                variant="body1"
-                sx={{ ml: 1.5, color: "primary.contrastText" }}
+                variant="body2"
+                sx={{
+                  ml: 1.5,
+                  color: "primary.contrastText",
+                  transition: "color 0.3s ease",
+                }}
               >
                 {item.label}
               </Typography>
@@ -205,7 +257,22 @@ export default function Footer() {
           <Typography
             variant="h6"
             gutterBottom
-            sx={{ mb: 3, color: "primary.contrastText" }}
+            sx={{
+              mb: 3,
+              color: "primary.contrastText",
+              position: "relative",
+              display: "inline-block",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: -8,
+                left: 0,
+                width: 40,
+                height: 3,
+                borderRadius: 2,
+                background: "linear-gradient(90deg, #FF8C00, transparent)",
+              },
+            }}
           >
             Stay Connected
           </Typography>
@@ -252,10 +319,24 @@ export default function Footer() {
       </Grid>
 
       {/* Copyright */}
-      <Box textAlign="center" borderTop="1px solid #333" mt={6} pt={2}>
-        <Typography variant="body2" sx={{ color: "primary.contrastText" }}>
-          Copyright © 2026 AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED. All rights
-          reserved.
+      <Box
+        textAlign="center"
+        mt={6}
+        pt={3}
+        sx={{
+          borderTop: "1px solid rgba(255, 255, 255, 0.15)",
+          background:
+            "linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.1), transparent)",
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{
+            color: "rgba(255, 255, 255, 0.8)",
+            letterSpacing: "0.5px",
+          }}
+        >
+          © 2026 AGRO NEXIS INDIA OVERSEAS PRIVATE LIMITED. All rights reserved.
         </Typography>
       </Box>
     </Box>

@@ -67,9 +67,10 @@ const Testimonials = ({ items }: TestimonialsProps) => {
         flexDirection: "column",
         alignItems: "center",
         alignContent: "center",
-        height: "250px",
+        height: isMobile ? "280px" : "280px",
         justifyContent: "center",
         position: "relative",
+        py: 4,
       }}
     >
       <Box
@@ -107,25 +108,48 @@ const Testimonials = ({ items }: TestimonialsProps) => {
                   flexDirection: isMobile ? "column" : "row",
                   gap: 2,
                   width: isMobile ? "91%" : "45%",
-                  p: 2,
+                  p: 3,
                   position: "absolute",
                   left: isMobile ? 0 : `${(index % cardsPerPage) * 50}%`,
                   bottom: isMobile ? "20%" : 0,
-                  transition: isMobile ? "bottom 0.5s ease" : "left 0.5s ease",
+                  transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                  borderRadius: "16px",
+                  background: "rgba(255, 255, 255, 0.6)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(31, 79, 64, 0.1)",
+                  boxShadow: "0 4px 20px rgba(31, 79, 64, 0.08)",
                 }}
               >
                 <Stack direction={"row"} spacing={2}>
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={isMobile ? 50 : 150}
-                    height={isMobile ? 50 : 150}
-                    style={{
-                      borderRadius: "50%",
-                      // marginBottom: "16px",
-                      minWidth: isMobile ? "50px" : "150px",
+                  <Box
+                    sx={{
+                      position: "relative",
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: -3,
+                        left: -3,
+                        right: -3,
+                        bottom: -3,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #1f4f40, #FF8C00)",
+                        zIndex: -1,
+                      },
                     }}
-                  />
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={isMobile ? 60 : 120}
+                      height={isMobile ? 60 : 120}
+                      style={{
+                        borderRadius: "50%",
+                        minWidth: isMobile ? "60px" : "120px",
+                        border: "3px solid white",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                  </Box>
                   <Box>
                     <Typography
                       variant={isMobile ? "body2" : "body1"}
