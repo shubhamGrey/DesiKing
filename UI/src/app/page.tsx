@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   CardMedia,
@@ -13,8 +12,8 @@ import {
   Typography,
   useMediaQuery,
   Skeleton,
-  Tooltip,
-  IconButton,
+  Chip,
+  Button,
 } from "@mui/material";
 import AchievementsCard from "@/components/AchievementsCard";
 import {
@@ -24,8 +23,10 @@ import {
   HandshakeOutlined,
   HealthAndSafetyOutlined,
   SoupKitchenOutlined,
-  Add,
-  Remove,
+  LocalFireDepartment,
+  Restaurant,
+  Spa,
+  ArrowForward,
 } from "@mui/icons-material";
 import ChooseUs from "@/components/ChooseUs";
 import theme from "@/styles/theme";
@@ -37,44 +38,16 @@ import Blogger from "../../public/Food Blogger.jpg";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
 import HomeGrid from "@/components/HomeGrid";
-import Image from "next/image";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import { useCart } from "@/contexts/CartContext";
-import Cookies from "js-cookie";
 import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import Carousal from "@/components/Carousal";
+import Image from "next/image";
 import Purity from "../../public/GaramMasala5.jpg";
 import Quality from "../../public/GaramMasala4.webp";
 import Taste from "../../public/GaramMasala3.jpg";
 import Globe from "../../public/GaramMasala2.jpg";
-
-// Helper function to check if image needs to be unoptimized
-const shouldUnoptimizeImage = (
-  imageSrc: string | undefined | null
-): boolean => {
-  return imageSrc?.includes("cloud.agronexis.com") ?? false;
-};
-
-// Interface for featured products UI display
-interface FeaturedProduct {
-  thumbnailUrl: string;
-  id: string;
-  title: string;
-  imageUrls: string[];
-  description: string;
-  pricesAndSkus: Array<{
-    id: string;
-    price: number;
-    discountedAmount?: number;
-    weightValue?: number;
-    weightUnit?: string;
-    skuNumber: string;
-    currencyCode?: string;
-  }>;
-  brandId: string;
-}
 
 const carousalImages = [
   { image: Purity },
@@ -82,6 +55,42 @@ const carousalImages = [
   { image: Taste },
   { image: Globe },
 ];
+
+// Categories to showcase on homepage with products
+const showcaseCategories = [
+  "Immunity Boosters",
+  "Digestive Aids",
+  "Daily Uses",
+];
+
+// Category icons and colors for visual appeal
+const categoryConfig: Record<
+  string,
+  { icon: React.ReactNode; gradient: string; bgColor: string }
+> = {
+  "Immunity Boosters": {
+    icon: <Spa sx={{ fontSize: 28 }} />,
+    gradient: "linear-gradient(135deg, #1B4D3E 0%, #2D7A5E 100%)",
+    bgColor: "rgba(27, 77, 62, 0.08)",
+  },
+  "Digestive Aids": {
+    icon: <Restaurant sx={{ fontSize: 28 }} />,
+    gradient: "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
+    bgColor: "rgba(232, 93, 4, 0.08)",
+  },
+  "Daily Uses": {
+    icon: <LocalFireDepartment sx={{ fontSize: 28 }} />,
+    gradient: "linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%)",
+    bgColor: "rgba(124, 58, 237, 0.08)",
+  },
+};
+
+// Helper function to check if image needs to be unoptimized
+const shouldUnoptimizeImage = (
+  imageSrc: string | undefined | null
+): boolean => {
+  return imageSrc?.includes("cloud.agronexis.com") ?? false;
+};
 
 const achievements = [
   {
@@ -158,12 +167,9 @@ const chooseUs = [
   },
 ];
 
-// Featured products will be loaded from API
-
 const Home: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
-  const { addItem } = useCart();
 
   // Analytics hooks
   usePageTracking(); // Automatically track page views
@@ -176,67 +182,21 @@ const Home: React.FC = () => {
   const [upcomingpProductCategories, setUpcomingpProductCategories] =
     React.useState<FormattedCategory[]>([]);
 
-  const [featuredProducts, setFeaturedProducts] = React.useState<
-    FeaturedProduct[]
-  >([]);
-
-  // Track selected packet size and image for each product
-  const [selectedPackets, setSelectedPackets] = React.useState<
-    Record<string, number>
-  >({});
-  const [currentImages, setCurrentImages] = React.useState<
-    Record<string, number>
-  >({});
-  const [quantities, setQuantities] = React.useState<Record<string, number>>(
-    {}
-  );
-
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
     string | null
   >(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
+  // Products grouped by category for showcase
+  const [productsByCategory, setProductsByCategory] = React.useState<
+    Record<string, Product[]>
+  >({});
+
   const handleDeleteCategoryByType = React.useCallback((categoryId: string) => {
     setSelectedCategoryId(categoryId);
     setIsModalOpen(true);
   }, []);
-
-  const handleAddToCart = React.useCallback(
-    (product: FeaturedProduct) => {
-      // Check if user is logged in using simple cookie check
-      const accessToken = Cookies.get("access_token");
-
-      if (!accessToken) {
-        // Redirect to login page with return URL
-        router.push(
-          `/login?redirect=${encodeURIComponent(window.location.pathname)}`
-        );
-        return;
-      }
-
-      // Get selected packet index or default to 0
-      const selectedIndex = selectedPackets[product.id] || 0;
-      const selectedSku = product.pricesAndSkus[selectedIndex];
-      const weightLabel = `${selectedSku.weightValue}${selectedSku.weightUnit}`;
-      const quantity = quantities[product.id] || 1;
-
-      // Add item to cart
-      const cartItem = {
-        id: crypto.randomUUID(), // Generate a proper GUID
-        name: `${product.title} - ${weightLabel}`,
-        price: selectedSku.discountedAmount || selectedSku.price,
-        productId: product.id.toString(),
-        brandId: product.brandId,
-        image: product.thumbnailUrl || "/placeholder-image.jpg",
-        quantity: quantity,
-        sku: selectedSku.skuNumber,
-      };
-
-      addItem(cartItem);
-    },
-    [router, addItem, selectedPackets, quantities]
-  );
 
   const confirmDelete = React.useCallback(() => {
     if (selectedCategoryId) {
@@ -269,58 +229,6 @@ const Home: React.FC = () => {
   }, [selectedCategoryId]);
 
   useEffect(() => {
-    // Fetch featured products
-    const fetchFeaturedProducts = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/Product`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const products: Product[] = await response.json();
-
-        // Filter products where isFeatured is true and map to FeaturedProduct interface
-        const featured: FeaturedProduct[] = products
-          .filter((product) => product.isFeatured && product.isActive)
-          .slice(0, 6) // Limit to 6 products for the UI
-          .map((product) => ({
-            id: product.id,
-            title: product.name,
-            thumbnailUrl: product.thumbnailUrl || "/placeholder-image.jpg",
-            imageUrls: product.imageUrls || ["/placeholder-image.jpg"],
-            description: product.description,
-            pricesAndSkus: product.pricesAndSkus || [],
-            brandId: product.brandId,
-          }));
-
-        setFeaturedProducts(featured);
-
-        // Initialize selected packets, images, and quantities
-        const initialPackets: Record<string, number> = {};
-        const initialImages: Record<string, number> = {};
-        const initialQuantities: Record<string, number> = {};
-        featured.forEach((product) => {
-          initialPackets[product.id] = 0;
-          initialImages[product.id] = 0;
-          initialQuantities[product.id] = 1;
-        });
-        setSelectedPackets(initialPackets);
-        setCurrentImages(initialImages);
-        setQuantities(initialQuantities);
-      } catch (error) {
-        console.error("Error fetching featured products:", error);
-        // Keep empty array on error
-        setFeaturedProducts([]);
-      }
-    };
-
     // Fetch categories
     const fetchCategories = async () => {
       try {
@@ -362,9 +270,131 @@ const Home: React.FC = () => {
       }
     };
 
-    // Execute both fetch operations
+    // Fetch products and group by showcase categories
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/Product`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const products: Product[] = await response.json();
+
+        // Keywords for categorizing products (analyze name, description, uses, ingredients)
+        const categoryKeywords: Record<string, string[]> = {
+          "Immunity Boosters": [
+            "turmeric",
+            "haldi",
+            "ginger",
+            "adrak",
+            "tulsi",
+            "giloy",
+            "ashwagandha",
+            "immunity",
+            "health",
+            "antioxidant",
+            "vitamin",
+            "amla",
+            "neem",
+            "moringa",
+            "black pepper",
+            "kali mirch",
+          ],
+          "Digestive Aids": [
+            "jeera",
+            "cumin",
+            "ajwain",
+            "carom",
+            "hing",
+            "asafoetida",
+            "fennel",
+            "saunf",
+            "digestive",
+            "stomach",
+            "acidity",
+            "triphala",
+            "mint",
+            "pudina",
+            "ginger",
+            "sonth",
+          ],
+          "Daily Uses": [
+            "salt",
+            "namak",
+            "garam masala",
+            "chilli",
+            "mirchi",
+            "coriander",
+            "dhaniya",
+            "mustard",
+            "sarson",
+            "curry",
+            "biryani",
+            "tandoori",
+            "kitchen",
+            "cooking",
+            "masala",
+            "powder",
+            "spice",
+          ],
+        };
+
+        // Function to check if product matches a category based on keywords
+        const matchesCategory = (
+          product: Product,
+          keywords: string[]
+        ): boolean => {
+          const searchText = [
+            product.name,
+            product.description,
+            ...(product.uses || []),
+            product.ingredients,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+          return keywords.some((keyword) =>
+            searchText.includes(keyword.toLowerCase())
+          );
+        };
+
+        // Group products by showcase categories using keyword matching
+        const grouped: Record<string, Product[]> = {};
+        const usedProductIds = new Set<string>(); // Avoid duplicates across categories
+
+        showcaseCategories.forEach((categoryName) => {
+          const keywords = categoryKeywords[categoryName] || [];
+          const matchingProducts = products.filter(
+            (product) =>
+              product.isActive &&
+              !usedProductIds.has(product.id) &&
+              matchesCategory(product, keywords)
+          );
+
+          // Take first 4 matching products and mark them as used
+          const selected = matchingProducts.slice(0, 4);
+          selected.forEach((p) => usedProductIds.add(p.id));
+          grouped[categoryName] = selected;
+        });
+
+        setProductsByCategory(grouped);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setProductsByCategory({});
+      }
+    };
+
+    // Execute fetch operation
     const fetchData = async () => {
-      await Promise.all([fetchFeaturedProducts(), fetchCategories()]);
+      await Promise.all([fetchCategories(), fetchProducts()]);
       setIsLoading(false);
     };
 
@@ -374,7 +404,7 @@ const Home: React.FC = () => {
       // Cleanup function if needed
       setProductCategories([]);
       setUpcomingpProductCategories([]);
-      setFeaturedProducts([]);
+      setProductsByCategory({});
     };
   }, []);
 
@@ -390,57 +420,8 @@ const Home: React.FC = () => {
         maxWidth: "1500px !important",
       }}
     >
-      {/* Featured Products Skeleton */}
-      <Box sx={{ mt: isMobile ? 8 : 15 }}>
-        <Skeleton
-          variant="text"
-          width={isMobile ? 200 : 300}
-          height={isMobile ? 32 : 40}
-          sx={{ mb: isMobile ? 3 : 8, mx: "auto" }}
-        />
-        <Grid
-          container
-          columnSpacing={4}
-          rowSpacing={isMobile ? 4 : 8}
-          sx={{
-            width: "70%",
-            display: "flex",
-            mx: "auto",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Grid
-              key={index}
-              size={{ xs: 12, md: 4 }}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Box sx={{ width: "100%" }}>
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  height={200}
-                  sx={{ borderRadius: "8px", mb: 1 }}
-                />
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  height={40}
-                  sx={{ borderRadius: "4px" }}
-                />
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
       {/* Product Categories Skeleton */}
-      <Box sx={{ mt: isMobile ? 8 : 15 }}>
+      <Box sx={{ mt: isMobile ? 4 : 8 }}>
         <Skeleton
           variant="text"
           width={isMobile ? 200 : 300}
@@ -562,692 +543,379 @@ const Home: React.FC = () => {
           maxWidth: "1500px !important",
         }}
       >
+        {/* Shop by Category Sections */}
+        {showcaseCategories.map((categoryName) => {
+          const products = productsByCategory[categoryName] || [];
+          if (products.length === 0) return null;
+
+          const config = categoryConfig[categoryName];
+
+          return (
+            <Box
+              key={categoryName}
+              sx={{
+                mt: isMobile ? 4 : 6,
+                mb: isMobile ? 2 : 4,
+                p: isMobile ? 2 : 3,
+                borderRadius: 3,
+                backgroundColor: config?.bgColor || "rgba(0,0,0,0.02)",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 4,
+                  background: config?.gradient || "primary.main",
+                  borderRadius: "12px 12px 0 0",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: isMobile ? 2 : 3,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Box
+                    sx={{
+                      width: isMobile ? 40 : 48,
+                      height: isMobile ? 40 : 48,
+                      borderRadius: 2,
+                      background: config?.gradient || "primary.main",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    {config?.icon}
+                  </Box>
+                  <Typography
+                    variant={isMobile ? "h6" : "h5"}
+                    sx={{
+                      color: "text.primary",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {categoryName}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
+                  onClick={() => router.push("/products")}
+                  sx={{
+                    borderColor: "primary.main",
+                    color: "primary.main",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    px: 2,
+                    "&:hover": {
+                      backgroundColor: "primary.main",
+                      color: "white",
+                      borderColor: "primary.main",
+                    },
+                  }}
+                >
+                  {isMobile ? "All" : "View All"}
+                </Button>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: isMobile ? 1.5 : 2.5,
+                  overflowX: "auto",
+                  pb: 1,
+                  scrollSnapType: "x mandatory",
+                  "&::-webkit-scrollbar": {
+                    height: 6,
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    backgroundColor: "rgba(0,0,0,0.05)",
+                    borderRadius: 3,
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "rgba(0,0,0,0.2)",
+                    borderRadius: 3,
+                    "&:hover": {
+                      backgroundColor: "rgba(0,0,0,0.3)",
+                    },
+                  },
+                }}
+              >
+                {products.map((product) => {
+                  const defaultSku = product.pricesAndSkus?.[0];
+                  const price =
+                    defaultSku?.discountedAmount || defaultSku?.price || 0;
+                  const originalPrice = defaultSku?.price || 0;
+                  const hasDiscount =
+                    defaultSku?.isDiscounted && defaultSku?.discountedAmount;
+                  const currencySymbol = getCurrencySymbol(
+                    defaultSku?.currencyCode || "INR"
+                  );
+
+                  return (
+                    <Card
+                      key={product.id}
+                      sx={{
+                        minWidth: isMobile ? 165 : 240,
+                        maxWidth: isMobile ? 165 : 240,
+                        borderRadius: 3,
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                        cursor: "pointer",
+                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        scrollSnapAlign: "start",
+                        border: "1px solid rgba(0,0,0,0.06)",
+                        backgroundColor: "#fff",
+                        overflow: "hidden",
+                        "&:hover": {
+                          transform: "translateY(-8px) scale(1.02)",
+                          boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+                          "& .product-image": {
+                            transform: "scale(1.1)",
+                          },
+                        },
+                        flexShrink: 0,
+                      }}
+                      onClick={() => router.push(`/product/${product.id}`)}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height: isMobile ? 130 : 180,
+                          backgroundColor: "#f5f5f5",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          className="product-image"
+                          sx={{
+                            position: "relative",
+                            width: "100%",
+                            height: "100%",
+                            transition: "transform 0.4s ease",
+                          }}
+                        >
+                          <Image
+                            src={
+                              product.thumbnailUrl ||
+                              product.imageUrls?.[0] ||
+                              "/placeholder-image.jpg"
+                            }
+                            alt={product.name}
+                            fill
+                            unoptimized={shouldUnoptimizeImage(
+                              product.thumbnailUrl || product.imageUrls?.[0]
+                            )}
+                            style={{
+                              objectFit: "cover",
+                            }}
+                          />
+                        </Box>
+                        {hasDiscount && (
+                          <Chip
+                            label={`${defaultSku.discountPercentage}% OFF`}
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 10,
+                              left: 10,
+                              background:
+                                "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
+                              color: "white",
+                              fontWeight: 700,
+                              fontSize: "0.7rem",
+                              height: 24,
+                              boxShadow: "0 2px 8px rgba(232,93,4,0.4)",
+                              "& .MuiChip-label": {
+                                px: 1.5,
+                              },
+                            }}
+                          />
+                        )}
+                        {product.isPremium && (
+                          <Chip
+                            label="Premium"
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 10,
+                              right: 10,
+                              background:
+                                "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
+                              color: "#1a1a1a",
+                              fontWeight: 700,
+                              fontSize: "0.65rem",
+                              height: 22,
+                              boxShadow: "0 2px 8px rgba(255,215,0,0.4)",
+                            }}
+                          />
+                        )}
+                      </Box>
+                      <CardContent
+                        sx={{
+                          p: isMobile ? 1.5 : 2,
+                          "&:last-child": { pb: isMobile ? 1.5 : 2 },
+                        }}
+                      >
+                        <Typography
+                          variant={isMobile ? "body2" : "subtitle1"}
+                          sx={{
+                            fontWeight: 600,
+                            mb: 0.75,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            color: "text.primary",
+                          }}
+                        >
+                          {product.name}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "baseline",
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant={isMobile ? "subtitle1" : "h6"}
+                            sx={{ fontWeight: 800, color: "primary.main" }}
+                          >
+                            {currencySymbol}
+                            {price.toFixed(2)}
+                          </Typography>
+                          {hasDiscount && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                textDecoration: "line-through",
+                                color: "text.disabled",
+                                fontWeight: 500,
+                              }}
+                            >
+                              {currencySymbol}
+                              {originalPrice.toFixed(2)}
+                            </Typography>
+                          )}
+                        </Box>
+                        {defaultSku && (
+                          <Box
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              px: 1,
+                              py: 0.25,
+                              borderRadius: 1,
+                              backgroundColor: "rgba(27, 77, 62, 0.1)",
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "primary.main", fontWeight: 600 }}
+                            >
+                              {defaultSku.weightValue}
+                              {defaultSku.weightUnit}
+                            </Typography>
+                          </Box>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            </Box>
+          );
+        })}
+
+        <CertificateScroll />
+
+        {/* Product Categories Section */}
         <Box
           sx={{
             mt: isMobile ? 4 : 8,
           }}
         >
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{
-              mb: isMobile ? 2 : 4,
-              color: "primary.main",
-              fontFamily: theme.typography.h4.fontFamily,
-            }}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
-          >
-            Featured Products
-          </Typography>
-          <Grid
-            container
-            columnSpacing={isMobile ? 2 : 3}
-            rowSpacing={isMobile ? 3 : 4}
-            sx={{
-              width: isMobile ? "100%" : "80%",
-              display: "flex",
-              mx: "auto",
-              justifyContent: "center",
-              alignItems: "stretch",
-              mb: 4,
-            }}
-          >
-            {!isMobile ? (
-              featuredProducts.length > 0 ? (
-                featuredProducts.map((product) => (
-                  <Grid
-                    key={product.id}
-                    size={{ xs: 12, sm: 6, md: 4 }}
-                    sx={{
-                      display: "flex",
-                      alignItems: "stretch",
-                      justifyContent: "center",
-                      mb: 3,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        gap: 2,
-                        transition: "box-shadow 0.3s ease-in-out",
-                        borderRadius: "8px",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        p: 2,
-                        "&:hover": {
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        },
-                      }}
-                    >
-                      {/* Left Side - Image */}
-                      <Box
-                        sx={{
-                          position: "relative",
-                          width: "40%",
-                          minHeight: "200px",
-                          overflow: "hidden",
-                          borderRadius: "8px",
-                          backgroundColor: "#f5f5f5",
-                        }}
-                      >
-                        <Image
-                          src={
-                            // product.imageUrls[currentImages[product.id] || 0]
-                            product.thumbnailUrl || "/placeholder-image.jpg"
-                          }
-                          alt={product.title}
-                          fill
-                          unoptimized={shouldUnoptimizeImage(
-                            product.thumbnailUrl || "/placeholder-image.jpg"
-                          )}
-                          style={{
-                            objectFit: "cover",
-                            objectPosition: "center",
-                            borderRadius: "8px",
-                          }}
-                        />
-                      </Box>
-
-                      {/* Right Side - Product Details */}
-                      <Box
-                        sx={{
-                          width: "60%",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        {/* Product Title */}
-                        <Typography
-                          variant="subtitle1"
-                          sx={{
-                            fontWeight: 600,
-                            mb: 1.5,
-                            color: "text.primary",
-                            fontFamily: theme.typography.subtitle1.fontFamily,
-                          }}
-                        >
-                          {product.title}
-                        </Typography>
-
-                        {/* Packet Size Selector */}
-                        <Box sx={{ mb: 1.5 }}>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              mb: 0.5,
-                              display: "block",
-                              color: "text.secondary",
-                            }}
-                          >
-                            Select Size:
-                          </Typography>
-                          <Box
-                            sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}
-                          >
-                            {product.pricesAndSkus
-                              .slice(0, 4)
-                              .map((sku, index) => (
-                                <Button
-                                  key={sku.id}
-                                  size="small"
-                                  variant={
-                                    selectedPackets[product.id] === index
-                                      ? "contained"
-                                      : "outlined"
-                                  }
-                                  onClick={() => {
-                                    setSelectedPackets((prev) => ({
-                                      ...prev,
-                                      [product.id]: index,
-                                    }));
-                                    setCurrentImages((prev) => ({
-                                      ...prev,
-                                      [product.id]:
-                                        index % product.imageUrls.length,
-                                    }));
-                                  }}
-                                  sx={{
-                                    minWidth: "55px",
-                                    fontSize: "0.7rem",
-                                    py: 0.5,
-                                  }}
-                                >
-                                  {sku.weightValue}
-                                  {sku.weightUnit}
-                                </Button>
-                              ))}
-                          </Box>
-                        </Box>
-
-                        {/* Price Display */}
-                        <Box sx={{ mb: 1.5 }}>
-                          {(() => {
-                            const selectedSku =
-                              product.pricesAndSkus[
-                                selectedPackets[product.id] || 0
-                              ];
-                            return (
-                              <Box>
-                                {selectedSku?.discountedAmount ? (
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 1,
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="body2"
-                                      sx={{
-                                        textDecoration: "line-through",
-                                        color: "text.secondary",
-                                      }}
-                                    >
-                                      {getCurrencySymbol(
-                                        selectedSku.currencyCode || "INR"
-                                      )}
-                                      {selectedSku.price.toFixed(2)}
-                                    </Typography>
-                                    <Typography
-                                      variant="h6"
-                                      sx={{
-                                        color: "primary.main",
-                                        fontWeight: 600,
-                                        fontFamily:
-                                          theme.typography.h6.fontFamily,
-                                      }}
-                                    >
-                                      {getCurrencySymbol(
-                                        selectedSku.currencyCode || "INR"
-                                      )}
-                                      {selectedSku.discountedAmount.toFixed(2)}
-                                    </Typography>
-                                  </Box>
-                                ) : (
-                                  <Typography
-                                    variant="h6"
-                                    sx={{
-                                      color: "primary.main",
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    {getCurrencySymbol(
-                                      selectedSku?.currencyCode || "INR"
-                                    )}
-                                    {(selectedSku?.price || 0).toFixed(2)}
-                                  </Typography>
-                                )}
-                              </Box>
-                            );
-                          })()}
-                        </Box>
-
-                        {/* Quantity Selector */}
-                        <Box sx={{ mb: 1.5 }}>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              mb: 0.5,
-                              display: "block",
-                              color: "text.secondary",
-                            }}
-                          >
-                            Quantity:
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              justifyContent: "flex-end",
-                            }}
-                          >
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                setQuantities((prev) => ({
-                                  ...prev,
-                                  [product.id]: Math.max(
-                                    1,
-                                    (prev[product.id] || 1) - 1
-                                  ),
-                                }));
-                              }}
-                              sx={{
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: "4px",
-                              }}
-                            >
-                              <Remove fontSize="small" />
-                            </IconButton>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                minWidth: "40px",
-                                textAlign: "center",
-                                fontWeight: 600,
-                              }}
-                            >
-                              {quantities[product.id] || 1}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                setQuantities((prev) => ({
-                                  ...prev,
-                                  [product.id]: (prev[product.id] || 1) + 1,
-                                }));
-                              }}
-                              sx={{
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: "4px",
-                              }}
-                            >
-                              <Add fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        </Box>
-
-                        {/* Add to Cart Button */}
-                        <Button
-                          variant="contained"
-                          size="medium"
-                          fullWidth
-                          sx={{
-                            backgroundColor: "primary.main",
-                            color: "primary.contrastText",
-                            py: 0.75,
-                            "&:hover": {
-                              backgroundColor: "primary.dark",
-                            },
-                          }}
-                          onClick={() => {
-                            handleAddToCart(product);
-                          }}
-                        >
-                          <Typography variant="body2" fontWeight={600}>
-                            Add to Cart
-                          </Typography>
-                        </Button>
-                      </Box>
-                    </Box>
-                  </Grid>
-                ))
-              ) : (
-                <Grid
-                  size={{ xs: 12 }}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    py: 8,
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    color="text.secondary"
-                    textAlign="center"
-                  >
-                    No featured products available at the moment.
-                  </Typography>
-                </Grid>
-              )
-            ) : (
-              <Grid
-                size={{ xs: 12, md: 12 }}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {featuredProducts.length > 0 ? (
-                  <Stack
-                    direction={"column"}
-                    spacing={2}
-                    height="100%"
-                    width="100%"
-                  >
-                    {featuredProducts.map((product) => (
-                      <Stack
-                        key={product.id}
-                        direction={"row"}
-                        spacing={2}
-                        sx={{
-                          display: "flex",
-                          alignItems: "stretch",
-                          padding: 2,
-                          borderRadius: "8px",
-                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                          minHeight: "140px",
-                        }}
-                      >
-                        <Grid
-                          container
-                          spacing={1}
-                          sx={{ alignItems: "center" }}
-                        >
-                          <Grid size={{ xs: 4, md: 4 }}>
-                            <Box
-                              sx={{
-                                position: "relative",
-                                width: "100%",
-                                height: "100px",
-                                borderRadius: "8px",
-                                overflow: "hidden",
-                                backgroundColor: "#f5f5f5",
-                              }}
-                            >
-                              <Image
-                                src={
-                                  product.imageUrls[
-                                    currentImages[product.id] || 0
-                                  ]
-                                }
-                                alt={product.title}
-                                fill
-                                unoptimized={shouldUnoptimizeImage(
-                                  product.imageUrls[
-                                    currentImages[product.id] || 0
-                                  ]
-                                )}
-                                style={{
-                                  objectFit: "contain",
-                                  borderRadius: "8px",
-                                }}
-                              />
-                            </Box>
-                          </Grid>
-                          <Grid size={{ xs: 8, md: 8 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                height: "100%",
-                                justifyContent: "space-between",
-                                pl: 1,
-                              }}
-                            >
-                              <Box>
-                                <Typography
-                                  variant="subtitle2"
-                                  color="text.primary"
-                                  sx={{
-                                    mb: 0.5,
-                                    fontWeight: 600,
-                                    fontSize: "0.9rem",
-                                    fontFamily:
-                                      theme.typography.subtitle2.fontFamily,
-                                  }}
-                                >
-                                  {product.title}
-                                </Typography>
-                                <Tooltip
-                                  title={product.description}
-                                  arrow
-                                  placement="top"
-                                  enterDelay={500}
-                                >
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                      mb: 1,
-                                      display: "-webkit-box",
-                                      WebkitLineClamp: 1,
-                                      WebkitBoxOrient: "vertical",
-                                      overflow: "hidden",
-                                      textOverflow: "ellipsis",
-                                      cursor: "help",
-                                      lineHeight: 1.3,
-                                    }}
-                                  >
-                                    {product.description}
-                                  </Typography>
-                                </Tooltip>
-                              </Box>
-
-                              {/* Packet Size Selector - Mobile */}
-                              <Box
-                                sx={{
-                                  mb: 1,
-                                  display: "flex",
-                                  gap: 0.5,
-                                  flexWrap: "wrap",
-                                }}
-                              >
-                                {product.pricesAndSkus
-                                  .slice(0, 4)
-                                  .map((sku, index) => (
-                                    <Button
-                                      key={sku.id}
-                                      size="small"
-                                      variant={
-                                        selectedPackets[product.id] === index
-                                          ? "contained"
-                                          : "outlined"
-                                      }
-                                      onClick={() => {
-                                        setSelectedPackets((prev) => ({
-                                          ...prev,
-                                          [product.id]: index,
-                                        }));
-                                        setCurrentImages((prev) => ({
-                                          ...prev,
-                                          [product.id]:
-                                            index % product.imageUrls.length,
-                                        }));
-                                      }}
-                                      sx={{
-                                        minWidth: "50px",
-                                        fontSize: "0.65rem",
-                                        py: 0.25,
-                                        px: 1,
-                                      }}
-                                    >
-                                      {sku.weightValue}
-                                      {sku.weightUnit}
-                                    </Button>
-                                  ))}
-                              </Box>
-
-                              {/* Price Display - Mobile */}
-                              <Box sx={{ mb: 1 }}>
-                                {(() => {
-                                  const selectedSku =
-                                    product.pricesAndSkus[
-                                      selectedPackets[product.id] || 0
-                                    ];
-                                  return (
-                                    <Box>
-                                      {selectedSku?.discountedAmount ? (
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 1,
-                                          }}
-                                        >
-                                          <Typography
-                                            variant="caption"
-                                            sx={{
-                                              textDecoration: "line-through",
-                                              color: "text.secondary",
-                                            }}
-                                          >
-                                            {getCurrencySymbol(
-                                              selectedSku.currencyCode || "INR"
-                                            )}
-                                            {selectedSku.price.toFixed(2)}
-                                          </Typography>
-                                          <Typography
-                                            variant="body2"
-                                            sx={{
-                                              color: "primary.main",
-                                              fontWeight: 600,
-                                            }}
-                                          >
-                                            {getCurrencySymbol(
-                                              selectedSku.currencyCode || "INR"
-                                            )}
-                                            {selectedSku.discountedAmount.toFixed(
-                                              2
-                                            )}
-                                          </Typography>
-                                        </Box>
-                                      ) : (
-                                        <Typography
-                                          variant="body2"
-                                          sx={{
-                                            color: "primary.main",
-                                            fontWeight: 600,
-                                          }}
-                                        >
-                                          {getCurrencySymbol(
-                                            selectedSku?.currencyCode || "INR"
-                                          )}
-                                          {(selectedSku?.price || 0).toFixed(2)}
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  );
-                                })()}
-                              </Box>
-
-                              {/* Quantity Selector - Mobile */}
-                              <Box
-                                sx={{
-                                  mb: 1,
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                  gap: 1,
-                                }}
-                              >
-                                <IconButton
-                                  size="small"
-                                  onClick={() => {
-                                    setQuantities((prev) => ({
-                                      ...prev,
-                                      [product.id]: Math.max(
-                                        1,
-                                        (prev[product.id] || 1) - 1
-                                      ),
-                                    }));
-                                  }}
-                                  sx={{
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: "4px",
-                                    p: 0.5,
-                                  }}
-                                >
-                                  <Remove sx={{ fontSize: "0.9rem" }} />
-                                </IconButton>
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    minWidth: "30px",
-                                    textAlign: "center",
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  {quantities[product.id] || 1}
-                                </Typography>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => {
-                                    setQuantities((prev) => ({
-                                      ...prev,
-                                      [product.id]: (prev[product.id] || 1) + 1,
-                                    }));
-                                  }}
-                                  sx={{
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: "4px",
-                                    p: 0.5,
-                                  }}
-                                >
-                                  <Add sx={{ fontSize: "0.9rem" }} />
-                                </IconButton>
-                              </Box>
-
-                              <Box>
-                                <Button
-                                  variant="contained"
-                                  size="small"
-                                  fullWidth
-                                  sx={{
-                                    backgroundColor: "primary.main",
-                                    color: "primary.contrastText",
-                                    fontSize: "0.7rem",
-                                    py: 0.5,
-                                    boxShadow: "none",
-                                    "&:hover": {
-                                      backgroundColor: "primary.dark",
-                                    },
-                                  }}
-                                  onClick={() => {
-                                    handleAddToCart(product);
-                                  }}
-                                >
-                                  Add to Cart
-                                </Button>
-                              </Box>
-                            </Box>
-                          </Grid>
-                        </Grid>
-                      </Stack>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Typography
-                    variant="h6"
-                    color="text.secondary"
-                    textAlign="center"
-                    sx={{ py: 8 }}
-                  >
-                    No featured products available at the moment.
-                  </Typography>
-                )}
-              </Grid>
-            )}
-          </Grid>
-        </Box>
-        <Box
-          sx={{
-            mt: isMobile ? 8 : 15,
-          }}
-        >
           <Box
             sx={{
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "space-between",
-              mb: isMobile ? 3 : 8,
+              mb: isMobile ? 3 : 4,
             }}
           >
-            <Typography
-              variant={isMobile ? "h5" : "h4"}
-              sx={{ color: "primary.main" }}
-              fontWeight={600}
-              textAlign="center"
-              flexGrow={1}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 1,
+              }}
             >
-              Product Categories
+              <Box
+                sx={{
+                  width: isMobile ? 40 : 60,
+                  height: 3,
+                  background: "linear-gradient(90deg, transparent, #1B4D3E)",
+                  borderRadius: 2,
+                }}
+              />
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                sx={{ color: "primary.main" }}
+                fontWeight={700}
+                textAlign="center"
+              >
+                Product Categories
+              </Typography>
+              <Box
+                sx={{
+                  width: isMobile ? 40 : 60,
+                  height: 3,
+                  background: "linear-gradient(90deg, #1B4D3E, transparent)",
+                  borderRadius: 2,
+                }}
+              />
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", textAlign: "center" }}
+            >
+              Explore our premium spice collections
             </Typography>
           </Box>
           <Box
             sx={{
               display: "flex",
               width: "100%",
-              pb: 1,
+              gap: 2,
+              pb: 2,
+              pt: 1,
+              px: 1,
+              overflowX: "auto",
+              "&::-webkit-scrollbar": {
+                height: 6,
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: "rgba(0,0,0,0.05)",
+                borderRadius: 3,
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "rgba(0,0,0,0.15)",
+                borderRadius: 3,
+              },
             }}
           >
             {productCategories.map((category, index) => (
@@ -1256,45 +924,83 @@ const Home: React.FC = () => {
                 role="group"
                 aria-label={`${category.title} category`}
                 sx={{
-                  position: "relative", // Added for positioning buttons
-                  borderRadius: "8px",
+                  position: "relative",
+                  borderRadius: 3,
                   cursor: "pointer",
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                  width: "100%",
-                  height: isMobile ? "230px" : "450px",
-                  mr: index === productCategories.length - 1 ? 0 : 2,
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+                  minWidth: isMobile ? "85%" : "calc(33.333% - 16px)",
+                  flex: isMobile ? "0 0 auto" : 1,
+                  height: isMobile ? "230px" : "420px",
+                  flexShrink: 0,
+                  overflow: "hidden",
+                  border: "1px solid rgba(27, 77, 62, 0.08)",
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    transform: "translateY(-8px)",
+                    boxShadow: "0 16px 40px rgba(27, 77, 62, 0.15)",
+                    "& .category-image": {
+                      transform: "scale(1.08)",
+                    },
+                    "& .category-overlay": {
+                      opacity: 1,
+                    },
+                  },
                 }}
                 onClick={() => {
                   router.push("/products");
                 }}
               >
-                <CardMedia
-                  component="img"
-                  height={isMobile ? 178 : 394}
-                  image={encodeURI(category.image)}
-                  alt={category.title}
+                <Box
                   sx={{
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      transition: "transform 0.3s ease-in-out",
-                    },
+                    position: "relative",
+                    height: isMobile ? 178 : 360,
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  <CardMedia
+                    className="category-image"
+                    component="img"
+                    height={isMobile ? 178 : 360}
+                    image={encodeURI(category.image)}
+                    alt={category.title}
+                    sx={{
+                      transition: "transform 0.5s ease",
+                    }}
+                  />
+                  <Box
+                    className="category-overlay"
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        "linear-gradient(to top, rgba(27, 77, 62, 0.8) 0%, transparent 50%)",
+                      opacity: 0,
+                      transition: "opacity 0.4s ease",
+                    }}
+                  />
+                </Box>
                 <CardContent
                   sx={{
-                    backgroundColor: "#f8f3ea",
+                    background:
+                      "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    pb: "16px !important", // Ensure padding is consistent
+                    py: 2,
+                    borderTop: "3px solid",
+                    borderImage: "linear-gradient(90deg, #1B4D3E, #E85D04) 1",
                   }}
                 >
                   <Typography
-                    variant={isMobile ? "body2" : "body1"}
-                    gutterBottom
-                    sx={{ mb: 0 }}
-                    color="text.primary"
+                    variant={isMobile ? "body1" : "h6"}
+                    sx={{
+                      fontWeight: 600,
+                      color: "primary.main",
+                    }}
                   >
                     {category.title}
                   </Typography>
@@ -1315,14 +1021,54 @@ const Home: React.FC = () => {
             mt: isMobile ? 8 : 15,
           }}
         >
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: isMobile ? 3 : 4,
+            }}
           >
-            Upcoming Categories
-          </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  width: isMobile ? 40 : 60,
+                  height: 3,
+                  background: "linear-gradient(90deg, transparent, #E85D04)",
+                  borderRadius: 2,
+                }}
+              />
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                sx={{ color: "primary.main" }}
+                fontWeight={700}
+                textAlign="center"
+              >
+                Upcoming Categories
+              </Typography>
+              <Box
+                sx={{
+                  width: isMobile ? 40 : 60,
+                  height: 3,
+                  background: "linear-gradient(90deg, #E85D04, transparent)",
+                  borderRadius: 2,
+                }}
+              />
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", textAlign: "center" }}
+            >
+              Exciting new spice collections coming soon
+            </Typography>
+          </Box>
           <AllProducts
             items={upcomingpProductCategories}
             onDelete={(categoryId) => handleDeleteCategoryByType(categoryId)}
@@ -1343,18 +1089,59 @@ const Home: React.FC = () => {
             <Grid container spacing={8}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Stack direction={"column"} alignItems="center" spacing={15}>
-                  <Typography
-                    variant={isMobile ? "h5" : "h4"}
-                    sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-                    fontWeight={600}
-                    textAlign={isMobile ? "left" : "center"}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
                   >
-                    From India to The World
-                  </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: isMobile ? 30 : 50,
+                          height: 3,
+                          background:
+                            "linear-gradient(90deg, transparent, #1B4D3E)",
+                          borderRadius: 2,
+                        }}
+                      />
+                      <Typography
+                        variant={isMobile ? "h5" : "h4"}
+                        sx={{ color: "primary.main" }}
+                        fontWeight={700}
+                        textAlign="center"
+                      >
+                        From India to The World
+                      </Typography>
+                      <Box
+                        sx={{
+                          width: isMobile ? 30 : 50,
+                          height: 3,
+                          background:
+                            "linear-gradient(90deg, #1B4D3E, transparent)",
+                          borderRadius: 2,
+                        }}
+                      />
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", textAlign: "center" }}
+                    >
+                      Our journey of excellence
+                    </Typography>
+                  </Box>
                   <Grid
                     container
-                    spacing={isMobile ? 4 : 8}
-                    sx={{ mt: "64px !important" }}
+                    spacing={isMobile ? 2 : 8}
+                    sx={{ mt: isMobile ? 2 : "64px !important" }}
                   >
                     {achievements.map((achievement, index) => (
                       <Grid
@@ -1378,23 +1165,37 @@ const Home: React.FC = () => {
                   </Grid>
                 </Stack>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid
+                size={{ xs: 12, md: 6 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <Box
                   sx={{
-                    height: isMobile ? "380px" : "100%",
-                    width: "100%",
+                    width: isMobile ? "280px" : "min(100%, 550px)",
+                    height: isMobile ? "280px" : "min(100%, 550px)",
+                    aspectRatio: "1 / 1",
                     backgroundImage: 'url("/Achievement.jpg")',
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
                     borderRadius: "50%",
+                    boxShadow: "0 20px 60px rgba(27, 77, 62, 0.2)",
+                    border: "4px solid rgba(27, 77, 62, 0.1)",
+                    transition: "all 0.4s ease",
+                    "&:hover": {
+                      transform: "scale(1.02)",
+                      boxShadow: "0 30px 80px rgba(27, 77, 62, 0.25)",
+                    },
                   }}
                 />
               </Grid>
             </Grid>
           </Box>
         </Box>
-        <CertificateScroll />
         {/* <Box
           sx={{
             mt: isMobile ? 8 : 15,
@@ -1456,22 +1257,71 @@ const Home: React.FC = () => {
                   backgroundSize: "cover",
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "center",
+                  borderRadius: 3,
+                  boxShadow: "0 20px 60px rgba(232, 93, 4, 0.15)",
+                  transition: "all 0.4s ease",
+                  "&:hover": {
+                    transform: "scale(1.02)",
+                    boxShadow: "0 30px 80px rgba(232, 93, 4, 0.2)",
+                  },
                 }}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography
-                variant={isMobile ? "h5" : "h4"}
-                sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-                fontWeight={600}
-                textAlign={isMobile ? "left" : "center"}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: isMobile ? "flex-start" : "center",
+                  mb: isMobile ? 3 : 4,
+                }}
               >
-                Why Choose Us
-              </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: isMobile ? 30 : 50,
+                      height: 3,
+                      background:
+                        "linear-gradient(90deg, transparent, #E85D04)",
+                      borderRadius: 2,
+                    }}
+                  />
+                  <Typography
+                    variant={isMobile ? "h5" : "h4"}
+                    sx={{ color: "primary.main" }}
+                    fontWeight={700}
+                    textAlign="center"
+                  >
+                    Why Choose Us
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: isMobile ? 30 : 50,
+                      height: 3,
+                      background:
+                        "linear-gradient(90deg, #E85D04, transparent)",
+                      borderRadius: 2,
+                    }}
+                  />
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "text.secondary", textAlign: "center" }}
+                >
+                  What makes us different
+                </Typography>
+              </Box>
               <Grid
                 container
-                spacing={isMobile ? 4 : 8}
-                sx={{ mt: "64px !important" }}
+                spacing={isMobile ? 2 : 3}
+                sx={{ mt: 4, px: isMobile ? 2 : 0 }}
               >
                 {chooseUs.map((item, index) => (
                   <Grid
@@ -1498,16 +1348,60 @@ const Home: React.FC = () => {
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
+            p: isMobile ? 2 : 4,
+            borderRadius: 4,
+            background:
+              "linear-gradient(180deg, rgba(27, 77, 62, 0.04) 0%, transparent 100%)",
           }}
         >
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ mb: isMobile ? 3 : 8, color: "primary.main" }}
-            fontWeight={600}
-            textAlign={isMobile ? "left" : "center"}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: isMobile ? "flex-start" : "center",
+              mb: isMobile ? 3 : 4,
+            }}
           >
-            Our Testimonials
-          </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  width: isMobile ? 40 : 60,
+                  height: 3,
+                  background: "linear-gradient(90deg, transparent, #1B4D3E)",
+                  borderRadius: 2,
+                }}
+              />
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                sx={{ color: "primary.main" }}
+                fontWeight={700}
+                textAlign="center"
+              >
+                Our Testimonials
+              </Typography>
+              <Box
+                sx={{
+                  width: isMobile ? 40 : 60,
+                  height: 3,
+                  background: "linear-gradient(90deg, #1B4D3E, transparent)",
+                  borderRadius: 2,
+                }}
+              />
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", textAlign: "center" }}
+            >
+              What our customers say about us
+            </Typography>
+          </Box>
           <Testimonials items={testimonialData} />
         </Box>
       </Container>

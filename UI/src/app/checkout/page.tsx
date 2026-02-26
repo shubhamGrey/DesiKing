@@ -24,6 +24,8 @@ import {
   Breadcrumbs,
   Link,
   useMediaQuery,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import {
   CreditCard,
@@ -541,6 +543,20 @@ const CheckoutContent: React.FC = () => {
 
   return (
     <Container sx={{ mt: isMobile ? 8 : 12, mb: 6, px: isMobile ? 2 : 4 }}>
+      {/* Loading Overlay */}
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          flexDirection: "column",
+          gap: 2,
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+        <Typography variant="h6">Processing your order...</Typography>
+      </Backdrop>
+
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         {/* Breadcrumb */}
