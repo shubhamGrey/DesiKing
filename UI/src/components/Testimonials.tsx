@@ -1,13 +1,6 @@
 "use client";
-import {
-  Box,
-  IconButton,
-  Slide,
-  Stack,
-  Typography,
-  useMediaQuery,
-} from "@mui/material";
-import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
+import { Box, Typography, useMediaQuery } from "@mui/material";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import Image, { StaticImageData } from "next/image";
 import React, { useEffect } from "react";
 import theme from "@/styles/theme";
@@ -23,237 +16,189 @@ interface TestimonialsProps {
 
 const Testimonials = ({ items }: TestimonialsProps) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [currentIndex, setCurrentIndex] = React.useState(0);
 
-  const [currentPage, setCurrentPage] = React.useState(0);
-  const [slideDirection, setSlideDirection] = React.useState<
-    "left" | "right" | "up" | "down" | undefined
-  >("right");
-
-  const cardsPerPage = isMobile ? 1 : 2; // Show 1 item per slider in mobile view, 2 otherwise
-  const autoSlideInterval = 5000; // 5 seconds
-
-  const handleNextPage = React.useCallback(() => {
-    setSlideDirection(isMobile ? "up" : "left");
-    setCurrentPage((prevPage) =>
-      prevPage >= Math.ceil(items.length / cardsPerPage) - 1 ? 0 : prevPage + 1
-    );
-  }, [items.length, cardsPerPage, isMobile]);
-
-  const handleDotClick = (pageIndex: number) => {
-    setSlideDirection(
-      isMobile
-        ? pageIndex > currentPage
-          ? "up"
-          : "down"
-        : pageIndex > currentPage
-        ? "left"
-        : "right"
-    );
-    setCurrentPage(pageIndex);
-  };
+  const cardsPerPage = isMobile ? 1 : 2;
+  const totalPages = Math.ceil(items.length / cardsPerPage);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      handleNextPage();
-    }, autoSlideInterval);
+      setCurrentIndex((prev) => (prev + 1) % totalPages);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [totalPages]);
 
-    return () => clearInterval(timer); // Cleanup on unmount
-  }, [currentPage, items.length, handleNextPage]);
+  const visibleItems = items.slice(
+    currentIndex * cardsPerPage,
+    currentIndex * cardsPerPage + cardsPerPage
+  );
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        alignContent: "center",
-        height: isMobile ? "280px" : "280px",
-        justifyContent: "center",
-        position: "relative",
-        py: 4,
-      }}
-    >
+    <Box sx={{ width: "100%", py: { xs: 4, md: 6 } }}>
+      {/* Cards Container */}
       <Box
         sx={{
           display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          alignItems: "center",
-          width: "100%",
-          height: "100%",
+          flexDirection: { xs: "column", md: "row" },
+          gap: { xs: 3, md: 4 },
           justifyContent: "center",
+          alignItems: "stretch",
+          px: { xs: 2, md: 4 },
+          minHeight: { xs: "auto", md: "280px" },
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
-          {items.map((item, index) => (
-            <Slide
-              key={index}
-              direction={slideDirection}
-              in={Math.floor(index / cardsPerPage) === currentPage}
-              mountOnEnter
-              unmountOnExit
+        {visibleItems.map((item, index) => (
+          <Box
+            key={`${currentIndex}-${index}`}
+            sx={{
+              flex: { xs: "1 1 auto", md: "0 1 45%" },
+              maxWidth: { xs: "100%", md: "500px" },
+              background: "linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)",
+              borderRadius: "20px",
+              p: { xs: 3, md: 4 },
+              position: "relative",
+              boxShadow: "0 10px 40px rgba(31, 79, 64, 0.08)",
+              border: "1px solid rgba(31, 79, 64, 0.06)",
+              transition: "all 0.4s ease",
+              animation: "fadeInUp 0.5s ease-out",
+              "@keyframes fadeInUp": {
+                from: {
+                  opacity: 0,
+                  transform: "translateY(20px)",
+                },
+                to: {
+                  opacity: 1,
+                  transform: "translateY(0)",
+                },
+              },
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 20px 50px rgba(31, 79, 64, 0.12)",
+              },
+            }}
+          >
+            {/* Quote Icon */}
+            <FormatQuoteIcon
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 20,
+                fontSize: { xs: 40, md: 50 },
+                color: "rgba(31, 79, 64, 0.08)",
+                transform: "rotate(180deg)",
+              }}
+            />
+
+            {/* Content */}
+            <Box
+              sx={{ display: "flex", flexDirection: "column", height: "100%" }}
             >
+              {/* Review Text */}
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "text.secondary",
+                  fontStyle: "italic",
+                  lineHeight: 1.8,
+                  mb: 3,
+                  fontSize: { xs: "0.95rem", md: "1rem" },
+                  flex: 1,
+                }}
+              >
+                &ldquo;{item.review}&rdquo;
+              </Typography>
+
+              {/* Author Info */}
               <Box
                 sx={{
                   display: "flex",
-                  flexDirection: isMobile ? "column" : "row",
+                  alignItems: "center",
                   gap: 2,
-                  width: isMobile ? "91%" : "45%",
-                  p: 3,
-                  position: "absolute",
-                  left: isMobile ? 0 : `${(index % cardsPerPage) * 50}%`,
-                  bottom: isMobile ? "20%" : 0,
-                  transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-                  borderRadius: "16px",
-                  background: "rgba(255, 255, 255, 0.6)",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(31, 79, 64, 0.1)",
-                  boxShadow: "0 4px 20px rgba(31, 79, 64, 0.08)",
+                  pt: 2,
+                  borderTop: "1px solid rgba(31, 79, 64, 0.08)",
                 }}
               >
-                <Stack direction={"row"} spacing={2}>
-                  <Box
+                {/* Avatar */}
+                <Box
+                  sx={{
+                    position: "relative",
+                    width: { xs: 56, md: 64 },
+                    height: { xs: 56, md: 64 },
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    border: "3px solid #1f4f40",
+                    boxShadow: "0 4px 12px rgba(31, 79, 64, 0.15)",
+                  }}
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </Box>
+
+                {/* Name & Occupation */}
+                <Box>
+                  <Typography
+                    variant="subtitle1"
                     sx={{
-                      position: "relative",
-                      "&::before": {
-                        content: '""',
-                        position: "absolute",
-                        top: -3,
-                        left: -3,
-                        right: -3,
-                        bottom: -3,
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #1f4f40, #FF8C00)",
-                        zIndex: -1,
-                      },
+                      fontWeight: 700,
+                      color: "primary.dark",
+                      fontSize: { xs: "1rem", md: "1.1rem" },
                     }}
                   >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={isMobile ? 60 : 120}
-                      height={isMobile ? 60 : 120}
-                      style={{
-                        borderRadius: "50%",
-                        minWidth: isMobile ? "60px" : "120px",
-                        border: "3px solid white",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                      }}
-                    />
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant={isMobile ? "body2" : "body1"}
-                      color={theme.palette.text.primary}
-                      sx={{ mb: 2, mt: isMobile ? 0 : 2 }}
-                      textAlign={"justify"}
-                    >
-                      {item.review}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      color={theme.palette.primary.dark}
-                      textAlign={"right"}
-                    >
-                      {item.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.text.primary}
-                      textAlign={"right"}
-                    >
-                      {item.occupation}
-                    </Typography>
-                  </Box>
-                </Stack>
+                    {item.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: { xs: "0.85rem", md: "0.9rem" },
+                    }}
+                  >
+                    {item.occupation}
+                  </Typography>
+                </Box>
               </Box>
-            </Slide>
-          ))}
-          <Box
-            sx={{
-              width: isMobile ? "100%" : "2px",
-              height: isMobile ? "2px" : "100%",
-              backgroundColor: theme.palette.divider,
-              position: "absolute",
-              left: isMobile ? "50%" : "1px",
-              transform: "translateX(-50%)",
-              top: 0,
-            }}
-          />
-          <Box
-            sx={{
-              width: isMobile ? "100%" : "2px",
-              height: isMobile ? "2px" : "100%",
-              backgroundColor: theme.palette.divider,
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              bottom: isMobile ? "50px" : "0",
-            }}
-          />
-          {!isMobile && (
-            <Box
-              sx={{
-                width: "2px",
-                height: "100%",
-                backgroundColor: theme.palette.divider,
-                position: "absolute",
-                right: "1px",
-                transform: "translateX(-50%)",
-                top: 0,
-              }}
-            />
-          )}
-        </Box>
+            </Box>
+          </Box>
+        ))}
       </Box>
-      <Stack
-        direction={isMobile ? "column" : "row"}
-        spacing={0}
-        sx={{ mt: isMobile ? -3 : 3 }}
-        style={
-          isMobile
-            ? {
-                position: "absolute",
-                right: isMobile ? -20 : 10,
-                top: "50%",
-                transform: "translateY(-50%)",
-              }
-            : {}
-        }
+
+      {/* Dot Indicators */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 1.5,
+          mt: 4,
+        }}
       >
-        {Array.from({ length: Math.ceil(items.length / cardsPerPage) }).map(
-          (_, index) => (
-            <IconButton
-              key={index}
-              onClick={() => handleDotClick(index)}
-              sx={{
-                cursor: "pointer",
-                p: 0,
-              }}
-            >
-              <HorizontalRuleIcon
-                fontSize="large"
-                sx={{
-                  color:
-                    index === currentPage
-                      ? theme.palette.primary.main
-                      : theme.palette.divider,
-                  transform: isMobile ? "rotate(90deg)" : "",
-                }}
-              />
-            </IconButton>
-          )
-        )}
-      </Stack>
+        {Array.from({ length: totalPages }).map((_, index) => (
+          <Box
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            sx={{
+              width: index === currentIndex ? 28 : 10,
+              height: 10,
+              borderRadius: "5px",
+              backgroundColor:
+                index === currentIndex
+                  ? "primary.main"
+                  : "rgba(31, 79, 64, 0.2)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor:
+                  index === currentIndex
+                    ? "primary.main"
+                    : "rgba(31, 79, 64, 0.4)",
+              },
+            }}
+          />
+        ))}
+      </Box>
     </Box>
   );
 };
