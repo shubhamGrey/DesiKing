@@ -206,7 +206,9 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
               id: product.id as string,
               title: product.name,
               description: product.description,
-              image: product.thumbnailUrl || product.imageUrls?.[0],
+              image: (product.thumbnailUrl ||
+                product.imageUrls?.[0] ||
+                "") as string,
             }))}
         />
       </Box>
