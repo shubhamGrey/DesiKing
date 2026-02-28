@@ -89,7 +89,7 @@ const categoryConfig: Record<
 const shouldUnoptimizeImage = (
   imageSrc: string | undefined | null
 ): boolean => {
-  return imageSrc?.includes("cloud.agronexis.com") ?? false;
+  return imageSrc?.includes("cloud.desikingspices.com") ?? false;
 };
 
 const achievements = [

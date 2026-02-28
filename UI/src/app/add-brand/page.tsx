@@ -30,7 +30,7 @@ import { BrandFormData } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
-  return imageSrc.includes("cloud.agronexis.com");
+  return imageSrc.includes("cloud.desikingspices.com");
 };
 
 const AddBrand: React.FC = () => {
@@ -157,7 +157,7 @@ const AddBrand: React.FC = () => {
 
       if (!response.ok) {
         throw new Error(
-          brandId ? "Failed to update brand" : "Failed to add brand",
+          brandId ? "Failed to update brand" : "Failed to add brand"
         );
       }
 
@@ -166,12 +166,12 @@ const AddBrand: React.FC = () => {
     } catch (error) {
       console.error(
         brandId ? "Error updating brand:" : "Error adding brand:",
-        error,
+        error
       );
       alert(
         brandId
           ? "An error occurred while updating the brand. Please try again."
-          : "An error occurred while adding the brand. Please try again.",
+          : "An error occurred while adding the brand. Please try again."
       );
     } finally {
       sessionStorage.removeItem("brandId"); // Clear brandId after submission
@@ -217,7 +217,6 @@ const AddBrand: React.FC = () => {
           >
             <Typography
               variant={isMobile ? "h5" : "h4"}
-              
               fontWeight={600}
               color="primary.main"
             >
@@ -277,12 +276,7 @@ const AddBrand: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     Basic Information
                   </Typography>
                   <Grid container spacing={3}>
@@ -350,12 +344,7 @@ const AddBrand: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     SEO Information
                   </Typography>
                   <Grid container spacing={3}>
@@ -408,12 +397,7 @@ const AddBrand: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     Brand Logo
                   </Typography>
                   {uploadedImage || getValues("logoUrl") ? (
@@ -435,7 +419,7 @@ const AddBrand: React.FC = () => {
                           src={
                             uploadedImage
                               ? URL.createObjectURL(uploadedImage)
-                              : (getValues("logoUrl") ?? "") // Ensure fallback to an empty string
+                              : getValues("logoUrl") ?? "" // Ensure fallback to an empty string
                           }
                           alt="Brand Logo"
                           width={400}
@@ -581,12 +565,7 @@ const AddBrand: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     Brand Settings
                   </Typography>
                   <Stack spacing={2}>

@@ -5,12 +5,7 @@ const Shipping: React.FC = () => {
   return (
     <Container sx={{ mt: 4, mx: 6, mb: 6, justifySelf: "center" }}>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Shipping Policy
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -22,21 +17,16 @@ const Shipping: React.FC = () => {
         <Typography variant="body2" gutterBottom>
           <strong>Agro Nexis India Overseas Private Limited</strong>{" "}
           (&quot;we&quot; and &quot;us&quot;) is the operator of (
-          <strong>https://www.agronexis.com</strong>) (&quot;Website&quot;). By
-          placing an order through this Website, you will be{" "}
-          <strong>agreeing to the terms below</strong>. These are provided to
-          ensure both parties are aware of and agree upon this arrangement to
-          mutually protect and set expectations on our service.
+          <strong>https://www.desikingspices.com</strong>)
+          (&quot;Website&quot;). By placing an order through this Website, you
+          will be <strong>agreeing to the terms below</strong>. These are
+          provided to ensure both parties are aware of and agree upon this
+          arrangement to mutually protect and set expectations on our service.
         </Typography>
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           1. General
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -51,12 +41,7 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           2. Shipping Costs
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -69,17 +54,11 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           3. Returns
         </Typography>
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -111,7 +90,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -148,17 +126,11 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           4. Delivery Terms
         </Typography>
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -171,7 +143,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -187,7 +158,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -204,7 +174,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -218,7 +187,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -232,7 +200,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -246,7 +213,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -261,7 +227,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -275,12 +240,7 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           5. Tracking Notifications
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -291,12 +251,7 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           6. Parcels Damaged in Transit
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -308,17 +263,11 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           7. Duties & Taxes
         </Typography>
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -332,7 +281,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -347,12 +295,7 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           8. Cancellations
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -364,12 +307,7 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           9. Insurance
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -379,7 +317,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -393,7 +330,6 @@ const Shipping: React.FC = () => {
 
         <Typography
           variant="h6"
-          
           color="primary.main"
           gutterBottom
           sx={{ mt: 2 }}
@@ -407,12 +343,7 @@ const Shipping: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           10. Customer Service
         </Typography>
         <Typography variant="body2" gutterBottom>

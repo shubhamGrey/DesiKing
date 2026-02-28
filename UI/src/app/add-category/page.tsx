@@ -34,10 +34,10 @@ import { Brand, CategoryFormData, FormattedBrand } from "@/types/product";
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
-  imageSrc: string | undefined | null,
+  imageSrc: string | undefined | null
 ): boolean => {
   if (!imageSrc) return false;
-  return imageSrc.includes("cloud.agronexis.com");
+  return imageSrc.includes("cloud.desikingspices.com");
 };
 
 const AddCategory: React.FC = () => {
@@ -193,7 +193,7 @@ const AddCategory: React.FC = () => {
 
       if (!response.ok) {
         throw new Error(
-          categoryId ? "Failed to update category" : "Failed to add category",
+          categoryId ? "Failed to update category" : "Failed to add category"
         );
       }
 
@@ -202,12 +202,12 @@ const AddCategory: React.FC = () => {
     } catch (error) {
       console.error(
         categoryId ? "Error updating category:" : "Error adding category:",
-        error,
+        error
       );
       alert(
         categoryId
           ? "An error occurred while updating the category. Please try again."
-          : "An error occurred while adding the category. Please try again.",
+          : "An error occurred while adding the category. Please try again."
       );
     } finally {
       sessionStorage.removeItem("categoryId"); // Clear categoryId after submission
@@ -253,7 +253,6 @@ const AddCategory: React.FC = () => {
           >
             <Typography
               variant={isMobile ? "h5" : "h4"}
-              
               fontWeight={600}
               color="primary.main"
             >
@@ -313,12 +312,7 @@ const AddCategory: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     Basic Information
                   </Typography>
                   <Grid container spacing={3}>
@@ -406,12 +400,7 @@ const AddCategory: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     SEO Information
                   </Typography>
                   <Grid container spacing={3}>
@@ -464,12 +453,7 @@ const AddCategory: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     Category Image
                   </Typography>
                   {uploadedImage || getValues("imageUrl") ? (
@@ -633,12 +617,7 @@ const AddCategory: React.FC = () => {
                 elevation={0}
               >
                 <CardContent>
-                  <Typography
-                    variant="h6"
-                    
-                    color="primary.main"
-                    sx={{ mb: 3 }}
-                  >
+                  <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
                     Category Settings
                   </Typography>
                   <Stack spacing={2}>

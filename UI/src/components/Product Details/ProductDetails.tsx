@@ -186,7 +186,7 @@ const ProductDetails = ({
                 typeof selectedProduct?.imageUrls?.[currentImage] ===
                   "string" &&
                 selectedProduct.imageUrls[currentImage].includes(
-                  "cloud.agronexis.com"
+                  "cloud.desikingspices.com"
                 )
               }
               style={{
@@ -231,7 +231,7 @@ const ProductDetails = ({
                   fill
                   unoptimized={
                     typeof image === "string" &&
-                    image.includes("cloud.agronexis.com")
+                    image.includes("cloud.desikingspices.com")
                   }
                   style={{ objectFit: "contain" }}
                 />

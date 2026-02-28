@@ -5,12 +5,7 @@ const Policy: React.FC = () => {
   return (
     <Container sx={{ mt: 4, mx: 6, mb: 6, justifySelf: "center" }}>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Privacy Policy
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -18,17 +13,12 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Introduction
         </Typography>
         <Typography variant="body2" gutterBottom>
           These terms and conditions govern your use of this website called{" "}
-          <strong>www.agronexis.com</strong>. By using this website, you{" "}
+          <strong>www.desikingspices.com</strong>. By using this website, you{" "}
           <strong>accept these terms and conditions in full</strong>. If you
           disagree with these terms and conditions or any part of these terms
           and conditions, you <strong>must not use this website</strong>.
@@ -48,12 +38,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           License To Use Website
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -71,12 +56,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           You Must Not
         </Typography>
         <ul style={{ paddingLeft: "1.5rem", marginTop: "1rem" }}>
@@ -116,12 +96,7 @@ const Policy: React.FC = () => {
         </ul>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Acceptable Use
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -162,12 +137,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Restricted Access
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -189,12 +159,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           User Content
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -226,12 +191,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           No Warranties
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -264,12 +224,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Limitations Of Liability
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -305,12 +260,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Exceptions
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -342,12 +292,7 @@ const Policy: React.FC = () => {
         </ul>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Reasonableness
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -357,12 +302,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Other Parties
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -382,12 +322,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Unenforceable Provisions
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -397,12 +332,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Indemnity
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -420,12 +350,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Breaches Of These Terms and Conditions
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -441,12 +366,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Variation
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -458,12 +378,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Assignment
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -476,12 +391,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Severability
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -494,12 +404,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Entire Agreement
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -510,12 +415,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Law And Jurisdiction
         </Typography>
         <Typography variant="body2" gutterBottom>
@@ -526,12 +426,7 @@ const Policy: React.FC = () => {
         </Typography>
       </Box>
       <Box sx={{ mb: 5, p: 3 }}>
-        <Typography
-          variant="h6"
-          
-          color="primary.main"
-          gutterBottom
-        >
+        <Typography variant="h6" color="primary.main" gutterBottom>
           Contact Us
         </Typography>
         <Typography variant="body2" gutterBottom>

@@ -25,7 +25,7 @@ const certificates: Certificate[] = [
   {
     name: "FSSAI",
     fullName: "Food Safety and Standards Authority of India",
-    image: "/certificates/FSSAI.jpg",
+    image: "/certificates/FSSAI.png",
   },
   {
     name: "IIA",
