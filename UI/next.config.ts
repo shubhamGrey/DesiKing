@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "http",
-        hostname: "cloud.agronexis.com",
-      }
+        hostname: "cloud.desikingspices.com",
+      },
     ],
     // Allow optimization for supported formats
     formats: ["image/webp", "image/avif"],

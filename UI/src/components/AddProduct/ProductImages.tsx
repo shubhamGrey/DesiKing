@@ -24,7 +24,7 @@ const shouldUnoptimizeImage = (
   imageSrc: string | undefined | null
 ): boolean => {
   if (!imageSrc) return false;
-  return imageSrc.includes("cloud.agronexis.com");
+  return imageSrc.includes("cloud.desikingspices.com");
 };
 
 const ProductImages: React.FC<ProductImagesProps> = ({

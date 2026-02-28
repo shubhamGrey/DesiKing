@@ -972,7 +972,7 @@ const OrderDetailsContent: React.FC = () => {
           gstin: "07ABCCA5210G1Z6", // Replace with actual GSTIN
           email: "vijay@agronexis.com",
           phone: "+91-9582222963",
-          website: "www.agronexis.com",
+          website: "www.desikingspices.com",
         },
 
         // Invoice Details (Rule 46 compliance)

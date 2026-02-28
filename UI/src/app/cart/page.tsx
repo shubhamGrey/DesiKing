@@ -81,7 +81,7 @@ const shouldUnoptimizeImage = (
   if (!imageSrc || typeof imageSrc !== "string") {
     return false;
   }
-  return imageSrc.includes("cloud.agronexis.com");
+  return imageSrc.includes("cloud.desikingspices.com");
 };
 
 const Cart = () => {

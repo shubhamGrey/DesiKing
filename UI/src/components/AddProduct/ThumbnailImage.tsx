@@ -18,7 +18,7 @@ interface ThumbnailImageProps {
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (imageSrc: string): boolean => {
-  return imageSrc.includes("cloud.agronexis.com");
+  return imageSrc.includes("cloud.desikingspices.com");
 };
 
 const ThumbnailImage: React.FC<ThumbnailImageProps> = ({
