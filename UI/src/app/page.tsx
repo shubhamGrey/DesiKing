@@ -91,7 +91,6 @@ const shouldUnoptimizeImage = (
 ): boolean => {
   return imageSrc?.includes("cloud.desikingspices.com") ?? false;
 };
-
 const achievements = [
   {
     value: "500+",

@@ -91,7 +91,9 @@ var allowedOrigins = new[]
 {
     "http://localhost:3002",
     "https://agronexis.com",
-    "https://www.agronexis.com"
+    "https://www.agronexis.com",
+    "https://desikingspices.com",
+    "https://www.desikingspices.com"
 };
 
 builder.Services.AddCors(options =>
