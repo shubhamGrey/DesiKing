@@ -10,7 +10,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import Image from "next/image";
-import BrandLogo from "../../../public/AgroNexisGreen.png";
+import BrandLogo from "../../../public/Brand.png";
 import LoginImg from "../../../public/Login.png";
 
 import LoginForm from "@/components/LoginForm";
@@ -362,7 +362,7 @@ function LoginPageContent() {
       <Image
         src={BrandLogo}
         alt="Brand Logo"
-        width={100}
+        width={170}
         height={100}
         style={{
           position: "absolute", // Keep the logo positioned absolutely

@@ -26,7 +26,7 @@ export default function RootLayout({
         <title>
           Agro Nexis - Top Brand of Spices &amp; Processed Foods in India
         </title>
-        <link rel="icon" href="/AgroNexisGreen.png" />
+        <link rel="icon" href="/Brand.png" />
       </head>
       <body
         className={poppins.className}

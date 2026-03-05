@@ -2154,6 +2154,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var invoiceData = request.InvoiceData;
             var html = new StringBuilder();
 
+            // Get signature image as Base64
+            var signatureBase64 = GetSignatureImageBase64();
+
             html.Append(@"
 <!DOCTYPE html>
 <html>
@@ -2191,10 +2194,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         .tax-summary .label { font-weight: bold; background: #f0f0f0; }
         
         /* Footer */
-        .footer-section { border-top: 1px solid #000; padding: 10px; }
+        .footer-section { border-top: 1px solid #000; padding: 10px; overflow: hidden; }
         .bank-details { margin: 10px 0; }
-        .declaration { margin: 10px 0; font-size: 10px; }
-        .signature { text-align: right; margin-top: 20px; }
+        .declaration { margin: 10px 0; font-size: 10px; float: left; width: 50%; }
+        .signature { text-align: center; margin-top: 20px; float: right; width: 45%; }
+        .signature img { display: block; margin: 10px auto; }
+        .signature strong { display: block; }
         
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -2384,10 +2389,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             </div>
             
             <div class='signature'>
-                <strong>for " + invoiceData.Supplier.Name + @"</strong><br><br><br>
+                <strong>for " + invoiceData.Supplier.Name + @"</strong>
+                <img src='" + signatureBase64 + @"' alt='Signature' style='max-height: 60px; margin: 15px auto;' />
                 <strong>Authorised Signatory</strong>
             </div>
             
+            <div style='clear: both;'></div>
             <div class='text-center' style='margin-top: 20px;'>
                 <strong>This is a Computer Generated Invoice</strong>
             </div>
@@ -2398,6 +2405,39 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return html.ToString();
         }
+
+        private string GetSignatureImageBase64()
+        {
+            try
+            {
+                var possiblePaths = new[]
+                {
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Agronexis.Images", "ANIOPL Stamp with Sign2.png"),
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "Agronexis.Images", "ANIOPL Stamp with Sign2.png"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "Agronexis.Images", "ANIOPL Stamp with Sign2.png"),
+                    "Backend/Agronexis.Images/ANIOPL Stamp with Sign2.png"
+                };
+
+                foreach (var path in possiblePaths)
+                {
+                    if (File.Exists(path))
+                    {
+                        var imageBytes = File.ReadAllBytes(path);
+                        var base64 = Convert.ToBase64String(imageBytes);
+                        return $"data:image/png;base64,{base64}";
+                    }
+                }
+
+                _logger.LogWarning("Signature image not found in any expected location");
+                return "";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading signature image");
+                return "";
+            }
+        }
+
         private string ConvertToWords(int number)
         {
             if (number == 0) return "Zero Only";

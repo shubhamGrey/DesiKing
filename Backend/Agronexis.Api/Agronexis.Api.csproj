@@ -32,4 +32,8 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\Agronexis.Images\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Agronexis.Images" />
+  </ItemGroup>
+
 </Project>

@@ -14,7 +14,6 @@ import {
   ListItemText,
   useMediaQuery,
   ListItemButton,
-  Grid,
   Badge,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -25,8 +24,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import BrandLogo from "../../public/AgroNexisGreen.png";
-import BrandLogoWhite from "../../public/AgroNexisWhite.png";
+import BrandLogo from "../../public/Brand.png";
+import DesiKingLogo from "../../public/DesiKing.png";
 import theme from "@/styles/theme";
 import { useCart } from "@/contexts/CartContext";
 import SearchAutocomplete from "./SearchAutocomplete";
@@ -117,227 +116,235 @@ export default function Header() {
       <AppBar position="sticky" color="inherit" elevation={0}>
         <Toolbar
           sx={{
-            justifyContent: "start",
-            height: isScrolled ? 64 : 80,
-            backgroundColor:
+            justifyContent: "space-between",
+            // height: isScrolled ? 80 : 100,
+            height: 60,
+            px: { xs: 2, md: 4 },
+            background:
               pathname === "/contact"
                 ? isScrolled
-                  ? "rgba(254, 249, 243, 0.95)"
-                  : "primary.contrastText"
+                  ? "rgba(254, 249, 243, 0.98)"
+                  : "#FEF9F3"
                 : isScrolled
-                ? "rgba(31, 79, 64, 0.95)"
-                : "primary.main",
-            backdropFilter: isScrolled ? "blur(12px)" : "none",
-            WebkitBackdropFilter: isScrolled ? "blur(12px)" : "none",
+                ? "linear-gradient(135deg, rgba(27, 77, 62, 0.98) 0%, rgba(31, 79, 64, 0.98) 100%)"
+                : "linear-gradient(135deg, #1B4D3E 0%, #234F42 50%, #1B4D3E 100%)",
+            backdropFilter: isScrolled ? "blur(20px)" : "none",
+            WebkitBackdropFilter: isScrolled ? "blur(20px)" : "none",
             color:
               pathname === "/contact" ? "primary.main" : "primary.contrastText",
-            borderBottom: isScrolled
-              ? "1px solid rgba(179, 106, 38, 0.3)"
-              : "0.5px solid #b36a26",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow: isScrolled ? "0 4px 20px rgba(31, 79, 64, 0.1)" : "none",
+            borderBottom: "none",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            boxShadow: isScrolled
+              ? "0 4px 30px rgba(27, 77, 62, 0.15)"
+              : "0 2px 20px rgba(0, 0, 0, 0.08)",
           }}
         >
           {/* Desktop Nav */}
           {!isMobile ? (
             <>
+              {/* Logo Section - 3D Effect */}
               <Box
                 sx={{
-                  backgroundColor: isScrolled ? "transparent" : "#fff",
-                  borderRadius: isScrolled ? 0 : 5,
-                  boxShadow: isScrolled
-                    ? "none"
-                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
-                  p: isScrolled ? 0.5 : 1,
-                  pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  height: isScrolled ? 40 : 110,
-                  width: isScrolled ? 40 : 100,
                   cursor: "pointer",
-                  ml: 1,
-                  mt: isScrolled ? 1 : 3,
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
+                  perspective: "1000px",
+                  transition: "all 0.4s ease",
+                  "&:hover .logo-container": {
+                    transform: "rotateY(-8deg) rotateX(5deg) scale(1.05)",
+                  },
                 }}
               >
                 <Link href="/" passHref>
-                  {isScrolled && pathname !== "/contact" ? (
-                    <Image
-                      src={BrandLogoWhite}
-                      alt="AGRO NEXIS Logo"
-                      priority
-                      height={35}
-                      width={35}
-                    />
-                  ) : (
-                    <Image
-                      src={BrandLogo}
-                      alt="AGRO NEXIS Logo"
-                      priority
-                      height={85}
-                      width={85}
-                    />
-                  )}
+                  <Box
+                    className="logo-container"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "start",
+                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transformStyle: "preserve-3d",
+                      marginTop: isScrolled ? 0 : 3,
+                      width: 250,
+                    }}
+                  >
+                    {isScrolled ? (
+                      <Image
+                        src={DesiKingLogo}
+                        alt="DESI KING Logo"
+                        priority
+                        height={80}
+                        width={130}
+                        style={{
+                          objectFit: "contain",
+                          filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.3))",
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={BrandLogo}
+                        alt="DESI KING Logo"
+                        priority
+                        height={150}
+                        width={200}
+                        style={{
+                          objectFit: "contain",
+                          filter: "drop-shadow(3px 3px 6px rgba(0,0,0,0.3))",
+                        }}
+                      />
+                    )}
+                  </Box>
                 </Link>
               </Box>
-              <Grid container sx={{ flexGrow: 1, ml: 2.5 }}>
-                <Grid
-                  size={{ xs: 12, md: 6 }}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "left",
-                  }}
-                >
-                  <Stack direction="row" spacing={5}>
-                    {leftNavLinks.map(({ label, href }) => {
-                      const isActive = pathname === href;
-                      return (
-                        <MuiLink
-                          component={Link}
-                          key={label}
-                          href={href}
-                          underline="none"
-                          sx={{
-                            color: isActive
-                              ? "secondary.main"
-                              : pathname === "/contact"
-                              ? "primary.main"
-                              : "primary.contrastText",
-                            fontSize: "16px",
-                            fontWeight: isActive ? 600 : 500,
-                            letterSpacing: "1.5px",
-                            position: "relative",
-                            py: 0.5,
-                            transition: "all 0.3s ease",
-                            "&::after": {
-                              content: '""',
-                              position: "absolute",
-                              bottom: 0,
-                              left: "50%",
-                              transform: isActive
-                                ? "translateX(-50%) scaleX(1)"
-                                : "translateX(-50%) scaleX(0)",
-                              width: "100%",
-                              height: "2px",
-                              backgroundColor: "secondary.main",
-                              transition: "transform 0.3s ease",
-                            },
-                            "&:hover": {
-                              color: "secondary.main",
-                              "&::after": {
-                                transform: "translateX(-50%) scaleX(1)",
-                              },
-                            },
-                          }}
-                        >
-                          {label.toUpperCase()}
-                        </MuiLink>
-                      );
-                    })}
-                  </Stack>
-                </Grid>
-                <Grid
-                  size={{ xs: 12, md: 6 }}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "right",
-                  }}
-                >
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box sx={{ minWidth: isMobile ? 200 : 250 }}>
-                      <SearchAutocomplete />
-                    </Box>
-                    {rightNavLinks.map(({ icon, getHref, key }) => {
-                      const href = getHref();
-                      const isActive = pathname === href;
-                      return (
-                        <IconButton
-                          key={key}
-                          sx={{
-                            color: isActive
-                              ? "secondary.main"
-                              : pathname === "/contact"
-                              ? "primary.main"
-                              : "primary.contrastText",
-                          }}
-                          onClick={() => {
-                            const targetHref = userLoggedIn ? href : "/login";
-                            router.push(targetHref);
-                          }}
-                        >
-                          {icon}
-                        </IconButton>
-                      );
-                    })}
-                  </Stack>
-                </Grid>
-              </Grid>
+
+              {/* Center Navigation */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {leftNavLinks.map(({ label, href }) => {
+                  const isActive = pathname === href;
+                  return (
+                    <MuiLink
+                      component={Link}
+                      key={label}
+                      href={href}
+                      underline="none"
+                      sx={{
+                        color: isActive
+                          ? "#E85D04"
+                          : pathname === "/contact"
+                          ? "primary.main"
+                          : "rgba(255, 255, 255, 0.9)",
+                        fontSize: "14px",
+                        fontWeight: isActive ? 700 : 500,
+                        letterSpacing: "1px",
+                        px: 2.5,
+                        py: 1,
+                        borderRadius: "25px",
+                        backgroundColor: isActive
+                          ? pathname === "/contact"
+                            ? "rgba(232, 93, 4, 0.1)"
+                            : "rgba(255, 255, 255, 0.15)"
+                          : "transparent",
+                        transition: "all 0.25s ease",
+                        "&:hover": {
+                          color: "#E85D04",
+                          backgroundColor:
+                            pathname === "/contact"
+                              ? "rgba(232, 93, 4, 0.08)"
+                              : "rgba(255, 255, 255, 0.12)",
+                          transform: "translateY(-1px)",
+                        },
+                      }}
+                    >
+                      {label.toUpperCase()}
+                    </MuiLink>
+                  );
+                })}
+              </Box>
+
+              {/* Right Section - Search & Icons */}
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <Box sx={{ minWidth: 220 }}>
+                  <SearchAutocomplete />
+                </Box>
+                {rightNavLinks.map(({ icon, getHref, key }) => {
+                  const href = getHref();
+                  const isActive = pathname === href;
+                  const isContactPage = pathname === "/contact";
+                  return (
+                    <IconButton
+                      key={key}
+                      sx={{
+                        color: isActive
+                          ? "#E85D04"
+                          : isContactPage
+                          ? "primary.main"
+                          : "rgba(255, 255, 255, 0.9)",
+                        backgroundColor: isActive
+                          ? "rgba(255, 255, 255, 0.15)"
+                          : "transparent",
+                        borderRadius: "12px",
+                        p: 1,
+                        transition: "all 0.25s ease",
+                        "&:hover": {
+                          color: "#E85D04",
+                          backgroundColor: isContactPage
+                            ? "rgba(232, 93, 4, 0.08)"
+                            : "rgba(255, 255, 255, 0.12)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                      onClick={() => {
+                        const targetHref = userLoggedIn ? href : "/login";
+                        router.push(targetHref);
+                      }}
+                    >
+                      {icon}
+                    </IconButton>
+                  );
+                })}
+              </Stack>
             </>
           ) : (
+            /* Mobile Layout */
             <Box
-              display={"flex"}
-              alignItems={"center"}
-              justifyContent={"space-between"}
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
               sx={{ width: "100%" }}
             >
+              {/* Mobile Logo - 3D Effect */}
               <Box
                 sx={{
-                  backgroundColor: isScrolled ? "transparent" : "#fff",
-                  borderRadius: isScrolled ? 0 : 5,
-                  boxShadow: isScrolled
-                    ? "none"
-                    : "0px 4px 15px rgba(0, 0, 0, 0.3)",
-                  p: isScrolled ? 0.5 : 1,
-                  pt: isScrolled ? 0.5 : 1.5,
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  height: isScrolled ? 40 : 110,
-                  width: isScrolled ? 40 : 100,
                   cursor: "pointer",
-                  ml: 1,
-                  mt: isScrolled ? 1 : 3,
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smooth material design transition
+                  perspective: "800px",
                 }}
               >
                 <Link href="/" passHref>
-                  {isScrolled && pathname !== "/contact" ? (
-                    <Image
-                      src={BrandLogoWhite}
-                      alt="AGRO NEXIS Logo"
-                      priority
-                      height={35}
-                      width={35}
-                    />
-                  ) : (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.3s ease",
+                      transformStyle: "preserve-3d",
+                    }}
+                  >
                     <Image
                       src={BrandLogo}
-                      alt="AGRO NEXIS Logo"
+                      alt="DESI KING Logo"
                       priority
-                      height={85}
-                      width={85}
+                      height={65}
+                      width={65}
+                      style={{
+                        objectFit: "contain",
+                        filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.3))",
+                      }}
                     />
-                  )}
+                  </Box>
                 </Link>
               </Box>
-              <Box>
+
+              {/* Mobile Icons */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 {rightNavLinks.map(({ icon, getHref, key }) => {
                   const href = getHref();
                   const isActive = pathname === href;
                   return (
                     <IconButton
                       key={key}
-                      edge="end"
                       sx={{
                         color: isActive
-                          ? "secondary.main"
+                          ? "#E85D04"
                           : pathname === "/contact"
                           ? "primary.main"
-                          : "primary.contrastText",
-                        mr: 1,
+                          : "rgba(255, 255, 255, 0.9)",
+                        p: 1,
+                        transition: "all 0.25s ease",
+                        "&:hover": {
+                          color: "#E85D04",
+                        },
                       }}
                       onClick={() => {
                         const targetHref = userLoggedIn ? href : "/login";
@@ -349,13 +356,17 @@ export default function Header() {
                   );
                 })}
                 <IconButton
-                  edge="end"
                   onClick={toggleDrawer(true)}
                   sx={{
                     color:
-                      pathname == "/contact"
+                      pathname === "/contact"
                         ? "primary.main"
-                        : "primary.contrastText",
+                        : "rgba(255, 255, 255, 0.9)",
+                    p: 1,
+                    transition: "all 0.25s ease",
+                    "&:hover": {
+                      color: "#E85D04",
+                    },
                   }}
                 >
                   <MenuIcon />
@@ -367,22 +378,61 @@ export default function Header() {
       </AppBar>
 
       {/* Drawer for Mobile */}
-      <Drawer anchor="bottom" open={drawerOpen} onClose={toggleDrawer(false)}>
+      <Drawer
+        anchor="bottom"
+        open={drawerOpen}
+        onClose={toggleDrawer(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            maxHeight: "70vh",
+          },
+        }}
+      >
         <Box
           sx={{
             width: "100%",
-            backgroundColor:
-              pathname != "/contact" ? "primary.main" : "primary.contrastText",
+            background:
+              pathname !== "/contact"
+                ? "linear-gradient(180deg, #1B4D3E 0%, #234F42 100%)"
+                : "linear-gradient(180deg, #FEF9F3 0%, #fff 100%)",
             color:
-              pathname != "/contact" ? "primary.contrastText" : "primary.main",
+              pathname !== "/contact" ? "primary.contrastText" : "primary.main",
           }}
           role="presentation"
         >
+          {/* Drawer Handle */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              pt: 1.5,
+              pb: 1,
+            }}
+          >
+            <Box
+              sx={{
+                width: 40,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor:
+                  pathname !== "/contact"
+                    ? "rgba(255,255,255,0.3)"
+                    : "rgba(0,0,0,0.2)",
+              }}
+            />
+          </Box>
+
           {/* Mobile Search */}
           <Box
             sx={{
-              p: 2,
-              borderBottom: "1px solid rgba(255,255,255,0.2)",
+              px: 2,
+              pb: 2,
+              borderBottom:
+                pathname !== "/contact"
+                  ? "1px solid rgba(255,255,255,0.1)"
+                  : "1px solid rgba(0,0,0,0.08)",
             }}
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
@@ -391,33 +441,43 @@ export default function Header() {
             <SearchAutocomplete isMobile={true} onClose={toggleDrawer(false)} />
           </Box>
 
-          <List onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+          <List
+            onClick={toggleDrawer(false)}
+            onKeyDown={toggleDrawer(false)}
+            sx={{ px: 1 }}
+          >
             {leftNavLinks.map(({ label, href }) => {
               const isActive = pathname === href;
               return (
-                <ListItem key={label} disablePadding>
+                <ListItem key={label} disablePadding sx={{ mb: 0.5 }}>
                   <ListItemButton
                     component={Link}
                     href={href}
                     selected={pathname === href}
                     sx={{
                       color: isActive
-                        ? "secondary.main"
+                        ? "#E85D04"
                         : pathname === "/contact"
                         ? "primary.main"
-                        : "primary.contrastText",
-                      fontSize: "16px",
+                        : "rgba(255, 255, 255, 0.9)",
+                      fontSize: "15px",
                       fontWeight: isActive ? 600 : 500,
-                      letterSpacing: "1px",
+                      letterSpacing: "0.5px",
                       py: 1.5,
-                      transition: "all 0.3s ease",
-                      borderLeft: isActive
-                        ? "3px solid"
-                        : "3px solid transparent",
-                      borderColor: isActive ? "secondary.main" : "transparent",
+                      px: 2,
+                      borderRadius: 2,
+                      backgroundColor: isActive
+                        ? pathname === "/contact"
+                          ? "rgba(232, 93, 4, 0.1)"
+                          : "rgba(255,255,255,0.1)"
+                        : "transparent",
+                      transition: "all 0.25s ease",
                       "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.1)",
-                        borderColor: "secondary.main",
+                        backgroundColor:
+                          pathname === "/contact"
+                            ? "rgba(232, 93, 4, 0.08)"
+                            : "rgba(255,255,255,0.08)",
+                        color: "#E85D04",
                       },
                     }}
                   >
@@ -426,6 +486,7 @@ export default function Header() {
                       primaryTypographyProps={{
                         fontWeight: "inherit",
                         letterSpacing: "inherit",
+                        fontSize: "inherit",
                       }}
                     />
                   </ListItemButton>
