@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>
-          Agro Nexis - Top Brand of Spices &amp; Processed Foods in India
+          DesiKing - Top Brand of Spices &amp; Processed Foods in India
         </title>
         <link rel="icon" href="/Brand.png" />
       </head>

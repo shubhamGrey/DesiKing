@@ -142,10 +142,10 @@ export default function Footer() {
             variant="body1"
             sx={{ color: "primary.contrastText", mb: 2 }}
           >
-            AGRO NEXIS is committed to delivering pure, authentic Indian spices
-            sourced directly from trusted farms. With a focus on quality,
-            hygiene, and flavor, we bring the true taste of India to homes,
-            restaurants, and global markets.
+            DesiKing, a trademark of AGRO NEXIS is committed to delivering pure,
+            authentic Indian spices sourced directly from trusted farms. With a
+            focus on quality, hygiene, and flavor, we bring the true taste of
+            India to homes, restaurants, and global markets.
           </Typography>
           <Typography
             variant="body1"
