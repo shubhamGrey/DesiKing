@@ -54,9 +54,11 @@ namespace Agronexis.Business.Configurations
         Task<ShipmentLabelResponseModel> GenerateShipmentLabel(string awbNo, string xCorrelationId);
         Task<byte[]> GenerateInvoicePdf(GenerateInvoiceRequestModel request, string xCorrelationId);
         Task<GenerateInvoiceRequestModel> GetInvoiceDataByOrder(InvoicePdfGenerationRequest request, string xCorrelationId);
-        Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string correlationId);
+        //Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string correlationId);
         Task<DTDC_PincodeResponseModel> ValidatePincode(ValidatePincodeRequest request, string correlationId);
         Task<ShipmentLabelResponseModel> PrintDtdcShipmentLabel(DTDC_ShipmentLabelRequestModel request, string correlationId);
         Task<DTDC_CancelConsignmentResponseModel> CancelConsignment( DTDC_CancelConsignmentRequestModel request, string xCorrelationId);
+        //Task<DtdcTokenResponseModel> GenerateDtdcTrackingToken(DtdcTokenRequestModel request, string correlationId);
+        Task<DTDC_TrackingResponseModel> GetDtdcTrackingDetails(DTDC_TrackingRequestModel request, string correlationId);
     }
 }
