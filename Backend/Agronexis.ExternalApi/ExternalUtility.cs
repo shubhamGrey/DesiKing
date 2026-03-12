@@ -429,12 +429,11 @@ namespace Agronexis.ExternalApi
                 throw new RepositoryException($"DTDC Cancel shipment error", xCorrelationId, ex);
             }
         }
-        public async Task<string> DTDC_GetTrackingToken(string username, string password, string xCorrelationId)
+        public async Task<DtdcTokenResponseModel> DTDC_GenerateTrackingToken(string username, string password, string xCorrelationId)
         {
             try
             {
                 var url = _configuration["DTDC:TrackingTokenUrl"];
-
                 var finalUrl = $"{url}?username={username}&password={password}";
 
                 using var client = new HttpClient();
@@ -444,14 +443,27 @@ namespace Agronexis.ExternalApi
                 if (!response.IsSuccessStatusCode)
                     throw new RepositoryException("DTDC authentication failed", xCorrelationId);
 
-                return await response.Content.ReadAsStringAsync();
+                var tokenResponse = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrWhiteSpace(tokenResponse))
+                    throw new RepositoryException("DTDC returned empty token response", xCorrelationId);
+
+                var parts = tokenResponse.Split(':');
+
+                return new DtdcTokenResponseModel
+                {
+                    Username = parts.Length > 0 ? parts[0] : username,
+                    AccessToken = parts.Length > 1 ? parts[1] : string.Empty,
+                    FullToken = tokenResponse
+                };
             }
             catch (Exception ex)
             {
                 throw new RepositoryException("DTDC token API error", xCorrelationId, ex);
             }
         }
-        public async Task<string> DTDC_GetTracking(string awbNo, string token, string xCorrelationId)
+
+        public async Task<DTDC_TrackingResponseModel> DTDC_GetTrackingDetails(string awbNo, string token, string xCorrelationId)
         {
             try
             {
@@ -459,27 +471,40 @@ namespace Agronexis.ExternalApi
 
                 var payload = new DTDC_TrackingRequestModel
                 {
-                    Strcnno = awbNo
+                    TrkType = "cnno",
+                    Strcnno = awbNo,
+                    AddtnlDtl = "Y"
                 };
 
                 using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("X-Access-Token", token);
 
-                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                client.DefaultRequestHeaders.Add("X-Access-Token", token);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload),
+                    Encoding.UTF8,
+                    "application/json"
+                );
 
                 var response = await client.PostAsync(url, content);
 
-                if (!response.IsSuccessStatusCode)
-                    throw new RepositoryException("DTDC tracking request failed", xCorrelationId);
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                return await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new RepositoryException($"DTDC tracking request failed: {responseContent}", xCorrelationId);
+                }
+
+                return new DTDC_TrackingResponseModel
+                {
+                    RawResponse = responseContent
+                };
             }
             catch (Exception ex)
             {
                 throw new RepositoryException($"DTDC tracking error for {awbNo}", xCorrelationId, ex);
             }
         }
-
-
     }
 }

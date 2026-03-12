@@ -214,10 +214,10 @@ namespace Agronexis.Business.Configurations
             return await _repository.GetInvoiceDataByOrder(request, xCorrelationId);
         }
 
-        public async Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string xCorrelationId)
-        {
-            return await _repository.GenerateDtdcToken(request, xCorrelationId);
-        }
+        //public async Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string xCorrelationId)
+        //{
+        //    return await _repository.GenerateDtdcToken(request, xCorrelationId);
+        //}
         public async Task<DTDC_PincodeResponseModel> ValidatePincode(ValidatePincodeRequest request, string xCorrelationId)
         {
             return await _repository.ValidatePincode(request, xCorrelationId);
@@ -229,6 +229,15 @@ namespace Agronexis.Business.Configurations
         public async Task<DTDC_CancelConsignmentResponseModel> CancelConsignment( DTDC_CancelConsignmentRequestModel request, string xCorrelationId)
         {
             return await _repository.CancelConsignment(request, xCorrelationId);
+        }
+        //public async Task<DtdcTokenResponseModel> GenerateDtdcTrackingToken(DtdcTokenRequestModel request, string correlationId)
+        //{
+        //    return await _repository.GenerateDtdcTrackingToken(request, correlationId);
+        //}
+
+        public async Task<DTDC_TrackingResponseModel> GetDtdcTrackingDetails(DTDC_TrackingRequestModel request, string correlationId)
+        {
+            return await _repository.GetDtdcTrackingDetails(request, correlationId);
         }
     }
 }

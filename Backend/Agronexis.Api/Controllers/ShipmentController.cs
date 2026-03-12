@@ -91,47 +91,47 @@ namespace Agronexis.Api.Controllers
             }
         }
 
-        [HttpPost("generate-token")]
-        public async Task<ActionResult<ApiResponseModel>> GenerateDtdcToken([FromBody] DtdcTokenRequestModel request)
-        {
-            var correlationId = GetCorrelationId();
-            ApiResponseModel response = new()
-            {
-                Info = new ApiResponseInfoModel(),
-                Id = correlationId
-            };
+        //[HttpPost("generate-token")]
+        //public async Task<ActionResult<ApiResponseModel>> GenerateDtdcToken([FromBody] DtdcTokenRequestModel request)
+        //{
+        //    var correlationId = GetCorrelationId();
+        //    ApiResponseModel response = new()
+        //    {
+        //        Info = new ApiResponseInfoModel(),
+        //        Id = correlationId
+        //    };
 
-            try
-            {
-                if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-                {
-                    response.Info.Code = "400";
-                    response.Info.Message = "Invalid request. Username and password are required.";
-                    return BadRequest(response);
-                }
+        //    try
+        //    {
+        //        if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
+        //        {
+        //            response.Info.Code = "400";
+        //            response.Info.Message = "Invalid request. Username and password are required.";
+        //            return BadRequest(response);
+        //        }
 
-                var tokenResult = await _configService.GenerateDtdcToken(request, correlationId);
+        //        var tokenResult = await _configService.GenerateDtdcToken(request, correlationId);
 
-                if (tokenResult == null)
-                {
-                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
-                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
-                }
-                else
-                {
-                    response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
-                    response.Info.Message = ApiResponseMessage.SUCCESS;
-                    response.Data = tokenResult;
-                }
+        //        if (tokenResult == null)
+        //        {
+        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.NotFound).ToString();
+        //            response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+        //        }
+        //        else
+        //        {
+        //            response.Info.Code = ((int)Common.Constants.ServerStatusCodes.Ok).ToString();
+        //            response.Info.Message = ApiResponseMessage.SUCCESS;
+        //            response.Data = tokenResult;
+        //        }
 
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while generating DTDC token. Correlation ID: {CorrelationId}", correlationId);
-                return HandleException(ex, "Failed to generate DTDC token", correlationId);
-            }
-        }
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred while generating DTDC token. Correlation ID: {CorrelationId}", correlationId);
+        //        return HandleException(ex, "Failed to generate DTDC token", correlationId);
+        //    }
+        //}
 
         [HttpPost("dtdc/validate-pincode")]
         public async Task<ActionResult<ApiResponseModel>> ValidatePincode([FromBody] ValidatePincodeRequest request)
@@ -240,5 +240,76 @@ namespace Agronexis.Api.Controllers
             return Ok(result);
         }
 
+        //[HttpPost("dtdc/tracking-token")]
+        //public async Task<ActionResult<ApiResponseModel>> GenerateTrackingToken([FromBody] DtdcTokenRequestModel request)
+        //{
+        //    var correlationId = GetCorrelationId();
+
+        //    ApiResponseModel response = new()
+        //    {
+        //        Info = new ApiResponseInfoModel(),
+        //        Id = correlationId
+        //    };
+
+        //    try
+        //    {
+        //        var result = await _configService.GenerateDtdcTrackingToken(request, correlationId);
+
+        //        if (result == null)
+        //        {
+        //            response.Info.Code = "404";
+        //            response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+        //        }
+        //        else
+        //        {
+        //            response.Info.Code = "200";
+        //            response.Info.Message = ApiResponseMessage.SUCCESS;
+        //            response.Data = result;
+        //        }
+
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error generating DTDC tracking token. Correlation ID: {CorrelationId}", correlationId);
+        //        return HandleException(ex, "Failed to generate tracking token", correlationId);
+        //    }
+        //}
+
+        [HttpPost("dtdc/track-shipment")]
+        public async Task<ActionResult<ApiResponseModel>> GetTrackingDetails([FromBody] DTDC_TrackingRequestModel request)
+        {
+            var correlationId = GetCorrelationId();
+
+            ApiResponseModel response = new()
+            {
+                Info = new ApiResponseInfoModel(),
+                Id = correlationId
+            };
+
+            try
+            {
+                var result = await _configService.GetDtdcTrackingDetails(request, correlationId);
+
+                if (result == null)
+                {
+                    response.Info.Code = "404";
+                    response.Info.Message = ApiResponseMessage.DATANOTFOUND;
+                }
+                else
+                {
+                    response.Info.Code = "200";
+                    response.Info.Message = ApiResponseMessage.SUCCESS;
+                    response.Data = result;
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching DTDC tracking details. Correlation ID: {CorrelationId}", correlationId);
+                return HandleException(ex, "Failed to fetch tracking details", correlationId);
+            }
+        }
     }
 }

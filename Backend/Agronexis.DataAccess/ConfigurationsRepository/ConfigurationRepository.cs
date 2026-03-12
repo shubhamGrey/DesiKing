@@ -2047,43 +2047,43 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 throw;
             }
         }
-        public async Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string correlationId)
-        {
-            var tokenResponse = await _externalUtility.DTDC_GenerateToken(
-                request.Username,
-                request.Password,
-                correlationId
-            );
+        //public async Task<DtdcTokenResponseModel> GenerateDtdcToken(DtdcTokenRequestModel request, string correlationId)
+        //{
+        //    var tokenResponse = await _externalUtility.DTDC_GenerateToken(
+        //        request.Username,
+        //        request.Password,
+        //        correlationId
+        //    );
 
-            var response = new DtdcTokenResponseModel
-            {
-                RawResponse = tokenResponse
-            };
+        //    var response = new DtdcTokenResponseModel
+        //    {
+        //        RawResponse = tokenResponse
+        //    };
 
-            if (tokenResponse == null)
-            {
-                response.IsSuccess = false;
-                response.Token = null;
-                response.Message = "No response from DTDC token service.";
-                return response;
-            }
+        //    if (tokenResponse == null)
+        //    {
+        //        response.IsSuccess = false;
+        //        response.Token = null;
+        //        response.Message = "No response from DTDC token service.";
+        //        return response;
+        //    }
 
-            // DTDC returns statusCode == 200 on success
-            if (response.Token != null) //need to change this condition.
-            {
-                response.IsSuccess = true;
-                //response.Token = tokenResponse.Token;
-                response.Message = "Token generated successfully.";
-            }
-            else
-            {
-                response.IsSuccess = false;
-                response.Token = null;
-                //response.Message = tokenResponse.Message ?? "Failed to generate DTDC token.";
-            }
+        //    // DTDC returns statusCode == 200 on success
+        //    if (response.Token != null) //need to change this condition.
+        //    {
+        //        response.IsSuccess = true;
+        //        //response.Token = tokenResponse.Token;
+        //        response.Message = "Token generated successfully.";
+        //    }
+        //    else
+        //    {
+        //        response.IsSuccess = false;
+        //        response.Token = null;
+        //        //response.Message = tokenResponse.Message ?? "Failed to generate DTDC token.";
+        //    }
 
-            return response;
-        }
+        //    return response;
+        //}
         public async Task<DTDC_PincodeResponseModel> ValidatePincode(ValidatePincodeRequest request, string correlationId)
         {
             var dtdcResponse = await _externalUtility.DTDC_CheckPincode(request, correlationId);
@@ -2101,6 +2101,33 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             var dtdcResponse = await _externalUtility.DTDC_CancelShipment(request, correlationId);
             return new DTDC_CancelConsignmentResponseModel();
         }
+
+        //public async Task<DtdcTokenResponseModel> GenerateDtdcTrackingToken(DtdcTokenRequestModel request, string correlationId)
+        //{
+        //    return await _externalUtility.DTDC_GenerateTrackingToken(request, correlationId);
+        //}
+
+        public async Task<DTDC_TrackingResponseModel> GetDtdcTrackingDetails(DTDC_TrackingRequestModel request, string correlationId)
+        {
+            var username = _configuration["DTDC:Username"];
+            var password = _configuration["DTDC:Password"];
+
+            var tokenResponse = await _externalUtility.DTDC_GenerateTrackingToken(username, password, correlationId);
+
+            var trackingResponse = await _externalUtility.DTDC_GetTrackingDetails(
+                request.Strcnno,
+                tokenResponse.FullToken,
+                correlationId
+            );
+
+            return trackingResponse;
+        }
+
+
+
+
+
+
 
         #region private methods
         private List<string> ValidateInvoiceData(InvoiceDataModel invoiceData)
