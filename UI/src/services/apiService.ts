@@ -92,7 +92,7 @@ class ApiService {
    * Create a correlation ID for request tracking
    */
   private generateCorrelationId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**

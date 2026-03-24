@@ -44,10 +44,10 @@ import { usePageTracking } from "@/hooks/useAnalytics";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import Carousal from "@/components/Carousal";
 import Image from "next/image";
-import Purity from "../../public/GaramMasala5.jpg";
-import Quality from "../../public/GaramMasala4.webp";
-import Taste from "../../public/GaramMasala3.jpg";
-import Globe from "../../public/GaramMasala2.jpg";
+import Purity from "../../public/Hero Image 1.jpg";
+import Quality from "../../public/Hero2.png";
+import Taste from "../../public/Hero3.png";
+import Globe from "../../public/Hero4.png";
 
 const carousalImages = [
   { image: Purity },
@@ -87,7 +87,7 @@ const categoryConfig: Record<
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
-  imageSrc: string | undefined | null
+  imageSrc: string | undefined | null,
 ): boolean => {
   return imageSrc?.includes("cloud.desikingspices.com") ?? false;
 };
@@ -104,7 +104,7 @@ const achievements = [
     name: "Countries served",
     icon: <Public fontSize="large" />,
     description:
-      "Taking the taste of India to plates across the globe with trusted international patnerships.",
+      "Taking the taste of India to plates across the globe with trusted international partnerships.",
   },
   {
     value: "3+",
@@ -147,7 +147,7 @@ const chooseUs = [
       "We source only the finest raw spices, ensuring that every product is free from additives, fillers and artificial colors.",
   },
   {
-    name: "Hygenic Processing",
+    name: "Hygienic Processing",
     icon: <HealthAndSafetyOutlined fontSize="large" />,
     description:
       "Our state-of-the-art processing facilities adhere to the highest hygiene standards and safety protocols, ensuring that every spice is safe and healthy.",
@@ -206,15 +206,15 @@ const Home: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       )
         .then((res) => res.json())
         .then(() => {
           setProductCategories((prev) =>
-            prev.filter((cat) => cat.id !== selectedCategoryId)
+            prev.filter((cat) => cat.id !== selectedCategoryId),
           );
           setUpcomingpProductCategories((prev) =>
-            prev.filter((cat) => cat.id !== selectedCategoryId)
+            prev.filter((cat) => cat.id !== selectedCategoryId),
           );
         })
         .catch((error) => {
@@ -236,7 +236,7 @@ const Home: React.FC = () => {
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -277,7 +277,7 @@ const Home: React.FC = () => {
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -348,7 +348,7 @@ const Home: React.FC = () => {
         // Function to check if product matches a category based on keywords
         const matchesCategory = (
           product: Product,
-          keywords: string[]
+          keywords: string[],
         ): boolean => {
           const searchText = [
             product.name,
@@ -361,7 +361,7 @@ const Home: React.FC = () => {
             .toLowerCase();
 
           return keywords.some((keyword) =>
-            searchText.includes(keyword.toLowerCase())
+            searchText.includes(keyword.toLowerCase()),
           );
         };
 
@@ -375,7 +375,7 @@ const Home: React.FC = () => {
             (product) =>
               product.isActive &&
               !usedProductIds.has(product.id) &&
-              matchesCategory(product, keywords)
+              matchesCategory(product, keywords),
           );
 
           // Take first 4 matching products and mark them as used
@@ -660,7 +660,7 @@ const Home: React.FC = () => {
                   const hasDiscount =
                     defaultSku?.isDiscounted && defaultSku?.discountedAmount;
                   const currencySymbol = getCurrencySymbol(
-                    defaultSku?.currencyCode || "INR"
+                    defaultSku?.currencyCode || "INR",
                   );
 
                   return (
@@ -715,7 +715,7 @@ const Home: React.FC = () => {
                             alt={product.name}
                             fill
                             unoptimized={shouldUnoptimizeImage(
-                              product.thumbnailUrl || product.imageUrls?.[0]
+                              product.thumbnailUrl || product.imageUrls?.[0],
                             )}
                             style={{
                               objectFit: "cover",

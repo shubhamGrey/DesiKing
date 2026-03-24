@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Paper, Collapse, IconButton } from "@mui/material";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
 import { analyticsConfig } from "@/config/analytics";

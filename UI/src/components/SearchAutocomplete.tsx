@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import theme from "@/styles/theme";
 
-import { Product, ProductFormData } from "@/types/product";
+import { Product } from "@/types/product";
 
 interface SearchAutocompleteProps {
   isMobile?: boolean;
@@ -41,10 +41,8 @@ export default function SearchAutocomplete({
   onClose,
 }: SearchAutocompleteProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [products, setProducts] = useState<ProductFormData[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<ProductFormData[]>(
-    []
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [allProductsLoaded, setAllProductsLoaded] = useState(false);
@@ -117,7 +115,7 @@ export default function SearchAutocomplete({
         const query = searchQuery.toLowerCase();
         const filtered = products
           .filter((product) => typeof product.id === "string" && !!product.id)
-          .filter((product) => searchMatchesProduct(product as Product, query));
+          .filter((product) => searchMatchesProduct(product, query));
         setFilteredProducts(filtered.slice(0, 8)); // Limit to 8 results
         setShowDropdown(true);
       } else if (searchQuery.trim().length > 0) {

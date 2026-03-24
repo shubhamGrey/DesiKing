@@ -13,6 +13,7 @@ export function middleware(request) {
     "/contact",
     "/products",
     "/product", // Dynamic route prefix
+    "/checkout",
     "/payment-result",
     "/privacy-policy",
     "/terms-and-conditions",
@@ -112,6 +113,7 @@ export const config = {
     "/login",
     "/products/:path*",
     "/product/:path*", // Dynamic product pages
+    "/checkout",
     "/payment-result",
     "/privacy-policy",
     "/terms-and-conditions",

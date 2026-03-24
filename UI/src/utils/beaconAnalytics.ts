@@ -464,7 +464,7 @@ class BeaconAnalytics {
   private getScrollDepth(): number {
     if (typeof window === "undefined") return 0;
 
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const scrollHeight =
       document.documentElement.scrollHeight -
       document.documentElement.clientHeight;
