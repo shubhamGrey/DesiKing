@@ -7,6 +7,7 @@ on:
     paths:
       - "UI/**"
       - "docker-compose.yml"
+      - "scripts/**"
 
 jobs:
   deploy:
@@ -22,7 +23,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "docker-compose.yml,UI"
+          source: "docker-compose.yml,UI,scripts"
           target: "/var/www/agronexis"
 
       - name: Deploy with Docker Compose on VPS
@@ -35,27 +36,56 @@ jobs:
           script: |
             set -e
             cd /var/www/agronexis
+
+            # Make all scripts executable
+            chmod +x scripts/*.sh
+
             docker compose down || true
 
             # Pull images for image-based services (fast if unchanged)
             docker compose pull || true
 
-            # Build only your local Dockerfile services (nextjs/backend)
-            # docker compose up -d --build
+            # Build and start all services
             docker compose up -d --build nextjs backend
-            docker compose up -d nginx app db backend-db
-
+            docker compose up -d nginx app db backend-db certbot
 
             sudo systemctl daemon-reload
             sudo systemctl enable docker-compose-app
             sudo systemctl restart docker-compose-app
 
-      # Optional: Renew SSL certificates (if needed)
-      # - name: Renew SSL certificates
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.VPS_KEY }}
-      #     script: |
-      #       sudo certbot renew --pre-hook "docker-compose stop nginx" --post-hook "docker-compose up -d nginx"
+      - name: Renew SSL certificate (if expired or due)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          command_timeout: 5m
+          script: |
+            cd /var/www/agronexis
+
+            # Renew cert — certbot only acts if expired or within 30 days of expiry
+            RENEW_OUTPUT=$(docker compose run --rm certbot renew \
+              --webroot \
+              --webroot-path /var/www/certbot \
+              --quiet 2>&1) || true
+
+            echo "$RENEW_OUTPUT"
+
+            # Reload nginx (no downtime) if a cert was renewed
+            if echo "$RENEW_OUTPUT" | grep -q "Successfully renewed\|Congratulations"; then
+              echo "Certificate renewed — reloading nginx"
+              docker exec nginx nginx -s reload
+            else
+              echo "No renewal needed"
+            fi
+
+      - name: Install SSL auto-renewal cron job
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd /var/www/agronexis
+            chmod +x scripts/setup-cron.sh
+            ./scripts/setup-cron.sh
