@@ -8,6 +8,7 @@ on:
       - "UI/**"
       - "docker-compose.yml"
       - "scripts/**"
+      - ".github/**"
 
 jobs:
   deploy:
@@ -63,20 +64,41 @@ jobs:
           script: |
             cd /var/www/agronexis
 
-            # Renew cert — certbot only acts if expired or within 30 days of expiry
-            RENEW_OUTPUT=$(docker compose run --rm certbot renew \
-              --webroot \
-              --webroot-path /var/www/certbot \
-              --quiet 2>&1) || true
+            # Check if cert is expired or due for renewal (within 30 days)
+            CERT=/etc/letsencrypt/live/desikingspices.com/cert.pem
+            NEEDS_RENEWAL=false
 
-            echo "$RENEW_OUTPUT"
-
-            # Reload nginx (no downtime) if a cert was renewed
-            if echo "$RENEW_OUTPUT" | grep -q "Successfully renewed\|Congratulations"; then
-              echo "Certificate renewed — reloading nginx"
-              docker exec nginx nginx -s reload
+            if [ ! -f "$CERT" ]; then
+              echo "No certificate found — will issue new one"
+              NEEDS_RENEWAL=true
+            elif ! openssl x509 -checkend $((30 * 86400)) -noout -in "$CERT" 2>/dev/null; then
+              echo "Certificate expires within 30 days or is already expired — renewing"
+              NEEDS_RENEWAL=true
             else
-              echo "No renewal needed"
+              echo "Certificate is valid for more than 30 days — skipping renewal"
+            fi
+
+            if [ "$NEEDS_RENEWAL" = "true" ]; then
+              # Stop nginx briefly to free port 80 for standalone challenge
+              # (avoids webroot volume sync issues; nginx is only down ~10 seconds)
+              docker compose stop nginx
+
+              docker run --rm \
+                -v /etc/letsencrypt:/etc/letsencrypt \
+                -p 80:80 \
+                certbot/certbot certonly --standalone \
+                --non-interactive \
+                --agree-tos \
+                --no-eff-email \
+                --email care@agronexis.com \
+                --force-renewal \
+                -d desikingspices.com \
+                -d www.desikingspices.com \
+                -d cloud.desikingspices.com
+
+              # Bring nginx back up with the fresh certificate
+              docker compose up -d nginx
+              echo "Certificate renewed and nginx restarted"
             fi
 
       - name: Install SSL auto-renewal cron job
