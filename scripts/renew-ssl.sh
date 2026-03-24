@@ -2,48 +2,52 @@
 # =============================================================================
 # renew-ssl.sh — Auto-renew SSL certificates for desikingspices.com
 #
-# This script is called by cron. It only renews when the cert is within
-# 30 days of expiry (certbot's default threshold).
+# Uses standalone mode: stops nginx for ~10 seconds, runs certbot, restarts nginx.
+# Certbot only renews when cert expires within 30 days (or is already expired).
 #
-# Cron setup (run as root):
+# Cron setup (run scripts/setup-cron.sh once, or manually):
 #   sudo crontab -e
-#   Add:  0 3 * * * /path/to/DesiKing/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
-#
-# This runs daily at 3 AM. Certbot will only renew if needed.
+#   Add:  0 3 * * * /var/www/agronexis/scripts/renew-ssl.sh >> /var/log/ssl-renew.log 2>&1
 # =============================================================================
 
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 LOG_TAG="[ssl-renew]"
-DOMAIN="desikingspices.com"
+CERT="/etc/letsencrypt/live/desikingspices.com/cert.pem"
 
-echo "$LOG_TAG $(date '+%Y-%m-%d %H:%M:%S') Starting renewal check for $DOMAIN"
+echo "$LOG_TAG $(date '+%Y-%m-%d %H:%M:%S') Starting renewal check"
 
 cd "$PROJECT_DIR"
 
-# Check if nginx is running; if not, skip (avoids renewing with the service down)
+# Check if nginx is running
 if ! docker ps --format '{{.Names}}' | grep -q '^nginx$'; then
-  echo "$LOG_TAG nginx container is not running, skipping renewal"
+  echo "$LOG_TAG nginx is not running — skipping"
   exit 1
 fi
 
-# Run certbot renew — only acts if cert expires within 30 days
-RENEW_OUTPUT=$(docker compose run --rm certbot renew \
-  --webroot \
-  --webroot-path /var/www/certbot \
-  --quiet \
-  2>&1)
-
-echo "$RENEW_OUTPUT"
-
-# Reload nginx only if a cert was actually renewed
-if echo "$RENEW_OUTPUT" | grep -q "Successfully renewed\|Congratulations"; then
-  echo "$LOG_TAG Certificate renewed — reloading nginx"
-  docker exec nginx nginx -s reload
-  echo "$LOG_TAG nginx reloaded successfully"
-else
-  echo "$LOG_TAG No renewal needed or renewal skipped"
+# Check if renewal is needed (expired or within 30 days)
+if openssl x509 -checkend $((30 * 86400)) -noout -in "$CERT" 2>/dev/null; then
+  echo "$LOG_TAG Certificate valid for more than 30 days — no action needed"
+  exit 0
 fi
 
-echo "$LOG_TAG $(date '+%Y-%m-%d %H:%M:%S') Done"
+echo "$LOG_TAG Renewal needed — stopping nginx briefly"
+docker compose stop nginx
+
+docker run --rm \
+  -v /etc/letsencrypt:/etc/letsencrypt \
+  -p 80:80 \
+  certbot/certbot certonly --standalone \
+  --non-interactive \
+  --agree-tos \
+  --no-eff-email \
+  --email care@agronexis.com \
+  --force-renewal \
+  -d desikingspices.com \
+  -d www.desikingspices.com \
+  -d cloud.desikingspices.com
+
+docker compose up -d nginx
+
+echo "$LOG_TAG $(date '+%Y-%m-%d %H:%M:%S') Certificate renewed — nginx restarted"
