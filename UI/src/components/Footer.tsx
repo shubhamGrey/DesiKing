@@ -136,6 +136,7 @@ export default function Footer() {
             src={BrandLogo}
             alt="Brand Logo"
             width={150}
+            height={50}
             style={{ marginBottom: 12 }}
           />
           <Typography
@@ -158,6 +159,10 @@ export default function Footer() {
             {socialMedia.map((media) => (
               <IconButton
                 key={media.href}
+                component="a"
+                href={media.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 sx={{
                   color: "primary.contrastText",
                   backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -169,14 +174,7 @@ export default function Footer() {
                   },
                 }}
               >
-                <a
-                  href={media.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "inherit", display: "flex" }}
-                >
-                  {media.icon}
-                </a>
+                {media.icon}
               </IconButton>
             ))}
           </Box>

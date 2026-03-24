@@ -736,7 +736,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           category: "Spices",
           price: itemToRemove.price,
           quantity: itemToRemove.quantity,
-          brand: "Agro Nexis",
+          brand: "DesiKing",
         });
       }
     },

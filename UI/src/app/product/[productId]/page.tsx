@@ -12,15 +12,7 @@ export async function generateMetadata({
   const { productId } = await params;
 
   try {
-    console.log("Fetching metadata for product:", productId);
-
     const product: Product = await fetchProductById(productId);
-
-    console.log("Product metadata fetched:", {
-      metaTitle: product.metaTitle,
-      metaDescription: product.metaDescription,
-      name: product.name,
-    });
 
     return {
       title: product.metaTitle || `${product.name} | DesiKing`,

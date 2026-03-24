@@ -27,7 +27,7 @@ export async function handleApiResponse<T>(response: Response): Promise<T> {
       }
     } catch (error) {
       // Fall back to generic error if JSON parsing fails
-      console.log(error);
+      console.error(error);
     }
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
