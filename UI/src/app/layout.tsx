@@ -5,7 +5,7 @@ import "@/styles/globals.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "DesiKing - Top Brand of Spices & Processed Foods in India",
+  title: "DesiKing - Desh ka Desi Masala",
   icons: {
     icon: "/Brand.png",
   },
