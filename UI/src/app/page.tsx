@@ -45,15 +45,17 @@ import { getCurrencySymbol } from "@/utils/currencyUtils";
 import Carousal from "@/components/Carousal";
 import Image from "next/image";
 import Purity from "../../public/Hero Banner 1.png";
-import Quality from "../../public/Hero2.png";
-import Taste from "../../public/Hero3.png";
-import Globe from "../../public/Hero4.png";
+import Quality from "../../public/Hero Banner 2.png";
+import Taste from "../../public/Hero Banner 3.png";
+import Globe from "../../public/Hero Banner 4.png";
+import Hero from "../../public/Hero Banner 4.png";
 
 const carousalImages = [
   { image: Purity },
   { image: Quality },
   { image: Taste },
   { image: Globe },
+  { image: Hero },
 ];
 
 // Categories to showcase on homepage with products
