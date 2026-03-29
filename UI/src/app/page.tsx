@@ -44,7 +44,7 @@ import { usePageTracking } from "@/hooks/useAnalytics";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import Carousal from "@/components/Carousal";
 import Image from "next/image";
-import Purity from "../../public/Hero Image 1.jpg";
+import Purity from "../../public/Hero Banner 1.png";
 import Quality from "../../public/Hero2.png";
 import Taste from "../../public/Hero3.png";
 import Globe from "../../public/Hero4.png";

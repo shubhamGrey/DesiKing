@@ -24,7 +24,7 @@ const Carousal = ({ items }: CarousalProps) => {
   const handleNextPage = React.useCallback(() => {
     setSlideDirection("left");
     setCurrentPage((prevPage) =>
-      prevPage >= Math.ceil(items.length / cardsPerPage) - 1 ? 0 : prevPage + 1
+      prevPage >= Math.ceil(items.length / cardsPerPage) - 1 ? 0 : prevPage + 1,
     );
   }, [items.length, cardsPerPage]);
 
@@ -48,7 +48,7 @@ const Carousal = ({ items }: CarousalProps) => {
         flexDirection: "row",
         alignItems: "center",
         alignContent: "center",
-        height: isMobile ? "250px" : "500px",
+        height: isMobile ? "250px" : "700px",
         justifyContent: "center",
         position: "relative",
         borderRadius: { xs: 0, md: "0 0 24px 24px" },
@@ -161,7 +161,7 @@ const Carousal = ({ items }: CarousalProps) => {
                 },
               }}
             />
-          )
+          ),
         )}
       </Stack>
     </Box>
