@@ -45,7 +45,6 @@ import { getCurrencySymbol } from "@/utils/currencyUtils";
 import Carousal from "@/components/Carousal";
 import Image from "next/image";
 import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
-import { motion } from "framer-motion";
 import LottieIcon from "@/components/LottieIcon";
 import Purity from "../../public/Hero Banner 1.png";
 import Quality from "../../public/Hero2.png";
