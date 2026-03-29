@@ -11,17 +11,15 @@ import { AutoAwesome } from "@mui/icons-material";
 interface CarousalProps {
   items: {
     image: StaticImageData;
-    title?: string;
-    subtitle?: string;
   }[];
 }
 
 const heroSlides = [
-  { title: "Bold. Authentic. Pure.", subtitle: "Premium Indian Spices — Crafted with Heritage" },
-  { title: "From Farm to Your Kitchen.", subtitle: "Uncompromised quality, every single time" },
-  { title: "Taste the Difference.", subtitle: "Handpicked spices with zero additives" },
-  { title: "Spice Up Every Meal.", subtitle: "Global reach, rooted in Indian tradition" },
-  { title: "Pure. Powerful. Proven.", subtitle: "Trusted by chefs and home cooks worldwide" },
+  { title: "Bold. Authentic. Pure.", subtitle: "Premium Indian Spices — Crafted with Heritage", accentWords: ["Pure."] },
+  { title: "From Farm to Your Kitchen.", subtitle: "Uncompromised quality, every single time", accentWords: ["Kitchen."] },
+  { title: "Taste the Difference.", subtitle: "Handpicked spices with zero additives", accentWords: ["Difference."] },
+  { title: "Spice Up Every Meal.", subtitle: "Global reach, rooted in Indian tradition", accentWords: ["Every"] },
+  { title: "Pure. Powerful. Proven.", subtitle: "Trusted by chefs and home cooks worldwide", accentWords: ["Pure.", "Powerful.", "Proven."] },
 ];
 
 const wordVariants: Variants = {
@@ -82,7 +80,7 @@ const Carousal = ({ items }: CarousalProps) => {
       }}
     >
       {/* Slide Images */}
-      <AnimatePresence mode="sync">
+      <AnimatePresence mode="wait">
         <motion.div
           key={currentPage}
           variants={slideVariants}
@@ -128,45 +126,46 @@ const Carousal = ({ items }: CarousalProps) => {
         >
           {/* Word-by-word title */}
           <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 1.5, mb: 2 }}>
-            <AnimatePresence mode="wait">
-              {titleWords.map((word, i) => (
-                <motion.span
-                  key={`${currentPage}-${i}`}
-                  custom={i}
-                  variants={wordVariants}
-                  initial="hidden"
-                  animate="visible"
-                  style={{
-                    fontSize: "clamp(28px, 4vw, 52px)",
-                    fontWeight: 800,
-                    color: word === "Pure." || word === "Difference." || word === "Proven." ? "#E85D04" : "white",
-                    fontFamily: "Montserrat, sans-serif",
-                    lineHeight: 1.1,
-                    display: "inline-block",
-                    textShadow: "0 2px 16px rgba(0,0,0,0.4)",
-                  }}
-                >
-                  {word}
-                </motion.span>
-              ))}
-            </AnimatePresence>
+            {titleWords.map((word, i) => (
+              <motion.span
+                key={`${currentPage}-${i}`}
+                custom={i}
+                variants={wordVariants}
+                initial="hidden"
+                animate="visible"
+                style={{
+                  fontSize: "clamp(28px, 4vw, 52px)",
+                  fontWeight: 800,
+                  color: (slide.accentWords ?? []).includes(word) ? "#E85D04" : "white",
+                  fontFamily: "Montserrat, sans-serif",
+                  lineHeight: 1.1,
+                  display: "inline-block",
+                  textShadow: "0 2px 16px rgba(0,0,0,0.4)",
+                }}
+              >
+                {word}
+              </motion.span>
+            ))}
           </Box>
 
           {/* Subtitle */}
-          <motion.p
-            key={`sub-${currentPage}`}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: titleWords.length * 0.08 + 0.1, duration: 0.5 }}
-            style={{
-              color: "rgba(255,255,255,0.85)",
-              fontSize: 18,
-              marginBottom: 28,
-              fontFamily: "Poppins, sans-serif",
-            }}
-          >
-            {slide.subtitle}
-          </motion.p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`sub-${currentPage}`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ delay: titleWords.length * 0.08 + 0.1, duration: 0.5 }}
+              style={{
+                color: "rgba(255,255,255,0.85)",
+                fontSize: 18,
+                marginBottom: 28,
+                fontFamily: "Poppins, sans-serif",
+              }}
+            >
+              {slide.subtitle}
+            </motion.p>
+          </AnimatePresence>
 
           {/* CTA Buttons */}
           <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
@@ -237,6 +236,7 @@ const Carousal = ({ items }: CarousalProps) => {
               backgroundColor:
                 index === currentPage ? "#E85D04" : "rgba(255,255,255,0.5)",
             }}
+            whileHover={{ scale: 1.2 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             style={{ height: 10, borderRadius: 5, cursor: "pointer" }}
           />
