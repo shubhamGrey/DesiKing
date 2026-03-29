@@ -13,10 +13,49 @@ import { Edit, Delete } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { FormattedCategory } from "@/types/product";
 import { isAdmin } from "@/utils/auth";
+import { motion } from "framer-motion";
+import { use3DTilt } from "@/hooks/use3DTilt";
 
 interface AllProductsProps {
   items: FormattedCategory[];
   onDelete?: (id: string) => void; // Added onDelete prop
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 300, damping: 25 },
+  },
+};
+
+interface TiltCardProps {
+  children: React.ReactNode;
+  minWidth: string;
+}
+
+function TiltCard({ children, minWidth }: TiltCardProps) {
+  const { ref, rotateX, rotateY, onMouseMove, onMouseLeave } = use3DTilt(10);
+  return (
+    <motion.div
+      variants={cardVariants}
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        perspective: 1000,
+        minWidth,
+        flexShrink: 0,
+        transformStyle: "preserve-3d",
+      }}
+      whileHover={{ scale: 1.02 }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 export default function AllProducts({ items, onDelete }: AllProductsProps) {
@@ -55,7 +94,14 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
   }, [items.length, cardsPerView]);
 
   return (
-    <section
+    <motion.section
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.07 } },
+      }}
       style={{
         position: "relative",
         fontFamily: theme.typography.body1.fontFamily,
@@ -78,32 +124,29 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
         }}
       >
         {items.map((category) => (
-          <Card
+          <TiltCard
             key={category.id}
-            aria-label={`${category.title} category`}
-            sx={{
-              minWidth: `${100 / cardsPerView - (1 / cardsPerView) * 4}%`,
-              flexShrink: 0,
-              borderRadius: 3,
-              overflow: "hidden",
-              position: "relative",
-              opacity: 1,
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-              height: 260,
-              border: "1px solid rgba(232, 93, 4, 0.08)",
-              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              "&:hover": {
-                transform: "translateY(-6px)",
-                boxShadow: "0 16px 40px rgba(232, 93, 4, 0.15)",
-                "& .category-img": {
-                  transform: "scale(1.05)",
-                },
-                "& .category-overlay": {
-                  opacity: 1,
-                },
-              },
-            }}
+            minWidth={`${100 / cardsPerView - (1 / cardsPerView) * 4}%`}
           >
+            <Card
+              aria-label={`${category.title} category`}
+              sx={{
+                width: "100%",
+                borderRadius: 3,
+                overflow: "hidden",
+                position: "relative",
+                opacity: 1,
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+                height: 260,
+                border: "1px solid rgba(232, 93, 4, 0.08)",
+                transition: "box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  boxShadow: "0 16px 40px rgba(232, 93, 4, 0.2)",
+                  "& .category-img": { transform: "scale(1.05)" },
+                  "& .category-overlay": { opacity: 1 },
+                },
+              }}
+            >
             {/* Edit and Delete Icon Buttons */}
             {isAdmin() && (
               <Box
@@ -216,8 +259,9 @@ export default function AllProducts({ items, onDelete }: AllProductsProps) {
               </Typography>
             </CardContent>
           </Card>
+          </TiltCard>
         ))}
       </Box>
-    </section>
+    </motion.section>
   );
 }
