@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
+import { motion, useAnimationFrame, useMotionValue } from "framer-motion";
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { VerifiedOutlined } from "@mui/icons-material";
 import Image from "next/image";
@@ -48,7 +49,24 @@ const CertificateScroll: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  const xTranslation = useMotionValue(0);
+  const isHovered = useRef(false);
+  const TOTAL_WIDTH_ESTIMATE = certificates.length * (isMobile ? 185 : 240);
+
+  useAnimationFrame((_, delta) => {
+    const speed = isHovered.current ? 0.04 : 0.14;
+    let newX = xTranslation.get() - delta * speed;
+    if (newX <= -TOTAL_WIDTH_ESTIMATE) newX = 0;
+    xTranslation.set(newX);
+  });
+
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
     <Box
       sx={{
         mt: isMobile ? 6 : 10,
@@ -161,28 +179,17 @@ const CertificateScroll: React.FC = () => {
         />
 
         {/* Scrolling Container */}
-        <Box
-          component="div"
-          sx={{
+        <motion.div
+          style={{
             display: "flex",
-            gap: isMobile ? 2.5 : 4,
-            px: isMobile ? 2 : 4,
-            animation: "scroll 35s linear infinite",
-            "@keyframes scroll": {
-              "0%": {
-                transform: "translateX(0)",
-              },
-              "100%": {
-                transform: "translateX(-50%)",
-              },
-            },
-            "&:hover": {
-              animationPlayState: "paused",
-            },
+            gap: isMobile ? "20px" : "32px",
+            paddingLeft: isMobile ? "16px" : "32px",
+            x: xTranslation,
             willChange: "transform",
           }}
+          onMouseEnter={() => { isHovered.current = true; }}
+          onMouseLeave={() => { isHovered.current = false; }}
         >
-          {/* Render certificates twice for seamless loop */}
           {[...certificates, ...certificates].map((cert, index) => (
             <Box
               key={`${cert.name}-${index}`}
@@ -279,7 +286,7 @@ const CertificateScroll: React.FC = () => {
               </Box>
             </Box>
           ))}
-        </Box>
+        </motion.div>
       </Box>
 
       {/* Bottom Trust Badge */}
@@ -316,6 +323,7 @@ const CertificateScroll: React.FC = () => {
         </Box>
       </Box>
     </Box>
+    </motion.div>
   );
 };
 
