@@ -22,7 +22,6 @@ const LottieIcon = ({
   autoplay = true,
 }: LottieIconProps) => {
   const [animationData, setAnimationData] = useState<object | null>(null);
-  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     fetch(src)
@@ -31,11 +30,10 @@ const LottieIcon = ({
         return r.json();
       })
       .then(setAnimationData)
-      .catch(() => setFailed(true));
+      .catch(() => {});
   }, [src]);
 
-  if (failed || (!animationData && !failed)) {
-    // Show fallback while loading or on error
+  if (!animationData) {
     return <Box sx={{ display: "flex", alignItems: "center" }}>{fallback}</Box>;
   }
 

@@ -9,6 +9,7 @@ export function useCountUp(target: number, duration = 1500) {
 
   useEffect(() => {
     if (!isInView) return;
+    let raf: number;
     const startTime = performance.now();
 
     const animate = (now: number) => {
@@ -17,11 +18,12 @@ export function useCountUp(target: number, duration = 1500) {
       // easeOut cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.floor(eased * target));
-      if (progress < 1) requestAnimationFrame(animate);
+      if (progress < 1) raf = requestAnimationFrame(animate);
       else setCount(target);
     };
 
-    requestAnimationFrame(animate);
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
   }, [isInView, target, duration]);
 
   return { count, ref };
