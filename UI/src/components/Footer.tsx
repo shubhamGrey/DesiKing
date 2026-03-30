@@ -136,7 +136,7 @@ export default function Footer() {
             src={BrandLogo}
             alt="Brand Logo"
             width={150}
-            height={50}
+            height={150}
             style={{ marginBottom: 12 }}
           />
           <Typography
