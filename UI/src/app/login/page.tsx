@@ -13,6 +13,7 @@ import Image from "next/image";
 import BrandLogo from "../../../public/Brand.png";
 import LoginImg from "../../../public/Login.png";
 
+import { motion, AnimatePresence } from "framer-motion";
 import LoginForm from "@/components/LoginForm";
 import SignUpForm from "@/components/SignUpForm";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -394,6 +395,11 @@ function LoginPageContent() {
             height: "100%", // Ensure Grid occupies full height
           }}
         >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 280, damping: 28 }}
+          >
           <Box
             sx={{
               marginLeft: isMobile ? "0 !important" : "100px !important",
@@ -401,11 +407,29 @@ function LoginPageContent() {
               mt: isMobile ? 10 : 12, // Add margin to ensure forms start below the logo
             }}
           >
-            {isLogin ? (
-              <LoginForm handleLogin={handleLogin} />
-            ) : (
-              <SignUpForm handleSignUp={handleSignUp} />
-            )}
+            <AnimatePresence mode="wait">
+              {isLogin ? (
+                <motion.div
+                  key="login"
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 28 }}
+                >
+                  <LoginForm handleLogin={handleLogin} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="signup"
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 28 }}
+                >
+                  <SignUpForm handleSignUp={handleSignUp} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <Typography
               variant="body2"
@@ -424,6 +448,7 @@ function LoginPageContent() {
               </Link>
             </Typography>
           </Box>
+          </motion.div>
         </Grid>
         {!isMobile && (
           <Grid
@@ -435,14 +460,18 @@ function LoginPageContent() {
               height: "100%", // Ensure Grid occupies full height
             }}
           >
-            <Image
-              src={LoginImg}
-              alt="Login Image"
-              style={{
-                height: "100%",
-                width: "100%",
-              }}
-            />
+            <motion.div
+              initial={{ opacity: 0, scale: 1.0 }}
+              animate={{ opacity: 1, scale: 1.03 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              style={{ width: "100%", height: "100%" }}
+            >
+              <Image
+                src={LoginImg}
+                alt="Login Image"
+                style={{ height: "100%", width: "100%" }}
+              />
+            </motion.div>
           </Grid>
         )}
       </Grid>
