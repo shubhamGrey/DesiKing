@@ -7,6 +7,8 @@ import {
   Link,
   useMediaQuery,
 } from "@mui/material";
+import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
+import MagneticButton from "@/components/MagneticButton";
 
 interface LoginFormProps {
   handleLogin: (credentials: { username: string; email: string, password: string }) => void;
@@ -109,92 +111,107 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         textAlign: "center",
       }}
     >
-      <Typography
-        variant={isMobile ? "h5" : "h4"}
-        fontWeight="bold"
-        fontFamily="Rockwell"
-        fontSize={isMobile ? 30 : 40}
-        sx={{ color: "primary.dark" }}
-        gutterBottom
-      >
-        Login
-      </Typography>
+      <AnimatedSection stagger={0.07}>
+        <AnimatedItem>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            fontWeight="bold"
+            fontFamily="Rockwell"
+            fontSize={isMobile ? 30 : 40}
+            sx={{ color: "primary.dark" }}
+            gutterBottom
+          >
+            Login
+          </Typography>
+        </AnimatedItem>
 
-      <TextField
-        fullWidth
-        label="Email address"
-        type="email"
-        margin="normal"
-        variant="outlined"
-        value={formData.email}
-        onChange={(e) => handleInputChange("email", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.email}
-        helperText={errors.email}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
-      <TextField
-        fullWidth
-        label="Password"
-        type="password"
-        margin="normal"
-        variant="outlined"
-        value={formData.password}
-        onChange={(e) => handleInputChange("password", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.password}
-        helperText={errors.password}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Email address"
+            type="email"
+            margin="normal"
+            variant="outlined"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            onKeyDown={handleKeyDown}
+            error={!!errors.email}
+            helperText={errors.email}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
 
-      <Button
-        fullWidth
-        variant="contained"
-        disabled={isLoading}
-        sx={{
-          backgroundColor: "primary.main",
-          color: "#ffffff",
-          border: "2px solid",
-          borderColor: "primary.main",
-          py: isMobile ? 1 : 1.2,
-          borderRadius: 8,
-          mt: 2,
-        }}
-        onClick={handleSubmit}
-      >
-        <Typography
-          variant="body1"
-          fontWeight="bold"
-          sx={{ color: "primary.contrastText" }}
-        >
-          {isLoading ? "Logging in..." : "Log in"}
-        </Typography>
-      </Button>
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            margin="normal"
+            variant="outlined"
+            value={formData.password}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            onKeyDown={handleKeyDown}
+            error={!!errors.password}
+            helperText={errors.password}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
 
-      <Box sx={{ textAlign: "center", mt: 2 }}>
-        <Link
-          href="#"
-          variant="body2"
-          fontWeight="600"
-          sx={{ textDecoration: "none", color: "primary.main" }}
-        >
-          Forgot password?
-        </Link>
-      </Box>
+        <AnimatedItem>
+          <MagneticButton>
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={isLoading}
+              sx={{
+                backgroundColor: "primary.main",
+                color: "#ffffff",
+                border: "2px solid",
+                borderColor: "primary.main",
+                py: isMobile ? 1 : 1.2,
+                borderRadius: 8,
+                mt: 2,
+              }}
+              onClick={handleSubmit}
+            >
+              <Typography
+                variant="body1"
+                fontWeight="bold"
+                sx={{ color: "primary.contrastText" }}
+              >
+                {isLoading ? "Logging in..." : "Log in"}
+              </Typography>
+            </Button>
+          </MagneticButton>
+        </AnimatedItem>
+
+        <AnimatedItem>
+          <Box sx={{ textAlign: "center", mt: 2 }}>
+            <Link
+              href="#"
+              variant="body2"
+              fontWeight="600"
+              sx={{ textDecoration: "none", color: "primary.main" }}
+            >
+              Forgot password?
+            </Link>
+          </Box>
+        </AnimatedItem>
+      </AnimatedSection>
     </Box>
   );
 };
