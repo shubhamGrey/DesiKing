@@ -44,6 +44,8 @@ import { usePageTracking } from "@/hooks/useAnalytics";
 import { getCurrencySymbol } from "@/utils/currencyUtils";
 import Carousal from "@/components/Carousal";
 import Image from "next/image";
+import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
+import LottieIcon from "@/components/LottieIcon";
 import Purity from "../../public/Hero Banner 1.png";
 import Quality from "../../public/Hero Banner 2.png";
 import Taste from "../../public/Hero Banner 3.png";
@@ -68,20 +70,23 @@ const showcaseCategories = [
 // Category icons and colors for visual appeal
 const categoryConfig: Record<
   string,
-  { icon: React.ReactNode; gradient: string; bgColor: string }
+  { icon: React.ReactNode; lottieIcon: string; gradient: string; bgColor: string }
 > = {
   "Immunity Boosters": {
     icon: <Spa sx={{ fontSize: 28 }} />,
+    lottieIcon: "/lottie/leaf.json",
     gradient: "linear-gradient(135deg, #1B4D3E 0%, #2D7A5E 100%)",
     bgColor: "rgba(27, 77, 62, 0.08)",
   },
   "Digestive Aids": {
     icon: <Restaurant sx={{ fontSize: 28 }} />,
+    lottieIcon: "/lottie/fork.json",
     gradient: "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
     bgColor: "rgba(232, 93, 4, 0.08)",
   },
   "Daily Uses": {
     icon: <LocalFireDepartment sx={{ fontSize: 28 }} />,
+    lottieIcon: "/lottie/fire.json",
     gradient: "linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%)",
     bgColor: "rgba(124, 58, 237, 0.08)",
   },
@@ -124,6 +129,7 @@ const testimonialData = [
     review:
       "The spices from this company are simply amazing! The quality is top-notch and the flavors are authentic. I love using them in my cooking.",
     occupation: "Home Cook",
+    rating: 5,
   },
   {
     image: Chef,
@@ -131,6 +137,7 @@ const testimonialData = [
     review:
       "I have been using their spices for years and they never disappoint. The freshness and aroma are unbeatable. Highly recommend!",
     occupation: "Professional Chef",
+    rating: 5,
   },
   {
     image: Blogger,
@@ -138,6 +145,7 @@ const testimonialData = [
     review:
       "These spices have transformed my dishes! They add a depth of flavor that I haven't found anywhere else. Will definitely be a repeat customer.",
     occupation: "Food Blogger",
+    rating: 5,
   },
 ];
 
@@ -145,24 +153,28 @@ const chooseUs = [
   {
     name: "Uncompromised Purity",
     icon: <HandshakeOutlined fontSize="large" />,
+    lottieIcon: "/lottie/leaf.json",
     description:
       "We source only the finest raw spices, ensuring that every product is free from additives, fillers and artificial colors.",
   },
   {
     name: "Hygienic Processing",
     icon: <HealthAndSafetyOutlined fontSize="large" />,
+    lottieIcon: "/lottie/star.json",
     description:
       "Our state-of-the-art processing facilities adhere to the highest hygiene standards and safety protocols, ensuring that every spice is safe and healthy.",
   },
   {
     name: "Bold, Authentic Flavors",
     icon: <SoupKitchenOutlined fontSize="large" />,
+    lottieIcon: "/lottie/chili.json",
     description:
       "Each spice is carefully selected and processed to retain its natural oils and flavors, delivering an authentic taste experience that transports you to the heart of Indian cuisine.",
   },
   {
     name: "Global Reach, Local Trust",
     icon: <Public fontSize="large" />,
+    lottieIcon: "/lottie/fork.json",
     description:
       "We serve both domestic and international markets, offering world-class products rooted in Indian tradition.",
   },
@@ -552,8 +564,8 @@ const Home: React.FC = () => {
           const config = categoryConfig[categoryName];
 
           return (
+            <AnimatedSection key={categoryName}>
             <Box
-              key={categoryName}
               sx={{
                 mt: isMobile ? 4 : 6,
                 mb: isMobile ? 2 : 4,
@@ -596,8 +608,13 @@ const Home: React.FC = () => {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                     }}
                   >
-                    {config?.icon}
+                    <LottieIcon
+                      src={config?.lottieIcon}
+                      fallback={config?.icon}
+                      size={40}
+                    />
                   </Box>
+                  <AnimatedItem>
                   <Typography
                     variant={isMobile ? "h6" : "h5"}
                     sx={{
@@ -607,6 +624,7 @@ const Home: React.FC = () => {
                   >
                     {categoryName}
                   </Typography>
+                  </AnimatedItem>
                 </Box>
                 <Button
                   variant="outlined"
@@ -838,10 +856,9 @@ const Home: React.FC = () => {
                 })}
               </Box>
             </Box>
+            </AnimatedSection>
           );
         })}
-
-        <CertificateScroll />
 
         {/* Product Categories Section */}
         <Box
@@ -1075,6 +1092,8 @@ const Home: React.FC = () => {
             onDelete={(categoryId) => handleDeleteCategoryByType(categoryId)}
           />
         </Box>
+        <CertificateScroll />
+
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
@@ -1338,6 +1357,7 @@ const Home: React.FC = () => {
                       key={index}
                       name={item.name}
                       icon={item.icon}
+                      lottieIcon={item.lottieIcon}
                       description={item.description}
                     />
                   </Grid>

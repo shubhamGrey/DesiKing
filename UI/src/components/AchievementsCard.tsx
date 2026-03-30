@@ -1,90 +1,55 @@
+// UI/src/components/AchievementsCard.tsx
+"use client";
 import { pacifico } from "@/styles/fonts";
 import theme from "@/styles/theme";
 import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
+import { motion } from "framer-motion";
+import { useCountUp } from "@/hooks/useCountUp";
 
 interface AchievementsCardProps {
-  value: string;
+  value: string;   // e.g. "500+" or "3+"
   name: string;
   icon: React.ReactNode;
   description: string;
 }
 
-const AchievementsCard = ({
-  value,
-  name,
-  icon,
-  description,
-}: AchievementsCardProps) => {
-  const visibleSectionsRef = useRef<Set<string>>(new Set());
-  const [, setRenderTrigger] = useState(0); // Trigger re-render when sections become visible
-  const sectionRefs = {
-    featuredProducts: useRef<HTMLDivElement>(null),
-    achievements: useRef<HTMLDivElement>(null),
-    chooseUs: useRef<HTMLDivElement>(null),
-    testimonials: useRef<HTMLDivElement>(null),
-  };
-
+const AchievementsCard = ({ value, name, icon, description }: AchievementsCardProps) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const handleScroll = () => {
-    let updated = false;
-    Object.entries(sectionRefs).forEach(([key, ref]) => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+  // Parse numeric target from strings like "500+" → 500, suffix → "+"
+  const numericTarget = parseInt(value, 10) || 0;
+  const suffix = value.replace(/[0-9]/g, "");
 
-        if (isVisible && !visibleSectionsRef.current.has(key)) {
-          visibleSectionsRef.current.add(key);
-          updated = true;
-        } else if (!isVisible && visibleSectionsRef.current.has(key)) {
-          visibleSectionsRef.current.delete(key);
-          updated = true;
-        }
-      }
-    });
-    if (updated) {
-      setRenderTrigger((prev) => prev + 1); // Trigger re-render
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Initial check
-    return () => window.removeEventListener("scroll", handleScroll);
-  });
+  const { count, ref } = useCountUp(numericTarget, 1500);
 
   return (
-    <Box
-      sx={{
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.85, y: 40 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      whileHover={{ y: -6, boxShadow: "0 16px 40px rgba(27, 77, 62, 0.18)" }}
+      style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         width: isMobile ? "95%" : "85%",
-        p: isMobile ? 2 : 3,
-        borderRadius: 3,
+        padding: isMobile ? "16px" : "24px",
+        borderRadius: "12px",
         background:
-          "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.95) 100%)",
+          "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,249,250,0.95) 100%)",
         boxShadow: "0 4px 20px rgba(27, 77, 62, 0.08)",
         border: "1px solid rgba(27, 77, 62, 0.1)",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        transform: visibleSectionsRef.current.has("achievements")
-          ? "translateX(0)"
-          : "translateX(-100%)",
-        opacity: visibleSectionsRef.current.has("achievements") ? 1 : 0,
-        "&:hover": {
-          boxShadow: "0 12px 32px rgba(27, 77, 62, 0.15)",
-          borderColor: "rgba(27, 77, 62, 0.2)",
-        },
       }}
-      ref={sectionRefs.achievements}
     >
       <Stack
-        direction={"row"}
+        direction="row"
         alignItems="center"
         justifyContent="start"
-        width={"100%"}
+        width="100%"
         spacing={2}
       >
         <Box
@@ -97,9 +62,7 @@ const AchievementsCard = ({
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 4px 12px rgba(27, 77, 62, 0.3)",
-            "& svg": {
-              fontSize: isMobile ? "1.8rem" : "2.2rem",
-            },
+            "& svg": { fontSize: isMobile ? "1.8rem" : "2.2rem" },
           }}
         >
           {icon}
@@ -110,15 +73,13 @@ const AchievementsCard = ({
             fontFamily={pacifico.style.fontFamily}
             fontWeight={600}
             sx={{
-              color: "primary.main",
               background: "linear-gradient(135deg, #1B4D3E 0%, #E85D04 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
           >
-            {value}
+            {count}{suffix}
           </Typography>
-
           <Typography
             variant={isMobile ? "body1" : "h5"}
             fontWeight={600}
@@ -141,7 +102,7 @@ const AchievementsCard = ({
       >
         {description}
       </Typography>
-    </Box>
+    </motion.div>
   );
 };
 
