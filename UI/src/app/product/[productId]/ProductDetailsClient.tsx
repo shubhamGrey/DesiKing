@@ -198,7 +198,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
                 mb: 4,
                 color: "primary.main",
                 position: "relative",
-                display: "inline-block",
+                width: "100%",
               }}
             >
               Similar Products

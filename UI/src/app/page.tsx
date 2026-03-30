@@ -1292,7 +1292,7 @@ const Home: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }} sx={{ overflow: "hidden", py: 1 }}>
+            <Grid size={{ xs: 12, md: 6 }} sx={{ py: 1 }}>
               <Box
                 sx={{
                   display: "flex",
@@ -1346,7 +1346,7 @@ const Home: React.FC = () => {
               <Grid
                 container
                 spacing={isMobile ? 2 : 3}
-                sx={{ mt: 4, px: 2, py: 1, mx: 2 }}
+                sx={{ mt: 4, px: 1, py: 1 }}
               >
                 {chooseUs.map((item, index) => (
                   <Grid

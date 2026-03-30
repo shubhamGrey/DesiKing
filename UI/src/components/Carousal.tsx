@@ -2,6 +2,7 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import Image, { StaticImageData } from "next/image";
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import theme from "@/styles/theme";
 import MagneticButton from "@/components/MagneticButton";
@@ -40,6 +41,7 @@ const slideVariants: Variants = {
 const Carousal = ({ items }: CarousalProps) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [currentPage, setCurrentPage] = React.useState(0);
+  const router = useRouter();
 
   const handleNextPage = React.useCallback(() => {
     setCurrentPage((prev) => (prev >= items.length - 1 ? 0 : prev + 1));
@@ -172,6 +174,7 @@ const Carousal = ({ items }: CarousalProps) => {
             <MagneticButton>
               <motion.button
                 whileHover={{ scale: 1.04 }}
+                onClick={() => router.push("/products")}
                 style={{
                   background: "linear-gradient(135deg, #E85D04, #F48C06)",
                   color: "white",
@@ -191,6 +194,7 @@ const Carousal = ({ items }: CarousalProps) => {
             <MagneticButton>
               <motion.button
                 whileHover={{ scale: 1.04 }}
+                onClick={() => router.push("/about")}
                 style={{
                   background: "rgba(255,255,255,0.15)",
                   color: "white",
