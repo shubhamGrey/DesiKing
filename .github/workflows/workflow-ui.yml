@@ -27,7 +27,7 @@ jobs:
           source: "docker-compose.yml,UI,scripts"
           target: "/var/www/agronexis"
 
-      - name: Deploy with Docker Compose on VPS
+      - name: Build and restart Next.js container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -38,76 +38,10 @@ jobs:
             set -e
             cd /var/www/agronexis
 
-            # Make all scripts executable
             chmod +x scripts/*.sh
 
-            docker compose down || true
+            # Enable BuildKit for layer caching (faster npm install on repeat builds)
+            export DOCKER_BUILDKIT=1
 
-            # Pull images for image-based services (fast if unchanged)
-            docker compose pull || true
-
-            # Build and start all services
-            docker compose up -d --build nextjs backend
-            docker compose up -d nginx app db backend-db certbot
-
-            sudo systemctl daemon-reload
-            sudo systemctl enable docker-compose-app
-            sudo systemctl restart docker-compose-app
-
-      - name: Renew SSL certificate (if expired or due)
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          command_timeout: 5m
-          script: |
-            cd /var/www/agronexis
-
-            # Check if cert is expired or due for renewal (within 30 days)
-            CERT=/etc/letsencrypt/live/desikingspices.com/cert.pem
-            NEEDS_RENEWAL=false
-
-            if [ ! -f "$CERT" ]; then
-              echo "No certificate found — will issue new one"
-              NEEDS_RENEWAL=true
-            elif ! openssl x509 -checkend $((30 * 86400)) -noout -in "$CERT" 2>/dev/null; then
-              echo "Certificate expires within 30 days or is already expired — renewing"
-              NEEDS_RENEWAL=true
-            else
-              echo "Certificate is valid for more than 30 days — skipping renewal"
-            fi
-
-            if [ "$NEEDS_RENEWAL" = "true" ]; then
-              # Stop nginx briefly to free port 80 for standalone challenge
-              # (avoids webroot volume sync issues; nginx is only down ~10 seconds)
-              docker compose stop nginx
-
-              docker run --rm \
-                -v /etc/letsencrypt:/etc/letsencrypt \
-                -p 80:80 \
-                certbot/certbot certonly --standalone \
-                --non-interactive \
-                --agree-tos \
-                --no-eff-email \
-                --email care@agronexis.com \
-                --force-renewal \
-                -d desikingspices.com \
-                -d www.desikingspices.com \
-                -d cloud.desikingspices.com
-
-              # Bring nginx back up with the fresh certificate
-              docker compose up -d nginx
-              echo "Certificate renewed and nginx restarted"
-            fi
-
-      - name: Install SSL auto-renewal cron job
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            cd /var/www/agronexis
-            chmod +x scripts/setup-cron.sh
-            ./scripts/setup-cron.sh
+            # Rebuild and restart only the nextjs container — leaves nginx, db, certbot untouched
+            docker compose up -d --build --no-deps nextjs

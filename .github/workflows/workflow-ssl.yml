@@ -1,0 +1,61 @@
+name: SSL Certificate Renewal
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"  # Every Monday at 3am UTC
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  renew-ssl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Renew SSL certificate (if expiring within 30 days)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          command_timeout: 10m
+          script: |
+            cd /var/www/agronexis
+
+            CERT=/etc/letsencrypt/live/desikingspices.com/cert.pem
+            NEEDS_RENEWAL=false
+
+            if [ ! -f "$CERT" ]; then
+              echo "No certificate found — will issue new one"
+              NEEDS_RENEWAL=true
+            elif ! openssl x509 -checkend $((30 * 86400)) -noout -in "$CERT" 2>/dev/null; then
+              echo "Certificate expires within 30 days — renewing"
+              NEEDS_RENEWAL=true
+            else
+              echo "Certificate valid for more than 30 days — skipping"
+            fi
+
+            if [ "$NEEDS_RENEWAL" = "true" ]; then
+              docker compose stop nginx
+              docker run --rm \
+                -v /etc/letsencrypt:/etc/letsencrypt \
+                -p 80:80 \
+                certbot/certbot certonly --standalone \
+                --non-interactive --agree-tos --no-eff-email \
+                --email care@agronexis.com \
+                --force-renewal \
+                -d desikingspices.com \
+                -d www.desikingspices.com \
+                -d cloud.desikingspices.com
+              docker compose up -d nginx
+              echo "Certificate renewed and nginx restarted"
+            fi
+
+      - name: Ensure SSL cron job is installed
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd /var/www/agronexis
+            chmod +x scripts/setup-cron.sh
+            ./scripts/setup-cron.sh
