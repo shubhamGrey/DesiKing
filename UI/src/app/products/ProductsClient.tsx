@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Product, ProductFormData } from "@/types/product";
 import { usePageTracking, useErrorTracking } from "@/hooks/useAnalytics";
 import { useCallback } from "react";
+import { motion } from "framer-motion";
 
 interface CategorizedProducts {
   [key: string]: {
@@ -220,33 +221,39 @@ const ProductsClient = () => {
 
   return (
     <>
-      <Box
-        sx={{
-          backgroundImage: 'url("/ProductBackground.png")',
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-          px: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
-        <Image
-          src={DesiKing}
-          alt="Desi King"
-          style={{ width: "30%", height: "30%", marginTop: 32 }}
-        />
-        <Typography
-          variant="body1"
-          sx={{ mb: 4, mt: 2 }}
-          color="primary.contrastText"
-          fontSize={isMobile ? "0.2rem" : "1rem"}
+        <Box
+          sx={{
+            backgroundImage: 'url("/ProductBackground.png")',
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            px: 2,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          A legacy of authenticity in every pinch.
-        </Typography>
-      </Box>
+          <Image
+            src={DesiKing}
+            alt="Desi King"
+            style={{ width: "30%", height: "30%", marginTop: 32 }}
+          />
+          <Typography
+            variant="body1"
+            sx={{ mb: 4, mt: 2 }}
+            color="primary.contrastText"
+            fontSize={isMobile ? "0.2rem" : "1rem"}
+          >
+            A legacy of authenticity in every pinch.
+          </Typography>
+        </Box>
+      </motion.div>
       {productsList?.map((category) => (
         <ProductSection
           key={category.categoryId}
