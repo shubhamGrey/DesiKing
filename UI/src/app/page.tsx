@@ -50,7 +50,7 @@ import Purity from "../../public/Hero Banner 1.png";
 import Quality from "../../public/Hero Banner 2.png";
 import Taste from "../../public/Hero Banner 3.png";
 import Globe from "../../public/Hero Banner 4.png";
-import Hero from "../../public/Hero Banner 4.png";
+import Hero from "../../public/Hero Banner 5.png";
 
 const carousalImages = [
   { image: Purity },
@@ -70,7 +70,12 @@ const showcaseCategories = [
 // Category icons and colors for visual appeal
 const categoryConfig: Record<
   string,
-  { icon: React.ReactNode; lottieIcon: string; gradient: string; bgColor: string }
+  {
+    icon: React.ReactNode;
+    lottieIcon: string;
+    gradient: string;
+    bgColor: string;
+  }
 > = {
   "Immunity Boosters": {
     icon: <Spa sx={{ fontSize: 28 }} />,
@@ -565,297 +570,297 @@ const Home: React.FC = () => {
 
           return (
             <AnimatedSection key={categoryName}>
-            <Box
-              sx={{
-                mt: isMobile ? 4 : 6,
-                mb: isMobile ? 2 : 4,
-                p: isMobile ? 2 : 3,
-                borderRadius: 3,
-                backgroundColor: config?.bgColor || "rgba(0,0,0,0.02)",
-                position: "relative",
-                overflow: "hidden",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  background: config?.gradient || "primary.main",
-                  borderRadius: "12px 12px 0 0",
-                },
-              }}
-            >
               <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  mb: isMobile ? 2 : 3,
+                  mt: isMobile ? 4 : 6,
+                  mb: isMobile ? 2 : 4,
+                  p: isMobile ? 2 : 3,
+                  borderRadius: 3,
+                  backgroundColor: config?.bgColor || "rgba(0,0,0,0.02)",
+                  position: "relative",
+                  overflow: "hidden",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 4,
+                    background: config?.gradient || "primary.main",
+                    borderRadius: "12px 12px 0 0",
+                  },
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Box
-                    sx={{
-                      width: isMobile ? 40 : 48,
-                      height: isMobile ? 40 : 48,
-                      borderRadius: 2,
-                      background: config?.gradient || "primary.main",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    }}
-                  >
-                    <LottieIcon
-                      src={config?.lottieIcon}
-                      fallback={config?.icon}
-                      size={40}
-                    />
-                  </Box>
-                  <AnimatedItem>
-                  <Typography
-                    variant={isMobile ? "h6" : "h5"}
-                    sx={{
-                      color: "text.primary",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {categoryName}
-                  </Typography>
-                  </AnimatedItem>
-                </Box>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
-                  onClick={() => router.push("/products")}
+                <Box
                   sx={{
-                    borderColor: "primary.main",
-                    color: "primary.main",
-                    textTransform: "none",
-                    fontWeight: 600,
-                    borderRadius: 2,
-                    px: 2,
-                    "&:hover": {
-                      backgroundColor: "primary.main",
-                      color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: isMobile ? 2 : 3,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: isMobile ? 40 : 48,
+                        height: isMobile ? 40 : 48,
+                        borderRadius: 2,
+                        background: config?.gradient || "primary.main",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      }}
+                    >
+                      <LottieIcon
+                        src={config?.lottieIcon}
+                        fallback={config?.icon}
+                        size={40}
+                      />
+                    </Box>
+                    <AnimatedItem>
+                      <Typography
+                        variant={isMobile ? "h6" : "h5"}
+                        sx={{
+                          color: "text.primary",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {categoryName}
+                      </Typography>
+                    </AnimatedItem>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
+                    onClick={() => router.push("/products")}
+                    sx={{
                       borderColor: "primary.main",
+                      color: "primary.main",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      px: 2,
+                      "&:hover": {
+                        backgroundColor: "primary.main",
+                        color: "white",
+                        borderColor: "primary.main",
+                      },
+                    }}
+                  >
+                    {isMobile ? "All" : "View All"}
+                  </Button>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: isMobile ? 1.5 : 2.5,
+                    overflowX: "auto",
+                    pb: 1,
+                    scrollSnapType: "x mandatory",
+                    "&::-webkit-scrollbar": {
+                      height: 6,
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      backgroundColor: "rgba(0,0,0,0.05)",
+                      borderRadius: 3,
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "rgba(0,0,0,0.2)",
+                      borderRadius: 3,
+                      "&:hover": {
+                        backgroundColor: "rgba(0,0,0,0.3)",
+                      },
                     },
                   }}
                 >
-                  {isMobile ? "All" : "View All"}
-                </Button>
-              </Box>
+                  {products.map((product) => {
+                    const defaultSku = product.pricesAndSkus?.[0];
+                    const price =
+                      defaultSku?.discountedAmount || defaultSku?.price || 0;
+                    const originalPrice = defaultSku?.price || 0;
+                    const hasDiscount =
+                      defaultSku?.isDiscounted && defaultSku?.discountedAmount;
+                    const currencySymbol = getCurrencySymbol(
+                      defaultSku?.currencyCode || "INR",
+                    );
 
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: isMobile ? 1.5 : 2.5,
-                  overflowX: "auto",
-                  pb: 1,
-                  scrollSnapType: "x mandatory",
-                  "&::-webkit-scrollbar": {
-                    height: 6,
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    backgroundColor: "rgba(0,0,0,0.05)",
-                    borderRadius: 3,
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "rgba(0,0,0,0.2)",
-                    borderRadius: 3,
-                    "&:hover": {
-                      backgroundColor: "rgba(0,0,0,0.3)",
-                    },
-                  },
-                }}
-              >
-                {products.map((product) => {
-                  const defaultSku = product.pricesAndSkus?.[0];
-                  const price =
-                    defaultSku?.discountedAmount || defaultSku?.price || 0;
-                  const originalPrice = defaultSku?.price || 0;
-                  const hasDiscount =
-                    defaultSku?.isDiscounted && defaultSku?.discountedAmount;
-                  const currencySymbol = getCurrencySymbol(
-                    defaultSku?.currencyCode || "INR",
-                  );
-
-                  return (
-                    <Card
-                      key={product.id}
-                      sx={{
-                        minWidth: isMobile ? 165 : 240,
-                        maxWidth: isMobile ? 165 : 240,
-                        borderRadius: 3,
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                        cursor: "pointer",
-                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                        scrollSnapAlign: "start",
-                        border: "1px solid rgba(0,0,0,0.06)",
-                        backgroundColor: "#fff",
-                        overflow: "hidden",
-                        "&:hover": {
-                          transform: "translateY(-8px) scale(1.02)",
-                          boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
-                          "& .product-image": {
-                            transform: "scale(1.1)",
-                          },
-                        },
-                        flexShrink: 0,
-                      }}
-                      onClick={() => router.push(`/product/${product.id}`)}
-                    >
-                      <Box
+                    return (
+                      <Card
+                        key={product.id}
                         sx={{
-                          position: "relative",
-                          width: "100%",
-                          height: isMobile ? 130 : 180,
-                          backgroundColor: "#f5f5f5",
+                          minWidth: isMobile ? 165 : 240,
+                          maxWidth: isMobile ? 165 : 240,
+                          borderRadius: 3,
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                          cursor: "pointer",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          scrollSnapAlign: "start",
+                          border: "1px solid rgba(0,0,0,0.06)",
+                          backgroundColor: "#fff",
                           overflow: "hidden",
+                          "&:hover": {
+                            transform: "translateY(-8px) scale(1.02)",
+                            boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+                            "& .product-image": {
+                              transform: "scale(1.1)",
+                            },
+                          },
+                          flexShrink: 0,
                         }}
+                        onClick={() => router.push(`/product/${product.id}`)}
                       >
                         <Box
-                          className="product-image"
                           sx={{
                             position: "relative",
                             width: "100%",
-                            height: "100%",
-                            transition: "transform 0.4s ease",
-                          }}
-                        >
-                          <Image
-                            src={
-                              product.thumbnailUrl ||
-                              product.imageUrls?.[0] ||
-                              "/placeholder-image.jpg"
-                            }
-                            alt={product.name}
-                            fill
-                            unoptimized={shouldUnoptimizeImage(
-                              product.thumbnailUrl || product.imageUrls?.[0],
-                            )}
-                            style={{
-                              objectFit: "cover",
-                            }}
-                          />
-                        </Box>
-                        {hasDiscount && (
-                          <Chip
-                            label={`${defaultSku.discountPercentage}% OFF`}
-                            size="small"
-                            sx={{
-                              position: "absolute",
-                              top: 10,
-                              left: 10,
-                              background:
-                                "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
-                              color: "white",
-                              fontWeight: 700,
-                              fontSize: "0.7rem",
-                              height: 24,
-                              boxShadow: "0 2px 8px rgba(232,93,4,0.4)",
-                              "& .MuiChip-label": {
-                                px: 1.5,
-                              },
-                            }}
-                          />
-                        )}
-                        {product.isPremium && (
-                          <Chip
-                            label="Premium"
-                            size="small"
-                            sx={{
-                              position: "absolute",
-                              top: 10,
-                              right: 10,
-                              background:
-                                "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
-                              color: "#1a1a1a",
-                              fontWeight: 700,
-                              fontSize: "0.65rem",
-                              height: 22,
-                              boxShadow: "0 2px 8px rgba(255,215,0,0.4)",
-                            }}
-                          />
-                        )}
-                      </Box>
-                      <CardContent
-                        sx={{
-                          p: isMobile ? 1.5 : 2,
-                          "&:last-child": { pb: isMobile ? 1.5 : 2 },
-                        }}
-                      >
-                        <Typography
-                          variant={isMobile ? "body2" : "subtitle1"}
-                          sx={{
-                            fontWeight: 600,
-                            mb: 0.75,
+                            height: isMobile ? 130 : 180,
+                            backgroundColor: "#f5f5f5",
                             overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            color: "text.primary",
                           }}
                         >
-                          {product.name}
-                        </Typography>
-                        <Box
+                          <Box
+                            className="product-image"
+                            sx={{
+                              position: "relative",
+                              width: "100%",
+                              height: "100%",
+                              transition: "transform 0.4s ease",
+                            }}
+                          >
+                            <Image
+                              src={
+                                product.thumbnailUrl ||
+                                product.imageUrls?.[0] ||
+                                "/placeholder-image.jpg"
+                              }
+                              alt={product.name}
+                              fill
+                              unoptimized={shouldUnoptimizeImage(
+                                product.thumbnailUrl || product.imageUrls?.[0],
+                              )}
+                              style={{
+                                objectFit: "cover",
+                              }}
+                            />
+                          </Box>
+                          {hasDiscount && (
+                            <Chip
+                              label={`${defaultSku.discountPercentage}% OFF`}
+                              size="small"
+                              sx={{
+                                position: "absolute",
+                                top: 10,
+                                left: 10,
+                                background:
+                                  "linear-gradient(135deg, #E85D04 0%, #F48C06 100%)",
+                                color: "white",
+                                fontWeight: 700,
+                                fontSize: "0.7rem",
+                                height: 24,
+                                boxShadow: "0 2px 8px rgba(232,93,4,0.4)",
+                                "& .MuiChip-label": {
+                                  px: 1.5,
+                                },
+                              }}
+                            />
+                          )}
+                          {product.isPremium && (
+                            <Chip
+                              label="Premium"
+                              size="small"
+                              sx={{
+                                position: "absolute",
+                                top: 10,
+                                right: 10,
+                                background:
+                                  "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
+                                color: "#1a1a1a",
+                                fontWeight: 700,
+                                fontSize: "0.65rem",
+                                height: 22,
+                                boxShadow: "0 2px 8px rgba(255,215,0,0.4)",
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <CardContent
                           sx={{
-                            display: "flex",
-                            alignItems: "baseline",
-                            gap: 1,
-                            mb: 0.5,
+                            p: isMobile ? 1.5 : 2,
+                            "&:last-child": { pb: isMobile ? 1.5 : 2 },
                           }}
                         >
                           <Typography
-                            variant={isMobile ? "subtitle1" : "h6"}
-                            sx={{ fontWeight: 800, color: "primary.main" }}
+                            variant={isMobile ? "body2" : "subtitle1"}
+                            sx={{
+                              fontWeight: 600,
+                              mb: 0.75,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              color: "text.primary",
+                            }}
                           >
-                            {currencySymbol}
-                            {price.toFixed(2)}
+                            {product.name}
                           </Typography>
-                          {hasDiscount && (
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                textDecoration: "line-through",
-                                color: "text.disabled",
-                                fontWeight: 500,
-                              }}
-                            >
-                              {currencySymbol}
-                              {originalPrice.toFixed(2)}
-                            </Typography>
-                          )}
-                        </Box>
-                        {defaultSku && (
                           <Box
                             sx={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              px: 1,
-                              py: 0.25,
-                              borderRadius: 1,
-                              backgroundColor: "rgba(27, 77, 62, 0.1)",
+                              display: "flex",
+                              alignItems: "baseline",
+                              gap: 1,
+                              mb: 0.5,
                             }}
                           >
                             <Typography
-                              variant="caption"
-                              sx={{ color: "primary.main", fontWeight: 600 }}
+                              variant={isMobile ? "subtitle1" : "h6"}
+                              sx={{ fontWeight: 800, color: "primary.main" }}
                             >
-                              {defaultSku.weightValue}
-                              {defaultSku.weightUnit}
+                              {currencySymbol}
+                              {price.toFixed(2)}
                             </Typography>
+                            {hasDiscount && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  textDecoration: "line-through",
+                                  color: "text.disabled",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {currencySymbol}
+                                {originalPrice.toFixed(2)}
+                              </Typography>
+                            )}
                           </Box>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                          {defaultSku && (
+                            <Box
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                px: 1,
+                                py: 0.25,
+                                borderRadius: 1,
+                                backgroundColor: "rgba(27, 77, 62, 0.1)",
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{ color: "primary.main", fontWeight: 600 }}
+                              >
+                                {defaultSku.weightValue}
+                                {defaultSku.weightUnit}
+                              </Typography>
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </Box>
               </Box>
-            </Box>
             </AnimatedSection>
           );
         })}
