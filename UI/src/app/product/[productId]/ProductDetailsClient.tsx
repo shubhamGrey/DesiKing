@@ -7,6 +7,8 @@ import { Container } from "@mui/system";
 import React, { useEffect, useState } from "react";
 import { Product, ProductFormData } from "@/types/product";
 import { useEcommerceTracking, useErrorTracking } from "@/hooks/useAnalytics";
+import { motion } from "framer-motion";
+import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
 
 interface ProductDetailsClientProps {
   productId: string;
@@ -164,8 +166,20 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
           justifySelf: "center",
         }}
       >
-        <ProductDetails selectedProduct={selectedProduct} />
-        <AdditionalDetails selectedProduct={selectedProduct} />
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "spring", stiffness: 250, damping: 28 }}
+        >
+          <ProductDetails selectedProduct={selectedProduct} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "spring", stiffness: 250, damping: 28, delay: 0.1 }}
+        >
+          <AdditionalDetails selectedProduct={selectedProduct} />
+        </motion.div>
       </Container>
       <Box
         sx={{
@@ -175,42 +189,48 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
           mt: 16,
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{
-            textAlign: "center",
-            mb: 4,
-            color: "primary.main",
-            position: "relative",
-            display: "inline-block",
-          }}
-        >
-          Similar Products
-          <Typography
-            component="span"
-            sx={{
-              position: "relative",
-              top: -20,
-              right: -10,
-              fontSize: "0.75rem",
-              color: "primary.main",
-            }}
-          >
-            [{similarProducts.length}]
-          </Typography>
-        </Typography>
-        <ProductShowcase
-          productSections={similarProducts
-            .filter((product) => typeof product.id === "string" && !!product.id)
-            .map((product) => ({
-              id: product.id as string,
-              title: product.name,
-              description: product.description,
-              image: (product.thumbnailUrl ||
-                product.imageUrls?.[0] ||
-                "") as string,
-            }))}
-        />
+        <AnimatedSection>
+          <AnimatedItem>
+            <Typography
+              variant="h5"
+              sx={{
+                textAlign: "center",
+                mb: 4,
+                color: "primary.main",
+                position: "relative",
+                display: "inline-block",
+              }}
+            >
+              Similar Products
+              <Typography
+                component="span"
+                sx={{
+                  position: "relative",
+                  top: -20,
+                  right: -10,
+                  fontSize: "0.75rem",
+                  color: "primary.main",
+                }}
+              >
+                [{similarProducts.length}]
+              </Typography>
+            </Typography>
+          </AnimatedItem>
+          <AnimatedItem>
+            <ProductShowcase
+              productSections={similarProducts
+                .filter((product) => typeof product.id === "string" && !!product.id)
+                .map((product) => ({
+                  id: product.id as string,
+                  title: product.name,
+                  description: product.description,
+                  image: (product.thumbnailUrl ||
+                    product.imageUrls?.[0] ||
+                    "") as string,
+                }))}
+            />
+          </AnimatedItem>
+        </AnimatedSection>
       </Box>
     </>
   );
