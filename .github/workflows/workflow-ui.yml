@@ -43,5 +43,8 @@ jobs:
             # Enable BuildKit for layer caching (faster npm install on repeat builds)
             export DOCKER_BUILDKIT=1
 
+            # Ensure all services are running (no-op for already-running containers)
+            docker compose up -d
+
             # Rebuild and restart only the nextjs container — leaves nginx, db, certbot untouched
             docker compose up -d --build --no-deps nextjs
