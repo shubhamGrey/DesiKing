@@ -7,6 +7,8 @@ import {
   useMediaQuery,
   Theme,
 } from "@mui/material";
+import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
+import MagneticButton from "@/components/MagneticButton";
 
 interface SignUpFormProps {
   handleSignUp: (credentials: {
@@ -156,141 +158,164 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ handleSignUp }) => {
         textAlign: "center",
       }}
     >
-      <Typography
-        variant={isMobile ? "h5" : "h4"}
-        fontWeight="bold"
-        fontFamily="Rockwell"
-        fontSize={isMobile ? 30 : 40}
-        sx={{ color: "primary.dark" }}
-        gutterBottom
-      >
-        Sign Up
-      </Typography>
+      <AnimatedSection stagger={0.06}>
+        <AnimatedItem>
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            fontWeight="bold"
+            fontFamily="Rockwell"
+            fontSize={isMobile ? 30 : 40}
+            sx={{ color: "primary.dark" }}
+            gutterBottom
+          >
+            Sign Up
+          </Typography>
+        </AnimatedItem>
 
-      <TextField
-        fullWidth
-        label="Full Name"
-        margin="normal"
-        variant="outlined"
-        value={formData.fullName}
-        onChange={(e) => handleInputChange("fullName", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.fullName}
-        helperText={errors.fullName}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
-      <TextField
-        fullWidth
-        label="Email address"
-        type="email"
-        margin="normal"
-        variant="outlined"
-        value={formData.email}
-        onChange={(e) => handleInputChange("email", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.email}
-        helperText={errors.email}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Full Name"
+            margin="normal"
+            variant="outlined"
+            value={formData.fullName}
+            onChange={(e) => handleInputChange("fullName", e.target.value)}
+            onKeyDown={handleKeyDown}
+            error={!!errors.fullName}
+            helperText={errors.fullName}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
 
-      <TextField
-        fullWidth
-        label="Phone Number"
-        type="tel"
-        margin="normal"
-        variant="outlined"
-        value={formData.phoneNumber}
-        onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.phoneNumber}
-        helperText={errors.phoneNumber}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
-      <TextField
-        fullWidth
-        label="Password"
-        type="password"
-        margin="normal"
-        variant="outlined"
-        value={formData.password}
-        onChange={(e) => handleInputChange("password", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.password}
-        helperText={errors.password}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
-      <TextField
-        fullWidth
-        label="Confirm Password"
-        type="password"
-        margin="normal"
-        variant="outlined"
-        value={formData.confirmPassword}
-        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-        onKeyDown={handleKeyDown}
-        error={!!errors.confirmPassword}
-        helperText={errors.confirmPassword}
-        slotProps={{
-          input: {
-            style: {
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderRadius: 30,
-            },
-          },
-        }}
-      />
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Email address"
+            type="email"
+            margin="normal"
+            variant="outlined"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            onKeyDown={handleKeyDown}
+            error={!!errors.email}
+            helperText={errors.email}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
 
-      <Button
-        fullWidth
-        variant="contained"
-        disabled={isLoading}
-        sx={{
-          backgroundColor: "primary.main", // orange color
-          color: "#ffffff",
-          border: "2px solid",
-          borderColor: "primary.main",
-          py: isMobile ? 1 : 1.2,
-          borderRadius: 8,
-          mt: 2,
-        }}
-        onClick={handleSubmit}
-      >
-        <Typography
-          variant="body1"
-          fontWeight="bold"
-          sx={{ color: "primary.contrastText" }}
-        >
-          {isLoading ? "Creating Account..." : "Sign Up"}
-        </Typography>
-      </Button>
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Phone Number"
+            type="tel"
+            margin="normal"
+            variant="outlined"
+            value={formData.phoneNumber}
+            onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+            onKeyDown={handleKeyDown}
+            error={!!errors.phoneNumber}
+            helperText={errors.phoneNumber}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
+
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            margin="normal"
+            variant="outlined"
+            value={formData.password}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            onKeyDown={handleKeyDown}
+            error={!!errors.password}
+            helperText={errors.password}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
+
+        <AnimatedItem>
+          <TextField
+            fullWidth
+            label="Confirm Password"
+            type="password"
+            margin="normal"
+            variant="outlined"
+            value={formData.confirmPassword}
+            onChange={(e) =>
+              handleInputChange("confirmPassword", e.target.value)
+            }
+            onKeyDown={handleKeyDown}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword}
+            slotProps={{
+              input: {
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: 30,
+                },
+              },
+            }}
+          />
+        </AnimatedItem>
+
+        <AnimatedItem>
+          <MagneticButton>
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={isLoading}
+              sx={{
+                backgroundColor: "primary.main", // orange color
+                color: "#ffffff",
+                border: "2px solid",
+                borderColor: "primary.main",
+                py: isMobile ? 1 : 1.2,
+                borderRadius: 8,
+                mt: 2,
+              }}
+              onClick={handleSubmit}
+            >
+              <Typography
+                variant="body1"
+                fontWeight="bold"
+                sx={{ color: "primary.contrastText" }}
+              >
+                {isLoading ? "Creating Account..." : "Sign Up"}
+              </Typography>
+            </Button>
+          </MagneticButton>
+        </AnimatedItem>
+      </AnimatedSection>
     </Box>
   );
 };
