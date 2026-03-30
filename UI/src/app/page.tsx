@@ -151,24 +151,28 @@ const chooseUs = [
   {
     name: "Uncompromised Purity",
     icon: <HandshakeOutlined fontSize="large" />,
+    lottieIcon: "/lottie/leaf.json",
     description:
       "We source only the finest raw spices, ensuring that every product is free from additives, fillers and artificial colors.",
   },
   {
     name: "Hygienic Processing",
     icon: <HealthAndSafetyOutlined fontSize="large" />,
+    lottieIcon: "/lottie/star.json",
     description:
       "Our state-of-the-art processing facilities adhere to the highest hygiene standards and safety protocols, ensuring that every spice is safe and healthy.",
   },
   {
     name: "Bold, Authentic Flavors",
     icon: <SoupKitchenOutlined fontSize="large" />,
+    lottieIcon: "/lottie/chili.json",
     description:
       "Each spice is carefully selected and processed to retain its natural oils and flavors, delivering an authentic taste experience that transports you to the heart of Indian cuisine.",
   },
   {
     name: "Global Reach, Local Trust",
     icon: <Public fontSize="large" />,
+    lottieIcon: "/lottie/fork.json",
     description:
       "We serve both domestic and international markets, offering world-class products rooted in Indian tradition.",
   },
@@ -1351,6 +1355,7 @@ const Home: React.FC = () => {
                       key={index}
                       name={item.name}
                       icon={item.icon}
+                      lottieIcon={item.lottieIcon}
                       description={item.description}
                     />
                   </Grid>
