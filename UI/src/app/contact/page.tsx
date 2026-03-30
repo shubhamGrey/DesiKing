@@ -29,6 +29,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import BrandLogo from "../../../public/AgroNexisWhite.png";
 import { useFormTracking, usePageTracking } from "@/hooks/useAnalytics";
+import { motion } from "framer-motion";
+import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
+import MagneticButton from "@/components/MagneticButton";
 
 interface ContactFormData {
   firstName: string;
@@ -147,76 +150,83 @@ export default function Contact() {
           justifyContent: "center",
         }}
       >
-        <Box
-          sx={{
-            width: isMobile ? "100%" : "min(100%, 550px)",
-            aspectRatio: "1 / 1",
-            px: isMobile ? 4 : 8,
-            py: 4,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundImage: 'url("/Dark Spice Illustration.png")',
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            borderRadius: isMobile ? 2 : "50%",
-          }}
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "spring", stiffness: 250, damping: 28 }}
+          style={{ width: "100%", display: "flex", justifyContent: "center" }}
         >
           <Box
             sx={{
-              width: "100%",
+              width: isMobile ? "100%" : "min(100%, 550px)",
+              aspectRatio: "1 / 1",
+              px: isMobile ? 4 : 8,
+              py: 4,
               display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
               justifyContent: "center",
-              mb: 4,
+              backgroundImage: 'url("/Dark Spice Illustration.png")',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              borderRadius: isMobile ? 2 : "50%",
             }}
           >
-            <Image src={BrandLogo} alt="Brand Logo" height={200} width={190} />
-          </Box>
-          <Stack direction={"column"} spacing={1} alignItems="center">
-            <Typography
-              variant={isMobile ? "body2" : "h6"}
-              color="primary.contrastText"
-              sx={{ mb: 2, textAlign: "left", width: "100%" }}
-              fontWeight={600}
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                mb: 4,
+              }}
             >
-              Let&apos;s Get In Touch
-            </Typography>
-            {contactDetails.map((item) => (
-              <Box
-                sx={{
-                  color: "primary.contrastText",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "start",
-                  mb: 0.5,
-                  cursor: item.href ? "pointer" : "default",
-                  width: "100%",
-                }}
-                key={item.label}
-                onClick={() => {
-                  if (item.href) {
-                    router.push(item.href);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }
-                }}
+              <Image src={BrandLogo} alt="Brand Logo" height={200} width={190} />
+            </Box>
+            <Stack direction={"column"} spacing={1} alignItems="center">
+              <Typography
+                variant={isMobile ? "body2" : "h6"}
+                color="primary.contrastText"
+                sx={{ mb: 2, textAlign: "left", width: "100%" }}
+                fontWeight={600}
               >
-                {item.icon}
-                <Typography
-                  key={item.label}
-                  variant="body2"
+                Let&apos;s Get In Touch
+              </Typography>
+              {contactDetails.map((item) => (
+                <Box
                   sx={{
-                    ml: 1,
                     color: "primary.contrastText",
-                    fontSize: isMobile ? "0.7rem" : "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "start",
+                    mb: 0.5,
+                    cursor: item.href ? "pointer" : "default",
+                    width: "100%",
+                  }}
+                  key={item.label}
+                  onClick={() => {
+                    if (item.href) {
+                      router.push(item.href);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
                   }}
                 >
-                  {item.label}
-                </Typography>
-              </Box>
-            ))}
-          </Stack>
-        </Box>
+                  {item.icon}
+                  <Typography
+                    key={item.label}
+                    variant="body2"
+                    sx={{
+                      ml: 1,
+                      color: "primary.contrastText",
+                      fontSize: isMobile ? "0.7rem" : "0.85rem",
+                    }}
+                  >
+                    {item.label}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </motion.div>
       </Grid>
       <Grid
         size={{ xs: 12, md: 6 }}
@@ -229,232 +239,261 @@ export default function Contact() {
           justifyContent: "center",
         }}
       >
-        <Box sx={{ width: "100%" }}>
-          <Typography
-            variant="h4"
-            sx={{ mb: 6 }}
-            color="primary.main"
-            fontWeight={600}
-            textAlign={"center"}
-          >
-            Contact us
-          </Typography>
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{ mt: 3 }}
-          >
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <InputLabel
-                  sx={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "#374151",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    mb: 1,
-                  }}
-                >
-                  First Name
-                </InputLabel>
-                <Controller
-                  name="firstName"
-                  control={control}
-                  rules={{ required: "First name is required" }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      variant="filled"
-                      placeholder="Enter your first name"
-                      error={!!errors.firstName}
-                      helperText={errors.firstName?.message}
-                      sx={{ mb: 2 }}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <InputLabel
-                  sx={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "#374151",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    mb: 1,
-                  }}
-                >
-                  Last Name
-                </InputLabel>
-                <Controller
-                  name="lastName"
-                  control={control}
-                  rules={{ required: "Last name is required" }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      variant="filled"
-                      placeholder="Enter your last name"
-                      error={!!errors.lastName}
-                      helperText={errors.lastName?.message}
-                      sx={{ mb: 2 }}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <InputLabel
-                  sx={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "#374151",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    mb: 1,
-                  }}
-                >
-                  Email
-                </InputLabel>
-                <Controller
-                  name="email"
-                  control={control}
-                  rules={{
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address",
-                    },
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      type="email"
-                      variant="filled"
-                      placeholder="Enter your email"
-                      error={!!errors.email}
-                      helperText={errors.email?.message}
-                      sx={{ mb: 2 }}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <InputLabel
-                  sx={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "#374151",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    mb: 1,
-                  }}
-                >
-                  Phone Number
-                </InputLabel>
-                <Controller
-                  name="phoneNumber"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      variant="filled"
-                      type="tel"
-                      placeholder="Enter your phone number"
-                      sx={{ mb: 2 }}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-
-            <Box sx={{ mb: 5 }}>
-              <InputLabel
-                sx={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "#374151",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  mb: 1,
-                }}
-              >
-                Message
-              </InputLabel>
-              <Controller
-                name="message"
-                control={control}
-                rules={{ required: "Message is required" }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    multiline
-                    variant="filled"
-                    rows={4}
-                    placeholder="Enter your message"
-                    error={!!errors.message}
-                    helperText={errors.message?.message}
-                  />
-                )}
-              />
-            </Box>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              variant="contained"
-              sx={{
-                backgroundColor: "primary.main",
-                color: "primary.contrastText",
-                mt: 2,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-              endIcon={
-                isSubmitting ? (
-                  <Skeleton
-                    variant="circular"
-                    width={16}
-                    height={16}
-                    animation="pulse"
-                    sx={{ bgcolor: "currentColor" }}
-                  />
-                ) : (
-                  <ArrowForward />
-                )
-              }
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "spring", stiffness: 250, damping: 28, delay: 0.1 }}
+          style={{ width: "100%" }}
+        >
+          <Box sx={{ width: "100%" }}>
+            <Typography
+              variant="h4"
+              sx={{ mb: 6 }}
+              color="primary.main"
+              fontWeight={600}
+              textAlign={"center"}
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </Button>
+              Contact us
+            </Typography>
 
-            <Box sx={{ mt: 12, display: "flex", justifyContent: "end" }}>
-              {socialMedia.map((media, i) => (
-                <IconButton key={i} sx={{ color: "primary.main" }}>
-                  <a
-                    href={media.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "inherit" }}
-                  >
-                    {media.icon}
-                  </a>
-                </IconButton>
-              ))}
+            <Box
+              component="form"
+              onSubmit={handleSubmit(onSubmit)}
+              sx={{ mt: 3 }}
+            >
+              <AnimatedSection stagger={0.06}>
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <AnimatedItem>
+                      <InputLabel
+                        sx={{
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                          color: "#374151",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          mb: 1,
+                        }}
+                      >
+                        First Name
+                      </InputLabel>
+                      <Controller
+                        name="firstName"
+                        control={control}
+                        rules={{ required: "First name is required" }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            variant="filled"
+                            placeholder="Enter your first name"
+                            error={!!errors.firstName}
+                            helperText={errors.firstName?.message}
+                            sx={{ mb: 2 }}
+                          />
+                        )}
+                      />
+                    </AnimatedItem>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <AnimatedItem>
+                      <InputLabel
+                        sx={{
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                          color: "#374151",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          mb: 1,
+                        }}
+                      >
+                        Last Name
+                      </InputLabel>
+                      <Controller
+                        name="lastName"
+                        control={control}
+                        rules={{ required: "Last name is required" }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            variant="filled"
+                            placeholder="Enter your last name"
+                            error={!!errors.lastName}
+                            helperText={errors.lastName?.message}
+                            sx={{ mb: 2 }}
+                          />
+                        )}
+                      />
+                    </AnimatedItem>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <AnimatedItem>
+                      <InputLabel
+                        sx={{
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                          color: "#374151",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          mb: 1,
+                        }}
+                      >
+                        Email
+                      </InputLabel>
+                      <Controller
+                        name="email"
+                        control={control}
+                        rules={{
+                          required: "Email is required",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Invalid email address",
+                          },
+                        }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            type="email"
+                            variant="filled"
+                            placeholder="Enter your email"
+                            error={!!errors.email}
+                            helperText={errors.email?.message}
+                            sx={{ mb: 2 }}
+                          />
+                        )}
+                      />
+                    </AnimatedItem>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <AnimatedItem>
+                      <InputLabel
+                        sx={{
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                          color: "#374151",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          mb: 1,
+                        }}
+                      >
+                        Phone Number
+                      </InputLabel>
+                      <Controller
+                        name="phoneNumber"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            variant="filled"
+                            type="tel"
+                            placeholder="Enter your phone number"
+                            sx={{ mb: 2 }}
+                          />
+                        )}
+                      />
+                    </AnimatedItem>
+                  </Grid>
+
+                  <Grid size={12}>
+                    <AnimatedItem>
+                      <Box sx={{ mb: 5 }}>
+                        <InputLabel
+                          sx={{
+                            fontSize: "0.875rem",
+                            fontWeight: 500,
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            mb: 1,
+                          }}
+                        >
+                          Message
+                        </InputLabel>
+                        <Controller
+                          name="message"
+                          control={control}
+                          rules={{ required: "Message is required" }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              multiline
+                              variant="filled"
+                              rows={4}
+                              placeholder="Enter your message"
+                              error={!!errors.message}
+                              helperText={errors.message?.message}
+                            />
+                          )}
+                        />
+                      </Box>
+                    </AnimatedItem>
+                  </Grid>
+                </Grid>
+
+                <AnimatedItem>
+                  <MagneticButton>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "primary.main",
+                        color: "primary.contrastText",
+                        mt: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                      endIcon={
+                        isSubmitting ? (
+                          <Skeleton
+                            variant="circular"
+                            width={16}
+                            height={16}
+                            animation="pulse"
+                            sx={{ bgcolor: "currentColor" }}
+                          />
+                        ) : (
+                          <ArrowForward />
+                        )
+                      }
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit"}
+                    </Button>
+                  </MagneticButton>
+                </AnimatedItem>
+              </AnimatedSection>
+
+              <Box sx={{ mt: 12, display: "flex", justifyContent: "end" }}>
+                <AnimatedSection stagger={0.05} style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
+                  {socialMedia.map((item) => (
+                    <AnimatedItem key={item.href}>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                      >
+                        <IconButton
+                          onClick={() => window.open(item.href, "_blank")}
+                          sx={{ color: "primary.main" }}
+                        >
+                          {item.icon}
+                        </IconButton>
+                      </motion.div>
+                    </AnimatedItem>
+                  ))}
+                </AnimatedSection>
+              </Box>
             </Box>
           </Box>
-        </Box>
+        </motion.div>
       </Grid>
     </Grid>
   );
