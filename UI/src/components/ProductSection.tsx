@@ -26,6 +26,10 @@ import React, { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import Cookies from "js-cookie";
 
+import { motion } from "framer-motion";
+import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
+import { use3DTilt } from "@/hooks/use3DTilt";
+
 import { ProductFormData } from "@/types/product";
 
 interface ProductSectionProps {
@@ -36,6 +40,21 @@ interface ProductSectionProps {
   };
   onProductDeleted?: () => void;
 }
+
+const TiltCard = ({ children }: { children: React.ReactNode }) => {
+  const { ref, rotateX, rotateY, onMouseMove, onMouseLeave } = use3DTilt(10);
+  return (
+    <motion.div
+      ref={ref}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      whileHover={{ y: -8, boxShadow: "0 20px 40px rgba(232,93,4,0.2)" }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   const router = useRouter();
@@ -189,75 +208,74 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
 
   return (
     <Box sx={{ mx: 3, my: 10 }}>
-      <Box
-        sx={{
-          p: 4,
-          borderRadius: 4,
-          height: "100px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "white",
-        }}
-      >
-        <Typography
-          variant="h3"
-          sx={{ color: "primary.main" }}
-          fontWeight={600}
-          textAlign={"center"}
-        >
-          {item.categoryName}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          mt: 8,
-        }}
-      >
+      <AnimatedSection>
+        <AnimatedItem>
+          <Box
+            sx={{
+              p: 4,
+              borderRadius: 4,
+              height: "100px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "white",
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{ color: "primary.main" }}
+              fontWeight={600}
+              textAlign={"center"}
+            >
+              {item.categoryName}
+            </Typography>
+          </Box>
+        </AnimatedItem>
+      </AnimatedSection>
+      <AnimatedSection stagger={0.08} style={{ marginTop: 32 }}>
         <Grid container spacing={2}>
           {item.products.map((product) => {
             const productId = product.id || "";
             return (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={productId}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    minHeight: "auto",
-                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                    borderRadius: "16px",
-                    border: "1px solid",
-                    borderColor: "rgba(31, 79, 64, 0.1)",
-                    p: 2,
-                    background:
-                      "linear-gradient(145deg, #faf5ed 0%, #f5efe5 100%)",
-                    position: "relative",
-                    overflow: "hidden",
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "3px",
-                      background: "linear-gradient(90deg, #1B4D3E, #E85D04)",
-                      opacity: 0,
-                      transition: "opacity 0.3s ease",
-                    },
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow:
-                        "0 16px 40px rgba(31, 79, 64, 0.15), 0 8px 16px rgba(31, 79, 64, 0.1)",
-                      borderColor: "rgba(31, 79, 64, 0.2)",
-                      "&::before": {
-                        opacity: 1,
-                      },
-                      "& .product-image": {
-                        transform: "scale(1.05)",
-                      },
-                    },
-                  }}
-                >
+                <AnimatedItem>
+                  <TiltCard>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        minHeight: "auto",
+                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        borderRadius: "16px",
+                        border: "1px solid",
+                        borderColor: "rgba(31, 79, 64, 0.1)",
+                        p: 2,
+                        background:
+                          "linear-gradient(145deg, #faf5ed 0%, #f5efe5 100%)",
+                        position: "relative",
+                        overflow: "hidden",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: "3px",
+                          background: "linear-gradient(90deg, #1B4D3E, #E85D04)",
+                          opacity: 0,
+                          transition: "opacity 0.3s ease",
+                        },
+                        "&:hover": {
+                          borderColor: "rgba(31, 79, 64, 0.2)",
+                          "&::before": {
+                            opacity: 1,
+                          },
+                          "& .product-image": {
+                            transform: "scale(1.05)",
+                          },
+                        },
+                      }}
+                    >
                   {/* Top Side - Image */}
                   <Box
                     sx={{
@@ -544,12 +562,14 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       Add to Cart
                     </Button>
                   </Box>
-                </Box>
+                    </Box>
+                  </TiltCard>
+                </AnimatedItem>
               </Grid>
             );
           })}
         </Grid>
-      </Box>
+      </AnimatedSection>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
