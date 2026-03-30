@@ -475,18 +475,12 @@ export default function Contact() {
                 <AnimatedSection stagger={0.05} style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
                   {socialMedia.map((item) => (
                     <AnimatedItem key={item.href}>
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                      <IconButton
+                        onClick={() => window.open(item.href, "_blank")}
+                        sx={{ color: "primary.main" }}
                       >
-                        <IconButton
-                          onClick={() => window.open(item.href, "_blank")}
-                          sx={{ color: "primary.main" }}
-                        >
-                          {item.icon}
-                        </IconButton>
-                      </motion.div>
+                        {item.icon}
+                      </IconButton>
                     </AnimatedItem>
                   ))}
                 </AnimatedSection>
