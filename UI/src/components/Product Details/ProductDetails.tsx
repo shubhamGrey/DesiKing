@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Chip,
   Grid,
   Rating,
   Stack,
@@ -440,27 +441,36 @@ const ProductDetails = ({
               </Button>
             </Stack>
           </Box>
+          {selectedProduct.stockQuantity === 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Chip label="Out of Stock" color="error" />
+            </Box>
+          )}
           <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1 }}>
-            <Tooltip title="Add to Cart" arrow>
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 600,
-                  borderRadius: 0,
-                  "&:hover": {
-                    backgroundColor: "secondary.main",
-                  },
-                }}
-                onClick={handleAddToCart}
-                aria-label="Add to Cart"
-              >
-                <AddShoppingCartIcon />
-              </Button>
+            <Tooltip title={selectedProduct.stockQuantity === 0 ? "Out of Stock" : "Add to Cart"} arrow>
+              <span>
+                <Button
+                  variant="contained"
+                  disabled={selectedProduct.stockQuantity === 0}
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 600,
+                    borderRadius: 0,
+                    "&:hover": {
+                      backgroundColor: "secondary.main",
+                    },
+                  }}
+                  onClick={handleAddToCart}
+                  aria-label="Add to Cart"
+                >
+                  <AddShoppingCartIcon />
+                </Button>
+              </span>
             </Tooltip>
             <Button
               variant="contained"
+              disabled={selectedProduct.stockQuantity === 0}
               sx={{
                 backgroundColor: "primary.main",
                 color: "primary.contrastText",
@@ -473,7 +483,7 @@ const ProductDetails = ({
               fullWidth
               onClick={handleBuyNow}
             >
-              Buy Now
+              {selectedProduct.stockQuantity === 0 ? "Out of Stock" : "Buy Now"}
             </Button>
           </Stack>
         </Box>

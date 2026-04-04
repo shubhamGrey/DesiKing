@@ -36,5 +36,6 @@ namespace Agronexis.Model.ResponseModel
         public string? NutritionalInfo { get; set; }
         public string? ThumbnailUrl { get; set; }
         public List<PriceResponseModel> PricesAndSkus { get; set; } = [];
+        public int StockQuantity { get; set; }
     }
 }

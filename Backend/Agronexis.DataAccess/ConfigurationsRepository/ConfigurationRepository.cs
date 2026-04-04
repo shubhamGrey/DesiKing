@@ -53,6 +53,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         {
             try
             {
+                var stockLookup = _dbContext.Inventories
+                    .GroupBy(i => i.ProductId)
+                    .Select(g => new { ProductId = g.Key, Total = g.Sum(i => i.Quantity) })
+                    .ToDictionary(x => x.ProductId, x => x.Total);
+
                 var productList = (
                     from P in _dbContext.Products
                         .Include(p => p.ProductPrices)
@@ -90,6 +95,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = x.P.Ingredients,
                     NutritionalInfo = x.P.NutritionalInfo,
                     ThumbnailUrl = x.P.ThumbnailUrl,
+                    StockQuantity = stockLookup.TryGetValue(x.P.Id, out var qty) ? qty : 0,
 
                     PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                     {
@@ -140,6 +146,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
                 var product = rawResult.P;
 
+                var stockQuantity = _dbContext.Inventories
+                    .Where(i => i.ProductId == product.Id)
+                    .Sum(i => (int?)i.Quantity) ?? 0;
+
                 return new ProductResponseModel
                 {
                     Id = product.Id,
@@ -165,6 +175,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = product.Ingredients,
                     NutritionalInfo = product.NutritionalInfo,
                     ThumbnailUrl = product.ThumbnailUrl,
+                    StockQuantity = stockQuantity,
                     PricesAndSkus = product.ProductPrices
                         .Where(pp => !pp.IsDeleted)
                         .Select(pp => new PriceResponseModel
@@ -198,6 +209,12 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             try
             {
                 Guid catId = Guid.Parse(categoryId);
+
+                var catStockLookup = _dbContext.Inventories
+                    .Where(i => i.CategoryId == catId)
+                    .GroupBy(i => i.ProductId)
+                    .Select(g => new { ProductId = g.Key, Total = g.Sum(i => i.Quantity) })
+                    .ToDictionary(x => x.ProductId, x => x.Total);
 
                 var productList = (
                     from P in _dbContext.Products
@@ -237,6 +254,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = x.P.Ingredients,
                     NutritionalInfo = x.P.NutritionalInfo,
                     ThumbnailUrl = x.P.ThumbnailUrl,
+                    StockQuantity = catStockLookup.TryGetValue(x.P.Id, out var catQty) ? catQty : 0,
 
                     PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
                     {

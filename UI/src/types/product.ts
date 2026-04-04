@@ -45,6 +45,7 @@ export interface Product {
   nutritionalInfo: string;
   thumbnailUrl?: string;
   pricesAndSkus: PriceAndSku[];
+  stockQuantity: number;
 }
 export interface ProductFormData {
   // Product fields
@@ -78,6 +79,7 @@ export interface ProductFormData {
   thumbnailUrl?: string;
   thumbnailImage?: File | null;
   stock?: number;
+  stockQuantity?: number;
   // PriceAndSku fields (as array)
   pricesAndSkus: Array<{
     id?: string;

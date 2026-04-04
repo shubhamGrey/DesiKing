@@ -335,6 +335,25 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                             "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         }}
                       />
+                      {product.stockQuantity === 0 && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            bgcolor: "rgba(0,0,0,0.45)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "inherit",
+                            zIndex: 1,
+                          }}
+                        >
+                          <Chip label="Out of Stock" color="error" size="small" />
+                        </Box>
+                      )}
                     </Box>
                   </Box>
 
@@ -547,6 +566,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       variant="contained"
                       size="medium"
                       fullWidth
+                      disabled={product.stockQuantity === 0}
                       sx={{
                         backgroundColor: "primary.main",
                         color: "primary.contrastText",
@@ -559,7 +579,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       }}
                       onClick={() => handleAddToCart(product)}
                     >
-                      Add to Cart
+                      {product.stockQuantity === 0 ? "Out of Stock" : "Add to Cart"}
                     </Button>
                   </Box>
                     </Box>
