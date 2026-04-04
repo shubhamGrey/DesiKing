@@ -7,6 +7,7 @@ import {
   Category,
   Dashboard,
   Inventory,
+  LocalOffer,
   NavigateNext,
   People,
   Settings,
@@ -53,6 +54,7 @@ import AdminBrands from "@/components/admin/AdminBrands";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminSettings from "@/components/admin/AdminSettings";
+import AdminCoupons from "@/components/admin/AdminCoupons";
 
 const AdminDashboardContent: React.FC = () => {
   const router = useRouter();
@@ -503,6 +505,7 @@ const AdminDashboardContent: React.FC = () => {
     { id: "brands", label: "Brands", icon: Inventory },
     { id: "users", label: "Users", icon: People },
     { id: "analytics", label: "Analytics", icon: Analytics },
+    { id: "coupons", label: "Coupons", icon: LocalOffer },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -583,6 +586,8 @@ const AdminDashboardContent: React.FC = () => {
             onRefreshAnalytics={fetchAnalyticsEvents}
           />
         );
+      case "coupons":
+        return <AdminCoupons />;
       case "settings":
         return <AdminSettings />;
       default:

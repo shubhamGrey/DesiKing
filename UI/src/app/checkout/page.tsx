@@ -59,6 +59,10 @@ const CheckoutContent: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState("");
+  const [couponApplied, setCouponApplied] = useState("");
 
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
     firstName: "",
@@ -75,7 +79,29 @@ const CheckoutContent: React.FC = () => {
   const steps = ["Shipping Details", "Payment Method", "Review Order"];
   const totalAmount = total;
   const shippingCost = totalAmount > 500 ? 0 : 50;
-  const finalAmount = totalAmount + shippingCost;
+  const finalAmount = totalAmount + shippingCost - couponDiscount;
+
+  const applyCoupon = async () => {
+    setCouponError("");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Coupon/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, orderAmount: totalAmount }),
+      });
+      const json = await res.json();
+      if (json.info?.isSuccess && json.data?.isValid) {
+        setCouponDiscount(json.data.discountAmount);
+        setCouponApplied(couponCode.toUpperCase());
+      } else {
+        setCouponError(json.info?.message || "Invalid coupon");
+        setCouponDiscount(0);
+        setCouponApplied("");
+      }
+    } catch {
+      setCouponError("Failed to validate coupon.");
+    }
+  };
 
   // Helper interfaces for address handling
   interface AddressFormData {
@@ -476,15 +502,50 @@ const CheckoutContent: React.FC = () => {
               <Typography>₹{totalAmount.toFixed(2)}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography>Discount:</Typography>
-              <Typography>₹{(totalAmount * 0.1).toFixed(2)}</Typography>
-            </Box>
-            <Box display="flex" justifyContent="space-between" mb={1}>
               <Typography>Shipping:</Typography>
               <Typography>
                 {shippingCost === 0 ? "FREE" : `₹${shippingCost.toFixed(2)}`}
               </Typography>
             </Box>
+
+            {/* Promo Code */}
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Promo Code</Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <TextField
+                  size="small"
+                  variant="filled"
+                  placeholder="Enter code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  disabled={!!couponApplied}
+                  sx={{ flexGrow: 1 }}
+                />
+                {couponApplied ? (
+                  <Button size="small" color="error" onClick={() => { setCouponApplied(""); setCouponDiscount(0); setCouponCode(""); }}>
+                    Remove
+                  </Button>
+                ) : (
+                  <Button size="small" variant="contained" onClick={applyCoupon} disabled={!couponCode}>
+                    Apply
+                  </Button>
+                )}
+              </Box>
+              {couponError && <Typography color="error" variant="caption">{couponError}</Typography>}
+              {couponApplied && (
+                <Typography color="success.main" variant="caption">
+                  ✓ {couponApplied} applied — saving ₹{couponDiscount}
+                </Typography>
+              )}
+            </Box>
+
+            {couponDiscount > 0 && (
+              <Box sx={{ display: "flex", justifyContent: "space-between", color: "success.main" }}>
+                <Typography>Discount ({couponApplied})</Typography>
+                <Typography>-₹{couponDiscount}</Typography>
+              </Box>
+            )}
+
             <Divider sx={{ my: 1 }} />
             <Box display="flex" justifyContent="space-between">
               <Typography variant="h6">Total:</Typography>
