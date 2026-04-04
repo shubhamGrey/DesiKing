@@ -74,5 +74,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<string> SaveOrUpdateCoupon(CouponRequestModel coupon, string xCorrelationId);
         Task<List<CouponResponseModel>> GetAllCoupons(string xCorrelationId);
         Task<bool> DeleteCoupon(string couponId, string xCorrelationId);
+        List<ProductResponseModel> SearchProducts(string query, string xCorrelationId);
     }
 }

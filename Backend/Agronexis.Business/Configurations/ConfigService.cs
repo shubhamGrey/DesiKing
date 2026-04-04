@@ -283,5 +283,7 @@ namespace Agronexis.Business.Configurations
             => await _repository.GetAllCoupons(xCorrelationId);
         public async Task<bool> DeleteCoupon(string couponId, string xCorrelationId)
             => await _repository.DeleteCoupon(couponId, xCorrelationId);
+        public List<ProductResponseModel> SearchProducts(string query, string xCorrelationId)
+            => _repository.SearchProducts(query, xCorrelationId);
     }
 }

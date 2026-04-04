@@ -3188,5 +3188,89 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+        public List<ProductResponseModel> SearchProducts(string query, string xCorrelationId)
+        {
+            try
+            {
+                _logger.LogInformation("SearchProducts query: {Query}, CorrelationId: {CorrelationId}", query, xCorrelationId);
+                if (string.IsNullOrWhiteSpace(query)) return new List<ProductResponseModel>();
+
+                var stockLookup = _dbContext.Inventories
+                    .GroupBy(i => i.ProductId)
+                    .Select(g => new { ProductId = g.Key, Total = g.Sum(i => i.Quantity) })
+                    .ToDictionary(x => x.ProductId, x => x.Total);
+
+                var q = query.ToLower();
+                var productList = (
+                    from P in _dbContext.Products
+                        .Include(p => p.ProductPrices)
+                            .ThenInclude(pp => pp.Weight)
+                        .Include(p => p.ProductPrices)
+                            .ThenInclude(pp => pp.Currency)
+                    join C in _dbContext.Categories
+                        on P.CategoryId equals C.Id
+                    where P.IsActive && C.IsActive
+                    select new { P, C }
+                )
+                .AsEnumerable()
+                .Where(x => x.P.Name != null && x.P.Name.ToLower().Contains(q) ||
+                            x.P.Description != null && x.P.Description.ToLower().Contains(q))
+                .Take(20)
+                .Select(x => new ProductResponseModel
+                {
+                    Id = x.P.Id,
+                    Name = x.P.Name,
+                    Description = x.P.Description,
+                    ManufacturingDate = x.P.ManufacturingDate,
+                    ImageUrls = JsonSerializer.Deserialize<List<string>>(x.P.ImageUrls ?? "[]"),
+                    KeyFeatures = JsonSerializer.Deserialize<List<string>>(x.P.KeyFeatures ?? "[]"),
+                    Uses = JsonSerializer.Deserialize<List<string>>(x.P.Uses ?? "[]"),
+                    CategoryId = x.P.CategoryId,
+                    CategoryName = x.C.Name,
+                    BrandId = x.P.BrandId,
+                    MetaTitle = x.P.MetaTitle,
+                    MetaDescription = x.P.MetaDescription,
+                    CreatedDate = DateTime.UtcNow,
+                    Origin = x.P.Origin,
+                    ShelfLife = x.P.ShelfLife,
+                    StorageInstructions = x.P.StorageInstructions,
+                    Certifications = JsonSerializer.Deserialize<List<string>>(x.P.Certifications ?? "[]"),
+                    IsActive = x.P.IsActive,
+                    IsPremium = x.P.IsPremium,
+                    IsFeatured = x.P.IsFeatured,
+                    Ingredients = x.P.Ingredients,
+                    NutritionalInfo = x.P.NutritionalInfo,
+                    ThumbnailUrl = x.P.ThumbnailUrl,
+                    StockQuantity = stockLookup.TryGetValue(x.P.Id, out var qty) ? qty : 0,
+
+                    PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
+                    {
+                        Id = pp.Id,
+                        CurrencyId = pp.Currency.Id,
+                        CurrencyCode = pp.Currency.Code,
+                        Price = pp.Price,
+                        CreatedDate = pp.CreatedDate,
+                        ModifiedDate = pp.ModifiedDate,
+                        IsDiscounted = pp.IsDiscounted,
+                        DiscountPercentage = pp.DiscountPercentage,
+                        DiscountedAmount = pp.DiscountedAmount,
+                        WeightId = pp.WeightId,
+                        WeightValue = pp.Weight?.Value,
+                        WeightUnit = pp.Weight?.Unit,
+                        SkuNumber = pp.SkuNumber,
+                        Barcode = pp.Barcode,
+                        IsActive = pp.IsActive,
+                        IsDeleted = pp.IsDeleted
+                    }).ToList(),
+                }).ToList();
+
+                return productList;
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException($"Error in {nameof(SearchProducts)}", xCorrelationId, ex);
+            }
+        }
     }
 }

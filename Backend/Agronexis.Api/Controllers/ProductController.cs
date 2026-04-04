@@ -123,6 +123,21 @@ namespace Agronexis.Api.Controllers
             return Ok(CreateSuccessResponse(item));
         }
 
+        // GET api/product/search?q=
+        [HttpGet("search")]
+        public ActionResult<IEnumerable<ProductResponseModel>> SearchProducts([FromQuery] string q)
+        {
+            _logger.LogInformation("SearchProducts endpoint called with q: {Query}", q);
+
+            var correlationId = GetCorrelationId();
+            _logger.LogInformation("Processing SearchProducts for q: {Query}, correlation ID: {CorrelationId}", q, correlationId);
+
+            var results = _configService.SearchProducts(q ?? "", correlationId);
+
+            _logger.LogInformation("Successfully retrieved {Count} products for query: {Query}, correlation ID: {CorrelationId}", results.Count, q, correlationId);
+            return Ok(CreateSuccessResponse(results));
+        }
+
         // DELETE api/product/{id}
         [HttpDelete("{id}")]
         public ActionResult<ApiResponseModel> DeleteProduct(string id)
