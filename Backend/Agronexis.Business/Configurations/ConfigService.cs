@@ -254,5 +254,17 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.CancelOrder(orderId, xCorrelationId);
         }
+
+        public async Task<List<ReviewResponseModel>> GetReviewsByProductId(string productId, string xCorrelationId)
+            => await _repository.GetReviewsByProductId(productId, xCorrelationId);
+
+        public async Task<ReviewSummaryResponseModel> GetReviewSummary(string productId, string xCorrelationId)
+            => await _repository.GetReviewSummary(productId, xCorrelationId);
+
+        public async Task<string> SaveOrUpdateReview(ReviewRequestModel review, string xCorrelationId)
+            => await _repository.SaveOrUpdateReview(review, xCorrelationId);
+
+        public async Task<bool> DeleteReview(string reviewId, string xCorrelationId)
+            => await _repository.DeleteReview(reviewId, xCorrelationId);
     }
 }

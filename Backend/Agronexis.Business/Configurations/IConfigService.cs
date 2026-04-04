@@ -63,5 +63,9 @@ namespace Agronexis.Business.Configurations
         Task<string?> ForgotPassword(string email, string xCorrelationId);
         Task<bool> ResetPassword(ResetPasswordRequestModel model, string xCorrelationId);
         Task<bool> CancelOrder(string orderId, string xCorrelationId);
+        Task<List<ReviewResponseModel>> GetReviewsByProductId(string productId, string xCorrelationId);
+        Task<ReviewSummaryResponseModel> GetReviewSummary(string productId, string xCorrelationId);
+        Task<string> SaveOrUpdateReview(ReviewRequestModel review, string xCorrelationId);
+        Task<bool> DeleteReview(string reviewId, string xCorrelationId);
     }
 }

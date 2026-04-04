@@ -2902,5 +2902,92 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<ReviewResponseModel>> GetReviewsByProductId(string productId, string xCorrelationId)
+        {
+            _logger.LogInformation("GetReviewsByProductId for {ProductId}, CorrelationId: {CorrelationId}", productId, xCorrelationId);
+            if (!Guid.TryParse(productId, out var productGuid)) return new List<ReviewResponseModel>();
+
+            return await _dbContext.Reviews
+                .Where(r => r.ProductId == productGuid)
+                .OrderByDescending(r => r.CreatedDate)
+                .Join(_dbContext.Users, r => r.UserId, u => u.Id, (r, u) => new ReviewResponseModel
+                {
+                    Id = r.Id,
+                    ProductId = r.ProductId,
+                    UserId = r.UserId,
+                    UserName = u.FirstName + " " + u.LastName,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedDate = r.CreatedDate
+                })
+                .ToListAsync();
+        }
+
+        public async Task<ReviewSummaryResponseModel> GetReviewSummary(string productId, string xCorrelationId)
+        {
+            _logger.LogInformation("GetReviewSummary for {ProductId}, CorrelationId: {CorrelationId}", productId, xCorrelationId);
+            if (!Guid.TryParse(productId, out var productGuid))
+                return new ReviewSummaryResponseModel { ProductId = Guid.Empty };
+
+            var reviews = await _dbContext.Reviews
+                .Where(r => r.ProductId == productGuid)
+                .ToListAsync();
+
+            var breakdown = new Dictionary<int, int> { {1,0},{2,0},{3,0},{4,0},{5,0} };
+            foreach (var r in reviews)
+                if (breakdown.ContainsKey(r.Rating)) breakdown[r.Rating]++;
+
+            return new ReviewSummaryResponseModel
+            {
+                ProductId = productGuid,
+                ReviewCount = reviews.Count,
+                AverageRating = reviews.Count > 0 ? Math.Round(reviews.Average(r => r.Rating), 1) : 0,
+                RatingBreakdown = breakdown
+            };
+        }
+
+        public async Task<string> SaveOrUpdateReview(ReviewRequestModel review, string xCorrelationId)
+        {
+            _logger.LogInformation("SaveOrUpdateReview for product {ProductId}, CorrelationId: {CorrelationId}", review.ProductId, xCorrelationId);
+
+            var existing = await _dbContext.Reviews
+                .FirstOrDefaultAsync(r => r.ProductId == review.ProductId && r.UserId == review.UserId);
+
+            if (existing != null)
+            {
+                existing.Rating = review.Rating;
+                existing.Comment = review.Comment;
+                existing.ModifiedDate = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+                return existing.Id.ToString();
+            }
+
+            var entity = new Review
+            {
+                Id = Guid.NewGuid(),
+                ProductId = review.ProductId,
+                UserId = review.UserId,
+                Rating = review.Rating,
+                Comment = review.Comment,
+                BrandId = review.BrandId ?? Guid.Empty,
+                CreatedDate = DateTime.UtcNow,
+                ModifiedDate = DateTime.UtcNow
+            };
+            _dbContext.Reviews.Add(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity.Id.ToString();
+        }
+
+        public async Task<bool> DeleteReview(string reviewId, string xCorrelationId)
+        {
+            _logger.LogInformation("DeleteReview {ReviewId}, CorrelationId: {CorrelationId}", reviewId, xCorrelationId);
+            if (!Guid.TryParse(reviewId, out var reviewGuid)) return false;
+            var review = await _dbContext.Reviews.FindAsync(reviewGuid);
+            if (review == null) return false;
+            _dbContext.Reviews.Remove(review);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }
