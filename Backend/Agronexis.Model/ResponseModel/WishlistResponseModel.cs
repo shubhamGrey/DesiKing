@@ -1,0 +1,12 @@
+namespace Agronexis.Model.ResponseModel
+{
+    public class WishlistResponseModel
+    {
+        public Guid Id { get; set; }
+        public Guid ProductId { get; set; }
+        public string ProductName { get; set; }
+        public string? ThumbnailUrl { get; set; }
+        public decimal Price { get; set; }
+        public DateTime AddedAt { get; set; }
+    }
+}

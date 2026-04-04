@@ -266,5 +266,14 @@ namespace Agronexis.Business.Configurations
 
         public async Task<bool> DeleteReview(string reviewId, string xCorrelationId)
             => await _repository.DeleteReview(reviewId, xCorrelationId);
+
+        public async Task<List<WishlistResponseModel>> GetWishlistByUserId(string userId, string xCorrelationId)
+            => await _repository.GetWishlistByUserId(userId, xCorrelationId);
+        public async Task<bool> AddToWishlist(WishlistRequestModel request, string xCorrelationId)
+            => await _repository.AddToWishlist(request, xCorrelationId);
+        public async Task<bool> RemoveFromWishlist(string userId, string productId, string xCorrelationId)
+            => await _repository.RemoveFromWishlist(userId, productId, xCorrelationId);
+        public async Task<bool> IsInWishlist(string userId, string productId, string xCorrelationId)
+            => await _repository.IsInWishlist(userId, productId, xCorrelationId);
     }
 }

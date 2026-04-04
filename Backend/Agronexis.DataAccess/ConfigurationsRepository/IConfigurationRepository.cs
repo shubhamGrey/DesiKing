@@ -66,5 +66,9 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         Task<ReviewSummaryResponseModel> GetReviewSummary(string productId, string xCorrelationId);
         Task<string> SaveOrUpdateReview(ReviewRequestModel review, string xCorrelationId);
         Task<bool> DeleteReview(string reviewId, string xCorrelationId);
+        Task<List<WishlistResponseModel>> GetWishlistByUserId(string userId, string xCorrelationId);
+        Task<bool> AddToWishlist(WishlistRequestModel request, string xCorrelationId);
+        Task<bool> RemoveFromWishlist(string userId, string productId, string xCorrelationId);
+        Task<bool> IsInWishlist(string userId, string productId, string xCorrelationId);
     }
 }

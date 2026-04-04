@@ -2989,5 +2989,68 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<WishlistResponseModel>> GetWishlistByUserId(string userId, string xCorrelationId)
+        {
+            _logger.LogInformation("GetWishlistByUserId for {UserId}, CorrelationId: {CorrelationId}", userId, xCorrelationId);
+            if (!Guid.TryParse(userId, out var userGuid)) return new List<WishlistResponseModel>();
+
+            return await _dbContext.Wishlists
+                .Where(w => w.UserId == userGuid)
+                .OrderByDescending(w => w.CreatedDate)
+                .Join(_dbContext.Products, w => w.ProductId, p => p.Id, (w, p) => new WishlistResponseModel
+                {
+                    Id = w.Id,
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    ThumbnailUrl = p.ThumbnailUrl,
+                    Price = 0, // Price lookup omitted for simplicity
+                    AddedAt = w.CreatedDate
+                })
+                .ToListAsync();
+        }
+
+        public async Task<bool> AddToWishlist(WishlistRequestModel request, string xCorrelationId)
+        {
+            _logger.LogInformation("AddToWishlist for user {UserId} product {ProductId}, CorrelationId: {CorrelationId}",
+                request.UserId, request.ProductId, xCorrelationId);
+
+            var exists = await _dbContext.Wishlists
+                .AnyAsync(w => w.UserId == request.UserId && w.ProductId == request.ProductId);
+            if (exists) return true;
+
+            _dbContext.Wishlists.Add(new Wishlist
+            {
+                Id = Guid.NewGuid(),
+                UserId = request.UserId,
+                ProductId = request.ProductId,
+                CreatedDate = DateTime.UtcNow
+            });
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveFromWishlist(string userId, string productId, string xCorrelationId)
+        {
+            _logger.LogInformation("RemoveFromWishlist for user {UserId} product {ProductId}, CorrelationId: {CorrelationId}",
+                userId, productId, xCorrelationId);
+            if (!Guid.TryParse(userId, out var userGuid) || !Guid.TryParse(productId, out var productGuid))
+                return false;
+
+            var item = await _dbContext.Wishlists
+                .FirstOrDefaultAsync(w => w.UserId == userGuid && w.ProductId == productGuid);
+            if (item == null) return false;
+            _dbContext.Wishlists.Remove(item);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> IsInWishlist(string userId, string productId, string xCorrelationId)
+        {
+            if (!Guid.TryParse(userId, out var userGuid) || !Guid.TryParse(productId, out var productGuid))
+                return false;
+            return await _dbContext.Wishlists
+                .AnyAsync(w => w.UserId == userGuid && w.ProductId == productGuid);
+        }
     }
 }
