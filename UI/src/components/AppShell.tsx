@@ -9,6 +9,7 @@ import theme from "@/styles/theme";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { GlobalClickTracker } from "@/components/GlobalClickTracker";
 
@@ -23,9 +24,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <AnalyticsProvider>
             <GlobalClickTracker>
               <CartProvider>
-                {!isAuthPage && <Header />}
-                <main className="page-transition">{children}</main>
-                {!isAuthPage && <Footer />}
+                <WishlistProvider>
+                  {!isAuthPage && <Header />}
+                  <main className="page-transition">{children}</main>
+                  {!isAuthPage && <Footer />}
+                </WishlistProvider>
               </CartProvider>
             </GlobalClickTracker>
           </AnalyticsProvider>

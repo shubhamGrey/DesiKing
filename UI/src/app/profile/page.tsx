@@ -22,6 +22,7 @@ import {
   Chip,
   Card,
   CardContent,
+  CardMedia,
   CircularProgress,
 } from "@mui/material";
 import {
@@ -34,6 +35,7 @@ import {
   NavigateNext,
   LocationOn,
   Star,
+  Favorite,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { isLoggedIn, getUserId } from "@/utils/auth";
@@ -54,11 +56,13 @@ import theme from "@/styles/theme";
 import { Order, OrdersApiResponse } from "@/types/order";
 import { Product } from "@/types/product";
 import AddressManager from "@/components/AddressManager";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const ProfileContent: React.FC = () => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { showSuccess, showError } = useNotification();
+  const { items: wishlistItems, isLoading: wishlistLoading, removeFromWishlist } = useWishlist();
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [selectedTab, setSelectedTab] = useState("profile");
@@ -412,6 +416,7 @@ const ProfileContent: React.FC = () => {
     { id: "profile", label: "Personal Information", icon: <Person /> },
     { id: "orders", label: "My Orders", icon: <ShoppingBag /> },
     { id: "address", label: "Address", icon: <LocationOn /> },
+    { id: "wishlist", label: "Wishlist", icon: <Favorite /> },
   ];
 
   if (loading) {
@@ -1150,6 +1155,64 @@ const ProfileContent: React.FC = () => {
                 <Alert severity="info">
                   Please log in to manage your addresses.
                 </Alert>
+              )}
+            </CardContent>
+          </Card>
+        );
+      case "wishlist":
+        return (
+          <Card
+            sx={{
+              mb: 4,
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              border: "1px solid",
+              borderColor: "primary.main",
+              borderRadius: "8px",
+            }}
+            elevation={0}
+          >
+            <CardContent>
+              <Typography variant="h6" color="primary.main" sx={{ mb: 3 }}>
+                My Wishlist
+              </Typography>
+              {wishlistLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                  <CircularProgress />
+                </Box>
+              ) : wishlistItems.length === 0 ? (
+                <Box sx={{ textAlign: "center", py: 6 }}>
+                  <Typography color="text.secondary">Your wishlist is empty.</Typography>
+                  <Button variant="contained" href="/products" sx={{ mt: 2 }}>Browse Products</Button>
+                </Box>
+              ) : (
+                <Grid container spacing={2}>
+                  {wishlistItems.map((item) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
+                      <Card>
+                        <CardMedia
+                          component="img"
+                          height="160"
+                          image={item.thumbnailUrl || "/placeholder.png"}
+                          alt={item.productName ?? "Product"}
+                          sx={{ objectFit: "cover" }}
+                        />
+                        <CardContent>
+                          <Typography fontWeight={600}>{item.productName ?? ""}</Typography>
+                          <Typography color="primary.main">₹{item.price}</Typography>
+                          <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                            <Button size="small" variant="contained" href={`/product/${item.productId}`}>
+                              View
+                            </Button>
+                            <Button size="small" color="error" onClick={() => removeFromWishlist(item.productId)}>
+                              Remove
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
               )}
             </CardContent>
           </Card>

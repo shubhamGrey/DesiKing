@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -11,6 +11,7 @@ import {
   Container,
   InputLabel,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { ArrowForward } from "@mui/icons-material";
 
@@ -23,10 +24,10 @@ interface ResetPasswordForm {
   confirmPassword: string;
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token");
+  const token = searchParams?.get("token");
 
   const mode = token ? "reset" : "forgot";
 
@@ -34,8 +35,12 @@ export default function ResetPasswordPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const forgotForm = useForm<ForgotPasswordForm>({ defaultValues: { email: "" } });
-  const resetForm = useForm<ResetPasswordForm>({ defaultValues: { newPassword: "", confirmPassword: "" } });
+  const forgotForm = useForm<ForgotPasswordForm>({
+    defaultValues: { email: "" },
+  });
+  const resetForm = useForm<ResetPasswordForm>({
+    defaultValues: { newPassword: "", confirmPassword: "" },
+  });
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -51,9 +56,14 @@ export default function ResetPasswordPage() {
       });
       const json = await res.json();
       if (json.info?.isSuccess) {
-        setSuccessMessage(json.data || "If that email is registered, check your inbox for a reset link.");
+        setSuccessMessage(
+          json.data ||
+            "If that email is registered, check your inbox for a reset link.",
+        );
       } else {
-        setErrorMessage(json.info?.message || "Something went wrong. Please try again.");
+        setErrorMessage(
+          json.info?.message || "Something went wrong. Please try again.",
+        );
       }
     } catch {
       setErrorMessage("Network error. Please try again.");
@@ -77,10 +87,15 @@ export default function ResetPasswordPage() {
       });
       const json = await res.json();
       if (json.info?.isSuccess) {
-        setSuccessMessage("Password reset successfully! Redirecting to login...");
+        setSuccessMessage(
+          "Password reset successfully! Redirecting to login...",
+        );
         setTimeout(() => router.push("/login"), 2500);
       } else {
-        setErrorMessage(json.info?.message || "Invalid or expired token. Please request a new reset link.");
+        setErrorMessage(
+          json.info?.message ||
+            "Invalid or expired token. Please request a new reset link.",
+        );
       }
     } catch {
       setErrorMessage("Network error. Please try again.");
@@ -101,18 +116,32 @@ export default function ResetPasswordPage() {
         </Typography>
       </Box>
 
-      {successMessage && <Alert severity="success" sx={{ mb: 3 }}>{successMessage}</Alert>}
-      {errorMessage && <Alert severity="error" sx={{ mb: 3 }}>{errorMessage}</Alert>}
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {successMessage}
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMessage}
+        </Alert>
+      )}
 
       {mode === "forgot" && (
-        <Box component="form" onSubmit={forgotForm.handleSubmit(handleForgotPassword)}>
+        <Box
+          component="form"
+          onSubmit={forgotForm.handleSubmit(handleForgotPassword)}
+        >
           <InputLabel sx={{ mb: 1, fontWeight: 500 }}>Email Address</InputLabel>
           <Controller
             name="email"
             control={forgotForm.control}
             rules={{
               required: "Email is required",
-              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Invalid email" }
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Invalid email",
+              },
             }}
             render={({ field }) => (
               <TextField
@@ -140,12 +169,18 @@ export default function ResetPasswordPage() {
       )}
 
       {mode === "reset" && (
-        <Box component="form" onSubmit={resetForm.handleSubmit(handleResetPassword)}>
+        <Box
+          component="form"
+          onSubmit={resetForm.handleSubmit(handleResetPassword)}
+        >
           <InputLabel sx={{ mb: 1, fontWeight: 500 }}>New Password</InputLabel>
           <Controller
             name="newPassword"
             control={resetForm.control}
-            rules={{ required: "Password is required", minLength: { value: 8, message: "Minimum 8 characters" } }}
+            rules={{
+              required: "Password is required",
+              minLength: { value: 8, message: "Minimum 8 characters" },
+            }}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -159,7 +194,9 @@ export default function ResetPasswordPage() {
               />
             )}
           />
-          <InputLabel sx={{ mb: 1, fontWeight: 500 }}>Confirm Password</InputLabel>
+          <InputLabel sx={{ mb: 1, fontWeight: 500 }}>
+            Confirm Password
+          </InputLabel>
           <Controller
             name="confirmPassword"
             control={resetForm.control}
@@ -189,5 +226,13 @@ export default function ResetPasswordPage() {
         </Box>
       )}
     </Container>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<Box sx={{ display: "flex", justifyContent: "center", py: 8 }}><CircularProgress /></Box>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
