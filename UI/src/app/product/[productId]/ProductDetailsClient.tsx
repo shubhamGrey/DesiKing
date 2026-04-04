@@ -9,6 +9,7 @@ import { Product, ProductFormData } from "@/types/product";
 import { useEcommerceTracking, useErrorTracking } from "@/hooks/useAnalytics";
 import { motion } from "framer-motion";
 import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
+import ReviewSection from "@/components/ReviewSection";
 
 interface ProductDetailsClientProps {
   productId: string;
@@ -181,6 +182,9 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
           <AdditionalDetails selectedProduct={selectedProduct} />
         </motion.div>
       </Container>
+      <Box sx={{ px: { xs: 2, md: 4 }, mt: 4 }}>
+        <ReviewSection productId={productId} />
+      </Box>
       <Box
         sx={{
           display: "flex",
