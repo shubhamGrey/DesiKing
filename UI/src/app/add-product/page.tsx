@@ -209,7 +209,7 @@ const AddProduct: React.FC = () => {
           // Use field array to properly populate data
           replaceVariants(pricesAndSkus);
 
-          setValue("stock", data.stock);
+          setValue("stock", data.stockQuantity ?? 0);
           setKeyFeatures(data.keyFeatures || []);
           setUses(data.uses || []);
           setValue("ingredients", data.ingredients || "");
@@ -459,6 +459,7 @@ const AddProduct: React.FC = () => {
       ingredients: data.ingredients || "",
       nutritionalInfo: data.nutritionalInfo || "",
       thumbnailUrl: thumbnailImageUrl || "",
+      stockQuantity: data.stock ?? 0,
     };
 
     const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/product`;

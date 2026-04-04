@@ -60,6 +60,24 @@ const ProductDetails = ({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
+          <Controller
+            name="stock"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Stock Quantity"
+                size="small"
+                type="number"
+                placeholder="Enter stock quantity"
+                inputProps={{ min: 0 }}
+                onChange={(e) => field.onChange(Number(e.target.value))}
+              />
+            )}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
           <DatePicker
             label="Packing Date"
             value={manufacturingDate}

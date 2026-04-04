@@ -367,6 +367,30 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 }
 
                 _dbContext.SaveChanges();
+
+                // Upsert inventory record
+                var inventory = _dbContext.Inventories.FirstOrDefault(i => i.ProductId == productDetail.Id);
+                if (inventory != null)
+                {
+                    inventory.Quantity = productReq.StockQuantity;
+                    inventory.ModifiedDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    _dbContext.Inventories.Add(new Model.EntityModel.Inventory
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductId = productDetail.Id,
+                        CategoryId = productDetail.CategoryId,
+                        BrandId = productDetail.BrandId,
+                        Quantity = productReq.StockQuantity,
+                        ManufacturingDate = productDetail.ManufacturingDate,
+                        CreatedDate = DateTime.UtcNow,
+                        ModifiedDate = DateTime.UtcNow
+                    });
+                }
+
+                _dbContext.SaveChanges();
                 return productDetail.Id.ToString();
             }
             catch (Exception ex)
