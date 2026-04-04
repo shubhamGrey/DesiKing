@@ -202,7 +202,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleLogin }) => {
         <AnimatedItem>
           <Box sx={{ textAlign: "center", mt: 2 }}>
             <Link
-              href="#"
+              href="/reset-password"
               variant="body2"
               fontWeight="600"
               sx={{ textDecoration: "none", color: "primary.main" }}

@@ -414,6 +414,8 @@ const OrderDetailsContent: React.FC = () => {
     null
   );
   const [trackingLoading, setTrackingLoading] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const orderId = params?.orderId as string;
 
@@ -1478,6 +1480,33 @@ const OrderDetailsContent: React.FC = () => {
     }
   };
 
+  const handleCancelOrder = async () => {
+    setIsCancelling(true);
+    try {
+      const token = Cookies.get("access_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Checkout/cancel-order/${orderId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const json = await response.json();
+      if (json.info?.isSuccess) {
+        setCancelDialogOpen(false);
+        window.location.reload();
+      } else {
+        alert(json.info?.message || "Failed to cancel order.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    }
+    setIsCancelling(false);
+  };
+
   // Helper function to determine if transaction is intra-state
   const isIntraState = (customerState?: string): boolean => {
     const companyState = "Maharashtra"; // Your company's state
@@ -1732,6 +1761,43 @@ const OrderDetailsContent: React.FC = () => {
               </Box>
             )}
         </Box>
+
+        {/* Cancel Order — only show for cancellable statuses */}
+        {(orderDetails?.status === "Order Placed" || orderDetails?.status === "Confirmed") && (
+          <Box sx={{ mt: 2, mb: 1 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={() => setCancelDialogOpen(true)}
+            >
+              Cancel Order
+            </Button>
+          </Box>
+        )}
+
+        <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
+          <DialogTitle>Cancel Order?</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to cancel this order? This action cannot be undone.
+              {orderDetails?.status === "Confirmed" && " If payment was made, a refund will be processed."}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCancelDialogOpen(false)} disabled={isCancelling}>
+              Keep Order
+            </Button>
+            <Button
+              onClick={handleCancelOrder}
+              color="error"
+              variant="contained"
+              disabled={isCancelling}
+            >
+              {isCancelling ? "Cancelling..." : "Yes, Cancel Order"}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Mobile Action Buttons */}
         <Box
