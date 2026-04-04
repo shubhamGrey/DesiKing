@@ -239,5 +239,20 @@ namespace Agronexis.Business.Configurations
         {
             return await _repository.GetDtdcTrackingDetails(request, correlationId);
         }
+
+        public async Task<string?> ForgotPassword(string email, string xCorrelationId)
+        {
+            return await _repository.ForgotPassword(email, xCorrelationId);
+        }
+
+        public async Task<bool> ResetPassword(ResetPasswordRequestModel model, string xCorrelationId)
+        {
+            return await _repository.ResetPassword(model.Token, model.NewPassword, xCorrelationId);
+        }
+
+        public async Task<bool> CancelOrder(string orderId, string xCorrelationId)
+        {
+            return await _repository.CancelOrder(orderId, xCorrelationId);
+        }
     }
 }

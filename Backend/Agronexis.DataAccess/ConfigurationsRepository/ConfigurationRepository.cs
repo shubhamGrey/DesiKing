@@ -2827,5 +2827,80 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
 
         #endregion
+
+        public async Task<string?> ForgotPassword(string email, string xCorrelationId)
+        {
+            _logger.LogInformation("ForgotPassword called, CorrelationId: {CorrelationId}", xCorrelationId);
+
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
+
+            if (user == null)
+                return null; // Silent — do not reveal if email exists
+
+            // Invalidate any existing unused tokens for this user
+            var existingTokens = _dbContext.PasswordResetTokens
+                .Where(t => t.UserId == user.Id && !t.IsUsed);
+            foreach (var t in existingTokens)
+                t.IsUsed = true;
+
+            var token = Guid.NewGuid().ToString("N"); // 32-char hex string
+            var resetToken = new PasswordResetToken
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Token = token,
+                ExpiresAt = DateTime.UtcNow.AddHours(1),
+                IsUsed = false,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _dbContext.PasswordResetTokens.Add(resetToken);
+            await _dbContext.SaveChangesAsync();
+
+            return token;
+        }
+
+        public async Task<bool> ResetPassword(string token, string newPassword, string xCorrelationId)
+        {
+            _logger.LogInformation("ResetPassword called, CorrelationId: {CorrelationId}", xCorrelationId);
+
+            var resetToken = await _dbContext.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Token == token && !t.IsUsed && t.ExpiresAt > DateTime.UtcNow);
+
+            if (resetToken == null)
+                return false;
+
+            var user = await _dbContext.Users.FindAsync(resetToken.UserId);
+            if (user == null)
+                return false;
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.ModifiedDate = DateTime.UtcNow;
+            resetToken.IsUsed = true;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CancelOrder(string orderId, string xCorrelationId)
+        {
+            _logger.LogInformation("CancelOrder called for {OrderId}, CorrelationId: {CorrelationId}", orderId, xCorrelationId);
+
+            if (!Guid.TryParse(orderId, out var orderGuid))
+                return false;
+
+            var order = await _dbContext.Orders.FindAsync(orderGuid);
+            if (order == null)
+                return false;
+
+            if (order.Status == "cancelled" || order.Status == "delivered")
+                return false;
+
+            order.Status = "cancelled";
+            order.ModifiedDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

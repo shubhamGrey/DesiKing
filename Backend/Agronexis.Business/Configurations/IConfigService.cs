@@ -60,5 +60,8 @@ namespace Agronexis.Business.Configurations
         Task<DTDC_CancelConsignmentResponseModel> CancelConsignment( DTDC_CancelConsignmentRequestModel request, string xCorrelationId);
         //Task<DtdcTokenResponseModel> GenerateDtdcTrackingToken(DtdcTokenRequestModel request, string correlationId);
         Task<DTDC_TrackingResponseModel> GetDtdcTrackingDetails(DTDC_TrackingRequestModel request, string correlationId);
+        Task<string?> ForgotPassword(string email, string xCorrelationId);
+        Task<bool> ResetPassword(ResetPasswordRequestModel model, string xCorrelationId);
+        Task<bool> CancelOrder(string orderId, string xCorrelationId);
     }
 }

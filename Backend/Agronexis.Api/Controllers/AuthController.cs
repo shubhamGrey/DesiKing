@@ -1,8 +1,10 @@
 ﻿using Agronexis.Business.Configurations;
+using Agronexis.ExternalApi;
 using Agronexis.Model.RequestModel;
 using Agronexis.Model.ResponseModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using static Agronexis.Common.Constants;
 
@@ -13,10 +15,14 @@ namespace Agronexis.Api.Controllers
     public class AuthController : BaseController
     {
         private readonly IConfigService _configService;
+        private readonly ExternalUtility _externalUtility;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IConfigService configService)
+        public AuthController(IConfigService configService, ExternalUtility externalUtility, IConfiguration configuration)
         {
             _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+            _externalUtility = externalUtility ?? throw new ArgumentNullException(nameof(externalUtility));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         [HttpPost("userLogin")]
@@ -222,6 +228,65 @@ namespace Agronexis.Api.Controllers
                 return NotFound("User profile not found");
 
             return Ok(CreateSuccessResponse(updatedProfile));
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult<ApiResponseModel>> ForgotPassword([FromBody] ForgotPasswordRequestModel request)
+        {
+            SetXCorrelationId();
+            try
+            {
+                if (request == null || !ModelState.IsValid)
+                    return new ApiResponseModel { Info = new ApiResponseInfoModel { Code = ((int)ServerStatusCodes.BadRequest).ToString(), Message = "Invalid email address" } };
+
+                var token = await _configService.ForgotPassword(request.Email, XCorrelationID);
+
+                if (token != null)
+                {
+                    var frontendBaseUrl = _configuration["FrontendBaseUrl"] ?? "https://desikingspices.com";
+                    var resetLink = $"{frontendBaseUrl}/reset-password?token={token}";
+                    string body = $"You requested a password reset for your DesiKing account.\n\nClick the link below to reset your password (valid for 1 hour):\n\n{resetLink}\n\nIf you did not request this, please ignore this email.";
+                    await _externalUtility.SendEmailAsync(request.Email, "Reset Your DesiKing Password", body, false);
+                }
+
+                // Always return success to prevent email enumeration
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel { Code = ((int)ServerStatusCodes.Ok).ToString(), Message = ApiResponseMessage.SUCCESS },
+                    Data = "If that email is registered, you will receive a reset link shortly."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel { Info = new ApiResponseInfoModel { Code = ((int)ServerStatusCodes.InternalServerError).ToString(), Message = $"Error: {ex.Message}" } };
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<ActionResult<ApiResponseModel>> ResetPassword([FromBody] ResetPasswordRequestModel request)
+        {
+            SetXCorrelationId();
+            try
+            {
+                if (request == null || !ModelState.IsValid)
+                    return new ApiResponseModel { Info = new ApiResponseInfoModel { Code = ((int)ServerStatusCodes.BadRequest).ToString(), Message = "Invalid request" } };
+
+                var success = await _configService.ResetPassword(request, XCorrelationID);
+
+                return new ApiResponseModel
+                {
+                    Info = new ApiResponseInfoModel
+                    {
+                        Code = success ? ((int)ServerStatusCodes.Ok).ToString() : ((int)ServerStatusCodes.BadRequest).ToString(),
+                        Message = success ? ApiResponseMessage.SUCCESS : "Invalid or expired reset token. Please request a new password reset."
+                    },
+                    Data = success ? "Password reset successfully. You can now log in with your new password." : null
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel { Info = new ApiResponseInfoModel { Code = ((int)ServerStatusCodes.InternalServerError).ToString(), Message = $"Error: {ex.Message}" } };
+            }
         }
     }
 }

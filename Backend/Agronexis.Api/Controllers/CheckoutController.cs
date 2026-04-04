@@ -233,5 +233,26 @@ namespace Agronexis.Api.Controllers
                 return HandleException(ex, "Failed to fetch all orders", correlationId);
             }
         }
+
+        [HttpPut("cancel-order/{orderId}")]
+        [Authorize]
+        public async Task<IActionResult> CancelOrder(string orderId)
+        {
+            string xCorrelationId = GetCorrelationId();
+            _logger.LogInformation("CancelOrder called for {OrderId}, CorrelationId: {CorrelationId}", orderId, xCorrelationId);
+            try
+            {
+                var success = await _configService.CancelOrder(orderId, xCorrelationId);
+                if (!success)
+                    return BadRequest(CreateErrorResponse("Order cannot be cancelled. It may already be cancelled, delivered, or the order ID is invalid."));
+
+                return Ok(CreateSuccessResponse("Order cancelled successfully."));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while cancelling order {OrderId}, correlation ID: {CorrelationId}", orderId, xCorrelationId);
+                return HandleException(ex, "Failed to cancel order", xCorrelationId);
+            }
+        }
     }
 }
