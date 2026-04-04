@@ -18,60 +18,37 @@ namespace Agronexis.Api.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // GET api/User
-        // [Authorize]
         [HttpGet]
-        public ActionResult<IEnumerable<UserProfileResponseModel>> GetUsers()
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetUsers()
         {
+            string xCorrelationId = GetCorrelationId();
+            _logger.LogInformation("GetUsers called, CorrelationId: {CorrelationId}", xCorrelationId);
             try
             {
-                _logger.LogInformation("GetUsers endpoint called");
-
-                var correlationId = GetCorrelationId();
-                var userList = _configService.GetUsers(correlationId);
-
-                _logger.LogInformation("Successfully retrieved {Count} users with correlation ID: {CorrelationId}",
-                    userList?.Count() ?? 0, correlationId);
-
-                return Ok(userList);
+                var users = _configService.GetUsers(xCorrelationId);
+                return Ok(CreateSuccessResponse(users));
             }
             catch (Exception ex)
             {
-                var correlationId = GetCorrelationId();
-                _logger.LogError(ex, "Error occurred while retrieving users with correlation ID: {CorrelationId}", correlationId);
-                return HandleException(ex, "Failed to retrieve users", correlationId);
+                return HandleException(ex, xCorrelationId);
             }
         }
 
-        // GET api/User/{id}
-        // [Authorize]
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserProfileResponseModel>> GetUserProfile(Guid id)
+        [Authorize]
+        public async Task<IActionResult> GetUserProfile(Guid id)
         {
+            string xCorrelationId = GetCorrelationId();
+            _logger.LogInformation("GetUserProfile called for {Id}, CorrelationId: {CorrelationId}", id, xCorrelationId);
             try
             {
-                _logger.LogInformation("GetUserProfile endpoint called for user ID: {UserId}", id);
-
-                var correlationId = GetCorrelationId();
-                var user = await _configService.GetUserProfile(id, correlationId);
-
-                if (user == null)
-                {
-                    _logger.LogWarning("User not found with ID: {UserId}, correlation ID: {CorrelationId}", id, correlationId);
-                    return NotFound($"User with ID {id} not found");
-                }
-
-                _logger.LogInformation("Successfully retrieved user profile for ID: {UserId} with correlation ID: {CorrelationId}",
-                    id, correlationId);
-
-                return Ok(user);
+                var profile = await _configService.GetUserProfile(id, xCorrelationId);
+                return Ok(CreateSuccessResponse(profile));
             }
             catch (Exception ex)
             {
-                var correlationId = GetCorrelationId();
-                _logger.LogError(ex, "Error occurred while retrieving user profile for ID: {UserId} with correlation ID: {CorrelationId}", 
-                    id, correlationId);
-                return HandleException(ex, "Failed to retrieve user profile", correlationId);
+                return HandleException(ex, xCorrelationId);
             }
         }
     }
