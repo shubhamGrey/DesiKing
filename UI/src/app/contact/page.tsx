@@ -71,16 +71,16 @@ export default function Contact() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/contact`,
+        `${process.env.NEXT_PUBLIC_API_URL}/Common/contact`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            action: "sendEmail",
             name: [data.firstName, data.lastName].join(" "),
             email: data.email,
+            phoneNumber: data.phoneNumber,
             message: data.message,
           }),
         }
@@ -101,7 +101,12 @@ export default function Contact() {
     trackFormSubmit("contact_form", success, errorMessage);
 
     setIsSubmitting(false);
-    reset();
+    if (success) {
+      reset();
+      alert("Your message has been sent! We'll get back to you soon.");
+    } else {
+      alert("Failed to send message. Please try again or email us directly at care@agronexis.com");
+    }
   };
 
   const socialMedia = [
