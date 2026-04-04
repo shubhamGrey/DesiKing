@@ -16,6 +16,7 @@ import {
   ListItemButton,
   Badge,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   PermIdentityOutlined,
@@ -34,6 +35,9 @@ import { isLoggedIn, isAdmin } from "@/utils/auth";
 export default function Header() {
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)"
+  );
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -133,7 +137,7 @@ export default function Header() {
             color:
               pathname === "/contact" ? "primary.main" : "primary.contrastText",
             borderBottom: "none",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: prefersReducedMotion ? "none" : "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             boxShadow: isScrolled
               ? "0 4px 30px rgba(27, 77, 62, 0.15)"
               : "0 2px 20px rgba(0, 0, 0, 0.08)",
@@ -149,9 +153,9 @@ export default function Header() {
                   alignItems: "center",
                   cursor: "pointer",
                   perspective: "1000px",
-                  transition: "all 0.4s ease",
+                  transition: prefersReducedMotion ? "none" : "all 0.4s ease",
                   "&:hover .logo-container": {
-                    transform: "rotateY(-8deg) rotateX(5deg) scale(1.05)",
+                    transform: prefersReducedMotion ? "none" : "rotateY(-8deg) rotateX(5deg) scale(1.05)",
                   },
                 }}
               >
@@ -246,13 +250,14 @@ export default function Header() {
                 <Box sx={{ minWidth: 220 }}>
                   <SearchAutocomplete />
                 </Box>
-                {rightNavLinks.map(({ icon, getHref, key }) => {
+                {rightNavLinks.map(({ icon, getHref, key, label }) => {
                   const href = getHref();
                   const isActive = pathname === href;
                   const isContactPage = pathname === "/contact";
                   return (
                     <IconButton
                       key={key}
+                      aria-label={label}
                       sx={{
                         color: isActive
                           ? "#E85D04"
@@ -263,14 +268,14 @@ export default function Header() {
                           ? "rgba(255, 255, 255, 0.15)"
                           : "transparent",
                         borderRadius: "12px",
-                        p: 1,
-                        transition: "all 0.25s ease",
+                        p: 1.25,
+                        transition: prefersReducedMotion ? "none" : "all 0.25s ease",
                         "&:hover": {
                           color: "#E85D04",
                           backgroundColor: isContactPage
                             ? "rgba(232, 93, 4, 0.08)"
                             : "rgba(255, 255, 255, 0.12)",
-                          transform: "translateY(-2px)",
+                          transform: prefersReducedMotion ? "none" : "translateY(-2px)",
                         },
                       }}
                       onClick={() => {
@@ -328,20 +333,21 @@ export default function Header() {
 
               {/* Mobile Icons */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                {rightNavLinks.map(({ icon, getHref, key }) => {
+                {rightNavLinks.map(({ icon, getHref, key, label }) => {
                   const href = getHref();
                   const isActive = pathname === href;
                   return (
                     <IconButton
                       key={key}
+                      aria-label={label}
                       sx={{
                         color: isActive
                           ? "#E85D04"
                           : pathname === "/contact"
                           ? "primary.main"
                           : "rgba(255, 255, 255, 0.9)",
-                        p: 1,
-                        transition: "all 0.25s ease",
+                        p: 1.25,
+                        transition: prefersReducedMotion ? "none" : "all 0.25s ease",
                         "&:hover": {
                           color: "#E85D04",
                         },
@@ -357,13 +363,14 @@ export default function Header() {
                 })}
                 <IconButton
                   onClick={toggleDrawer(true)}
+                  aria-label="Open navigation menu"
                   sx={{
                     color:
                       pathname === "/contact"
                         ? "primary.main"
                         : "rgba(255, 255, 255, 0.9)",
-                    p: 1,
-                    transition: "all 0.25s ease",
+                    p: 1.25,
+                    transition: prefersReducedMotion ? "none" : "all 0.25s ease",
                     "&:hover": {
                       color: "#E85D04",
                     },
@@ -402,13 +409,15 @@ export default function Header() {
           }}
           role="presentation"
         >
-          {/* Drawer Handle */}
+          {/* Drawer Handle + Close Button */}
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
+              alignItems: "center",
               pt: 1.5,
               pb: 1,
+              position: "relative",
             }}
           >
             <Box
@@ -422,6 +431,22 @@ export default function Header() {
                     : "rgba(0,0,0,0.2)",
               }}
             />
+            <IconButton
+              onClick={toggleDrawer(false)}
+              aria-label="Close navigation menu"
+              size="small"
+              sx={{
+                position: "absolute",
+                right: 12,
+                color:
+                  pathname !== "/contact"
+                    ? "rgba(255,255,255,0.7)"
+                    : "rgba(0,0,0,0.5)",
+                p: 1.25,
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
           </Box>
 
           {/* Mobile Search */}

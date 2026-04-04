@@ -59,7 +59,9 @@ const TiltCard = ({ children }: { children: React.ReactNode }) => {
 const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const { addItem } = useCart();
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
   // State for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -151,11 +153,9 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
 
   // Function to handle add to cart
   const handleAddToCart = (product: ProductFormData) => {
-    // Check if user is logged in
     const accessToken = Cookies.get("access_token");
 
     if (!accessToken) {
-      // Redirect to login page with return URL
       router.push(
         `/login?redirect=${encodeURIComponent(window.location.pathname)}`
       );
@@ -170,7 +170,6 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
       return;
     }
 
-    // Get selected packet index or default to 0
     const selectedIndex = selectedPackets[productId] || 0;
     const selectedSku = product.pricesAndSkus?.[selectedIndex];
 
@@ -184,7 +183,8 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
     const weightLabel = `${selectedSku.weightValue}${selectedSku.weightUnit}`;
     const quantity = quantities[productId] || 1;
 
-    // Add item to cart
+    setAddingToCart(productId);
+
     const cartItem = {
       id: crypto.randomUUID(),
       name: `${product.name} - ${weightLabel}`,
@@ -200,10 +200,10 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
 
     addItem(cartItem as any);
 
-    // Show success message
     setSnackbarMessage(`${product.name} added to cart!`);
     setSnackbarSeverity("success");
     setSnackbarOpen(true);
+    setTimeout(() => setAddingToCart(null), 600);
   };
 
   return (
@@ -245,7 +245,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                         display: "flex",
                         flexDirection: "column",
                         minHeight: "auto",
-                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        transition: prefersReducedMotion ? "none" : "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         borderRadius: "16px",
                         border: "1px solid",
                         borderColor: "rgba(31, 79, 64, 0.1)",
@@ -323,16 +323,16 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                     >
                       <Image
                         src={product.thumbnailUrl || "/placeholder-image.jpg"}
-                        alt={product.name}
+                        alt={product.name || "Product image"}
                         fill
-                        unoptimized={true}
                         className="product-image"
                         style={{
                           objectFit: "cover",
                           borderRadius: "12px",
                           background: "transparent",
-                          transition:
-                            "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                          transition: prefersReducedMotion
+                            ? "none"
+                            : "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         }}
                       />
                       {product.stockQuantity === 0 && (
@@ -471,6 +471,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                         >
                           <Button
                             size="small"
+                            aria-label="Decrease quantity"
                             onClick={() => {
                               const currentQty = quantities[productId] || 1;
                               if (currentQty > 1) {
@@ -481,7 +482,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                               }
                             }}
                             variant="outlined"
-                            sx={{ minWidth: "32px", p: 0.5 }}
+                            sx={{ minWidth: "44px", height: "44px", p: 0 }}
                           >
                             −
                           </Button>
@@ -497,6 +498,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                           </Typography>
                           <Button
                             size="small"
+                            aria-label="Increase quantity"
                             onClick={() => {
                               const currentQty = quantities[productId] || 1;
                               setQuantities((prev) => ({
@@ -505,7 +507,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                               }));
                             }}
                             variant="outlined"
-                            sx={{ minWidth: "32px", p: 0.5 }}
+                            sx={{ minWidth: "44px", height: "44px", p: 0 }}
                           >
                             +
                           </Button>
@@ -566,7 +568,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       variant="contained"
                       size="medium"
                       fullWidth
-                      disabled={product.stockQuantity === 0}
+                      disabled={product.stockQuantity === 0 || addingToCart === productId}
                       sx={{
                         backgroundColor: "primary.main",
                         color: "primary.contrastText",
@@ -579,7 +581,11 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                       }}
                       onClick={() => handleAddToCart(product)}
                     >
-                      {product.stockQuantity === 0 ? "Out of Stock" : "Add to Cart"}
+                      {product.stockQuantity === 0
+                        ? "Out of Stock"
+                        : addingToCart === productId
+                        ? "Adding..."
+                        : "Add to Cart"}
                     </Button>
                   </Box>
                     </Box>
@@ -625,7 +631,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
       {/* Success/Error Snackbar */}
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
