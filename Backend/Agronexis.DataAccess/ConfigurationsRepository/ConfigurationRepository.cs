@@ -2997,7 +2997,6 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             return await _dbContext.Wishlists
                 .Where(w => w.UserId == userGuid)
-                .OrderByDescending(w => w.CreatedDate)
                 .Join(_dbContext.Products, w => w.ProductId, p => p.Id, (w, p) => new WishlistResponseModel
                 {
                     Id = w.Id,
@@ -3007,6 +3006,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Price = 0, // Price lookup omitted for simplicity
                     AddedAt = w.CreatedDate
                 })
+                .OrderByDescending(r => r.AddedAt)
                 .ToListAsync();
         }
 
@@ -3017,7 +3017,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             var exists = await _dbContext.Wishlists
                 .AnyAsync(w => w.UserId == request.UserId && w.ProductId == request.ProductId);
-            if (exists) return true;
+            if (exists) return false; // already in wishlist
 
             _dbContext.Wishlists.Add(new Wishlist
             {
@@ -3047,6 +3047,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
         public async Task<bool> IsInWishlist(string userId, string productId, string xCorrelationId)
         {
+            _logger.LogInformation("IsInWishlist for user {UserId} product {ProductId}, CorrelationId: {CorrelationId}", userId, productId, xCorrelationId);
             if (!Guid.TryParse(userId, out var userGuid) || !Guid.TryParse(productId, out var productGuid))
                 return false;
             return await _dbContext.Wishlists

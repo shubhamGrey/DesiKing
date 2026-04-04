@@ -2,6 +2,7 @@ using Agronexis.Business.Configurations;
 using Agronexis.Model.RequestModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Agronexis.Api.Controllers
 {
@@ -18,17 +19,21 @@ namespace Agronexis.Api.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetWishlist(string userId)
+        public async Task<IActionResult> GetWishlist()
         {
             string xCorrelationId = GetCorrelationId();
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(CreateErrorResponse("Invalid user token"));
+
                 var items = await _configService.GetWishlistByUserId(userId, xCorrelationId);
                 return Ok(CreateSuccessResponse(items));
             }
-            catch (Exception ex) { return HandleException(ex, ex.Message, xCorrelationId); }
+            catch (Exception ex) { return HandleException(ex, "Failed to retrieve wishlist", xCorrelationId); }
         }
 
         [HttpPost]
@@ -39,37 +44,55 @@ namespace Agronexis.Api.Controllers
             try
             {
                 if (!ModelState.IsValid) return BadRequest(CreateErrorResponse("Invalid request"));
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(CreateErrorResponse("Invalid user token"));
+
+                if (!Guid.TryParse(userId, out var userGuid))
+                    return Unauthorized(CreateErrorResponse("Invalid user token"));
+
+                request.UserId = userGuid;
+
                 var success = await _configService.AddToWishlist(request, xCorrelationId);
                 return Ok(CreateSuccessResponse(success ? "Added to wishlist" : "Already in wishlist"));
             }
-            catch (Exception ex) { return HandleException(ex, ex.Message, xCorrelationId); }
+            catch (Exception ex) { return HandleException(ex, "Failed to add to wishlist", xCorrelationId); }
         }
 
-        [HttpDelete("{userId}/{productId}")]
+        [HttpDelete("{productId}")]
         [Authorize]
-        public async Task<IActionResult> RemoveFromWishlist(string userId, string productId)
+        public async Task<IActionResult> RemoveFromWishlist(string productId)
         {
             string xCorrelationId = GetCorrelationId();
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(CreateErrorResponse("Invalid user token"));
+
                 var success = await _configService.RemoveFromWishlist(userId, productId, xCorrelationId);
                 if (!success) return CreateNotFoundResponse("Wishlist item not found");
                 return Ok(CreateSuccessResponse("Removed from wishlist"));
             }
-            catch (Exception ex) { return HandleException(ex, ex.Message, xCorrelationId); }
+            catch (Exception ex) { return HandleException(ex, "Failed to remove from wishlist", xCorrelationId); }
         }
 
-        [HttpGet("check/{userId}/{productId}")]
+        [HttpGet("check/{productId}")]
         [Authorize]
-        public async Task<IActionResult> IsInWishlist(string userId, string productId)
+        public async Task<IActionResult> IsInWishlist(string productId)
         {
             string xCorrelationId = GetCorrelationId();
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(CreateErrorResponse("Invalid user token"));
+
                 var inWishlist = await _configService.IsInWishlist(userId, productId, xCorrelationId);
                 return Ok(CreateSuccessResponse(inWishlist));
             }
-            catch (Exception ex) { return HandleException(ex, ex.Message, xCorrelationId); }
+            catch (Exception ex) { return HandleException(ex, "Failed to check wishlist", xCorrelationId); }
         }
     }
 }

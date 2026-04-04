@@ -927,6 +927,10 @@ namespace Agronexis.DataAccess.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Wishlist_UserId_ProductId");
+
                     b.ToTable("Wishlist", "dbo");
                 });
 
