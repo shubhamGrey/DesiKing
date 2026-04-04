@@ -148,12 +148,15 @@ const AddProduct: React.FC = () => {
     if (productIdFromSession) {
       setProductId(productIdFromSession);
       setIsEditMode(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${productIdFromSession}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+      fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/product/${productIdFromSession}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      })
+      )
         .then((res) => res.json())
         .then((data) => {
           setValue("name", data.name);
@@ -444,7 +447,6 @@ const AddProduct: React.FC = () => {
       manufacturingDate: manufacturingDate
         ? new Date(manufacturingDate).toISOString()
         : new Date().toISOString(),
-      hsnCode: data.hsnCode,
       categoryId: data.category,
       brandId: data.brand,
       metaTitle: data.metaTitle || "",
@@ -459,6 +461,7 @@ const AddProduct: React.FC = () => {
       ingredients: data.ingredients || "",
       nutritionalInfo: data.nutritionalInfo || "",
       thumbnailUrl: thumbnailImageUrl || "",
+      hsnCode: data.hsnCode || "",
       stockQuantity: data.stock ?? 0,
     };
 
@@ -533,7 +536,6 @@ const AddProduct: React.FC = () => {
           >
             <Typography
               variant={isMobile ? "h5" : "h4"}
-              
               fontWeight={600}
               color="primary.main"
             >

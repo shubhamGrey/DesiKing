@@ -40,6 +40,7 @@ namespace Agronexis.Model.EntityModel
         public Category Category { get; set; }
         public ICollection<Inventory> Inventories { get; set; }
         public string? ThumbnailUrl { get; set; }
+        public string? HsnCode { get; set; }
         public ICollection<ProductPrice> ProductPrices { get; set; }
     }
 }

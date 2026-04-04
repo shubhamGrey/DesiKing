@@ -37,5 +37,6 @@ namespace Agronexis.Model.ResponseModel
         public string? ThumbnailUrl { get; set; }
         public List<PriceResponseModel> PricesAndSkus { get; set; } = [];
         public int StockQuantity { get; set; }
+        public string? HsnCode { get; set; }
     }
 }
