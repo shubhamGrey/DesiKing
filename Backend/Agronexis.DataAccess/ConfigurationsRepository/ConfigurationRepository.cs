@@ -95,6 +95,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = x.P.Ingredients,
                     NutritionalInfo = x.P.NutritionalInfo,
                     ThumbnailUrl = x.P.ThumbnailUrl,
+                    HsnCode = x.P.HsnCode,
                     StockQuantity = stockLookup.TryGetValue(x.P.Id, out var qty) ? qty : 0,
 
                     PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
@@ -175,6 +176,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = product.Ingredients,
                     NutritionalInfo = product.NutritionalInfo,
                     ThumbnailUrl = product.ThumbnailUrl,
+                    HsnCode = product.HsnCode,
                     StockQuantity = stockQuantity,
                     PricesAndSkus = product.ProductPrices
                         .Where(pp => !pp.IsDeleted)
@@ -254,6 +256,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = x.P.Ingredients,
                     NutritionalInfo = x.P.NutritionalInfo,
                     ThumbnailUrl = x.P.ThumbnailUrl,
+                    HsnCode = x.P.HsnCode,
                     StockQuantity = catStockLookup.TryGetValue(x.P.Id, out var catQty) ? catQty : 0,
 
                     PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel
@@ -325,6 +328,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 productDetail.Ingredients = productReq.Ingredients;
                 productDetail.NutritionalInfo = productReq.NutritionalInfo;
                 productDetail.ThumbnailUrl = productReq.ThumbnailUrl;
+                productDetail.HsnCode = productReq.HsnCode;
                 productDetail.ModifiedDate = DateTime.UtcNow;
 
                 if (isNew)
@@ -870,6 +874,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
         private async Task<User> Authenticate(string email, string username, string password)
         {
             var user = await _dbContext.Users
+                .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => (u.Email == email || u.UserName == username) && u.IsActive);
 
             if (user == null) return null;
@@ -884,10 +889,11 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-        new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
-    };
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.Role, user.Roles?.Name ?? string.Empty)
+            };
 
             var accessToken = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
@@ -2062,8 +2068,10 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     var gstAmount = (taxableValue * gstRate) / 100;
                     var totalAmount = taxableValue + gstAmount;
 
-                    // Get HSN code from product or use default
-                    var hsnCode = GetHsnCodeForProduct(product?.Name ?? "", product?.Category?.Name);
+                    // Get HSN code: use stored value first, fall back to name-based inference
+                    var hsnCode = !string.IsNullOrEmpty(product?.HsnCode)
+                        ? product.HsnCode
+                        : GetHsnCodeForProduct(product?.Name ?? "", product?.Category?.Name);
 
                     var invoiceItem = new InvoiceItemModel
                     {
@@ -3266,6 +3274,7 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     Ingredients = x.P.Ingredients,
                     NutritionalInfo = x.P.NutritionalInfo,
                     ThumbnailUrl = x.P.ThumbnailUrl,
+                    HsnCode = x.P.HsnCode,
                     StockQuantity = stockLookup.TryGetValue(x.P.Id, out var qty) ? qty : 0,
 
                     PricesAndSkus = x.P.ProductPrices.Select(pp => new PriceResponseModel

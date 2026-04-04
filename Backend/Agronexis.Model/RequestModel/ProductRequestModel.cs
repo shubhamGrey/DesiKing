@@ -31,6 +31,7 @@ namespace Agronexis.Model.RequestModel
         public string? Ingredients { get; set; }
         public string? NutritionalInfo { get; set; }
         public string? ThumbnailUrl { get; set; }
+        public string? HsnCode { get; set; }
         public int StockQuantity { get; set; }
     }
 }
