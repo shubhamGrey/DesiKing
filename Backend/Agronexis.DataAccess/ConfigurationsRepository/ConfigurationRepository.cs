@@ -800,6 +800,16 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                     _dbContext.Users.Add(user);
                     await _dbContext.SaveChangesAsync();
 
+                    try
+                    {
+                        string welcomeBody = $"Hi {user.FirstName},\n\nWelcome to DesiKing! Your account has been created successfully.\n\nEmail: {user.Email}\n\nShop our premium spices at desikingspices.com\n\nWarm regards,\nThe DesiKing Team";
+                        await _externalUtility.SendEmailAsync(user.Email, "Welcome to DesiKing!", welcomeBody, false);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning("Failed to send welcome email to {Email}: {Error}", user.Email, emailEx.Message);
+                    }
+
                     signupResponse.RegisteredId = user.Id.ToString();
                     signupResponse.Message = "User registered successfully";
                 }
@@ -896,11 +906,22 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
                 order.OrderItems.Add(orderItem);
             }
 
-            ////Send order placement email
-            //string emailResponse = await SendOrderPlacementEmail(xCorrelationId);
-
             _dbContext.Orders.Add(order);
             await _dbContext.SaveChangesAsync();
+
+            try
+            {
+                var orderUser = await _dbContext.Users.FindAsync(order.UserId);
+                if (orderUser != null)
+                {
+                    string orderBody = $"Hi {orderUser.FirstName},\n\nThank you for your order!\n\nOrder ID: {order.Id}\nTotal: ₹{order.TotalAmount}\n\nWe'll notify you when your order ships.\n\nWarm regards,\nThe DesiKing Team";
+                    await _externalUtility.SendEmailAsync(orderUser.Email, "Order Confirmed — DesiKing", orderBody, false);
+                }
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogWarning("Failed to send order confirmation email: {Error}", emailEx.Message);
+            }
 
             return new OrderResponseModel
             {
