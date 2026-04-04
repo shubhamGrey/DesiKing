@@ -20,6 +20,10 @@ import {
   Chip,
   CircularProgress,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   IconButton,
   Paper,
@@ -29,8 +33,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import type { Order, AdminComponentProps } from "@/types/admin";
@@ -52,6 +58,10 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
 }) => {
   const router = useRouter();
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [isRefunding, setIsRefunding] = useState(false);
 
   // Helper functions
   const formatDate = (dateString: string) => {
@@ -86,6 +96,33 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
   const handleViewOrderDetails = (orderId: string) => {
     sessionStorage.setItem("orderId", orderId);
     router.push(`/order-details/${orderId}`);
+  };
+
+  const handleRefund = async () => {
+    if (!selectedOrder) return;
+    setIsRefunding(true);
+    try {
+      const token = Cookies.get("access_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Checkout/refund-payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          orderId: selectedOrder.id,
+          paymentId: selectedOrder.transaction?.razorpayPaymentId,
+          amountInPaise: refundAmount ? Math.round(parseFloat(refundAmount) * 100) : 0,
+        }),
+      });
+      const json = await res.json();
+      if (json.info?.isSuccess) {
+        setRefundDialogOpen(false);
+        onRefreshOrders();
+      } else {
+        alert(json.info?.message || "Refund failed.");
+      }
+    } catch {
+      alert("Network error during refund.");
+    }
+    setIsRefunding(false);
   };
 
   // Calculate order statistics
@@ -317,6 +354,17 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                         >
                           <Visibility />
                         </IconButton>
+                        {(order.status === "paid" || order.status === "delivered") && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="warning"
+                            onClick={() => { setSelectedOrder(order); setRefundAmount(""); setRefundDialogOpen(true); }}
+                            sx={{ ml: 1 }}
+                          >
+                            Refund
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
 
@@ -387,6 +435,31 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
           </TableContainer>
         )}
       </CardContent>
+
+      <Dialog open={refundDialogOpen} onClose={() => setRefundDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Process Refund</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Order #{selectedOrder?.id?.slice(-8)}<br />
+            Total: ₹{selectedOrder?.totalAmount}
+          </Typography>
+          <TextField
+            label="Refund Amount (₹)"
+            type="number"
+            fullWidth
+            variant="filled"
+            value={refundAmount}
+            onChange={(e) => setRefundAmount(e.target.value)}
+            helperText="Leave empty for full refund"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRefundDialogOpen(false)} disabled={isRefunding}>Cancel</Button>
+          <Button color="warning" variant="contained" onClick={handleRefund} disabled={isRefunding}>
+            {isRefunding ? "Processing..." : "Process Refund"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
