@@ -31,6 +31,7 @@ namespace Agronexis.DataAccess.DbContexts
         public DbSet<AnalyticsEvent> AnalyticsEvents { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         public DbSet<Wishlist> Wishlists { get; set; }
+        public DbSet<Coupon> Coupons { get; set; }
 
     }
 }

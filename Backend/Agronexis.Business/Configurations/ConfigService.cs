@@ -275,5 +275,13 @@ namespace Agronexis.Business.Configurations
             => await _repository.RemoveFromWishlist(userId, productId, xCorrelationId);
         public async Task<bool> IsInWishlist(string userId, string productId, string xCorrelationId)
             => await _repository.IsInWishlist(userId, productId, xCorrelationId);
+        public async Task<ValidateCouponResponse> ValidateCoupon(ValidateCouponRequest request, string xCorrelationId)
+            => await _repository.ValidateCoupon(request, xCorrelationId);
+        public async Task<string> SaveOrUpdateCoupon(CouponRequestModel coupon, string xCorrelationId)
+            => await _repository.SaveOrUpdateCoupon(coupon, xCorrelationId);
+        public async Task<List<CouponResponseModel>> GetAllCoupons(string xCorrelationId)
+            => await _repository.GetAllCoupons(xCorrelationId);
+        public async Task<bool> DeleteCoupon(string couponId, string xCorrelationId)
+            => await _repository.DeleteCoupon(couponId, xCorrelationId);
     }
 }

@@ -71,5 +71,9 @@ namespace Agronexis.Business.Configurations
         Task<bool> AddToWishlist(WishlistRequestModel request, string xCorrelationId);
         Task<bool> RemoveFromWishlist(string userId, string productId, string xCorrelationId);
         Task<bool> IsInWishlist(string userId, string productId, string xCorrelationId);
+        Task<ValidateCouponResponse> ValidateCoupon(ValidateCouponRequest request, string xCorrelationId);
+        Task<string> SaveOrUpdateCoupon(CouponRequestModel coupon, string xCorrelationId);
+        Task<List<CouponResponseModel>> GetAllCoupons(string xCorrelationId);
+        Task<bool> DeleteCoupon(string couponId, string xCorrelationId);
     }
 }

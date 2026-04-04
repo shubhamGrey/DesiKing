@@ -3074,5 +3074,101 @@ namespace Agronexis.DataAccess.ConfigurationsRepository
             return await _dbContext.Wishlists
                 .AnyAsync(w => w.UserId == userGuid && w.ProductId == productGuid);
         }
+
+        public async Task<ValidateCouponResponse> ValidateCoupon(ValidateCouponRequest request, string xCorrelationId)
+        {
+            _logger.LogInformation("ValidateCoupon code={Code}, CorrelationId: {CorrelationId}", request.Code, xCorrelationId);
+            var coupon = await _dbContext.Coupons
+                .FirstOrDefaultAsync(c => c.Code.ToUpper() == request.Code.ToUpper() && c.IsActive);
+
+            if (coupon == null)
+                return new ValidateCouponResponse { IsValid = false, ErrorMessage = "Invalid coupon code." };
+
+            if (coupon.ExpiresAt.HasValue && coupon.ExpiresAt < DateTime.UtcNow)
+                return new ValidateCouponResponse { IsValid = false, ErrorMessage = "This coupon has expired." };
+
+            if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit)
+                return new ValidateCouponResponse { IsValid = false, ErrorMessage = "This coupon has reached its usage limit." };
+
+            if (request.OrderAmount < coupon.MinOrderAmount)
+                return new ValidateCouponResponse { IsValid = false, ErrorMessage = $"Minimum order amount of ₹{coupon.MinOrderAmount} required." };
+
+            decimal discount = coupon.DiscountType == "percentage"
+                ? Math.Round(request.OrderAmount * coupon.DiscountValue / 100, 2)
+                : Math.Min(coupon.DiscountValue, request.OrderAmount);
+
+            return new ValidateCouponResponse
+            {
+                IsValid = true,
+                DiscountAmount = discount,
+                FinalAmount = request.OrderAmount - discount,
+                CouponCode = coupon.Code
+            };
+        }
+
+        public async Task<string> SaveOrUpdateCoupon(CouponRequestModel coupon, string xCorrelationId)
+        {
+            _logger.LogInformation("SaveOrUpdateCoupon code={Code}, CorrelationId: {CorrelationId}", coupon.Code, xCorrelationId);
+            if (coupon.Id.HasValue)
+            {
+                var existing = await _dbContext.Coupons.FindAsync(coupon.Id.Value);
+                if (existing != null)
+                {
+                    existing.Code = coupon.Code.ToUpper();
+                    existing.DiscountType = coupon.DiscountType;
+                    existing.DiscountValue = coupon.DiscountValue;
+                    existing.MinOrderAmount = coupon.MinOrderAmount;
+                    existing.UsageLimit = coupon.UsageLimit;
+                    existing.ExpiresAt = coupon.ExpiresAt;
+                    existing.IsActive = coupon.IsActive;
+                    existing.ModifiedDate = DateTime.UtcNow;
+                    await _dbContext.SaveChangesAsync();
+                    return existing.Id.ToString();
+                }
+            }
+
+            var entity = new Coupon
+            {
+                Id = Guid.NewGuid(),
+                Code = coupon.Code.ToUpper(),
+                DiscountType = coupon.DiscountType,
+                DiscountValue = coupon.DiscountValue,
+                MinOrderAmount = coupon.MinOrderAmount,
+                UsageLimit = coupon.UsageLimit,
+                ExpiresAt = coupon.ExpiresAt,
+                IsActive = coupon.IsActive,
+                UsageCount = 0,
+                CreatedDate = DateTime.UtcNow,
+                ModifiedDate = DateTime.UtcNow
+            };
+            _dbContext.Coupons.Add(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity.Id.ToString();
+        }
+
+        public async Task<List<CouponResponseModel>> GetAllCoupons(string xCorrelationId)
+        {
+            _logger.LogInformation("GetAllCoupons, CorrelationId: {CorrelationId}", xCorrelationId);
+            return await _dbContext.Coupons
+                .Select(c => new CouponResponseModel
+                {
+                    Id = c.Id, Code = c.Code, DiscountType = c.DiscountType,
+                    DiscountValue = c.DiscountValue, MinOrderAmount = c.MinOrderAmount,
+                    UsageLimit = c.UsageLimit, UsageCount = c.UsageCount,
+                    ExpiresAt = c.ExpiresAt, IsActive = c.IsActive
+                })
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteCoupon(string couponId, string xCorrelationId)
+        {
+            _logger.LogInformation("DeleteCoupon {CouponId}, CorrelationId: {CorrelationId}", couponId, xCorrelationId);
+            if (!Guid.TryParse(couponId, out var couponGuid)) return false;
+            var coupon = await _dbContext.Coupons.FindAsync(couponGuid);
+            if (coupon == null) return false;
+            _dbContext.Coupons.Remove(coupon);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

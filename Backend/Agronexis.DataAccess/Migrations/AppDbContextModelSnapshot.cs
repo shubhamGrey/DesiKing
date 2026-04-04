@@ -934,6 +934,47 @@ namespace Agronexis.DataAccess.Migrations
                     b.ToTable("Wishlist", "dbo");
                 });
 
+            modelBuilder.Entity("Agronexis.Model.EntityModel.Coupon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DiscountType")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("MinOrderAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UsageLimit")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Coupon", "dbo");
+                });
+
             modelBuilder.Entity("Agronexis.Model.EntityModel.Address", b =>
                 {
                     b.HasOne("Agronexis.Model.EntityModel.CountryMaster", "Country")
