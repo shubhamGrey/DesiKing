@@ -18,7 +18,11 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={poppins.className}
-        style={{ backgroundColor: "#FAFAF9", margin: "0px" }}
+        style={{
+          backgroundColor: "#FAFAF9",
+          margin: "0px",
+          overflowX: "hidden",
+        }}
       >
         <AppShell>{children}</AppShell>
       </body>

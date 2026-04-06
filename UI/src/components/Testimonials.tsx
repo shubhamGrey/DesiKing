@@ -19,14 +19,14 @@ interface TestimonialsProps {
 }
 
 const cardVariants = {
-  enter: { x: 80, opacity: 0 },
+  enter: { x: 40, opacity: 0 },
   center: {
     x: 0,
     opacity: 1,
     transition: { type: "spring" as const, stiffness: 280, damping: 28 },
   },
   exit: {
-    x: -80,
+    x: -40,
     opacity: 0,
     transition: { type: "spring" as const, stiffness: 280, damping: 28 },
   },
@@ -37,7 +37,12 @@ const starVariants = {
   visible: (i: number) => ({
     opacity: 1,
     scale: 1,
-    transition: { type: "spring" as const, stiffness: 400, damping: 20, delay: i * 0.08 },
+    transition: {
+      type: "spring" as const,
+      stiffness: 400,
+      damping: 20,
+      delay: i * 0.08,
+    },
   }),
 };
 
@@ -47,7 +52,12 @@ const quoteVariants = {
     scale: 1,
     rotate: 0,
     opacity: 0.08,
-    transition: { type: "spring" as const, stiffness: 300, damping: 20, delay: 0.2 },
+    transition: {
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 20,
+      delay: 0.2,
+    },
   },
 };
 
@@ -71,7 +81,14 @@ const Testimonials = ({ items }: TestimonialsProps) => {
   );
 
   return (
-    <Box sx={{ width: "100%", py: { xs: 4, md: 6 } }}>
+    <Box
+      sx={{
+        width: "100%",
+        py: { xs: 4, md: 6 },
+        pb: { xs: 2, md: 3 },
+        overflow: "hidden",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -80,7 +97,9 @@ const Testimonials = ({ items }: TestimonialsProps) => {
           justifyContent: "center",
           alignItems: "stretch",
           px: { xs: 2, md: 4 },
+          pb: 2,
           minHeight: { xs: "auto", md: "280px" },
+          overflow: "hidden",
         }}
       >
         <AnimatePresence mode="wait">
@@ -101,7 +120,10 @@ const Testimonials = ({ items }: TestimonialsProps) => {
                 boxShadow: "0 10px 40px rgba(31, 79, 64, 0.08)",
                 border: "1px solid rgba(31, 79, 64, 0.06)",
               }}
-              whileHover={{ y: -6, boxShadow: "0 20px 50px rgba(31,79,64,0.14)" }}
+              whileHover={{
+                y: -6,
+                boxShadow: "0 20px 50px rgba(31,79,64,0.14)",
+              }}
             >
               {/* Animated quote icon */}
               <motion.div
@@ -119,7 +141,13 @@ const Testimonials = ({ items }: TestimonialsProps) => {
                 />
               </motion.div>
 
-              <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
                 {/* Stars */}
                 <Box sx={{ display: "flex", gap: 0.5, mb: 1.5 }}>
                   {Array.from({ length: item.rating ?? 5 }).map((_, i) => (
@@ -172,18 +200,30 @@ const Testimonials = ({ items }: TestimonialsProps) => {
                       flexShrink: 0,
                     }}
                   >
-                    <Image src={item.image} alt={item.name} fill style={{ objectFit: "cover" }} />
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
                   </Box>
                   <Box>
                     <Typography
                       variant="subtitle1"
-                      sx={{ fontWeight: 700, color: "primary.dark", fontSize: { xs: "1rem", md: "1.1rem" } }}
+                      sx={{
+                        fontWeight: 700,
+                        color: "primary.dark",
+                        fontSize: { xs: "1rem", md: "1.1rem" },
+                      }}
                     >
                       {item.name}
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary", fontSize: { xs: "0.85rem", md: "0.9rem" } }}
+                      sx={{
+                        color: "text.secondary",
+                        fontSize: { xs: "0.85rem", md: "0.9rem" },
+                      }}
                     >
                       {item.occupation}
                     </Typography>
