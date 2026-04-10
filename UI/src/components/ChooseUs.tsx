@@ -14,21 +14,36 @@ interface ChooseUsProps {
 
 const ChooseUs = ({ name, icon, lottieIcon, description }: ChooseUsProps) => {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", py: 1 }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "100%",
+        py: 1,
+        overflow: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, rotateY: 90 }}
         whileInView={{ opacity: 1, rotateY: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ type: "spring", stiffness: 200, damping: 22 }}
-        style={{ width: "100%", perspective: 1000, transformStyle: "preserve-3d" }}
-        whileHover={{ y: -6, scale: 1.02 }}
+        style={{
+          width: "100%",
+          perspective: 1000,
+          transformStyle: "preserve-3d",
+          boxSizing: "border-box",
+        }}
+        whileHover={{ y: -4 }}
       >
         <Stack
           direction="row"
           alignItems="start"
           justifyContent="center"
           sx={{
-            p: 3,
+            p: { xs: 2, md: 3 },
             width: "100%",
             borderRadius: 3,
             background:
@@ -37,6 +52,7 @@ const ChooseUs = ({ name, icon, lottieIcon, description }: ChooseUsProps) => {
             border: "1px solid rgba(232, 93, 4, 0.1)",
             boxShadow: "0 4px 20px rgba(232, 93, 4, 0.08)",
             transition: "box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            boxSizing: "border-box",
             "&:hover": {
               boxShadow: "0 8px 30px rgba(232, 93, 4, 0.18)",
               borderColor: "rgba(232, 93, 4, 0.25)",
@@ -57,16 +73,49 @@ const ChooseUs = ({ name, icon, lottieIcon, description }: ChooseUsProps) => {
             }}
           >
             {lottieIcon ? (
-              <LottieIcon src={lottieIcon} fallback={icon} size={44} loop={false} autoplay={false} />
+              <LottieIcon
+                src={lottieIcon}
+                fallback={icon}
+                size={44}
+                loop={false}
+                autoplay={false}
+              />
             ) : (
-              <Box sx={{ "& svg": { fontSize: "1.8rem", color: "#E85D04" } }}>{icon}</Box>
+              <Box sx={{ "& svg": { fontSize: "1.8rem", color: "#E85D04" } }}>
+                {icon}
+              </Box>
             )}
           </Box>
-          <Stack direction="column" alignItems="flex-start" sx={{ ml: 3, flex: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: "primary.main", mb: 1 }}>
+          <Stack
+            direction="column"
+            alignItems="flex-start"
+            sx={{
+              ml: { xs: 2, md: 3 },
+              flex: 1,
+              minWidth: 0,
+              overflow: "hidden",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: "primary.main",
+                mb: 1,
+                fontSize: { xs: "1rem", md: "1.25rem" },
+              }}
+            >
               {name}
             </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "justify", lineHeight: 1.7 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                textAlign: "justify",
+                lineHeight: 1.7,
+                wordBreak: "break-word",
+              }}
+            >
               {description}
             </Typography>
           </Stack>

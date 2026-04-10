@@ -1,5 +1,12 @@
 /* Modern Global Styles for Agro Nexis */
 
+/* Prevent horizontal scrolling */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

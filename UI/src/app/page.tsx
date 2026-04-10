@@ -99,7 +99,7 @@ const categoryConfig: Record<
 
 // Helper function to check if image needs to be unoptimized
 const shouldUnoptimizeImage = (
-  imageSrc: string | undefined | null,
+  imageSrc: string | undefined | null
 ): boolean => {
   return imageSrc?.includes("cloud.desikingspices.com") ?? false;
 };
@@ -225,15 +225,15 @@ const Home: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       )
         .then((res) => res.json())
         .then(() => {
           setProductCategories((prev) =>
-            prev.filter((cat) => cat.id !== selectedCategoryId),
+            prev.filter((cat) => cat.id !== selectedCategoryId)
           );
           setUpcomingpProductCategories((prev) =>
-            prev.filter((cat) => cat.id !== selectedCategoryId),
+            prev.filter((cat) => cat.id !== selectedCategoryId)
           );
         })
         .catch((error) => {
@@ -255,7 +255,7 @@ const Home: React.FC = () => {
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
 
         if (!response.ok) {
@@ -296,7 +296,7 @@ const Home: React.FC = () => {
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
 
         if (!response.ok) {
@@ -367,7 +367,7 @@ const Home: React.FC = () => {
         // Function to check if product matches a category based on keywords
         const matchesCategory = (
           product: Product,
-          keywords: string[],
+          keywords: string[]
         ): boolean => {
           const searchText = [
             product.name,
@@ -380,7 +380,7 @@ const Home: React.FC = () => {
             .toLowerCase();
 
           return keywords.some((keyword) =>
-            searchText.includes(keyword.toLowerCase()),
+            searchText.includes(keyword.toLowerCase())
           );
         };
 
@@ -394,7 +394,7 @@ const Home: React.FC = () => {
             (product) =>
               product.isActive &&
               !usedProductIds.has(product.id) &&
-              matchesCategory(product, keywords),
+              matchesCategory(product, keywords)
           );
 
           // Take first 4 matching products and mark them as used
@@ -431,11 +431,12 @@ const Home: React.FC = () => {
     <Container
       sx={{
         mt: 3,
-        mx: 6,
+        mx: { xs: 0, md: 6 },
         mb: 6,
-        px: isMobile ? 3 : 2,
+        px: isMobile ? 2 : 2,
         justifySelf: "center",
         maxWidth: "1500px !important",
+        overflow: "hidden",
       }}
     >
       {/* Product Categories Skeleton */}
@@ -490,8 +491,8 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Achievements Skeleton */}
-      <Box sx={{ mt: isMobile ? 8 : 15 }}>
-        <Grid container spacing={8}>
+      <Box sx={{ mt: isMobile ? 8 : 15, overflow: "hidden" }}>
+        <Grid container spacing={isMobile ? 4 : 6}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Skeleton
               variant="text"
@@ -554,11 +555,12 @@ const Home: React.FC = () => {
       <Container
         sx={{
           mt: 3,
-          mx: 6,
+          mx: { xs: 0, md: 6 },
           mb: 6,
-          px: isMobile ? 3 : 2,
+          px: isMobile ? 2 : 2,
           justifySelf: "center",
           maxWidth: "1500px !important",
+          overflow: "hidden",
         }}
       >
         {/* Shop by Category Sections */}
@@ -685,7 +687,7 @@ const Home: React.FC = () => {
                     const hasDiscount =
                       defaultSku?.isDiscounted && defaultSku?.discountedAmount;
                     const currencySymbol = getCurrencySymbol(
-                      defaultSku?.currencyCode || "INR",
+                      defaultSku?.currencyCode || "INR"
                     );
 
                     return (
@@ -740,7 +742,7 @@ const Home: React.FC = () => {
                               alt={product.name}
                               fill
                               unoptimized={shouldUnoptimizeImage(
-                                product.thumbnailUrl || product.imageUrls?.[0],
+                                product.thumbnailUrl || product.imageUrls?.[0]
                               )}
                               style={{
                                 objectFit: "cover",
@@ -1102,6 +1104,7 @@ const Home: React.FC = () => {
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
+            overflow: "hidden",
           }}
         >
           <Box
@@ -1111,9 +1114,9 @@ const Home: React.FC = () => {
               justifyContent: "center",
             }}
           >
-            <Grid container spacing={8}>
+            <Grid container spacing={isMobile ? 4 : 6}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Stack direction={"column"} alignItems="center" spacing={15}>
+                <Stack direction={"column"} alignItems="center" spacing={isMobile ? 4 : 8}>
                   <Box
                     sx={{
                       display: "flex",
@@ -1263,9 +1266,10 @@ const Home: React.FC = () => {
         <Box
           sx={{
             mt: isMobile ? 8 : 15,
+            overflow: "hidden",
           }}
         >
-          <Grid container spacing={8}>
+          <Grid container spacing={isMobile ? 4 : 6}>
             <Grid
               size={{ xs: 12, md: 6 }}
               sx={{
@@ -1292,12 +1296,15 @@ const Home: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }} sx={{ py: 1 }}>
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{ py: 1, maxWidth: "100%", overflow: "hidden" }}
+            >
               <Box
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: isMobile ? "flex-start" : "center",
+                  alignItems: "center",
                   mb: isMobile ? 3 : 4,
                 }}
               >
@@ -1343,31 +1350,20 @@ const Home: React.FC = () => {
                   What makes us different
                 </Typography>
               </Box>
-              <Grid
-                container
+              <Stack
                 spacing={isMobile ? 2 : 3}
-                sx={{ mt: 4, px: 1, py: 1 }}
+                sx={{ mt: 4, px: 0, py: 1, width: "100%" }}
               >
                 {chooseUs.map((item, index) => (
-                  <Grid
-                    size={12}
+                  <ChooseUs
                     key={index}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <ChooseUs
-                      key={index}
-                      name={item.name}
-                      icon={item.icon}
-                      lottieIcon={item.lottieIcon}
-                      description={item.description}
-                    />
-                  </Grid>
+                    name={item.name}
+                    icon={item.icon}
+                    lottieIcon={item.lottieIcon}
+                    description={item.description}
+                  />
                 ))}
-              </Grid>
+              </Stack>
             </Grid>
           </Grid>
         </Box>
@@ -1384,7 +1380,7 @@ const Home: React.FC = () => {
             sx={{
               display: "flex",
               flexDirection: "column",
-              alignItems: isMobile ? "flex-start" : "center",
+              alignItems: "center",
               mb: isMobile ? 3 : 4,
             }}
           >
