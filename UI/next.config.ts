@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cloud.desikingspices.com",
       },
+      {
+        protocol: "http",
+        hostname: "cloud.desikingspices.com",
+      },
     ],
     // Allow optimization for supported formats
     formats: ["image/webp", "image/avif"],
