@@ -11,8 +11,6 @@ import { motion } from "framer-motion";
 import AnimatedSection, { AnimatedItem } from "@/components/AnimatedSection";
 import ReviewSection from "@/components/ReviewSection";
 import RelatedProducts from "@/components/RelatedProducts";
-import RecentlyViewed from "@/components/RecentlyViewed";
-import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 interface ProductDetailsClientProps {
   productId: string;
@@ -28,8 +26,6 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
   // Analytics hooks
   const { trackProductView } = useEcommerceTracking();
   const { trackApiError } = useErrorTracking();
-  const { trackView } = useRecentlyViewed();
-
   useEffect(() => {
     if (!productId) return;
 
@@ -126,17 +122,6 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
     fetchProduct();
   }, [productId, trackProductView, trackApiError]);
 
-  useEffect(() => {
-    if (selectedProduct) {
-      trackView({
-        id: selectedProduct.id as string,
-        name: selectedProduct.name,
-        thumbnailUrl: selectedProduct.thumbnailUrl as string | undefined,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProduct?.id]);
-
   if (!selectedProduct) {
     return (
       <Box sx={{ padding: 2 }}>
@@ -197,17 +182,21 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
           <AdditionalDetails selectedProduct={selectedProduct} />
         </motion.div>
       </Container>
-      <Box sx={{ px: { xs: 2, md: 4 }, mt: 4 }}>
+      <Container
+        sx={{
+          m: { xs: 2, md: 6 },
+          px: { xs: 2, md: 3 },
+          justifySelf: "center",
+          mt: 4,
+        }}
+      >
         <ReviewSection productId={productId} />
-      </Box>
+      </Container>
       <Box sx={{ mt: 4, px: { xs: 2, md: 6 } }}>
         <RelatedProducts
           categoryId={selectedProduct.categoryId ?? ""}
           currentProductId={productId}
         />
-      </Box>
-      <Box sx={{ mt: 4, px: { xs: 2, md: 6 } }}>
-        <RecentlyViewed excludeId={productId} />
       </Box>
       <Box
         sx={{

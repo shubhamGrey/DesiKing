@@ -25,7 +25,7 @@ export const GlobalClickTracker: React.FC<GlobalClickTrackerProps> = ({
 
       // Get element information
       const tagName = target.tagName.toLowerCase();
-      const className = target.className || "";
+      const className = target.getAttribute("class") || "";
       const id = target.id || "";
       const text = target.textContent?.trim().substring(0, 100) || "";
       const href = (target as HTMLAnchorElement).href || "";

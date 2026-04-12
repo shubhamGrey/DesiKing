@@ -42,11 +42,13 @@ export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
   const { itemCount } = useCart();
 
   // Check auth status after hydration to prevent hydration mismatches
   useEffect(() => {
     setUserLoggedIn(isLoggedIn());
+    setUserIsAdmin(isAdmin());
   }, []);
 
   // Track scroll position with wide hysteresis to prevent flickering
@@ -89,7 +91,7 @@ export default function Header() {
     { label: "About", href: "/about" },
     { label: "Products", href: "/products" },
     { label: "Contact", href: "/contact" },
-    ...(isAdmin() ? [{ label: "Admin", href: "/admin" }] : []),
+    ...(userIsAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   const rightNavLinks = [

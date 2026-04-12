@@ -4,8 +4,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ReactNode } from "react";
-import { ThemeProvider } from "@mui/material";
-import theme from "@/styles/theme";
+import ThemeRegistry from "@/components/ThemeRegistry";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CartProvider } from "@/contexts/CartContext";
@@ -18,7 +17,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeRegistry>
       <ErrorBoundary showDetails={process.env.NODE_ENV === "development"}>
         <NotificationProvider>
           <AnalyticsProvider>
@@ -34,6 +33,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </AnalyticsProvider>
         </NotificationProvider>
       </ErrorBoundary>
-    </ThemeProvider>
+    </ThemeRegistry>
   );
 }

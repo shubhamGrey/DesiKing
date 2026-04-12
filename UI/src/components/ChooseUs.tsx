@@ -9,10 +9,12 @@ interface ChooseUsProps {
   name: string;
   icon: React.ReactNode;
   lottieIcon?: string;
+  iconBg?: string;
+  iconSize?: number;
   description: string;
 }
 
-const ChooseUs = ({ name, icon, lottieIcon, description }: ChooseUsProps) => {
+const ChooseUs = ({ name, icon, lottieIcon, iconBg, iconSize = 58, description }: ChooseUsProps) => {
   return (
     <Box
       sx={{
@@ -66,9 +68,8 @@ const ChooseUs = ({ name, icon, lottieIcon, description }: ChooseUsProps) => {
               justifyContent: "center",
               p: 1.5,
               borderRadius: 2,
-              background:
-                "linear-gradient(135deg, rgba(232,93,4,0.1) 0%, rgba(27,77,62,0.1) 100%)",
-              boxShadow: "0 2px 8px rgba(232, 93, 4, 0.1)",
+              background: iconBg ?? "linear-gradient(135deg, rgba(232,93,4,0.1) 0%, rgba(27,77,62,0.1) 100%)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               flexShrink: 0,
             }}
           >
@@ -76,9 +77,9 @@ const ChooseUs = ({ name, icon, lottieIcon, description }: ChooseUsProps) => {
               <LottieIcon
                 src={lottieIcon}
                 fallback={icon}
-                size={44}
-                loop={false}
-                autoplay={false}
+                size={iconSize}
+                loop={true}
+                autoplay={true}
               />
             ) : (
               <Box sx={{ "& svg": { fontSize: "1.8rem", color: "#E85D04" } }}>

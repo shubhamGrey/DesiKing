@@ -37,7 +37,6 @@ import Cook from "../../public/Home Cook.jpg";
 import Blogger from "../../public/Food Blogger.jpg";
 import AllProducts from "@/components/AllProducts";
 import { useRouter } from "next/navigation";
-import HomeGrid from "@/components/HomeGrid";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { Category, FormattedCategory, Product } from "@/types/product";
 import { usePageTracking } from "@/hooks/useAnalytics";
@@ -159,6 +158,7 @@ const chooseUs = [
     name: "Uncompromised Purity",
     icon: <HandshakeOutlined fontSize="large" />,
     lottieIcon: "/lottie/leaf.json",
+    iconBg: "rgba(61, 152, 70, 0.15)",
     description:
       "We source only the finest raw spices, ensuring that every product is free from additives, fillers and artificial colors.",
   },
@@ -166,6 +166,7 @@ const chooseUs = [
     name: "Hygienic Processing",
     icon: <HealthAndSafetyOutlined fontSize="large" />,
     lottieIcon: "/lottie/star.json",
+    iconBg: "rgba(156, 86, 244, 0.12)",
     description:
       "Our state-of-the-art processing facilities adhere to the highest hygiene standards and safety protocols, ensuring that every spice is safe and healthy.",
   },
@@ -173,6 +174,7 @@ const chooseUs = [
     name: "Bold, Authentic Flavors",
     icon: <SoupKitchenOutlined fontSize="large" />,
     lottieIcon: "/lottie/chili.json",
+    iconBg: "rgba(213, 0, 0, 0.12)",
     description:
       "Each spice is carefully selected and processed to retain its natural oils and flavors, delivering an authentic taste experience that transports you to the heart of Indian cuisine.",
   },
@@ -180,6 +182,7 @@ const chooseUs = [
     name: "Global Reach, Local Trust",
     icon: <Public fontSize="large" />,
     lottieIcon: "/lottie/fork.json",
+    iconBg: "rgba(248, 231, 28, 0.18)",
     description:
       "We serve both domestic and international markets, offering world-class products rooted in Indian tradition.",
   },
@@ -542,7 +545,7 @@ const Home: React.FC = () => {
   if (isLoading) {
     return (
       <>
-        <HomeGrid />
+        <Carousal items={carousalImages} />
         <SkeletonLoader />
       </>
     );
@@ -550,7 +553,6 @@ const Home: React.FC = () => {
 
   return (
     <>
-      {/* <HomeGrid /> */}
       <Carousal items={carousalImages} />
       <Container
         sx={{
@@ -1360,6 +1362,7 @@ const Home: React.FC = () => {
                     name={item.name}
                     icon={item.icon}
                     lottieIcon={item.lottieIcon}
+                    iconBg={item.iconBg}
                     description={item.description}
                   />
                 ))}

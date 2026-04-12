@@ -5,6 +5,9 @@ import "@/styles/globals.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://desikingspices.com"
+  ),
   title: "DesiKing - Desh ka Desi Masala",
   icons: {
     icon: "/Brand.png",
