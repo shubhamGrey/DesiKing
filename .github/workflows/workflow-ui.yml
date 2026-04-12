@@ -48,3 +48,6 @@ jobs:
 
             # Rebuild and restart only the nextjs container — leaves nginx, db, certbot untouched
             docker compose up -d --build --no-deps nextjs
+
+            # Remove dangling images, stopped containers, and unused build cache
+            docker system prune -f
