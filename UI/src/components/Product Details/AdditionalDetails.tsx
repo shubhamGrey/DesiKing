@@ -95,7 +95,7 @@ const AdditionalDetails = ({ selectedProduct }: { selectedProduct: ProductFormDa
 
   const getItems = (id: "keyFeatures" | "uses"): string[] => {
     const data = selectedProduct[id];
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? data.filter(Boolean) : [];
   };
 
   return (
