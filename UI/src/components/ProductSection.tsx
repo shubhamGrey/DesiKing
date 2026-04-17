@@ -325,6 +325,7 @@ const ProductSection = ({ item, onProductDeleted }: ProductSectionProps) => {
                         src={product.thumbnailUrl || "/placeholder-image.jpg"}
                         alt={product.name || "Product image"}
                         fill
+                        unoptimized={product.thumbnailUrl?.includes("cloud.desikingspices.com")}
                         className="product-image"
                         style={{
                           objectFit: "cover",

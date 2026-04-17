@@ -224,6 +224,7 @@ function SearchResults() {
                           src={product.thumbnailUrl ?? product.imageUrls[0]}
                           alt={product.name}
                           fill
+                          unoptimized={(product.thumbnailUrl ?? product.imageUrls[0])?.includes("cloud.desikingspices.com")}
                           style={{ objectFit: "cover" }}
                         />
                       ) : (

@@ -477,6 +477,10 @@ export default function SearchAutocomplete({
                       alt={product.name}
                       width={56}
                       height={56}
+                      unoptimized={(
+                        product.thumbnailUrl ??
+                        (product.imageUrls && product.imageUrls[0])
+                      )?.includes("cloud.desikingspices.com")}
                       style={{
                         objectFit: "cover",
                         borderRadius: "8px",
